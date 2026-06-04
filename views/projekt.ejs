@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Projekt | edoku</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <%- include("partials/header", { active }) %>
+    <main class="page compact-work-page">
+      <div class="page-title">
+        <p class="eyebrow">Stammdaten</p>
+        <h1>Projekt</h1>
+        <p class="page-subtitle">Projekt-, Auftraggeber- und Bearbeiterdaten sauber getrennt erfassen.</p>
+      </div>
+      <%- include("partials/flash", { flash }) %>
+      <%- include("partials/sectionTabs", { active }) %>
+
+      <form action="/projekt" method="post" data-tabs="projekt" data-autosave class="tab-shell">
+        <div class="tabs" role="tablist" aria-label="Projektbereiche">
+          <button class="tab-button" type="button" data-tab-target="basis">Basisdaten</button>
+          <button class="tab-button" type="button" data-tab-target="auftrag">Auftrag</button>
+          <button class="tab-button" type="button" data-tab-target="objekt">Objekt</button>
+          <button class="tab-button" type="button" data-tab-target="firma">Firma</button>
+          <button class="tab-button" type="button" data-tab-target="meta">Meta</button>
+        </div>
+
+        <section class="tab-panel" data-tab-panel="basis">
+          <div class="panel-head">
+            <div>
+              <h2>Basisdaten</h2>
+              <p>Identität und Standort des Projekts.</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <% [["projektname", "Projektname"], ["projektnummer", "Projektnummer"], ["auftraggeber", "Auftraggeber"], ["liegenschaft", "Liegenschaft"], ["baumassnahme", "Baumassnahme"]].forEach(([name, label]) => { %>
+              <label>
+                <span><%= label %></span>
+                <input type="text" name="<%= name %>" value="<%= projekt[name] || "" %>">
+              </label>
+            <% }) %>
+          </div>
+        </section>
+
+        <section class="tab-panel" data-tab-panel="auftrag">
+          <div class="panel-head">
+            <div>
+              <h2>Auftrag</h2>
+              <p>Nummern, Gewerk und Ausführungsort.</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <% [["massnahmeNr", "Massnahme-Nr."], ["auftragsNr", "Auftrags-Nr."], ["auftragGewerk", "Auftrag / Gewerk"], ["ortDerAusfuehrung", "Ort der Ausfuehrung"]].forEach(([name, label]) => { %>
+              <label>
+                <span><%= label %></span>
+                <input type="text" name="<%= name %>" value="<%= projekt[name] || "" %>">
+              </label>
+            <% }) %>
+          </div>
+        </section>
+
+        <section class="tab-panel" data-tab-panel="objekt">
+          <div class="panel-head">
+            <div>
+              <h2>Objektstruktur</h2>
+              <p>Stockwerke per Vorauswahl aktivieren und bei Brandschottungen sowie Plan-Zuordnungen nutzen.</p>
+            </div>
+          </div>
+          <% const aktiveStockwerke = Array.isArray(projekt.stockwerke) ? projekt.stockwerke : String(stockwerkeText || "").split(/\n/).filter(Boolean); %>
+          <% const presetStockwerke = typeof defaultStockwerke !== "undefined" ? defaultStockwerke : ["UG", "EG", "1. OG", "2. OG", "3. OG", "DG"]; %>
+          <% const customStockwerke = aktiveStockwerke.filter((stockwerk) => !presetStockwerke.includes(stockwerk)); %>
+          <div class="object-structure-grid">
+            <div>
+              <h3>Stockwerke</h3>
+              <div class="checkbox-grid dense stockwerk-choice-grid">
+                <% presetStockwerke.forEach((stockwerk) => { %>
+                  <label class="checkbox-card stockwerk-choice">
+                    <input type="checkbox" name="stockwerkePreset" value="<%= stockwerk %>" <%= aktiveStockwerke.includes(stockwerk) ? "checked" : "" %>>
+                    <span><%= stockwerk %></span>
+                  </label>
+                <% }) %>
+              </div>
+            </div>
+            <label>
+              <span>Weitere Stockwerke</span>
+              <textarea name="stockwerkeCustom" rows="4" placeholder="z. B. Staffelgeschoss&#10;Technikebene"><%= customStockwerke.join("\n") %></textarea>
+              <small class="meta-line">Nur Sonderfälle eintragen. Komma oder Semikolon funktionieren ebenfalls.</small>
+            </label>
+          </div>
+        </section>
+
+        <section class="tab-panel" data-tab-panel="firma">
+          <div class="panel-head">
+            <div>
+              <h2>Ausführende Firma</h2>
+              <p>Kontakt- und Bearbeiterdaten für Formulare und PDF-Ausgaben.</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <% [["ausfuehrendeFirma", "Ausfuehrende Firma"], ["firmenanschrift", "Firmenanschrift"], ["bearbeiter", "Bearbeiter"]].forEach(([name, label]) => { %>
+              <label>
+                <span><%= label %></span>
+                <input type="text" name="<%= name %>" value="<%= projekt[name] || "" %>">
+              </label>
+            <% }) %>
+          </div>
+        </section>
+
+        <section class="tab-panel" data-tab-panel="meta">
+          <div class="panel-head">
+            <div>
+              <h2>Meta</h2>
+              <p>Datum und Logo-Referenz.</p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <% [["ortDatum", "Ort / Datum"]].forEach(([name, label]) => { %>
+              <label>
+                <span><%= label %></span>
+                <input type="text" name="<%= name %>" value="<%= projekt[name] || "" %>">
+              </label>
+            <% }) %>
+          </div>
+        </section>
+
+      </form>
+
+    </main>
+    <%- include("partials/footer") %>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

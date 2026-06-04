@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= title %> | edoku</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <%- include("partials/header", { active }) %>
+    <main class="page">
+      <div class="page-title">
+        <p class="eyebrow">Modul</p>
+        <h1><%= heading %></h1>
+      </div>
+      <%- include("partials/sectionTabs", { active }) %>
+      <section class="config-preview">
+        <p><%= text %></p>
+      </section>
+    </main>
+    <%- include("partials/footer") %>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

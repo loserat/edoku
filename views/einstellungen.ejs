@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Einstellungen | edoku</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <%- include("partials/header", { active }) %>
+    <main class="page wide compact-work-page">
+      <div class="page-title">
+        <p class="eyebrow">Konfiguration</p>
+        <h1>Einstellungen</h1>
+        <p class="page-subtitle">Default-Formulare bearbeiten und Layoutwirkung direkt prüfen.</p>
+      </div>
+
+      <%- include("partials/flash", { flash }) %>
+      <%- include("partials/sectionTabs", { active }) %>
+
+      <div class="settings-layout">
+        <section class="settings-main">
+          <section class="settings-overview">
+            <div>
+              <span>01</span>
+              <strong>System</strong>
+            </div>
+            <div>
+              <span>02</span>
+              <strong>Ersteller</strong>
+            </div>
+            <div>
+              <span>03</span>
+              <strong>Leistungsbereiche</strong>
+            </div>
+            <div>
+              <span>04</span>
+              <strong>Ordnerstruktur</strong>
+            </div>
+            <div>
+              <span>05</span>
+              <strong>Formulare</strong>
+            </div>
+          </section>
+
+      <section class="settings-grid">
+        <form id="system" action="/einstellungen/system" method="post" data-autosave class="settings-panel">
+          <div class="panel-head">
+            <div>
+              <h2>System-Grundeinstellungen</h2>
+              <p>Allgemeine Defaults für Oberfläche, Export und PDF-Ausgaben.</p>
+            </div>
+          </div>
+          <div class="form-grid compact">
+            <label>
+              <span>App-Titel</span>
+              <input type="text" name="appTitel" value="<%= systemSettings.appTitel %>">
+            </label>
+            <label>
+              <span>Standard-Gewerk</span>
+              <input type="text" name="standardGewerk" value="<%= systemSettings.standardGewerk %>">
+            </label>
+            <label>
+              <span>Standard-Einheit</span>
+              <input type="text" name="standardEinheit" value="<%= systemSettings.standardEinheit %>">
+            </label>
+            <label>
+              <span>Export-Präfix</span>
+              <input type="text" name="exportOrdnerPrefix" value="<%= systemSettings.exportOrdnerPrefix %>">
+            </label>
+            <label>
+              <span>Datumsformat</span>
+              <input type="text" name="datumFormat" value="<%= systemSettings.datumFormat %>">
+            </label>
+            <label>
+              <span>PDF-Footer</span>
+              <input type="text" name="pdfFooterText" value="<%= systemSettings.pdfFooterText %>">
+            </label>
+          </div>
+          <label class="checkbox-card compact">
+            <input type="checkbox" name="autosaveHinweis" <%= systemSettings.autosaveHinweis ? "checked" : "" %>>
+            <span>Auto-Save-Hinweis anzeigen</span>
+          </label>
+        </form>
+
+        <section id="ersteller" class="settings-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Erstellerstammdaten</h2>
+              <p>Zentrale Firmen-, Bearbeiter- und Logo-Daten für Formulare und PDF-Ausgaben.</p>
+            </div>
+          </div>
+          <form action="/einstellungen/ersteller" method="post" data-autosave class="stack-form">
+            <div class="form-grid compact">
+              <label>
+                <span>Name</span>
+                <input type="text" name="name" value="<%= systemSettings.ersteller.name || "" %>">
+              </label>
+              <label>
+                <span>Firma</span>
+                <input type="text" name="firma" value="<%= systemSettings.ersteller.firma || "" %>">
+              </label>
+              <label>
+                <span>Bearbeiter</span>
+                <input type="text" name="bearbeiter" value="<%= systemSettings.ersteller.bearbeiter || "" %>">
+              </label>
+              <label>
+                <span>Telefon</span>
+                <input type="text" name="telefon" value="<%= systemSettings.ersteller.telefon || "" %>">
+              </label>
+              <label>
+                <span>E-Mail</span>
+                <input type="text" name="email" value="<%= systemSettings.ersteller.email || "" %>">
+              </label>
+              <label>
+                <span>Webseite</span>
+                <input type="text" name="webseite" value="<%= systemSettings.ersteller.webseite || "" %>">
+              </label>
+            </div>
+            <label>
+              <span>Anschrift</span>
+              <textarea name="anschrift" rows="3"><%= systemSettings.ersteller.anschrift || "" %></textarea>
+            </label>
+          </form>
+
+          <div class="logo-import-grid creator-logo-grid">
+            <div class="logo-preview-box">
+              <% if (systemSettings.ersteller.logoPfad) { %>
+                <img src="/einstellungen/ersteller-logo" alt="Erstellerlogo">
+                <span><%= systemSettings.ersteller.logoPfad %></span>
+                <form action="/einstellungen/ersteller-logo/loeschen" method="post" data-confirm="Zentrales Logo wirklich löschen?">
+                  <button class="danger" type="submit">Logo löschen</button>
+                </form>
+              <% } else { %>
+                <strong>Kein zentrales Logo importiert</strong>
+                <span>Dieses Logo wird zentral fuer Formulare und PDF-Ausgaben verwendet.</span>
+              <% } %>
+            </div>
+            <form action="/einstellungen/ersteller-logo" method="post" enctype="multipart/form-data" class="stack-form">
+              <label>
+                <span>Zentrales Logo</span>
+                <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" required>
+              </label>
+              <button type="submit">Zentrales Logo importieren</button>
+            </form>
+          </div>
+        </section>
+
+        <form id="ordnerstruktur" action="/einstellungen/ordnerstruktur" method="post" data-autosave class="settings-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Projektordner</h2>
+              <p>Grundstruktur für erzeugte Projektordner.</p>
+            </div>
+          </div>
+          <label>
+            <span>Basisordner</span>
+            <input type="text" name="basisordner" value="<%= ordnerstruktur.basisordner || "" %>">
+          </label>
+          <label>
+            <span>Unterordner</span>
+            <textarea name="unterordner" rows="8"><%= (ordnerstruktur.unterordner || []).join("\n") %></textarea>
+          </label>
+        </form>
+      </section>
+
+      <form id="leistungsbereiche-admin" action="/einstellungen/leistungsbereiche" method="post" data-autosave class="settings-panel">
+        <div class="panel-head">
+          <div>
+            <h2>Leistungsbereiche</h2>
+            <p>Diese Liste ist die Grundlage für Auswahl, Systemauswahl, Matrix und Gerätelisten.</p>
+          </div>
+          <div class="panel-actions">
+            <button class="secondary" type="button" data-add-leistungsbereich>Hinzufügen</button>
+            <button class="secondary" type="submit" formaction="/einstellungen/leistungsbereiche/defaults" formmethod="post" data-no-autosave="true">Defaults wiederherstellen</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="settings-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Aktiv</th>
+                <th>Löschen</th>
+              </tr>
+            </thead>
+            <tbody data-leistungsbereiche-body>
+              <% (leistungsbereiche.optionen || []).forEach((name, index) => { %>
+                <tr>
+                  <td><input type="text" name="leistungsbereiche[<%= index %>][name]" value="<%= name %>"></td>
+                  <td>
+                    <label class="cell-check">
+                      <input type="checkbox" name="leistungsbereiche[<%= index %>][aktiv]" <%= (leistungsbereiche.aktiv || []).includes(name) ? "checked" : "" %>>
+                      <span>Aktiv</span>
+                    </label>
+                  </td>
+                  <td>
+                    <label class="cell-check">
+                      <input type="checkbox" name="leistungsbereiche[<%= index %>][_delete]" value="1">
+                      <span>Löschen</span>
+                    </label>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </form>
+
+      <form id="formulare" action="/einstellungen/formulare" method="post" data-autosave class="generator-layout">
+        <section class="generator-editor">
+          <div class="panel-head">
+            <div>
+              <h2>Formular-Generator</h2>
+              <p>Diese Werte steuern die später erzeugten Formular-PDFs.</p>
+            </div>
+          </div>
+
+          <% Object.entries(templates).forEach(([key, template]) => { %>
+            <section class="form-card template-card" data-template-card="<%= key %>">
+              <div class="edit-section-head">
+                <div>
+                  <h2><%= template.name %></h2>
+                  <p><%= key %></p>
+                </div>
+              </div>
+
+              <div class="form-grid compact">
+                <label>
+                  <span>Titel-Präfix</span>
+                  <input type="text" name="templates[<%= key %>][titelPraefix]" value="<%= template.titelPraefix || "" %>" data-template-field="titelPraefix" data-template-key="<%= key %>">
+                </label>
+                <label>
+                  <span>Fallback-Titel</span>
+                  <input type="text" name="templates[<%= key %>][titelFallback]" value="<%= template.titelFallback || "" %>" data-template-field="titelFallback" data-template-key="<%= key %>">
+                </label>
+                <label>
+                  <span>Titelausrichtung</span>
+                  <select name="templates[<%= key %>][titleAlign]" data-template-field="titleAlign" data-template-key="<%= key %>">
+                    <% [["left", "Links"], ["center", "Zentriert"], ["right", "Rechts"]].forEach(([value, label]) => { %>
+                      <option value="<%= value %>" <%= template.titleAlign === value ? "selected" : "" %>><%= label %></option>
+                    <% }) %>
+                  </select>
+                </label>
+                <label>
+                  <span>Titelgröße</span>
+                  <input type="number" min="12" max="28" name="templates[<%= key %>][fontSizeTitle]" value="<%= template.fontSizeTitle %>" data-template-field="fontSizeTitle" data-template-key="<%= key %>">
+                </label>
+                <label>
+                  <span>Textgröße</span>
+                  <input type="number" min="7" max="14" name="templates[<%= key %>][fontSizeBody]" value="<%= template.fontSizeBody %>" data-template-field="fontSizeBody" data-template-key="<%= key %>">
+                </label>
+                <label>
+                  <span>Rand</span>
+                  <input type="number" min="24" max="72" name="templates[<%= key %>][margin]" value="<%= template.margin %>" data-template-field="margin" data-template-key="<%= key %>">
+                </label>
+              </div>
+
+              <label>
+                <span>Fallback-Haupttext</span>
+                <% if (key === "konformitaet") { %>
+                  <textarea name="templates[<%= key %>][bodyText]" rows="4"><%= template.bodyText || "" %></textarea>
+                <% } else { %>
+                  <textarea name="templates[<%= key %>][bodyText]" rows="4" data-template-field="bodyText" data-template-key="<%= key %>"><%= template.bodyText || "" %></textarea>
+                <% } %>
+              </label>
+
+              <% if (key === "konformitaet" && template.textVarianten) { %>
+                <section class="variant-editor">
+                  <div class="edit-section-head">
+                    <div>
+                      <h2>Textvarianten</h2>
+                      <p>Gleiches Formular, anderer Erklärungstext je Norm oder Anwendungsfall.</p>
+                    </div>
+                  </div>
+                  <% Object.entries(template.textVarianten).forEach(([variantKey, variant]) => { %>
+                    <label class="variant-text">
+                      <span><%= variant.label %></span>
+                      <% (variant.match || []).forEach((matchValue) => { %>
+                        <input type="hidden" name="templates[<%= key %>][textVarianten][<%= variantKey %>][match]" value="<%= matchValue %>">
+                      <% }) %>
+                      <input type="hidden" name="templates[<%= key %>][textVarianten][<%= variantKey %>][label]" value="<%= variant.label %>">
+                      <textarea name="templates[<%= key %>][textVarianten][<%= variantKey %>][text]" rows="3" <%= variantKey === "default" ? "data-template-field=\"bodyText\" data-template-key=\"konformitaet\"" : "" %>><%= variant.text || "" %></textarea>
+                    </label>
+                  <% }) %>
+                </section>
+              <% } %>
+
+              <% if (template.normenFallback !== undefined) { %>
+                <label>
+                  <span>Normen-Fallback</span>
+                  <input type="text" name="templates[<%= key %>][normenFallback]" value="<%= template.normenFallback || "" %>">
+                </label>
+              <% } %>
+
+              <label>
+                <span>Unterschrift-Label</span>
+                <input type="text" name="templates[<%= key %>][signatureLabel]" value="<%= template.signatureLabel || "" %>" data-template-field="signatureLabel" data-template-key="<%= key %>">
+              </label>
+
+              <div class="checkbox-grid dense">
+                <% [
+                  ["showProjectHeader", "Projektkopf"],
+                  ["showLeistungsbereich", "Leistungsbereich"],
+                  ["showNormen", "Normen"],
+                  ["showSignature", "Unterschrift"],
+                  ["showFooter", "Footer"]
+                ].forEach(([field, label]) => { %>
+                  <label class="checkbox-card compact">
+                    <input type="checkbox" name="templates[<%= key %>][<%= field %>]" <%= template[field] ? "checked" : "" %> data-template-field="<%= field %>" data-template-key="<%= key %>">
+                    <span><%= label %></span>
+                  </label>
+                <% }) %>
+              </div>
+            </section>
+          <% }) %>
+        </section>
+
+        <aside class="generator-preview">
+          <div class="panel-head">
+            <div>
+              <h2>Vorschau</h2>
+              <p>Darstellung am Beispiel Konformitätserklärung.</p>
+            </div>
+          </div>
+          <% const preview = templates.konformitaet; %>
+          <div class="form-preview-page" data-template-preview="konformitaet" style="--preview-title-size: <%= preview.fontSizeTitle %>px; --preview-body-size: <%= preview.fontSizeBody %>px; --preview-margin: <%= preview.margin %>px;">
+            <h3 data-preview-title style="text-align: <%= preview.titleAlign %>;"><%= preview.titelPraefix %><%= preview.titelFallback %></h3>
+            <div class="preview-project" data-preview-project <%= preview.showProjectHeader ? "" : "hidden" %>>
+              <p><strong>Projekt:</strong> Beispielprojekt</p>
+              <p><strong>Auftraggeber:</strong> Muster Auftraggeber</p>
+              <p><strong>Liegenschaft:</strong> Musterobjekt</p>
+            </div>
+            <p data-preview-leistungsbereich <%= preview.showLeistungsbereich ? "" : "hidden" %>><strong>Leistungsbereich:</strong> Elektroinstallation / DIN VDE 0100</p>
+            <p data-preview-normen <%= preview.showNormen ? "" : "hidden" %>><strong>Normen / Grundlagen:</strong> DIN VDE 0100, Herstellerangaben</p>
+            <p data-preview-body><%= preview.bodyText %></p>
+            <div class="preview-signature" data-preview-signature <%= preview.showSignature ? "" : "hidden" %>>
+              <span data-preview-signature-label><%= preview.signatureLabel %></span>
+              <i></i>
+            </div>
+            <footer data-preview-footer <%= preview.showFooter ? "" : "hidden" %>>Bearbeiter | Ort / Datum</footer>
+          </div>
+        </aside>
+
+      </form>
+        </section>
+
+        <aside class="settings-sidebar">
+          <section class="settings-panel compact-panel">
+            <div class="panel-head">
+              <div>
+                <h2>Status</h2>
+              </div>
+            </div>
+            <div class="settings-facts">
+              <div><span>Leistungsbereiche</span><strong><%= (leistungsbereiche.optionen || []).length %></strong></div>
+              <div><span>Aktiv</span><strong><%= (leistungsbereiche.aktiv || []).length %></strong></div>
+              <div><span>Ordner</span><strong><%= (ordnerstruktur.unterordner || []).length %></strong></div>
+              <div><span>Formulare</span><strong><%= Object.keys(templates).length %></strong></div>
+              <div><span>Erstellerlogo</span><strong><%= systemSettings.ersteller.logoPfad ? "Ja" : "Nein" %></strong></div>
+            </div>
+          </section>
+
+          <section class="settings-panel compact-panel">
+            <div class="panel-head">
+              <div>
+                <h2>Direkt zu</h2>
+              </div>
+            </div>
+            <nav class="settings-jump">
+              <a href="#system"><%- include("partials/icon", { name: "system" }) %><span>System</span></a>
+              <a href="#ersteller"><%- include("partials/icon", { name: "project" }) %><span>Ersteller</span></a>
+              <a href="#leistungsbereiche-admin"><%- include("partials/icon", { name: "list" }) %><span>Leistungsbereiche</span></a>
+              <a href="#ordnerstruktur"><%- include("partials/icon", { name: "folder-tree" }) %><span>Ordnerstruktur</span></a>
+              <a href="#formulare"><%- include("partials/icon", { name: "file" }) %><span>Formulare</span></a>
+            </nav>
+          </section>
+        </aside>
+      </div>
+    </main>
+    <%- include("partials/footer") %>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "optionen": [
+    "Elektroinstallation / DIN VDE 0100",
+    "Sicherheitsbeleuchtung",
+    "Beleuchtungsanlage",
+    "Kabeltragsysteme / Verlegesysteme",
+    "Kabeltragsysteme / Verlegesysteme mit Funktionserhalt",
+    "Niederspannungsschaltanlagen / Verteilungen",
+    "Erdung / Potentialausgleich",
+    "Blitzschutzanlage",
+    "Datentechnik / Kommunikationsverkabelung",
+    "Telekommunikation",
+    "Breitbandkommunikationsanlage",
+    "Rauchwarnmelderanlage",
+    "Brandmeldeanlage",
+    "Gefahrenmelde- / Alarmanlage",
+    "Präsenzmelder",
+    "Brandschutzabschottungen",
+    "Bestandspläne",
+    "Bilddokumentation"
+  ],
+  "aktiv": [
+    "Sicherheitsbeleuchtung",
+    "Kabeltragsysteme / Verlegesysteme",
+    "Niederspannungsschaltanlagen / Verteilungen",
+    "Erdung / Potentialausgleich",
+    "Brandmeldeanlage",
+    "Gefahrenmelde- / Alarmanlage",
+    "Präsenzmelder"
+  ],
+  "systemAuswahl": {}
+}

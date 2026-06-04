@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Export | edoku</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <%- include("partials/header", { active }) %>
+    <main class="page compact-work-page">
+      <div class="page-title">
+        <p class="eyebrow">Ausgabe</p>
+        <h1>Export</h1>
+        <p class="page-subtitle">Projektordner, interne PDFs, Exportliste und finalen Vorbereitungsordner schrittweise erzeugen.</p>
+      </div>
+
+      <%- include("partials/flash", { flash }) %>
+      <%- include("partials/sectionTabs", { active }) %>
+
+      <% const vorhanden = exportliste.filter((entry) => entry.status === "vorhanden").length; %>
+      <% const fehlt = exportliste.filter((entry) => entry.status === "fehlt").length; %>
+
+      <div class="tab-shell export-scroll">
+        <section class="summary-cards compact-summary">
+          <div class="summary-card"><span>Einträge</span><strong><%= exportliste.length %></strong></div>
+          <div class="summary-card"><span>Vorhanden</span><strong><%= vorhanden %></strong></div>
+          <div class="summary-card"><span>Fehlt</span><strong><%= fehlt %></strong></div>
+        </section>
+
+        <% const selectedPdf = pdfPreviewFiles[0]; %>
+
+        <section id="pdf" class="tab-panel">
+          <div class="panel-head">
+            <div>
+              <h2>PDF-Vorschau</h2>
+              <p>Direkte Ansicht der bereits erzeugten oder abgelegten PDF-Dateien des aktuellen Projekts.</p>
+            </div>
+            <% if (pdfPreviewFiles.length) { %>
+              <label class="compact-select">
+                <span>Datei</span>
+                <select data-pdf-preview-select>
+                  <% pdfPreviewFiles.forEach((file) => { %>
+                    <option value="/export/pdf-preview?file=<%= encodeURIComponent(file.id) %>">
+                      <%= file.source %> - <%= file.name %>
+                    </option>
+                  <% }) %>
+                </select>
+              </label>
+            <% } %>
+          </div>
+
+          <% if (selectedPdf) { %>
+            <div class="pdf-preview-shell">
+              <iframe
+                title="PDF-Vorschau"
+                src="/export/pdf-preview?file=<%= encodeURIComponent(selectedPdf.id) %>#toolbar=1"
+                data-pdf-preview-frame>
+              </iframe>
+            </div>
+          <% } else { %>
+            <div class="pdf-empty">
+              <strong>Noch keine PDF für die Vorschau vorhanden.</strong>
+              <span>Erzeuge zuerst ein Inhaltsverzeichnis oder Formular-PDF, danach erscheint die Vorschau hier automatisch.</span>
+              <div class="pdf-empty-actions">
+                <form action="/export/dokumentation" method="post"><button type="submit">Dokumentation generieren</button></form>
+                <form action="/export/formulare" method="post"><button class="secondary" type="submit">Nur Formular-PDFs</button></form>
+              </div>
+            </div>
+          <% } %>
+        </section>
+
+        <section id="vorschau" class="tab-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Exportstruktur</h2>
+              <p>Aktueller Stand der späteren Exportstruktur mit logisch fortlaufenden Kapitelnummern.</p>
+            </div>
+          </div>
+
+          <section class="preview-head">
+            <div>
+              <span>Projekt</span>
+              <strong><%= preview.projekt.projektname %></strong>
+              <small><%= preview.projekt.projektnummer %></small>
+            </div>
+            <div>
+              <span>Auftraggeber</span>
+              <strong><%= preview.projekt.auftraggeber %></strong>
+              <small><%= preview.projekt.liegenschaft %></small>
+            </div>
+            <div>
+              <span>Baumaßnahme</span>
+              <strong><%= preview.projekt.baumassnahme %></strong>
+              <small><%= preview.stats.kapitel %> Kapitelgruppen</small>
+            </div>
+          </section>
+
+          <section class="summary-cards preview-stats">
+            <div class="summary-card"><span>Export-Dokumente</span><strong><%= preview.stats.dokumente %></strong></div>
+            <div class="summary-card"><span>Pflicht</span><strong><%= preview.stats.pflichtdokumente %></strong></div>
+            <div class="summary-card"><span>Fehlende Pflicht</span><strong><%= preview.stats.fehlendePflicht %></strong></div>
+            <div class="summary-card"><span>Vorhandene Dateien</span><strong><%= preview.stats.vorhandeneDateien %></strong></div>
+            <div class="summary-card"><span>Fehlende Dateien</span><strong><%= preview.stats.fehlendeDateien %></strong></div>
+            <div class="summary-card"><span>Nicht geprüft</span><strong><%= preview.stats.ungeprueft %></strong></div>
+          </section>
+
+          <% if (!preview.groups.length) { %>
+            <p class="empty-state">Noch keine aktiven Export-Dokumente vorhanden.</p>
+          <% } %>
+
+          <div class="export-preview">
+            <% preview.groups.forEach((group) => { %>
+              <section class="preview-chapter">
+                <h3><span><%= group.kapitel %></span><%= group.titel %></h3>
+                <ol class="preview-list">
+                  <% group.dokumente.forEach((doc) => { %>
+                    <li class="preview-item level-<%= doc.ebene %>">
+                      <div class="preview-title">
+                        <strong><%= doc.kapitel %></strong>
+                        <span><%= doc.titel %></span>
+                      </div>
+                      <div class="preview-meta">
+                        <small>Original: <%= doc.originalKapitel || "-" %></small>
+                        <% if (doc.leistungsbereich) { %><small><%= doc.leistungsbereich %></small><% } %>
+                        <% if (doc.hersteller || doc.systemart) { %><small><%= doc.hersteller || "-" %> / <%= doc.systemart || "-" %></small><% } %>
+                        <span class="badge <%= doc.statusClass %>"><%= doc.status %></span>
+                        <% if (doc.pflicht) { %><span class="badge required">Pflicht</span><% } %>
+                      </div>
+                      <% if (doc.dateipfad) { %>
+                        <small class="preview-path"><%= doc.dateipfad %></small>
+                      <% } %>
+                    </li>
+                  <% }) %>
+                </ol>
+              </section>
+            <% }) %>
+          </div>
+        </section>
+
+        <section id="aktionen" class="tab-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Export-Schritte</h2>
+              <p>Von Projektordner über PDFs bis zur finalen Vorbereitung.</p>
+            </div>
+          </div>
+          <section class="export-actions">
+            <form class="export-action-primary" action="/export/dokumentation" method="post"><button type="submit">Dokumentation zentral generieren</button></form>
+            <form action="/export/pdfs-loeschen" method="post" data-confirm="Alle generierten und finalen PDFs dieses Projekts löschen?"><button class="danger" type="submit">Alle PDFs löschen</button></form>
+            <form action="/export/projektordner" method="post"><button class="secondary" type="submit">Projektordner erstellen</button></form>
+            <form action="/export/inhaltsverzeichnis" method="post"><button type="submit">Inhaltsverzeichnis generieren</button></form>
+            <form action="/export/formulare" method="post"><button type="submit">Formular-PDFs generieren</button></form>
+            <form action="/export/geraetelisten" method="post"><button type="submit">Gerätelisten generieren</button></form>
+            <form action="/export/brandschutz" method="post"><button type="submit">Brandschutzdokumentation generieren</button></form>
+            <form action="/export/exportliste" method="post"><button type="submit">Exportliste aktualisieren</button></form>
+            <form action="/export/final" method="post"><button type="submit">Finalen Export vorbereiten</button></form>
+          </section>
+        </section>
+
+        <section id="struktur" class="tab-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Projektordner-Struktur</h2>
+              <p>Externe PDFs können später in `02_Config_Projekt` in die passenden Kapitelordner gelegt werden.</p>
+            </div>
+          </div>
+          <ul class="compact-list">
+            <% (ordnerstruktur.unterordner || []).forEach((ordner) => { %>
+              <li><%= ordner %></li>
+            <% }) %>
+          </ul>
+        </section>
+
+        <section id="liste" class="tab-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Exportliste</h2>
+              <p>Reihenfolge, Quellenstatus und Hersteller-/Systembezug.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Reihenfolge</th>
+                  <th>Kapitel</th>
+                  <th>Original</th>
+                  <th>Titel</th>
+                  <th>Dateipfad</th>
+                  <th>Quelle</th>
+                  <th>Status</th>
+                  <th>Pflicht</th>
+                  <th>Hersteller / Systemart</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (!exportliste.length) { %>
+                  <tr>
+                    <td colspan="9">Noch keine Exportliste erzeugt.</td>
+                  </tr>
+                <% } %>
+                <% exportliste.forEach((entry) => { %>
+                  <tr class="<%= entry.pflicht && entry.status === "fehlt" ? "row-missing-required" : "" %>">
+                    <td><%= entry.reihenfolge %></td>
+                    <td><%= entry.kapitel %></td>
+                    <td><small><%= entry.originalKapitel || "-" %></small></td>
+                    <td><%= entry.titel %></td>
+                    <td><%= entry.dateipfad || "-" %></td>
+                    <td><%= entry.quelle %></td>
+                    <td><span class="badge <%= entry.status === "vorhanden" ? "on" : "off" %>"><%= entry.status %></span></td>
+                    <td><%= entry.pflicht ? "Ja" : "Nein" %></td>
+                    <td>
+                      <%= entry.hersteller || "-" %>
+                      <% if (entry.systemart) { %>
+                        <br><small><%= entry.systemart %></small>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+    <%- include("partials/footer") %>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,111 @@
+<% const projectTabs = ["projekte", "projekt", "leistungsbereiche", "systemauswahl", "projektarchiv"]; %>
+<% const documentationTabs = ["dokumente", "anhaenge"]; %>
+<% const outputTabs = ["export"]; %>
+<% const systemTabs = ["einstellungen"]; %>
+<% let tabs = []; %>
+<% const selectedCategoryValue = typeof selectedKategorie !== "undefined" ? selectedKategorie : ""; %>
+<% const hasDeviceListTabs = active === "geraetelisten" && typeof deviceListTabs !== "undefined" && Array.isArray(deviceListTabs); %>
+<% if (hasDeviceListTabs) { %>
+  <nav class="section-tabs device-main-tabs" data-device-main-tabs aria-label="Gerätelisten">
+    <div class="section-tabs-head">
+      <span>Gerätelisten</span>
+      <strong>Auswahl</strong>
+    </div>
+    <button class="device-main-tab" type="button" data-device-main-target="dashboard"><%- include("icon", { name: "overview" }) %><span>Dashboard</span></button>
+    <% deviceListTabs.forEach((liste) => { %>
+      <% const tabLabel = String(liste.titel || "").replace(/^Geräteliste\s+/i, ""); %>
+      <% const shortLabel = String(liste.leistungsbereich || tabLabel || liste.titel || "")
+        .replace(/\s*\/\s*/g, " / ")
+        .replace("Elektroinstallation / DIN VDE 0100", "Elektro / VDE 0100")
+        .replace("Kabeltragsysteme / Verlegesysteme", "Kabeltragsysteme")
+        .replace("Niederspannungsschaltanlagen / Verteilungen", "NSHV / Verteilungen")
+        .replace("Datentechnik / Kommunikationsverkabelung", "Datentechnik")
+        .replace("Gefahrenmelde- / Alarmanlage", "Gefahrenmeldeanlage")
+        .replace("Breitbandkommunikationsanlage", "Breitband")
+        .replace("Rauchwarnmelderanlage", "Rauchwarnmelder")
+        .replace("Brandschutzabschottungen", "Brandschutz"); %>
+      <button class="device-main-tab" type="button" data-device-main-target="<%= liste.id %>" title="<%= liste.titel || liste.leistungsbereich %>">
+        <%- include("icon", { name: "list" }) %>
+        <span><%= shortLabel || tabLabel || liste.titel %></span>
+        <strong><%= liste.positionen ? liste.positionen.length : 0 %></strong>
+      </button>
+    <% }) %>
+  </nav>
+<% } else if (projectTabs.includes(active)) { %>
+  <% tabs = [
+    ["projekte", "/projekte#projekt-auswahl", "Projektübersicht", "overview"],
+    ["projekt", "/projekt", "Stammdaten", "edit"],
+    ["leistungsbereiche", "/leistungsbereiche", "Leistungsbereiche", "list"],
+    ["systemauswahl", "/systemauswahl", "Systeme", "system"],
+    ["projekte", "/projekte#projekt-archiv", "Archiv", "archive"],
+    ["projektarchiv", "/projektarchiv", "Import / Pakete", "folder-tree"]
+  ]; %>
+<% } else if (documentationTabs.includes(active)) { %>
+  <% tabs = [
+    ["dokumente", "/dokumente", "Matrix", "grid"],
+    ["anhaenge", "/anhaenge", "Anhänge", "paperclip"],
+    ["anhaenge", "/anhaenge?kategorie=Stromlaufpläne", "Stromlaufpläne", "file"],
+    ["anhaenge", "/anhaenge?kategorie=Schaltpläne", "Schaltpläne", "file"],
+    ["anhaenge", "/anhaenge?kategorie=Installationspläne", "Installationspläne", "file"],
+    ["anhaenge", "/anhaenge?kategorie=Schemata", "Schemata", "file"],
+    ["anhaenge", "/anhaenge?kategorie=Messprotokolle", "Messprotokolle", "file"]
+  ]; %>
+<% } else if (outputTabs.includes(active)) { %>
+  <% tabs = [
+    ["export", "/export#pdf", "PDF-Vorschau", "file"],
+    ["export", "/export#vorschau", "Exportstruktur", "grid"],
+    ["export", "/export#aktionen", "Schritte", "export"],
+    ["export", "/export#struktur", "Ordnerstruktur", "folder-tree"],
+    ["export", "/export#liste", "Exportliste", "list"]
+  ]; %>
+<% } else if (systemTabs.includes(active)) { %>
+  <% tabs = [
+    ["einstellungen", "/einstellungen#system", "Grundeinstellungen", "system"],
+    ["einstellungen", "/einstellungen#ersteller", "Erstellerstammdaten", "project"],
+    ["einstellungen", "/einstellungen#leistungsbereiche-admin", "Leistungsbereiche", "list"],
+    ["einstellungen", "/einstellungen#ordnerstruktur", "Ordnerstruktur", "folder-tree"],
+    ["einstellungen", "/einstellungen#formulare", "Formulare", "file"]
+  ]; %>
+<% } %>
+
+<% if (!hasDeviceListTabs && tabs.length) { %>
+  <% const navTitle = projectTabs.includes(active) ? "Projekte" : documentationTabs.includes(active) ? "Dokumentation" : outputTabs.includes(active) ? "Export" : "System"; %>
+  <% const navSubtitle = projectTabs.includes(active) ? "Auswahl, Stammdaten und Projektvorgaben" : documentationTabs.includes(active) ? "Matrix, Anhänge und Nachweise" : outputTabs.includes(active) ? "PDF, Archiv und Ausgabe" : "Vorgaben und Vorlagen"; %>
+  <nav class="section-tabs" aria-label="Bereichsnavigation">
+    <div class="section-tabs-head">
+      <span><%= navTitle %></span>
+      <strong><%= navSubtitle %></strong>
+    </div>
+    <% tabs.forEach(([key, href, label, icon]) => { %>
+      <% const hrefCategory = href.includes("?kategorie=") ? decodeURIComponent(href.split("?kategorie=")[1] || "") : ""; %>
+      <% const isAttachmentTab = key === "anhaenge" && active === "anhaenge"; %>
+      <% const isCurrentAttachmentTab = isAttachmentTab
+        ? (hrefCategory ? selectedCategoryValue === hrefCategory : !selectedCategoryValue)
+        : active === key && !href.includes("#"); %>
+      <a class="<%= isCurrentAttachmentTab ? "active" : "" %>" href="<%= href %>"><%- include("icon", { name: icon || "file" }) %><span><%= label %></span></a>
+    <% }) %>
+    <% if (projectTabs.includes(active) && typeof projectSidebarProjects !== "undefined" && Array.isArray(projectSidebarProjects)) { %>
+      <% const activeProjects = projectSidebarProjects.filter((project) => project.status === "aktiv"); %>
+      <div class="section-tabs-group">
+        <div class="section-tabs-subhead">
+          <span>Projektmanager</span>
+          <form action="/projekte" method="post" class="section-plus-form" title="Neues Projekt">
+            <input type="hidden" name="projektname" value="Neues Projekt">
+            <input type="hidden" name="auftragGewerk" value="Elektrotechnik">
+            <button class="section-plus-button" type="submit" aria-label="Neues Projekt anlegen">+</button>
+          </form>
+        </div>
+        <% activeProjects.forEach((project) => { %>
+          <% const isCurrentProject = project.id === currentProjectId; %>
+          <form action="/projekte/<%= project.id %>/oeffnen" method="post">
+            <button class="section-project-item <%= isCurrentProject ? "active" : "" %>" type="submit">
+              <%- include("icon", { name: "project" }) %>
+              <span><%= project.projektname || project.id %></span>
+              <% if (isCurrentProject) { %><strong>aktiv</strong><% } %>
+            </button>
+          </form>
+        <% }) %>
+      </div>
+    <% } %>
+  </nav>
+<% } %>

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Projektarchiv | edoku</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <%- include("partials/header", { active }) %>
+    <main class="page compact-work-page">
+      <div class="page-title">
+        <p class="eyebrow">Sichern und Wiederherstellen</p>
+        <h1>Projektarchiv</h1>
+        <p class="page-subtitle">Projektpakete exportieren, Importordner validieren und vorhandene Sicherungen prüfen.</p>
+      </div>
+
+      <%- include("partials/flash", { flash }) %>
+      <%- include("partials/sectionTabs", { active }) %>
+
+      <div data-tabs="projektarchiv" class="tab-shell">
+        <section class="summary-cards compact-summary">
+          <div class="summary-card"><span>Projekt</span><strong><%= currentProjectId %></strong></div>
+          <div class="summary-card"><span>Exporte</span><strong><%= exports.length %></strong></div>
+          <div class="summary-card"><span>Importstatus</span><strong><%= validation && validation.ok ? "OK" : "-" %></strong></div>
+        </section>
+
+        <div class="tabs" role="tablist" aria-label="Projektarchivansichten">
+          <button class="tab-button" type="button" data-tab-target="exportieren">Exportieren</button>
+          <button class="tab-button" type="button" data-tab-target="importe">Importieren</button>
+          <button class="tab-button" type="button" data-tab-target="historie">Historie</button>
+        </div>
+
+        <section class="tab-panel" data-tab-panel="exportieren">
+          <div class="panel-head">
+            <div>
+              <h2>Projekt exportieren</h2>
+              <p>Aktuelles Projektpaket für <strong><%= currentProjectId %></strong> erzeugen.</p>
+            </div>
+          </div>
+          <form action="/projektarchiv/exportieren" method="post" class="stack-form">
+            <input type="hidden" name="projectId" value="<%= currentProjectId %>">
+            <label class="checkbox-card compact"><input type="checkbox" name="includeUploads" checked> Uploads einschließen</label>
+            <label class="checkbox-card compact"><input type="checkbox" name="includeGenerated" checked> generierte PDFs einschließen</label>
+            <label class="checkbox-card compact"><input type="checkbox" name="includeFinal" checked> finale PDFs einschließen</label>
+            <label class="checkbox-card compact"><input type="checkbox" name="createZip" checked> ZIP erzeugen vorbereiten</label>
+            <button type="submit">Projekt exportieren</button>
+          </form>
+        </section>
+
+        <section class="tab-panel" data-tab-panel="importe">
+          <div class="panel-head">
+            <div>
+              <h2>Projekt importieren</h2>
+              <p>Import aus einem entpackten Ordner innerhalb von <code>storage/imports</code>.</p>
+            </div>
+          </div>
+          <form action="/projektarchiv/validieren" method="post" class="inline-form">
+            <label>
+              Importordner
+              <input type="text" name="importOrdner" value="<%= importOrdner %>" placeholder="projekt_export">
+            </label>
+            <button type="submit">Validieren</button>
+          </form>
+
+          <% if (validation) { %>
+            <div class="status-panel <%= validation.ok ? "ok" : "warning" %>">
+              <h3>Validierung</h3>
+              <ul>
+                <li>manifest.json gefunden: <strong><%= validation.manifestFound ? "Ja" : "Nein" %></strong></li>
+                <li>Version kompatibel: <strong><%= validation.versionCompatible ? "Ja" : "Nein" %></strong></li>
+                <li>Benötigte Dateien vorhanden: <strong><%= validation.requiredFilesPresent ? "Ja" : "Nein" %></strong></li>
+                <li>Uploads vorhanden: <strong><%= validation.uploadsPresent ? "Ja" : "Nein" %></strong></li>
+                <li>Generated vorhanden: <strong><%= validation.generatedPresent ? "Ja" : "Nein" %></strong></li>
+                <li>Final vorhanden: <strong><%= validation.finalPresent ? "Ja" : "Nein" %></strong></li>
+              </ul>
+              <% if (validation.missingDataFiles && validation.missingDataFiles.length) { %>
+                <p>Fehlende Dateien: <%= validation.missingDataFiles.join(", ") %></p>
+              <% } %>
+              <% if (validation.error) { %>
+                <p><%= validation.error %></p>
+              <% } %>
+            </div>
+          <% } %>
+
+          <form action="/projektarchiv/importieren" method="post" class="export-actions">
+            <input type="hidden" name="importOrdner" value="<%= importOrdner %>">
+            <button type="submit">Projekt importieren</button>
+          </form>
+        </section>
+
+        <section class="tab-panel" data-tab-panel="historie">
+          <div class="panel-head">
+            <div>
+              <h2>Letzte Exporte</h2>
+              <p>Manifest-Downloads und lokale Exportpfade.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Exportdatum</th>
+                  <th>Projekt</th>
+                  <th>Dateiname</th>
+                  <th>Pfad</th>
+                  <th>Download</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (!exports.length) { %>
+                  <tr><td colspan="5">Noch keine Exporte vorhanden.</td></tr>
+                <% } %>
+                <% exports.forEach((item) => { %>
+                  <tr>
+                    <td><%= item.timestamp %></td>
+                    <td><%= item.projekt || currentProjectId %></td>
+                    <td><%= item.dateiname %></td>
+                    <td><%= item.pfad %></td>
+                    <td><a class="button-link" href="/projektarchiv/download?pfad=<%= encodeURIComponent(item.manifestPfad) %>">Manifest</a></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+    <%- include("partials/footer") %>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

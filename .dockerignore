@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+output
+storage/app.db
+storage/app.db-*
+storage/projects.json
+storage/exports
+storage/imports
+storage/users
+intern/tagesupdates/*.md
+.DS_Store
+.env

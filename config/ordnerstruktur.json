@@ -1,0 +1,25 @@
+{
+  "basisordner": "output/projekte/[projektnummer]_[projektname]",
+  "unterordner": [
+    "00_Projektdatei",
+    "01_Eingang",
+    "02_Config_Projekt",
+    "02_Config_Projekt/01_Betriebskarteien",
+    "02_Config_Projekt/02_Konformitaet_CE",
+    "02_Config_Projekt/03_Anlagenbeschreibung_Bedienung",
+    "02_Config_Projekt/04_Bedienung_Betrieb_Instandhaltung",
+    "02_Config_Projekt/05_Unfallverhuetungsvorschriften",
+    "02_Config_Projekt/06_Geraeteliste",
+    "02_Config_Projekt/07_Produkt_Datenblaetter",
+    "02_Config_Projekt/08_Abnahme_Maengelbeseitigung",
+    "02_Config_Projekt/09_Einweisungsprotokolle",
+    "02_Config_Projekt/10_Messprotokolle",
+    "02_Config_Projekt/11_Sonstige_Bescheinigungen",
+    "02_Config_Projekt/12_Bestandsplaene",
+    "02_Config_Projekt/13_Sonstiges",
+    "03_Manuell_einfuegen",
+    "04_Generiert",
+    "05_PDF_Merge",
+    "06_Final"
+  ]
+}

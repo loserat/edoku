@@ -1,0 +1,16 @@
+{
+  "projektname": "Bestandsdokumentation Elektro Musterobjekt",
+  "projektnummer": "ELT-2026-001",
+  "auftraggeber": "Musterstadt Immobilien GmbH",
+  "liegenschaft": "Verwaltungsgebaeude Nord",
+  "baumassnahme": "Aktualisierung Elektro-Bestandsunterlagen",
+  "massnahmeNr": "MN-1001",
+  "auftragsNr": "AN-2026-45",
+  "auftragGewerk": "Elektrotechnik",
+  "ortDerAusfuehrung": "Musterstrasse 12, 12345 Musterstadt",
+  "ausfuehrendeFirma": "Elektro Beispiel GmbH",
+  "firmenanschrift": "Industrieweg 5, 12345 Musterstadt",
+  "bearbeiter": "Max Mustermann",
+  "ortDatum": "",
+  "logoPfad": "public/img/logo.png"
+}

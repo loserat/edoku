@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gerätelisten | edoku</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <%- include("partials/header", { active }) %>
+    <main class="page wide device-list-page">
+      <%- include("partials/flash", { flash }) %>
+      <% const aktiveListen = geraetelisten.filter((liste) => liste.aktiv); %>
+      <%- include("partials/sectionTabs", { active, deviceListTabs: aktiveListen.length ? aktiveListen : geraetelisten }) %>
+
+      <% const positionenGesamt = geraetelisten.reduce((sum, liste) => sum + liste.positionen.length, 0); %>
+
+      <div data-tabs="geraetelisten" class="tab-shell">
+        <section class="summary-cards compact-summary device-summary" data-device-summary>
+          <div class="summary-card"><span>Listen</span><strong><%= geraetelisten.length %></strong></div>
+          <div class="summary-card"><span>Aktiv</span><strong><%= aktiveListen.length %></strong></div>
+          <div class="summary-card"><span>Positionen</span><strong><%= positionenGesamt %></strong></div>
+        </section>
+
+        <section class="tab-panel" data-device-dashboard-panel>
+          <div class="panel-head">
+            <div>
+              <h2>Dashboard</h2>
+              <p>Aktive Leistungsbereiche: <%= aktiveLeistungsbereiche.length ? aktiveLeistungsbereiche.join(", ") : "Keine Auswahl gespeichert" %></p>
+            </div>
+            <div class="toolbar split">
+              <form action="/geraetelisten/aktualisieren" method="post">
+                <button type="submit">Aus Leistungsbereichen aktualisieren</button>
+              </form>
+              <a class="button-link" href="/geraetelisten<%= nurAktive ? "" : "?aktiv=1" %>"><%= nurAktive ? "Alle anzeigen" : "Nur aktive anzeigen" %></a>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table data-sortable-table>
+              <thead>
+                <tr>
+                  <th data-sortable-column>Titel</th>
+                  <th data-sortable-column>Leistungsbereich</th>
+                  <th data-sortable-column>Kapitel</th>
+                  <th data-sortable-column>Aktiv</th>
+                  <th data-sortable-column>Export</th>
+                  <th data-sortable-column>Positionen</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% geraetelisten.forEach((liste) => { %>
+                  <tr>
+                    <td><%= liste.titel %></td>
+                    <td><%= liste.leistungsbereich %></td>
+                    <td><%= liste.kapitel %></td>
+                    <td><span class="badge <%= liste.aktiv ? "on" : "off" %>"><%= liste.aktiv ? "Ja" : "Nein" %></span></td>
+                    <td><%= liste.export ? "Ja" : "Nein" %></td>
+                    <td><%= liste.positionen.length %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="tab-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Geräteliste bearbeiten</h2>
+              <p>Geräteliste oben im Haupttab auswählen und Positionen direkt pflegen.</p>
+            </div>
+          </div>
+          <form action="/geraetelisten" method="post" data-autosave>
+            <% if (geraetelisten.length === 0) { %>
+              <p class="notice">Noch keine Gerätelisten vorhanden. Bitte aus Leistungsbereichen aktualisieren.</p>
+            <% } %>
+
+            <% geraetelisten.forEach((liste, listenIndex) => { %>
+              <% const listSuggestions = suggestions[liste.leistungsbereich] || { alleHersteller: [], alleSysteme: [], alleTypen: [] }; %>
+              <% const listFields = fieldProfiles[liste.leistungsbereich] || []; %>
+              <section class="edit-section <%= liste.aktiv ? "" : "is-inactive" %>" data-device-list-panel="<%= liste.id %>" data-suggestion-leistungsbereich="<%= liste.leistungsbereich %>">
+                <div class="edit-section-head">
+                  <div>
+                    <h2><%= liste.titel %></h2>
+                    <p><%= liste.leistungsbereich %> | Kapitel <%= liste.kapitel %></p>
+                    <% if (liste.herstellerVorauswahl || liste.systemartVorauswahl) { %>
+                      <p>Vorauswahl: <%= liste.herstellerVorauswahl || "-" %> / <%= liste.systemartVorauswahl || "-" %></p>
+                    <% } %>
+                  </div>
+                  <div class="list-tools">
+                    <div class="flag-row">
+                      <label class="cell-check">
+                        <input type="checkbox" name="geraetelisten[<%= listenIndex %>][aktiv]" <%= liste.aktiv ? "checked" : "" %>>
+                        <span>Aktiv</span>
+                      </label>
+                      <label class="cell-check">
+                        <input type="checkbox" name="geraetelisten[<%= listenIndex %>][export]" <%= liste.export ? "checked" : "" %>>
+                        <span>Export</span>
+                      </label>
+                    </div>
+                    <div class="add-position-control">
+                      <input type="number" min="1" max="25" value="1" aria-label="Anzahl Geräte">
+                      <button
+                        type="button"
+                        class="secondary"
+                        data-add-geraet-row
+                        data-list-index="<%= listenIndex %>"
+                        data-next-index="<%= liste.positionen.length %>"
+                        data-default-hersteller="<%= liste.herstellerVorauswahl || "" %>"
+                        data-default-system="<%= liste.systemartVorauswahl || "" %>"
+                        data-hersteller-list="geraeteliste-hersteller-<%= listenIndex %>"
+                        data-system-list="geraeteliste-system-<%= listenIndex %>"
+                        data-typ-list="geraeteliste-typ-<%= listenIndex %>"
+                        data-leistungsbereich="<%= liste.leistungsbereich %>">
+                        Geräte hinzufügen
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <input type="hidden" name="geraetelisten[<%= listenIndex %>][id]" value="<%= liste.id %>">
+                <input type="hidden" name="geraetelisten[<%= listenIndex %>][leistungsbereich]" value="<%= liste.leistungsbereich %>">
+                <input type="hidden" name="geraetelisten[<%= listenIndex %>][kapitel]" value="<%= liste.kapitel %>">
+                <input type="hidden" name="geraetelisten[<%= listenIndex %>][titel]" value="<%= liste.titel %>">
+                <input type="hidden" name="geraetelisten[<%= listenIndex %>][herstellerVorauswahl]" value="<%= liste.herstellerVorauswahl || "" %>">
+                <input type="hidden" name="geraetelisten[<%= listenIndex %>][systemartVorauswahl]" value="<%= liste.systemartVorauswahl || "" %>">
+
+                <datalist id="geraeteliste-hersteller-<%= listenIndex %>">
+                  <% listSuggestions.alleHersteller.forEach((value) => { %><option value="<%= value %>"></option><% }) %>
+                </datalist>
+                <datalist id="geraeteliste-system-<%= listenIndex %>">
+                  <% listSuggestions.alleSysteme.forEach((value) => { %><option value="<%= value %>"></option><% }) %>
+                </datalist>
+                <datalist id="geraeteliste-typ-<%= listenIndex %>">
+                  <% listSuggestions.alleTypen.forEach((value) => { %><option value="<%= value %>"></option><% }) %>
+                </datalist>
+
+                <div class="table-wrap">
+                  <table class="editable-table device-position-table" data-sortable-table>
+                    <thead>
+                      <tr>
+                        <th data-col="pos" data-sortable-column>Pos.</th>
+                        <% listFields.forEach((field) => { %>
+                          <th data-col="<%= field.name %>" data-sortable-column><%= field.label %></th>
+                        <% }) %>
+                        <th data-col="delete">Löschen</th>
+                      </tr>
+                    </thead>
+                    <tbody data-position-body="<%= listenIndex %>">
+                      <% liste.positionen.forEach((position, posIndex) => { %>
+                        <tr>
+                          <td data-col="pos"><input type="text" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][pos]" value="<%= position.pos %>"></td>
+                          <% listFields.forEach((field) => { %>
+                            <% const listAttr = field.suggest === "hersteller" ? `list="geraeteliste-hersteller-${listenIndex}" data-device-suggest="hersteller"` : field.suggest === "system" ? `list="geraeteliste-system-${listenIndex}" data-device-suggest="system"` : field.suggest === "typ" ? `list="geraeteliste-typ-${listenIndex}" data-device-suggest="typ"` : ""; %>
+                            <td data-col="<%= field.name %>"><input type="text" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][<%= field.name %>]" value="<%= position[field.name] || "" %>" <%- listAttr %>></td>
+                          <% }) %>
+                          <td data-col="delete">
+                            <label class="cell-check">
+                              <input type="checkbox" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][_delete]" value="1">
+                              <span>Löschen</span>
+                            </label>
+                          </td>
+                        </tr>
+                      <% }) %>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            <% }) %>
+          </form>
+        </section>
+      </div>
+    </main>
+    <%- include("partials/footer") %>
+    <script type="application/json" id="device-suggestions-json"><%- JSON.stringify(suggestions || {}) %></script>
+    <script type="application/json" id="device-field-profiles-json"><%- JSON.stringify(fieldProfiles || {}) %></script>
+    <datalist id="device-filtered-suggestions"></datalist>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+services:
+  edoku:
+    build: .
+    container_name: edoku_v1
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+      - ./output:/app/output
+      - ./templates:/app/templates
+      - ./storage:/app/storage
+    restart: unless-stopped
