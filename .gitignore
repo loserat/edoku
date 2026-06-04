@@ -15,8 +15,8 @@ storage/*
 !storage/README.md
 
 # Internal local notes
-intern/tagesupdates/*.md
-!intern/tagesupdates/README.md
+intern/
+docs/GITHUB_CHECKLISTE.md
 
 # Logs and temporary files
 *.log
