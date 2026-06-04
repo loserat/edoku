@@ -59,6 +59,7 @@ const {
 } = require("./services/attachmentService");
 const {
   DOCUMENT_ATTACHMENT_CATEGORIES,
+  buildDocumentationAttachmentEntries,
   defaultDocumentMetaForCategory,
   updateAttachmentDocumentMeta
 } = require("./services/documentAttachmentService");
@@ -190,6 +191,62 @@ function mergeStockwerkOptions(stockwerke, values = []) {
     ...normalizeStockwerke(stockwerke),
     ...values.map((value) => String(value || "").trim()).filter(Boolean)
   ])];
+}
+
+async function fileExistsForAttachment(relativePath) {
+  if (!relativePath) return false;
+  try {
+    await fsp.access(safeJoin(ROOT_DIR, relativePath));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function buildAttachmentViewModel(attachments, brandschutz, matrix) {
+  const tocEntries = buildDocumentationAttachmentEntries(matrix, attachments);
+  const tocByAttachmentId = new Map(tocEntries.map((entry) => [entry.attachmentId, entry]));
+  const rows = await Promise.all(normalizeAttachments(attachments).map(async (entry) => {
+    const assignedFoto1 = (brandschutz || []).filter((schottung) => schottung.foto_vorher === entry.relativePath);
+    const assignedFoto2 = (brandschutz || []).filter((schottung) => schottung.foto_nachher === entry.relativePath);
+    const tocEntry = tocByAttachmentId.get(entry.id);
+    const exists = await fileExistsForAttachment(entry.relativePath);
+    const isPdf = entry.mimeType === "application/pdf";
+    const isImage = entry.mimeType.startsWith("image/");
+
+    return {
+      ...entry,
+      exists,
+      isPdf,
+      isImage,
+      sizeKb: Math.max(1, Math.round(entry.size / 1024)),
+      uploadedLabel: entry.uploadedAt ? new Date(entry.uploadedAt).toLocaleString("de-DE") : "-",
+      tocEntry,
+      documentStatus: isPdf && tocEntry
+        ? `Kapitel ${tocEntry.displayKapitel || tocEntry.kapitel}`
+        : isPdf
+          ? "Nicht als Dokumentations-PDF einsortiert"
+          : "Bildanhang",
+      assignedFoto1,
+      assignedFoto2,
+      assignedCount: assignedFoto1.length + assignedFoto2.length
+    };
+  }));
+
+  const stats = {
+    total: rows.length,
+    pdfs: rows.filter((entry) => entry.isPdf).length,
+    images: rows.filter((entry) => entry.isImage).length,
+    export: rows.filter((entry) => entry.export !== false).length,
+    missing: rows.filter((entry) => !entry.exists).length,
+    assignedImages: rows.filter((entry) => entry.isImage && entry.assignedCount > 0).length
+  };
+  const countsByCategory = rows.reduce((counts, entry) => {
+    counts[entry.category] = (counts[entry.category] || 0) + 1;
+    return counts;
+  }, {});
+
+  return { rows, stats, countsByCategory };
 }
 
 async function currentFiles(req) {
@@ -925,17 +982,22 @@ app.get("/anhaenge", requireAuth, async (req, res, next) => {
     const attachmentCategories = [
       "Brandschutz",
       ...DOCUMENT_ATTACHMENT_CATEGORIES.map((entry) => entry.category),
+      "Fotos",
       "Pläne",
       "Nachweise",
       "Allgemein"
     ];
     const selectedKategorie = attachmentCategories.includes(req.query.kategorie) ? req.query.kategorie : "";
     const categoryDefaults = defaultDocumentMetaForCategory(selectedKategorie);
+    const attachmentView = await buildAttachmentViewModel(data.anhaenge, data.brandschutz, data.matrix);
+    const attachmentRows = selectedKategorie
+      ? attachmentView.rows.filter((entry) => entry.category === selectedKategorie)
+      : attachmentView.rows;
     res.render("anhaenge", {
       active: "anhaenge",
-      anhaenge: selectedKategorie
-        ? data.anhaenge.filter((entry) => entry.category === selectedKategorie)
-        : data.anhaenge,
+      anhaenge: attachmentRows,
+      attachmentStats: attachmentView.stats,
+      attachmentCounts: attachmentView.countsByCategory,
       attachmentCategories,
       documentAttachmentCategories: DOCUMENT_ATTACHMENT_CATEGORIES,
       categoryDefaults,
