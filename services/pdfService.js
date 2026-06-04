@@ -37,6 +37,12 @@ function activeExportDocs(matrix) {
     .sort((a, b) => a.sortierung - b.sortierung);
 }
 
+function isImportedDocumentPlaceholder(entry) {
+  const dokumenttyp = String(entry.dokumenttyp || "");
+  const formularart = String(entry.formularart || "");
+  return dokumenttyp === "Plan" && formularart === "Dateiliste" && Number(entry.ebene || 1) >= 2;
+}
+
 function chapterSortValue(kapitel, fallback = 999000) {
   const parts = String(kapitel || "")
     .split(".")
@@ -51,13 +57,25 @@ function chapterSortValue(kapitel, fallback = 999000) {
   }, 0);
 }
 
-function buildInhaltsverzeichnisEntries(matrix, geraetelisten = [], anhaenge = []) {
-  const activeLists = normalizeGeraetelisten(geraetelisten).filter((liste) => liste.aktiv && liste.export);
+function activeLeistungsbereicheSet(leistungsbereiche = {}) {
+  return new Set(Array.isArray(leistungsbereiche.aktiv) ? leistungsbereiche.aktiv : []);
+}
+
+function filterExportGeraetelisten(geraetelisten = [], leistungsbereiche = {}) {
+  const activeSet = activeLeistungsbereicheSet(leistungsbereiche);
+  return normalizeGeraetelisten(geraetelisten).filter((liste) => {
+    if (!liste.aktiv || !liste.export) return false;
+    return !activeSet.size || activeSet.has(liste.leistungsbereich);
+  });
+}
+
+function buildInhaltsverzeichnisEntries(matrix, geraetelisten = [], anhaenge = [], leistungsbereiche = {}) {
+  const activeLists = filterExportGeraetelisten(geraetelisten, leistungsbereiche);
   const matrixByKapitel = new Map((matrix || []).map((entry) => [String(entry.kapitel || ""), entry]));
   const tocBaseById = new Map();
 
   (matrix || [])
-    .filter((entry) => entry.aktiv && entry.export)
+    .filter((entry) => entry.aktiv && entry.export && !isImportedDocumentPlaceholder(entry))
     .forEach((entry) => tocBaseById.set(entry.id || `matrix-${entry.kapitel}`, entry));
 
   function ensureTocParent(kapitel, fallbackListe) {
@@ -128,17 +146,17 @@ function buildInhaltsverzeichnisEntries(matrix, geraetelisten = [], anhaenge = [
   });
 }
 
-function logicalDeviceListNumbers(matrix, geraetelisten = []) {
+function logicalDeviceListNumbers(matrix, geraetelisten = [], leistungsbereiche = {}) {
   return new Map(
-    buildInhaltsverzeichnisEntries(matrix, geraetelisten)
+    buildInhaltsverzeichnisEntries(matrix, geraetelisten, [], leistungsbereiche)
       .filter((entry) => String(entry.id || "").startsWith("toc-"))
       .map((entry) => [String(entry.id).replace(/^toc-/, ""), entry.displayKapitel || entry.kapitel])
   );
 }
 
-function logicalDocumentNumbers(matrix, geraetelisten = []) {
+function logicalDocumentNumbers(matrix, geraetelisten = [], leistungsbereiche = {}) {
   return new Map(
-    buildInhaltsverzeichnisEntries(matrix, geraetelisten)
+    buildInhaltsverzeichnisEntries(matrix, geraetelisten, [], leistungsbereiche)
       .filter((entry) => !String(entry.id || "").startsWith("toc-"))
       .map((entry) => [String(entry.originalKapitel || entry.kapitel), entry.displayKapitel || entry.kapitel])
   );
@@ -648,10 +666,10 @@ async function generateAnlagenbeschreibungPdf(rootDir, projekt, entry, leistungs
   return filePath;
 }
 
-async function generateInhaltsverzeichnis(rootDir, projekt, matrix, systemSettings = {}, geraetelisten = [], anhaenge = []) {
+async function generateInhaltsverzeichnis(rootDir, projekt, matrix, systemSettings = {}, geraetelisten = [], anhaenge = [], leistungsbereiche = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const filePath = path.join(paths.generatedPath, "Inhaltsverzeichnis.pdf");
-  const docs = buildInhaltsverzeichnisEntries(matrix, geraetelisten, anhaenge);
+  const docs = buildInhaltsverzeichnisEntries(matrix, geraetelisten, anhaenge, leistungsbereiche);
 
   await writePdf(filePath, "Inhaltsverzeichnis", (doc) => {
     writeProjectHeader(doc, projekt, rootDir, systemSettings);
@@ -989,11 +1007,11 @@ function drawCompactInfoGrid(doc, x, y, width, rows, columns = 3) {
   return columnIndex > 0 ? cursorY + rowHeight : cursorY;
 }
 
-async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSettings = {}, matrix = []) {
+async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSettings = {}, matrix = [], leistungsbereiche = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generated = [];
-  const listen = normalizeGeraetelisten(geraetelisten).filter((liste) => liste.aktiv && liste.export);
-  const logicalNumbers = logicalDeviceListNumbers(matrix, listen);
+  const listen = filterExportGeraetelisten(geraetelisten, leistungsbereiche);
+  const logicalNumbers = logicalDeviceListNumbers(matrix, listen, leistungsbereiche);
   const generatedDir = path.join(paths.generatedPath, "Geraetelisten");
   await clearGeneratedPdfs(generatedDir);
 
@@ -1059,11 +1077,11 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
   return generated;
 }
 
-async function generateBrandschutzPdf(rootDir, projekt, brandschutz, systemSettings = {}, matrix = [], geraetelisten = []) {
+async function generateBrandschutzPdf(rootDir, projekt, brandschutz, systemSettings = {}, matrix = [], geraetelisten = [], leistungsbereiche = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generatedDir = path.join(paths.generatedPath, "Brandschutz");
   await clearGeneratedPdfs(generatedDir);
-  const displayKapitel = logicalDocumentNumbers(matrix, geraetelisten).get("13.5") || "13.5";
+  const displayKapitel = logicalDocumentNumbers(matrix, geraetelisten, leistungsbereiche).get("13.5") || "13.5";
   const filePath = path.join(generatedDir, `${String(displayKapitel).replaceAll(".", "_")}_Bilddokumentation_Brandschottungen.pdf`);
   const entries = normalizeBrandschutz(brandschutz).filter((entry) => entry.aktiv);
 
