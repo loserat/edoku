@@ -654,11 +654,11 @@ async function deletePdfFilesRecursive(folderPath) {
 async function generateCompleteDocumentation(rootDir, data) {
   const generated = [];
   await createProjectFolder(rootDir, data.projekt);
-  generated.push(...await generateInhaltsverzeichnis(rootDir, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge));
+  generated.push(...await generateInhaltsverzeichnis(rootDir, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche));
   generated.push(...await generateFormularPdfs(rootDir, data.projekt, data.matrix, data.leistungsbereiche, data.systemConfig, data.projektSysteme, data.templates, data.systemSettings));
-  generated.push(...await generateGeraetelisten(rootDir, data.projekt, data.geraetelisten, data.systemSettings, data.matrix));
-  generated.push(...await generateBrandschutzPdf(rootDir, data.projekt, data.brandschutz, data.systemSettings, data.matrix, data.geraetelisten));
-  await buildExportliste(rootDir, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge);
+  generated.push(...await generateGeraetelisten(rootDir, data.projekt, data.geraetelisten, data.systemSettings, data.matrix, data.leistungsbereiche));
+  generated.push(...await generateBrandschutzPdf(rootDir, data.projekt, data.brandschutz, data.systemSettings, data.matrix, data.geraetelisten, data.leistungsbereiche));
+  await buildExportliste(rootDir, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche);
   return generated;
 }
 
@@ -682,7 +682,7 @@ app.post("/export/pdfs-loeschen", requireAuth, async (req, res) => {
     const data = await loadCurrent(req);
     const paths = await createProjectFolder(ROOT_DIR, data.projekt);
     const deleted = await deletePdfFilesRecursive(paths.generatedPath) + await deletePdfFilesRecursive(paths.finalPath);
-    await buildExportliste(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge);
+    await buildExportliste(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche);
     redirectWithFlash(res, "/export#pdf", "success", `${deleted} PDF-Datei(en) wurden gelöscht.`);
   } catch (error) {
     fail(req, res, "/export#aktionen", error);
@@ -691,7 +691,7 @@ app.post("/export/pdfs-loeschen", requireAuth, async (req, res) => {
 
 app.post("/export/inhaltsverzeichnis", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
-  await generateInhaltsverzeichnis(ROOT_DIR, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge);
+  await generateInhaltsverzeichnis(ROOT_DIR, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche);
   redirectWithFlash(res, "/export#pdf", "success", "Inhaltsverzeichnis wurde generiert.");
 });
 
@@ -703,19 +703,19 @@ app.post("/export/formulare", requireAuth, async (req, res) => {
 
 app.post("/export/geraetelisten", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
-  await generateGeraetelisten(ROOT_DIR, data.projekt, data.geraetelisten, data.systemSettings, data.matrix);
+  await generateGeraetelisten(ROOT_DIR, data.projekt, data.geraetelisten, data.systemSettings, data.matrix, data.leistungsbereiche);
   redirectWithFlash(res, "/export#pdf", "success", "Gerätelisten wurden generiert.");
 });
 
 app.post("/export/brandschutz", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
-  await generateBrandschutzPdf(ROOT_DIR, data.projekt, data.brandschutz, data.systemSettings, data.matrix, data.geraetelisten);
+  await generateBrandschutzPdf(ROOT_DIR, data.projekt, data.brandschutz, data.systemSettings, data.matrix, data.geraetelisten, data.leistungsbereiche);
   redirectWithFlash(res, "/export#pdf", "success", "Brandschutzdokumentation wurde generiert.");
 });
 
 app.post("/export/exportliste", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
-  await buildExportliste(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge);
+  await buildExportliste(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche);
   redirectWithFlash(res, "/export#liste", "success", "Exportliste wurde aktualisiert.");
 });
 

@@ -4,6 +4,7 @@ const { chapterFolderForKapitel, createProjectFolder, getProjectPaths } = requir
 const { writeJson } = require("./jsonService");
 const { applyLogicalChapterNumbers, sortDocuments } = require("./chapterNumberingService");
 const { buildDocumentationAttachmentEntries } = require("./documentAttachmentService");
+const { normalizeGeraetelisten } = require("./geraetelistenService");
 
 async function listPdfFiles(dir) {
   try {
@@ -55,14 +56,44 @@ function metadataForEntry(entry, projektSysteme) {
   };
 }
 
-async function buildExportliste(rootDir, projekt, matrix, exportlistePath, projektSysteme = [], anhaenge = []) {
+function isImportedDocumentPlaceholder(entry) {
+  return String(entry.dokumenttyp || "") === "Plan"
+    && String(entry.formularart || "") === "Dateiliste"
+    && Number(entry.ebene || 1) >= 2;
+}
+
+function activeLeistungsbereicheSet(leistungsbereiche = {}) {
+  return new Set(Array.isArray(leistungsbereiche.aktiv) ? leistungsbereiche.aktiv : []);
+}
+
+function isGeraetelistenDocumentAvailable(entry, geraetelisten = [], leistungsbereiche = {}) {
+  if (!String(entry.quelle || "").includes("geraetelisten.json")) return true;
+  const activeSet = activeLeistungsbereicheSet(leistungsbereiche);
+  return normalizeGeraetelisten(geraetelisten).some((liste) => {
+    if (!liste.aktiv || !liste.export) return false;
+    if (activeSet.size && !activeSet.has(liste.leistungsbereich)) return false;
+    return liste.leistungsbereich === entry.leistungsbereich
+      || String(liste.kapitel || "") === String(entry.originalKapitel || entry.kapitel || "");
+  });
+}
+
+async function sourceExists(rootDir, relativePath) {
+  if (!relativePath) return false;
+  return fs.access(path.join(rootDir, relativePath)).then(() => true).catch(() => false);
+}
+
+async function buildExportliste(rootDir, projekt, matrix, exportlistePath, projektSysteme = [], anhaenge = [], geraetelisten = [], leistungsbereiche = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generated = await listPdfFiles(paths.generatedPath);
   const external = await listPdfFiles(paths.configPath);
-  const activeDocs = sortDocuments(applyLogicalChapterNumbers(matrix, { exportOnly: true }).filter((entry) => entry.aktiv && entry.export));
+  const activeDocs = sortDocuments(applyLogicalChapterNumbers(matrix, { exportOnly: true }).filter((entry) => {
+    if (!entry.aktiv || !entry.export) return false;
+    if (isImportedDocumentPlaceholder(entry)) return false;
+    return isGeraetelistenDocumentAvailable(entry, geraetelisten, leistungsbereiche);
+  }));
   const usedFiles = new Set();
 
-  const entries = activeDocs.map((entry, index) => {
+  const entries = activeDocs.map((entry) => {
     const generatedMatch = matchByKapitel(generated, entry.kapitel);
     const chapterFolder = chapterFolderForKapitel(entry.kapitel);
     const externalMatch = external.find((file) => file.includes(`${path.sep}${chapterFolder}${path.sep}`));
@@ -70,7 +101,7 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
     if (found) usedFiles.add(found);
 
     return {
-      reihenfolge: index + 1,
+      reihenfolge: 0,
       kapitel: entry.displayKapitel || entry.kapitel,
       originalKapitel: entry.originalKapitel || entry.kapitel,
       titel: entry.titel,
@@ -82,27 +113,31 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
     };
   });
 
-  buildDocumentationAttachmentEntries(matrix, anhaenge).forEach((entry) => {
+  const attachmentEntries = await Promise.all(buildDocumentationAttachmentEntries(matrix, anhaenge).map(async (entry) => ({
+    reihenfolge: 0,
+    kapitel: entry.displayKapitel || entry.kapitel,
+    originalKapitel: entry.originalKapitel || "",
+    titel: entry.titel,
+    dateipfad: entry.dateipfad,
+    quelle: "import",
+    status: await sourceExists(rootDir, entry.dateipfad) ? "vorhanden" : "fehlt",
+    pflicht: false,
+    leistungsbereich: entry.leistungsbereich || "Dokumentation",
+    hersteller: "",
+    systemart: "",
+    dokumentarten: [entry.dokumenttyp].filter(Boolean)
+  })));
+
+  attachmentEntries.forEach((entry) => {
     entries.push({
-      reihenfolge: entries.length + 1,
-      kapitel: entry.displayKapitel || entry.kapitel,
-      originalKapitel: entry.originalKapitel || "",
-      titel: entry.titel,
-      dateipfad: entry.dateipfad,
-      quelle: "import",
-      status: entry.dateipfad ? "vorhanden" : "fehlt",
-      pflicht: false,
-      leistungsbereich: entry.leistungsbereich || "Dokumentation",
-      hersteller: "",
-      systemart: "",
-      dokumentarten: [entry.dokumenttyp].filter(Boolean)
+      ...entry
     });
   });
 
   [...generated, ...external].forEach((file) => {
     if (usedFiles.has(file)) return;
     entries.push({
-      reihenfolge: entries.length + 1,
+      reihenfolge: 0,
       kapitel: "",
       originalKapitel: "",
       titel: path.basename(file, ".pdf"),
@@ -115,6 +150,17 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
       systemart: "",
       dokumentarten: []
     });
+  });
+
+  entries.sort((a, b) => {
+    const aHasKapitel = Boolean(String(a.kapitel || "").trim());
+    const bHasKapitel = Boolean(String(b.kapitel || "").trim());
+    if (aHasKapitel !== bHasKapitel) return aHasKapitel ? -1 : 1;
+    return String(a.kapitel || "").localeCompare(String(b.kapitel || ""), "de", { numeric: true })
+      || String(a.titel || "").localeCompare(String(b.titel || ""), "de", { sensitivity: "base" });
+  });
+  entries.forEach((entry, index) => {
+    entry.reihenfolge = index + 1;
   });
 
   await writeJson(exportlistePath, entries);
