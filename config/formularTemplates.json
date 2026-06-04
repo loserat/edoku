@@ -1,0 +1,171 @@
+{
+  "konformitaet": {
+    "name": "Konformitätserklärung",
+    "titelPraefix": "",
+    "titelFallback": "Konformitätserklärung",
+    "showProjectHeader": true,
+    "showLeistungsbereich": true,
+    "showNormen": true,
+    "showSignature": true,
+    "showFooter": true,
+    "fontSizeTitle": 20,
+    "fontSizeBody": 11,
+    "margin": 48,
+    "spacing": 1,
+    "titleAlign": "center",
+    "bodyText": "Hiermit wird bestätigt, dass die ausgeführten Leistungen im oben genannten Leistungsbereich entsprechend den öffentlich-rechtlichen Anforderungen, den allgemein anerkannten Regeln der Technik sowie den einschlägigen technischen Bestimmungen ausgeführt wurden.",
+    "textVarianten": {
+      "default": {
+        "label": "Standard",
+        "match": [],
+        "text": "Hiermit wird bestätigt, dass die ausgeführten Leistungen im oben genannten Leistungsbereich entsprechend den öffentlich-rechtlichen Anforderungen, den allgemein anerkannten Regeln der Technik sowie den einschlägigen technischen Bestimmungen ausgeführt wurden."
+      },
+      "elektroinstallation": {
+        "label": "Elektroinstallation / DIN VDE 0100",
+        "match": [
+          "Elektroinstallation / DIN VDE 0100"
+        ],
+        "text": "Hiermit wird bestätigt, dass die elektrische Anlage nach DIN VDE 0100, den allgemein anerkannten Regeln der Technik sowie den projektspezifischen Vorgaben errichtet und dokumentiert wurde."
+      },
+      "sicherheitsbeleuchtung": {
+        "label": "Sicherheitsbeleuchtung / DIN EN 1838",
+        "match": [
+          "Sicherheitsbeleuchtung"
+        ],
+        "text": "Hiermit wird bestätigt, dass die Sicherheitsbeleuchtungsanlage nach DIN EN 1838 sowie nach den einschlägigen technischen Regeln, Herstellerangaben und projektspezifischen Anforderungen ausgeführt und dokumentiert wurde."
+      },
+      "kabeltragsysteme": {
+        "label": "Kabeltragsysteme / DIN EN 61537",
+        "match": [
+          "Kabeltragsysteme / Verlegesysteme"
+        ],
+        "text": "Hiermit wird bestätigt, dass die Kabeltragsysteme und Verlegesysteme nach DIN EN 61537, den Montagevorgaben der Hersteller und den projektspezifischen Anforderungen ausgeführt wurden."
+      },
+      "kabeltragsystemeFunktionserhalt": {
+        "label": "Kabeltragsysteme Funktionserhalt / DIN 4102-12",
+        "match": [
+          "Kabeltragsysteme / Verlegesysteme mit Funktionserhalt"
+        ],
+        "text": "Hiermit wird bestätigt, dass die Kabeltragsysteme und Verlegesysteme mit Funktionserhalt nach DIN 4102-12 sowie den Systemzulassungen und Montagevorgaben ausgeführt und dokumentiert wurden."
+      },
+      "verteilungen": {
+        "label": "Niederspannungsschaltanlagen / DIN EN 61439",
+        "match": [
+          "Niederspannungsschaltanlagen / Verteilungen"
+        ],
+        "text": "Hiermit wird bestätigt, dass die Niederspannungsschaltanlagen und Verteilungen nach DIN EN 61439, Herstellerangaben und projektspezifischen Vorgaben ausgeführt und gekennzeichnet wurden."
+      },
+      "erdung": {
+        "label": "Erdung / Potentialausgleich",
+        "match": [
+          "Erdung / Potentialausgleich"
+        ],
+        "text": "Hiermit wird bestätigt, dass Erdung und Potentialausgleich nach DIN VDE 0100-410, DIN VDE 0100-540 und DIN 18014 sowie den projektspezifischen Anforderungen hergestellt und dokumentiert wurden."
+      },
+      "blitzschutz": {
+        "label": "Blitzschutzanlage",
+        "match": [
+          "Blitzschutzanlage"
+        ],
+        "text": "Hiermit wird bestätigt, dass die Blitzschutzanlage nach DIN EN 62305 bzw. DIN VDE 0185-305 sowie den projektspezifischen Anforderungen ausgeführt und dokumentiert wurde."
+      },
+      "datentechnik": {
+        "label": "Datentechnik / Kommunikationsverkabelung",
+        "match": [
+          "Datentechnik / Kommunikationsverkabelung",
+          "Telekommunikation",
+          "Breitbandkommunikationsanlage"
+        ],
+        "text": "Hiermit wird bestätigt, dass die Kommunikations- und Datentechnik nach DIN EN 50173, ISO/IEC 11801 und DIN EN 50174 sowie den vereinbarten Systemvorgaben ausgeführt und dokumentiert wurde."
+      },
+      "beleuchtung": {
+        "label": "Beleuchtungsanlagen / ASR A3.4 / DIN EN 12464",
+        "match": [
+          "Beleuchtungsanlage",
+          "Präsenzmelder"
+        ],
+        "text": "Hiermit wird bestätigt, dass die Beleuchtungsanlage unter Berücksichtigung der ASR A3.4 sowie der DIN EN 12464 ausgeführt und dokumentiert wurde."
+      },
+      "brandmeldeanlage": {
+        "label": "Brandmeldeanlage",
+        "match": [
+          "Brandmeldeanlage"
+        ],
+        "text": "Hiermit wird bestätigt, dass die Brandmeldeanlage nach DIN 14675, DIN VDE 0833 Teil 1 und 2 sowie DIN EN 54 ausgeführt und dokumentiert wurde."
+      },
+      "gefahrenmeldeanlage": {
+        "label": "Gefahrenmelde- / Alarmanlage",
+        "match": [
+          "Gefahrenmelde- / Alarmanlage"
+        ],
+        "text": "Hiermit wird bestätigt, dass die Gefahrenmelde- und Alarmanlage nach DIN VDE 0833 Teil 1 und 3 sowie den projektspezifischen Anforderungen ausgeführt und dokumentiert wurde."
+      },
+      "rauchwarnmelder": {
+        "label": "Rauchwarnmelderanlage",
+        "match": [
+          "Rauchwarnmelderanlage"
+        ],
+        "text": "Hiermit wird bestätigt, dass die Rauchwarnmelderanlage nach DIN 14676 sowie den projektspezifischen Anforderungen ausgeführt und dokumentiert wurde."
+      }
+    },
+    "normenFallback": "siehe Vertragsunterlagen, Regelwerke und Herstellerangaben",
+    "signatureLabel": "Firmenstempel / Unterschrift:"
+  },
+  "ceBestaetigung": {
+    "name": "CE-Bestätigung",
+    "titelPraefix": "",
+    "titelFallback": "CE-Bestätigung",
+    "showProjectHeader": true,
+    "showSignature": true,
+    "showFooter": true,
+    "fontSizeTitle": 18,
+    "fontSizeBody": 10,
+    "margin": 48,
+    "spacing": 1,
+    "titleAlign": "center",
+    "bodyText": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst.",
+    "signatureLabel": "Firmenstempel / Unterschrift:",
+    "normenFallback": "",
+    "textVarianten": {},
+    "showLeistungsbereich": false,
+    "showNormen": false
+  },
+  "dguv": {
+    "name": "DGUV-Bestätigung",
+    "titelPraefix": "",
+    "titelFallback": "Bestätigung nach DGUV Vorschrift 3",
+    "showProjectHeader": true,
+    "showSignature": true,
+    "showFooter": true,
+    "fontSizeTitle": 18,
+    "fontSizeBody": 10,
+    "margin": 48,
+    "spacing": 1,
+    "titleAlign": "center",
+    "bodyText": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind.",
+    "signatureLabel": "Firmenstempel / Unterschrift:",
+    "normenFallback": "",
+    "textVarianten": {},
+    "showLeistungsbereich": false,
+    "showNormen": false
+  },
+  "errichter": {
+    "name": "Errichterbestätigung",
+    "titelPraefix": "",
+    "titelFallback": "Errichterbestätigung",
+    "showProjectHeader": true,
+    "showSignature": true,
+    "showFooter": true,
+    "fontSizeTitle": 18,
+    "fontSizeBody": 10,
+    "margin": 48,
+    "spacing": 1,
+    "titleAlign": "center",
+    "bodyText": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden.",
+    "signatureLabel": "Firmenstempel / Unterschrift:",
+    "normenFallback": "",
+    "textVarianten": {},
+    "showLeistungsbereich": false,
+    "showNormen": false
+  }
+}

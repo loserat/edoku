@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard | edoku</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <%- include("partials/header", { active }) %>
+    <main class="page wide">
+      <div class="page-title">
+        <p class="eyebrow">Status</p>
+        <h1>Dashboard</h1>
+      </div>
+      <%- include("partials/flash", { flash }) %>
+
+      <section class="completion-panel" aria-label="Fertigstellungsgrad der Dokumentation">
+        <div class="completion-main">
+          <div>
+            <p class="eyebrow">Dokumentationsstand</p>
+            <h2><%= stats.completion.percent %>% fertiggestellt</h2>
+            <p><%= stats.completion.missing %> von <%= stats.completion.total %> notwendigen Angaben oder Nachweisen fehlen noch.</p>
+          </div>
+          <strong><%= stats.completion.percent %>%</strong>
+        </div>
+        <div class="completion-bar" role="progressbar" aria-valuenow="<%= stats.completion.percent %>" aria-valuemin="0" aria-valuemax="100">
+          <span style="width: <%= stats.completion.percent %>%"></span>
+        </div>
+        <div class="completion-checks">
+          <% stats.completion.checks.forEach((check) => { %>
+            <div class="<%= check.missing ? "warning" : "success" %>">
+              <span><%= check.label %></span>
+              <strong><%= check.percent %>%</strong>
+              <small><%= check.hint %></small>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+
+      <section class="next-step-panel">
+        <div>
+          <p class="eyebrow">Nächster Schritt</p>
+          <h2><%= stats.nextStep.nr %>. <%= stats.nextStep.titel %></h2>
+          <p><%= stats.nextStep.beschreibung %></p>
+        </div>
+        <a class="button-link" href="<%= stats.nextStep.href %>">Öffnen</a>
+      </section>
+
+      <section class="workflow-board" aria-label="Arbeitsablauf">
+        <% stats.workflow.forEach((step) => { %>
+          <a class="workflow-step <%= step.status %>" href="<%= step.href %>">
+            <span class="workflow-number"><%= step.nr %></span>
+            <span class="workflow-content">
+              <strong><%= step.titel %></strong>
+              <small><%= step.kennzahl %></small>
+            </span>
+            <span class="workflow-status"><%= step.status === "fertig" ? "Fertig" : step.status === "in-arbeit" ? "In Arbeit" : "Offen" %></span>
+          </a>
+        <% }) %>
+      </section>
+
+      <section class="dashboard-grid">
+        <article class="dashboard-card">
+          <h2>Projekt</h2>
+          <dl>
+            <dt>Projektname</dt><dd><%= stats.projekt.projektname %></dd>
+            <dt>Projektnummer</dt><dd><%= stats.projekt.projektnummer %></dd>
+            <dt>Auftraggeber</dt><dd><%= stats.projekt.auftraggeber %></dd>
+            <dt>Liegenschaft</dt><dd><%= stats.projekt.liegenschaft %></dd>
+            <dt>Baumaßnahme</dt><dd><%= stats.projekt.baumassnahme %></dd>
+          </dl>
+        </article>
+
+        <article class="dashboard-card">
+          <h2>Leistungsbereiche</h2>
+          <p class="metric"><%= stats.leistungsbereiche.aktiv %></p>
+          <p class="muted">aktive Leistungsbereiche</p>
+          <ul class="compact-list">
+            <% stats.leistungsbereiche.liste.forEach((item) => { %>
+              <li><%= item %></li>
+            <% }) %>
+          </ul>
+        </article>
+
+        <article class="dashboard-card">
+          <h2>Dokumente</h2>
+          <div class="metric-row"><span>Aktiv</span><strong><%= stats.dokumente.aktiv %></strong></div>
+          <div class="metric-row"><span>Export</span><strong><%= stats.dokumente.export %></strong></div>
+          <div class="metric-row"><span>Pflicht</span><strong><%= stats.dokumente.pflicht %></strong></div>
+          <div class="metric-row warning"><span>Pflicht fehlt</span><strong><%= stats.dokumente.fehlendePflicht %></strong></div>
+        </article>
+
+        <article class="dashboard-card">
+          <h2>Gerätelisten</h2>
+          <div class="metric-row"><span>Gesamt</span><strong><%= stats.geraetelisten.gesamt %></strong></div>
+          <div class="metric-row"><span>Aktiv</span><strong><%= stats.geraetelisten.aktiv %></strong></div>
+          <div class="metric-row"><span>Leer</span><strong><%= stats.geraetelisten.leer %></strong></div>
+        </article>
+
+        <article class="dashboard-card">
+          <h2>Brandschutz</h2>
+          <div class="metric-row"><span>Brandschottungen</span><strong><%= stats.brandschutz.gesamt %></strong></div>
+          <div class="metric-row warning"><span>Unvollständig</span><strong><%= stats.brandschutz.fehlendePflichtangaben %></strong></div>
+        </article>
+
+        <article class="dashboard-card">
+          <h2>Exportstatus</h2>
+          <div class="metric-row"><span>Einträge</span><strong><%= stats.export.gesamt %></strong></div>
+          <div class="metric-row success"><span>Vorhanden</span><strong><%= stats.export.vorhanden %></strong></div>
+          <div class="metric-row warning"><span>Fehlt</span><strong><%= stats.export.fehlt %></strong></div>
+        </article>
+      </section>
+    </main>
+    <%- include("partials/footer") %>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

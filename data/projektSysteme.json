@@ -1,0 +1,502 @@
+[
+  {
+    "leistungsbereich": "Brandschutzabschottungen",
+    "code": "BS",
+    "aktiv": false,
+    "hersteller": "ZAPP-ZIMMERMANN",
+    "systemart": "Kabelabschottung",
+    "dokumentarten": [
+      "Montageanleitung",
+      "Allgemeine bauaufsichtliche Zulassung / ETA / abZ",
+      "Leistungserklärung",
+      "Sicherheitsdatenblatt",
+      "Übereinstimmungserklärung",
+      "Produktdatenblatt",
+      "Bilddokumentation"
+    ],
+    "kapitel": [
+      "11.3",
+      "13.1",
+      "13.2",
+      "13.3",
+      "13.4",
+      "13.5"
+    ],
+    "geraetelisteKapitel": "13.5",
+    "herstellerOptionen": [
+      "ZAPP-ZIMMERMANN",
+      "OBO Bettermann",
+      "Hilti",
+      "Wichmann"
+    ]
+  },
+  {
+    "leistungsbereich": "Kabeltragsysteme / Verlegesysteme",
+    "code": "KTS",
+    "aktiv": true,
+    "hersteller": "OBO Bettermann",
+    "systemart": "Kabelrinne",
+    "dokumentarten": [
+      "Produktdatenblatt",
+      "Montageanleitung",
+      "Konformitätserklärung",
+      "CE-Bestätigung",
+      "Brandschutznachweis bei Funktionserhalt",
+      "Systemzulassung, falls erforderlich"
+    ],
+    "kapitel": [
+      "2.3",
+      "3.1",
+      "6.4",
+      "7.4",
+      "12.2"
+    ],
+    "geraetelisteKapitel": "6.4",
+    "herstellerOptionen": [
+      "OBO Bettermann",
+      "Niedax"
+    ],
+    "normen": [
+      "DIN EN 61537"
+    ]
+  },
+  {
+    "leistungsbereich": "Sicherheitsbeleuchtung",
+    "code": "SIBE",
+    "aktiv": true,
+    "hersteller": "Sikora",
+    "systemart": "Einzelbatterieleuchten",
+    "dokumentarten": [
+      "Produktdatenblatt",
+      "Montageanleitung",
+      "Bedienungsanleitung",
+      "Betriebsanleitung",
+      "Wartungsanweisung",
+      "Konformitätserklärung",
+      "CE-Bestätigung",
+      "Einweisungsprotokoll",
+      "Prüfbuch / Prüfprotokoll"
+    ],
+    "kapitel": [
+      "2.2",
+      "4.1",
+      "6.5",
+      "7.5",
+      "9.1",
+      "10.3",
+      "11.1",
+      "12.2"
+    ],
+    "geraetelisteKapitel": "6.5",
+    "herstellerOptionen": [
+      "Sikora",
+      "INOTEC",
+      "Eaton / CEAG"
+    ],
+    "normen": [
+      "DIN EN 1838"
+    ]
+  },
+  {
+    "leistungsbereich": "Präsenzmelder",
+    "code": "PM",
+    "aktiv": true,
+    "hersteller": "ESYLUX",
+    "systemart": "230 V",
+    "dokumentarten": [
+      "Produktdatenblatt",
+      "Montageanleitung",
+      "Bedienungsanleitung",
+      "Parametrierhinweis",
+      "Konformitätserklärung",
+      "CE-Bestätigung"
+    ],
+    "kapitel": [
+      "4.2",
+      "6.4",
+      "7.4",
+      "12.2"
+    ],
+    "geraetelisteKapitel": "6.4",
+    "herstellerOptionen": [
+      "ESYLUX",
+      "B.E.G. LUXOMAT",
+      "Theben",
+      "Gira",
+      "Jung",
+      "Busch-Jaeger / ABB",
+      "MDT",
+      "Steinel"
+    ],
+    "normen": [
+      "ASR A3.4",
+      "DIN EN 12464-1"
+    ]
+  },
+  {
+    "leistungsbereich": "Datentechnik / Kommunikationsverkabelung",
+    "code": "DATA",
+    "aktiv": false,
+    "hersteller": "R&M / Reichle & De-Massari",
+    "systemart": "Kupferverkabelung",
+    "dokumentarten": [
+      "Produktdatenblatt",
+      "Montageanleitung",
+      "Systemgarantie, falls vorhanden",
+      "Messprotokoll",
+      "Kalibrierzertifikat Messgerät",
+      "Konformitätserklärung",
+      "CE-Bestätigung"
+    ],
+    "kapitel": [
+      "2.6",
+      "6.13",
+      "7.13",
+      "10.2",
+      "11.4",
+      "12.1.3"
+    ],
+    "geraetelisteKapitel": "6.13",
+    "herstellerOptionen": [
+      "R&M / Reichle & De-Massari",
+      "Telegärtner",
+      "Metz Connect",
+      "Dätwyler",
+      "Rutenbeck",
+      "Leoni / Kerpen",
+      "Corning",
+      "Panduit",
+      "CommScope",
+      "Draka / Prysmian",
+      "Nexans"
+    ],
+    "normen": [
+      "DIN EN 50173",
+      "ISO/IEC 11801",
+      "DIN EN 50174"
+    ]
+  },
+  {
+    "leistungsbereich": "Niederspannungsschaltanlagen / Verteilungen",
+    "code": "NSHV",
+    "aktiv": true,
+    "hersteller": "Hager",
+    "systemart": "NSHV",
+    "dokumentarten": [
+      "Produktdatenblatt",
+      "Aufbauplan",
+      "Stromlaufplan",
+      "Verteilerplan",
+      "Stückliste",
+      "CE-Bestätigung",
+      "Konformitätserklärung",
+      "Herstellererklärung",
+      "Prüfprotokoll"
+    ],
+    "kapitel": [
+      "2.4",
+      "6.3",
+      "7.3",
+      "10.1",
+      "12.1.1",
+      "12.3"
+    ],
+    "geraetelisteKapitel": "6.3",
+    "herstellerOptionen": [
+      "Hager",
+      "ABB / Striebel & John",
+      "Siemens",
+      "Schneider Electric",
+      "Eaton",
+      "Hensel",
+      "Rittal",
+      "Spelsberg"
+    ],
+    "normen": [
+      "DIN EN 61439"
+    ]
+  },
+  {
+    "leistungsbereich": "Beleuchtungsanlage",
+    "code": "BEL",
+    "aktiv": false,
+    "hersteller": "TRILUX",
+    "systemart": "Innenleuchte",
+    "dokumentarten": [
+      "Produktdatenblatt",
+      "Montageanleitung",
+      "Bedienungsanleitung",
+      "CE-Bestätigung",
+      "Konformitätserklärung",
+      "Lichtberechnung, falls vorhanden",
+      "Messprotokoll Beleuchtungsstärke"
+    ],
+    "kapitel": [
+      "6.5",
+      "7.5",
+      "10.3",
+      "12.2"
+    ],
+    "geraetelisteKapitel": "6.5",
+    "herstellerOptionen": [
+      "TRILUX",
+      "RZB",
+      "SITECO",
+      "Zumtobel",
+      "LEDVANCE",
+      "Regiolux",
+      "Schuch",
+      "Performance in Lighting"
+    ],
+    "normen": [
+      "ASR A3.4",
+      "DIN EN 12464-1",
+      "DIN EN 12464-2"
+    ]
+  },
+  {
+    "leistungsbereich": "Erdung / Potentialausgleich",
+    "code": "ERD",
+    "aktiv": true,
+    "hersteller": "DEHN",
+    "systemart": "Potentialausgleich",
+    "dokumentarten": [
+      "Produktdatenblatt",
+      "Montageanleitung",
+      "Prüfprotokoll",
+      "Messprotokoll Erdungsanlage",
+      "Konformitätserklärung",
+      "CE-Bestätigung",
+      "Bestandsplan Potentialausgleich"
+    ],
+    "kapitel": [
+      "2.5",
+      "6.6",
+      "7.6",
+      "8.1",
+      "10.5",
+      "12.1.2"
+    ],
+    "geraetelisteKapitel": "6.6",
+    "herstellerOptionen": [
+      "DEHN",
+      "OBO Bettermann",
+      "Pröpster",
+      "Kleinhuis",
+      "Phoenix Contact",
+      "Hager",
+      "ABB"
+    ],
+    "normen": [
+      "DIN VDE 0100-410",
+      "DIN VDE 0100-540",
+      "DIN 18014"
+    ]
+  },
+  {
+    "leistungsbereich": "Rauchwarnmelderanlage",
+    "code": "RWM",
+    "aktiv": false,
+    "hersteller": "Hekatron",
+    "systemart": "Rauchwarnmelder",
+    "dokumentarten": [
+      "Produktdatenblatt",
+      "Montageanleitung",
+      "Bedienungsanleitung",
+      "Wartungshinweis",
+      "Einweisungsprotokoll",
+      "Konformitätserklärung"
+    ],
+    "kapitel": [
+      "4.3",
+      "6.12",
+      "7.12",
+      "9.2"
+    ],
+    "geraetelisteKapitel": "6.12",
+    "herstellerOptionen": [
+      "Hekatron",
+      "Ei Electronics",
+      "Gira",
+      "Jung",
+      "Busch-Jaeger",
+      "EiMSIG"
+    ],
+    "normen": [
+      "DIN 14676"
+    ]
+  },
+  {
+    "leistungsbereich": "Brandmeldeanlage",
+    "code": "GMA",
+    "aktiv": true,
+    "hersteller": "Hekatron",
+    "systemart": "Brandmeldezentrale",
+    "dokumentarten": [
+      "Produktdatenblatt",
+      "Montageanleitung",
+      "Bedienungsanleitung",
+      "Inbetriebnahmeprotokoll",
+      "Wartungsanweisung",
+      "Konformitätserklärung",
+      "CE-Bestätigung",
+      "Abnahmeprotokoll"
+    ],
+    "kapitel": [
+      "6.12",
+      "7.12",
+      "10.1",
+      "12.1.4"
+    ],
+    "geraetelisteKapitel": "6.12",
+    "herstellerOptionen": [
+      "Hekatron",
+      "Esser by Honeywell",
+      "Bosch",
+      "Siemens Cerberus",
+      "Telenot",
+      "Honeywell / Novar",
+      "Daitem",
+      "Gira"
+    ],
+    "normen": [
+      "DIN 14675",
+      "DIN VDE 0833-1",
+      "DIN VDE 0833-2",
+      "DIN EN 54"
+    ]
+  },
+  {
+    "leistungsbereich": "Gefahrenmelde- / Alarmanlage",
+    "code": "GMA",
+    "aktiv": true,
+    "hersteller": "Hekatron",
+    "systemart": "Brandmeldezentrale",
+    "dokumentarten": [
+      "Produktdatenblatt",
+      "Montageanleitung",
+      "Bedienungsanleitung",
+      "Inbetriebnahmeprotokoll",
+      "Wartungsanweisung",
+      "Konformitätserklärung",
+      "CE-Bestätigung",
+      "Abnahmeprotokoll"
+    ],
+    "kapitel": [
+      "6.12",
+      "7.12",
+      "10.1",
+      "12.1.4"
+    ],
+    "geraetelisteKapitel": "6.12",
+    "herstellerOptionen": [
+      "Hekatron",
+      "Esser by Honeywell",
+      "Bosch",
+      "Siemens Cerberus",
+      "Telenot",
+      "Honeywell / Novar",
+      "Daitem",
+      "Gira"
+    ],
+    "normen": [
+      "DIN VDE 0833-1",
+      "DIN VDE 0833-3"
+    ]
+  },
+  {
+    "leistungsbereich": "Telekommunikation",
+    "code": "TK",
+    "aktiv": false,
+    "hersteller": "Rutenbeck",
+    "systemart": "TAE",
+    "dokumentarten": [
+      "Produktdatenblatt",
+      "Montageanleitung",
+      "Bedienungsanleitung",
+      "Konformitätserklärung",
+      "CE-Bestätigung"
+    ],
+    "kapitel": [
+      "6.7",
+      "7.7"
+    ],
+    "geraetelisteKapitel": "6.7",
+    "herstellerOptionen": [
+      "Rutenbeck",
+      "Telegärtner",
+      "Metz Connect",
+      "Auerswald",
+      "Agfeo",
+      "Gigaset pro",
+      "Grandstream",
+      "Yealink"
+    ],
+    "normen": [
+      "DIN EN 50173",
+      "ISO/IEC 11801",
+      "DIN EN 50174"
+    ]
+  },
+  {
+    "leistungsbereich": "Breitbandkommunikationsanlage",
+    "code": "BK",
+    "aktiv": false,
+    "hersteller": "Kathrein",
+    "systemart": "BK-Verstärker",
+    "dokumentarten": [
+      "Produktdatenblatt",
+      "Montageanleitung",
+      "Bedienungsanleitung",
+      "Messprotokoll",
+      "Konformitätserklärung",
+      "CE-Bestätigung"
+    ],
+    "kapitel": [
+      "4.4",
+      "6.11",
+      "7.11",
+      "10.6",
+      "12.1.5"
+    ],
+    "geraetelisteKapitel": "6.11",
+    "herstellerOptionen": [
+      "Kathrein",
+      "WISI",
+      "Axing",
+      "Televes",
+      "Triax",
+      "Astro",
+      "Spaun"
+    ],
+    "normen": [
+      "DIN EN 50173",
+      "ISO/IEC 11801",
+      "DIN EN 50174"
+    ]
+  },
+  {
+    "leistungsbereich": "Kabeltragsysteme / Verlegesysteme mit Funktionserhalt",
+    "code": "KTS-FE",
+    "aktiv": false,
+    "hersteller": "Allgemein",
+    "systemart": "E30",
+    "herstellerSystem": "",
+    "dokumentarten": [
+      "Konformitätserklärung"
+    ],
+    "normen": [
+      "DIN 4102-12"
+    ],
+    "kapitel": [
+      "2.5",
+      "6.4",
+      "7.4",
+      "12.2"
+    ],
+    "geraetelisteKapitel": "6.4",
+    "herstellerOptionen": [
+      "Allgemein"
+    ]
+  }
+]

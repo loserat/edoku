@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dokumentenmatrix | edoku</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <%- include("partials/header", { active }) %>
+    <main class="page wide compact-work-page">
+      <div class="page-title">
+        <p class="eyebrow">Matrix</p>
+        <h1>Dokumentenmatrix</h1>
+        <p class="page-subtitle">Aktive Dokumente, Pflichtpunkte und Exportstatus in einer strukturierten Ansicht verwalten.</p>
+      </div>
+      <%- include("partials/flash", { flash }) %>
+      <%- include("partials/sectionTabs", { active }) %>
+
+      <% const aktiveDokumente = dokumente.filter((dokument) => dokument.aktiv); %>
+      <% const exportDokumente = dokumente.filter((dokument) => dokument.export); %>
+      <% const pflichtDokumente = dokumente.filter((dokument) => dokument.pflicht); %>
+
+      <div data-tabs="dokumente" class="tab-shell">
+        <section class="summary-cards compact-summary">
+          <div class="summary-card"><span>Dokumente</span><strong><%= dokumente.length %></strong></div>
+          <div class="summary-card"><span>Aktiv</span><strong><%= aktiveDokumente.length %></strong></div>
+          <div class="summary-card"><span>Pflicht</span><strong><%= pflichtDokumente.length %></strong></div>
+        </section>
+
+        <div class="tabs" role="tablist" aria-label="Dokumentenmatrixansichten">
+          <button class="tab-button" type="button" data-tab-target="uebersicht">Übersicht</button>
+          <button class="tab-button" type="button" data-tab-target="matrix">Matrix bearbeiten</button>
+          <button class="tab-button" type="button" data-tab-target="aktive">Aktive Dokumente</button>
+        </div>
+
+        <section class="tab-panel" data-tab-panel="uebersicht">
+          <div class="panel-head">
+            <div>
+              <h2>Matrixstatus</h2>
+              <p>Schnellprüfung vor Export und PDF-Erzeugung.</p>
+            </div>
+            <form action="/dokumente/aktualisieren" method="post">
+              <button type="submit">Aus Leistungsbereichen aktualisieren</button>
+            </form>
+          </div>
+          <div class="summary-cards compact-summary">
+            <div class="summary-card"><span>Export aktiv</span><strong><%= exportDokumente.length %></strong></div>
+            <div class="summary-card"><span>Nicht aktiv</span><strong><%= dokumente.length - aktiveDokumente.length %></strong></div>
+            <div class="summary-card"><span>Formularpunkte</span><strong><%= dokumente.filter((dokument) => dokument.formularart).length %></strong></div>
+          </div>
+        </section>
+
+        <section class="tab-panel" data-tab-panel="matrix">
+          <div class="panel-head">
+            <div>
+              <h2>Matrix bearbeiten</h2>
+              <p>Aktivierung und Exportmarkierung pro Kapitel.</p>
+            </div>
+          </div>
+          <form action="/dokumente" method="post" data-autosave>
+            <div class="table-wrap">
+              <table class="matrix-table">
+                <thead>
+                  <tr>
+                    <th>Kapitel</th>
+                    <th>Original</th>
+                    <th>Titel</th>
+                    <th>Aktiv</th>
+                    <th>Export</th>
+                    <th>Pflicht</th>
+                    <th>Leistungsbereich</th>
+                    <th>Dokumenttyp</th>
+                    <th>Formularart</th>
+                    <th>Quelle</th>
+                    <th>Bemerkung</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% dokumente.forEach((dokument) => { %>
+                    <tr class="<%= dokument.aktiv ? "row-active" : "" %> level-<%= dokument.ebene %>">
+                      <td><strong><%= dokument.displayKapitel || "-" %></strong></td>
+                      <td><small><%= dokument.originalKapitel || dokument.kapitel %></small></td>
+                      <td class="title-cell"><%= dokument.titel %></td>
+                      <td>
+                        <label class="cell-check">
+                          <input type="checkbox" name="aktiv" value="<%= dokument.id %>" <%= dokument.aktiv ? "checked" : "" %> <%= dokument.pflicht ? "disabled" : "" %>>
+                          <span>Aktiv</span>
+                        </label>
+                      </td>
+                      <td>
+                        <label class="cell-check">
+                          <input type="checkbox" name="export" value="<%= dokument.id %>" <%= dokument.export ? "checked" : "" %>>
+                          <span>Export</span>
+                        </label>
+                      </td>
+                      <td><span class="badge <%= dokument.pflicht ? "on" : "off" %>"><%= dokument.pflicht ? "Ja" : "Nein" %></span></td>
+                      <td><%= [dokument.leistungsbereich, ...(Array.isArray(dokument.leistungsbereiche) ? dokument.leistungsbereiche : [])].filter(Boolean).join(", ") %></td>
+                      <td><%= dokument.dokumenttyp %></td>
+                      <td><%= dokument.formularart %></td>
+                      <td><%= dokument.quelle %></td>
+                      <td><%= dokument.bemerkung %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </form>
+        </section>
+
+        <section class="tab-panel" data-tab-panel="aktive">
+          <div class="panel-head">
+            <div>
+              <h2>Aktive Dokumente</h2>
+              <p>Leseliste der Punkte, die aktuell relevant sind.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Kapitel</th><th>Original</th><th>Titel</th><th>Export</th><th>Pflicht</th></tr>
+              </thead>
+              <tbody>
+                <% aktiveDokumente.forEach((dokument) => { %>
+                  <tr>
+                    <td><strong><%= dokument.displayKapitel || dokument.kapitel %></strong></td>
+                    <td><small><%= dokument.originalKapitel || dokument.kapitel %></small></td>
+                    <td><%= dokument.titel %></td>
+                    <td><%= dokument.export ? "Ja" : "Nein" %></td>
+                    <td><%= dokument.pflicht ? "Ja" : "Nein" %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+      </form>
+    </main>
+    <%- include("partials/footer") %>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

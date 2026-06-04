@@ -1,0 +1,19 @@
+{
+  "appTitel": "edoku",
+  "standardGewerk": "Elektrotechnik",
+  "standardEinheit": "Stk",
+  "autosaveHinweis": true,
+  "pdfFooterText": "Bearbeiter | Ort / Datum",
+  "exportOrdnerPrefix": "ProjektExport",
+  "datumFormat": "de-DE",
+  "ersteller": {
+    "name": "",
+    "firma": "",
+    "anschrift": "",
+    "telefon": "",
+    "email": "",
+    "webseite": "",
+    "bearbeiter": "",
+    "logoPfad": ""
+  }
+}

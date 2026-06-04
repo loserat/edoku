@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Brandschutz | edoku</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <%- include("partials/header", { active }) %>
+    <main class="page wide compact-work-page">
+      <div class="page-title">
+        <p class="eyebrow">Brandschutzdokumentation</p>
+        <h1>Brandschutz</h1>
+        <p class="page-subtitle">Brandschottungen erfassen, Kernangaben kontrollieren und Bild-/Zulassungspfade dokumentieren.</p>
+      </div>
+      <%- include("partials/flash", { flash }) %>
+      <%- include("partials/sectionTabs", { active }) %>
+
+      <% const aktiveBrandschutz = brandschutz.filter((entry) => entry.aktiv); %>
+      <% const unvollstaendig = brandschutz.filter((entry) => entry.aktiv && requiredBrandschutzFields.some((field) => !String(entry[field] || "").trim())); %>
+      <datalist id="projekt-stockwerke">
+        <% (stockwerke || []).forEach((stockwerk) => { %>
+          <option value="<%= stockwerk %>"></option>
+        <% }) %>
+      </datalist>
+
+      <section class="tab-panel brandschutz-list-panel">
+        <div class="panel-head brandschutz-list-head">
+          <div>
+            <h2>Brandschottungen</h2>
+            <p><%= brandschutz.length %> Einträge · <%= aktiveBrandschutz.length %> aktiv · <%= unvollstaendig.length %> unvollständig</p>
+          </div>
+          <form action="/brandschutz/hinzufuegen" method="post">
+            <button type="submit">Brandschottung hinzufügen</button>
+          </form>
+        </div>
+
+        <form action="/brandschutz" method="post" data-autosave>
+          <div class="table-wrap brandschutz-list-wrap">
+            <table class="editable-table brandschutz-table" data-sortable-table>
+                    <thead>
+                      <tr>
+                        <th data-col="pos" data-sortable-column>Nr.</th>
+                        <th data-col="status" data-sortable-column>Status</th>
+                        <th data-col="aktiv" data-sortable-column>Aktiv</th>
+                        <th data-col="geschoss" data-sortable-column>Geschoss</th>
+                        <th data-col="raum" data-sortable-column>Raum</th>
+                        <th data-col="bauteil" data-sortable-column>Bauteil / Wand / Decke</th>
+                        <th data-col="abschottungssystem" data-sortable-column>Abschottungssystem</th>
+                        <th data-col="hersteller" data-sortable-column>Hersteller</th>
+                        <th data-col="system" data-sortable-column>System</th>
+                        <th data-col="zulassung" data-sortable-column>Zulassung / abZ / ETA</th>
+                        <th data-col="feuerwiderstand" data-sortable-column>Feuerwiderstand</th>
+                        <th data-col="medium" data-sortable-column>Medium / Durchführung (optional)</th>
+                        <th data-col="anzahl_kabel" data-sortable-column>Kabelanzahl</th>
+                        <th data-col="durchmesser" data-sortable-column>Durchmesser / Abmessung</th>
+                        <th data-col="ausfuehrungsdatum" data-sortable-column>Ausführungsdatum</th>
+                        <th data-col="monteur" data-sortable-column>Monteur</th>
+                        <th data-col="bemerkung" data-sortable-column>Bemerkung (optional)</th>
+                        <th data-col="delete">Löschen</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% brandschutz.forEach((entry, index) => { %>
+                        <% const missingRequired = entry.aktiv && requiredBrandschutzFields.some((field) => !String(entry[field] || "").trim()); %>
+                        <tr id="brandschottung-<%= entry.id %>">
+                          <td data-col="pos" data-sort-value="<%= index + 1 %>">
+                            <input type="hidden" name="brandschutz[<%= index %>][id]" value="<%= entry.id %>">
+                            <input type="hidden" name="brandschutz[<%= index %>][foto_vorher]" value="<%= entry.foto_vorher %>">
+                            <input type="hidden" name="brandschutz[<%= index %>][foto_nachher]" value="<%= entry.foto_nachher %>">
+                            <strong><%= index + 1 %></strong>
+                          </td>
+                          <td data-col="status" data-sort-value="<%= !entry.aktiv ? "2-inaktiv" : missingRequired ? "1-offen" : "0-ok" %>">
+                            <span class="badge <%= !entry.aktiv ? "off" : missingRequired ? "off" : "on" %>"><%= !entry.aktiv ? "Inaktiv" : missingRequired ? "Offen" : "OK" %></span>
+                          </td>
+                          <td data-col="aktiv">
+                            <label class="cell-check">
+                              <input type="checkbox" name="brandschutz[<%= index %>][aktiv]" <%= entry.aktiv ? "checked" : "" %>>
+                              <span>Aktiv</span>
+                            </label>
+                          </td>
+                          <td data-col="geschoss"><input type="text" list="projekt-stockwerke" name="brandschutz[<%= index %>][geschoss]" value="<%= entry.geschoss %>"></td>
+                          <td data-col="raum"><input type="text" name="brandschutz[<%= index %>][raum]" value="<%= entry.raum %>"></td>
+                          <td data-col="bauteil"><input type="text" name="brandschutz[<%= index %>][bauteil]" value="<%= entry.bauteil %>"></td>
+                          <td data-col="abschottungssystem"><input type="text" name="brandschutz[<%= index %>][abschottungssystem]" value="<%= entry.abschottungssystem %>"></td>
+                          <td data-col="hersteller"><input type="text" name="brandschutz[<%= index %>][hersteller]" value="<%= entry.hersteller %>"></td>
+                          <td data-col="system"><input type="text" name="brandschutz[<%= index %>][system]" value="<%= entry.system %>"></td>
+                          <td data-col="zulassung"><input type="text" name="brandschutz[<%= index %>][zulassung]" value="<%= entry.zulassung %>"></td>
+                          <td data-col="feuerwiderstand"><input type="text" name="brandschutz[<%= index %>][feuerwiderstand]" value="<%= entry.feuerwiderstand %>"></td>
+                          <td data-col="medium"><input type="text" name="brandschutz[<%= index %>][medium]" value="<%= entry.medium %>"></td>
+                          <td data-col="anzahl_kabel"><input type="text" name="brandschutz[<%= index %>][anzahl_kabel]" value="<%= entry.anzahl_kabel %>"></td>
+                          <td data-col="durchmesser"><input type="text" name="brandschutz[<%= index %>][durchmesser]" value="<%= entry.durchmesser %>"></td>
+                          <td data-col="ausfuehrungsdatum"><input type="text" name="brandschutz[<%= index %>][ausfuehrungsdatum]" value="<%= entry.ausfuehrungsdatum %>"></td>
+                          <td data-col="monteur"><input type="text" name="brandschutz[<%= index %>][monteur]" value="<%= entry.monteur %>"></td>
+                          <td data-col="bemerkung"><input type="text" name="brandschutz[<%= index %>][bemerkung]" value="<%= entry.bemerkung %>"></td>
+                          <td data-col="delete">
+                            <label class="cell-check">
+                              <input type="checkbox" name="brandschutz[<%= index %>][_delete]" value="1">
+                              <span>Löschen</span>
+                            </label>
+                          </td>
+                        </tr>
+                      <% }) %>
+                    </tbody>
+                  </table>
+                </div>
+              </form>
+      </section>
+    </main>
+    <%- include("partials/footer") %>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

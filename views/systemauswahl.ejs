@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Systemauswahl | edoku</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <%- include("partials/header", { active }) %>
+    <main class="page wide compact-work-page">
+      <div class="page-title">
+        <p class="eyebrow">Projekt</p>
+        <h1>Systemauswahl</h1>
+        <p class="page-subtitle">Projektbezogene Systemart, Hersteller und konkretes Herstellersystem pro Leistungsbereich festlegen.</p>
+      </div>
+      <%- include("partials/flash", { flash }) %>
+      <%- include("partials/sectionTabs", { active }) %>
+
+      <% const aktiveSystembereiche = systemConfig.leistungsbereiche.filter((bereich) => (selections.get(bereich.name) || {}).aktiv); %>
+
+      <div data-tabs="systemauswahl" class="tab-shell">
+        <section class="summary-cards compact-summary">
+          <div class="summary-card"><span>Konfiguriert</span><strong><%= systemConfig.leistungsbereiche.length %></strong></div>
+          <div class="summary-card"><span>Aktiv</span><strong><%= aktiveSystembereiche.length %></strong></div>
+          <div class="summary-card"><span>Hersteller</span><strong><%= systemConfig.leistungsbereiche.reduce((sum, bereich) => sum + (bereich.hersteller || []).length, 0) %></strong></div>
+        </section>
+
+        <div class="tabs" role="tablist" aria-label="Systemauswahlansichten">
+          <button class="tab-button" type="button" data-tab-target="uebersicht">Übersicht</button>
+          <button class="tab-button" type="button" data-tab-target="bearbeiten">Bearbeiten</button>
+        </div>
+
+        <section class="tab-panel" data-tab-panel="uebersicht">
+          <div class="panel-head">
+            <div>
+              <h2>Aktive Systeme</h2>
+              <p>Kontrolle der aktuellen Hersteller-/Systemauswahl.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Leistungsbereich</th><th>Systemart</th><th>Hersteller</th><th>System vom Hersteller</th><th>Dokumentarten</th></tr></thead>
+              <tbody>
+                <% aktiveSystembereiche.forEach((bereich) => { %>
+                  <% const selection = selections.get(bereich.name) || {}; %>
+                  <tr>
+                    <td><%= bereich.name %></td>
+                    <td><%= selection.systemart || "-" %></td>
+                    <td><%= selection.hersteller || "-" %></td>
+                    <td><%= selection.herstellerSystem || "-" %></td>
+                    <td><%= (selection.dokumentarten || []).length %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="tab-panel" data-tab-panel="bearbeiten">
+          <form action="/systemauswahl" method="post" data-autosave>
+            <% systemConfig.leistungsbereiche.forEach((bereich, index) => { %>
+              <% const selection = selections.get(bereich.name) || {}; %>
+              <% const selectedHersteller = (bereich.hersteller || []).find((hersteller) => hersteller.name === selection.hersteller) || (bereich.hersteller || [])[0] || {}; %>
+              <section class="edit-section <%= selection.aktiv ? "" : "is-inactive" %>" data-system-section data-leistungsbereich="<%= bereich.name %>">
+                <div class="edit-section-head">
+                  <div>
+                    <h2><%= bereich.name %></h2>
+                    <p>Code <%= bereich.code %> | <%= selection.aktiv ? "Aktiv" : "Nicht aktiv" %></p>
+                    <% if (bereich.beschreibung) { %>
+                      <p><%= bereich.beschreibung %></p>
+                    <% } %>
+                  </div>
+                  <span class="badge <%= selection.aktiv ? "on" : "off" %>"><%= selection.aktiv ? "aktiv" : "inaktiv" %></span>
+                </div>
+
+                <input type="hidden" name="projektSysteme[<%= index %>][leistungsbereich]" value="<%= bereich.name %>">
+                <input type="hidden" name="projektSysteme[<%= index %>][code]" value="<%= bereich.code %>">
+
+                <div class="system-grid">
+                  <label>
+                    <span>1. Systemart</span>
+                    <select name="projektSysteme[<%= index %>][systemart]" data-systemart-select>
+                      <% (selectedHersteller.systemarten || []).forEach((systemart) => { %>
+                        <option value="<%= systemart %>" <%= selection.systemart === systemart ? "selected" : "" %>><%= systemart %></option>
+                      <% }) %>
+                    </select>
+                  </label>
+
+                  <label>
+                    <span>2. Systemhersteller</span>
+                    <select name="projektSysteme[<%= index %>][hersteller]" data-system-hersteller>
+                      <% (bereich.hersteller || []).forEach((hersteller) => { %>
+                        <option value="<%= hersteller.name %>" <%= selection.hersteller === hersteller.name ? "selected" : "" %>><%= hersteller.name %></option>
+                      <% }) %>
+                    </select>
+                  </label>
+
+                  <label>
+                    <span>3. System vom Hersteller</span>
+                    <select name="projektSysteme[<%= index %>][herstellerSystem]" data-hersteller-system-select>
+                      <% (selectedHersteller.systeme || []).forEach((system) => { %>
+                        <option value="<%= system %>" <%= selection.herstellerSystem === system ? "selected" : "" %>><%= system %></option>
+                      <% }) %>
+                    </select>
+                  </label>
+
+                  <div>
+                    <span class="field-title">Kapitel</span>
+                    <p class="meta-line"><%= (selectedHersteller.kapitel || []).join(", ") || "-" %></p>
+                  </div>
+
+                  <div>
+                    <span class="field-title">Gerätelisten-Kapitel</span>
+                    <p class="meta-line"><%= selectedHersteller.geraetelisteKapitel || "-" %></p>
+                  </div>
+                </div>
+
+                <div class="document-checks" data-dokumentarten data-name-prefix="projektSysteme[<%= index %>][dokumentarten]">
+                  <span class="field-title">Dokumentarten</span>
+                  <% (selectedHersteller.dokumentarten || []).forEach((dokumentart) => { %>
+                    <label class="checkbox-card compact">
+                      <input type="checkbox" name="projektSysteme[<%= index %>][dokumentarten]" value="<%= dokumentart %>" <%= (selection.dokumentarten || []).includes(dokumentart) ? "checked" : "" %>>
+                      <span><%= dokumentart %></span>
+                    </label>
+                  <% }) %>
+                </div>
+              </section>
+            <% }) %>
+
+          </form>
+        </section>
+      </div>
+    </main>
+    <%- include("partials/footer") %>
+    <script type="application/json" id="system-config-json"><%- JSON.stringify(systemConfig) %></script>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

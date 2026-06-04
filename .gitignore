@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+npm-debug.log
+
+# Local environment
+.env
+.env.*
+.DS_Store
+
+# Runtime output
+output/
+
+# Runtime storage and user data
+storage/*
+!storage/README.md
+
+# Internal local notes
+intern/tagesupdates/*.md
+!intern/tagesupdates/README.md
+
+# Logs and temporary files
+*.log
+tmp/
+temp/

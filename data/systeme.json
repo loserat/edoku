@@ -1,0 +1,3441 @@
+{
+  "leistungsbereiche": [
+    {
+      "name": "Brandschutzabschottungen",
+      "code": "BS",
+      "beschreibung": "Systeme und Unterlagen fuer Brandschutzabschottungen.",
+      "hersteller": [
+        {
+          "name": "ZAPP-ZIMMERMANN",
+          "systeme": [],
+          "systemarten": [
+            "Kabelabschottung",
+            "Rohrabschottung",
+            "Kombischott",
+            "Brandschutzbox",
+            "Brandschutzschaum",
+            "Brandschutzmörtel",
+            "Brandschutzmanschette",
+            "Funktionserhalt"
+          ],
+          "dokumentarten": [
+            "Montageanleitung",
+            "Allgemeine bauaufsichtliche Zulassung / ETA / abZ",
+            "Leistungserklärung",
+            "Sicherheitsdatenblatt",
+            "Übereinstimmungserklärung",
+            "Produktdatenblatt",
+            "Bilddokumentation"
+          ],
+          "kapitel": [
+            "11.3",
+            "13.1",
+            "13.2",
+            "13.3",
+            "13.4",
+            "13.5"
+          ],
+          "geraetelisteKapitel": "13.5",
+          "bemerkung": ""
+        },
+        {
+          "name": "OBO Bettermann",
+          "systeme": [],
+          "systemarten": [
+            "Kabelabschottung",
+            "Rohrabschottung",
+            "Kombischott",
+            "Brandschutzbox",
+            "Brandschutzschaum",
+            "Brandschutzmörtel",
+            "Brandschutzmanschette",
+            "Funktionserhalt"
+          ],
+          "dokumentarten": [
+            "Montageanleitung",
+            "Allgemeine bauaufsichtliche Zulassung / ETA / abZ",
+            "Leistungserklärung",
+            "Sicherheitsdatenblatt",
+            "Übereinstimmungserklärung",
+            "Produktdatenblatt",
+            "Bilddokumentation"
+          ],
+          "kapitel": [
+            "11.3",
+            "13.1",
+            "13.2",
+            "13.3",
+            "13.4",
+            "13.5"
+          ],
+          "geraetelisteKapitel": "13.5",
+          "bemerkung": ""
+        },
+        {
+          "name": "Hilti",
+          "systeme": [],
+          "systemarten": [
+            "Kabelabschottung",
+            "Rohrabschottung",
+            "Kombischott",
+            "Brandschutzbox",
+            "Brandschutzschaum",
+            "Brandschutzmörtel",
+            "Brandschutzmanschette",
+            "Funktionserhalt"
+          ],
+          "dokumentarten": [
+            "Montageanleitung",
+            "Allgemeine bauaufsichtliche Zulassung / ETA / abZ",
+            "Leistungserklärung",
+            "Sicherheitsdatenblatt",
+            "Übereinstimmungserklärung",
+            "Produktdatenblatt",
+            "Bilddokumentation"
+          ],
+          "kapitel": [
+            "11.3",
+            "13.1",
+            "13.2",
+            "13.3",
+            "13.4",
+            "13.5"
+          ],
+          "geraetelisteKapitel": "13.5",
+          "bemerkung": ""
+        },
+        {
+          "name": "Wichmann",
+          "systeme": [],
+          "systemarten": [
+            "Kabelabschottung",
+            "Rohrabschottung",
+            "Kombischott",
+            "Brandschutzbox",
+            "Brandschutzschaum",
+            "Brandschutzmörtel",
+            "Brandschutzmanschette",
+            "Funktionserhalt"
+          ],
+          "dokumentarten": [
+            "Montageanleitung",
+            "Allgemeine bauaufsichtliche Zulassung / ETA / abZ",
+            "Leistungserklärung",
+            "Sicherheitsdatenblatt",
+            "Übereinstimmungserklärung",
+            "Produktdatenblatt",
+            "Bilddokumentation"
+          ],
+          "kapitel": [
+            "11.3",
+            "13.1",
+            "13.2",
+            "13.3",
+            "13.4",
+            "13.5"
+          ],
+          "geraetelisteKapitel": "13.5",
+          "bemerkung": ""
+        }
+      ]
+    },
+    {
+      "name": "Kabeltragsysteme / Verlegesysteme",
+      "code": "KTS",
+      "beschreibung": "Kabeltragsysteme und Verlegesysteme.",
+      "hersteller": [
+        {
+          "name": "OBO Bettermann",
+          "systeme": [],
+          "systemarten": [
+            "Kabelrinne",
+            "Gitterrinne",
+            "Kabelleiter",
+            "Steigetrasse",
+            "Funktionserhalt",
+            "Sammelhalter",
+            "Brüstungskanal",
+            "Installationskanal",
+            "Leerrohr"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Brandschutznachweis bei Funktionserhalt",
+            "Systemzulassung, falls erforderlich"
+          ],
+          "kapitel": [
+            "2.3",
+            "3.1",
+            "6.4",
+            "7.4",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.4",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 61537"
+          ]
+        },
+        {
+          "name": "Niedax",
+          "systeme": [],
+          "systemarten": [
+            "Kabelrinne",
+            "Gitterrinne",
+            "Kabelleiter",
+            "Steigetrasse",
+            "Funktionserhalt",
+            "Sammelhalter",
+            "Brüstungskanal",
+            "Installationskanal",
+            "Leerrohr"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Brandschutznachweis bei Funktionserhalt",
+            "Systemzulassung, falls erforderlich"
+          ],
+          "kapitel": [
+            "2.3",
+            "3.1",
+            "6.4",
+            "7.4",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.4",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 61537"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sicherheitsbeleuchtung",
+      "code": "SIBE",
+      "beschreibung": "Sicherheitsbeleuchtungsanlagen.",
+      "hersteller": [
+        {
+          "name": "Sikora",
+          "systeme": [],
+          "systemarten": [
+            "Einzelbatterieleuchten",
+            "Zentralbatterieanlage",
+            "Gruppenbatterieanlage",
+            "Rettungszeichenleuchten",
+            "Sicherheitsleuchten",
+            "Überwachung / Prüfsystem",
+            "Batterieanlage",
+            "Unterstation"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Betriebsanleitung",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Einweisungsprotokoll",
+            "Prüfbuch / Prüfprotokoll"
+          ],
+          "kapitel": [
+            "2.2",
+            "4.1",
+            "6.5",
+            "7.5",
+            "9.1",
+            "10.3",
+            "11.1",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.5",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 1838"
+          ]
+        },
+        {
+          "name": "INOTEC",
+          "systeme": [],
+          "systemarten": [
+            "Einzelbatterieleuchten",
+            "Zentralbatterieanlage",
+            "Gruppenbatterieanlage",
+            "Rettungszeichenleuchten",
+            "Sicherheitsleuchten",
+            "Überwachung / Prüfsystem",
+            "Batterieanlage",
+            "Unterstation"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Betriebsanleitung",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Einweisungsprotokoll",
+            "Prüfbuch / Prüfprotokoll"
+          ],
+          "kapitel": [
+            "2.2",
+            "4.1",
+            "6.5",
+            "7.5",
+            "9.1",
+            "10.3",
+            "11.1",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.5",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 1838"
+          ]
+        },
+        {
+          "name": "Eaton / CEAG",
+          "systeme": [],
+          "systemarten": [
+            "Einzelbatterieleuchten",
+            "Zentralbatterieanlage",
+            "Gruppenbatterieanlage",
+            "Rettungszeichenleuchten",
+            "Sicherheitsleuchten",
+            "Überwachung / Prüfsystem",
+            "Batterieanlage",
+            "Unterstation"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Betriebsanleitung",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Einweisungsprotokoll",
+            "Prüfbuch / Prüfprotokoll"
+          ],
+          "kapitel": [
+            "2.2",
+            "4.1",
+            "6.5",
+            "7.5",
+            "9.1",
+            "10.3",
+            "11.1",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.5",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 1838"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Präsenzmelder",
+      "code": "PM",
+      "beschreibung": "Präsenz- und Bewegungsmelder, KNX als Systemart.",
+      "hersteller": [
+        {
+          "name": "ESYLUX",
+          "systeme": [],
+          "systemarten": [
+            "230 V",
+            "potentialfreier Kontakt",
+            "KNX",
+            "DALI",
+            "DALI-2",
+            "Casambi",
+            "Bluetooth",
+            "Unterputz",
+            "Aufputz",
+            "Deckeneinbau"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Parametrierhinweis",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.2",
+            "6.4",
+            "7.4",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.4",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1"
+          ]
+        },
+        {
+          "name": "B.E.G. LUXOMAT",
+          "systeme": [],
+          "systemarten": [
+            "230 V",
+            "potentialfreier Kontakt",
+            "KNX",
+            "DALI",
+            "DALI-2",
+            "Casambi",
+            "Bluetooth",
+            "Unterputz",
+            "Aufputz",
+            "Deckeneinbau"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Parametrierhinweis",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.2",
+            "6.4",
+            "7.4",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.4",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1"
+          ]
+        },
+        {
+          "name": "Theben",
+          "systeme": [],
+          "systemarten": [
+            "230 V",
+            "potentialfreier Kontakt",
+            "KNX",
+            "DALI",
+            "DALI-2",
+            "Casambi",
+            "Bluetooth",
+            "Unterputz",
+            "Aufputz",
+            "Deckeneinbau"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Parametrierhinweis",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.2",
+            "6.4",
+            "7.4",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.4",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1"
+          ]
+        },
+        {
+          "name": "Gira",
+          "systeme": [],
+          "systemarten": [
+            "230 V",
+            "potentialfreier Kontakt",
+            "KNX",
+            "DALI",
+            "DALI-2",
+            "Casambi",
+            "Bluetooth",
+            "Unterputz",
+            "Aufputz",
+            "Deckeneinbau"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Parametrierhinweis",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.2",
+            "6.4",
+            "7.4",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.4",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1"
+          ]
+        },
+        {
+          "name": "Jung",
+          "systeme": [],
+          "systemarten": [
+            "230 V",
+            "potentialfreier Kontakt",
+            "KNX",
+            "DALI",
+            "DALI-2",
+            "Casambi",
+            "Bluetooth",
+            "Unterputz",
+            "Aufputz",
+            "Deckeneinbau"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Parametrierhinweis",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.2",
+            "6.4",
+            "7.4",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.4",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1"
+          ]
+        },
+        {
+          "name": "Busch-Jaeger / ABB",
+          "systeme": [],
+          "systemarten": [
+            "230 V",
+            "potentialfreier Kontakt",
+            "KNX",
+            "DALI",
+            "DALI-2",
+            "Casambi",
+            "Bluetooth",
+            "Unterputz",
+            "Aufputz",
+            "Deckeneinbau"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Parametrierhinweis",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.2",
+            "6.4",
+            "7.4",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.4",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1"
+          ]
+        },
+        {
+          "name": "MDT",
+          "systeme": [],
+          "systemarten": [
+            "230 V",
+            "potentialfreier Kontakt",
+            "KNX",
+            "DALI",
+            "DALI-2",
+            "Casambi",
+            "Bluetooth",
+            "Unterputz",
+            "Aufputz",
+            "Deckeneinbau"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Parametrierhinweis",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.2",
+            "6.4",
+            "7.4",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.4",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1"
+          ]
+        },
+        {
+          "name": "Steinel",
+          "systeme": [],
+          "systemarten": [
+            "230 V",
+            "potentialfreier Kontakt",
+            "KNX",
+            "DALI",
+            "DALI-2",
+            "Casambi",
+            "Bluetooth",
+            "Unterputz",
+            "Aufputz",
+            "Deckeneinbau"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Parametrierhinweis",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.2",
+            "6.4",
+            "7.4",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.4",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Datentechnik / Kommunikationsverkabelung",
+      "code": "DATA",
+      "beschreibung": "Strukturierte Daten- und Kommunikationsverkabelung.",
+      "hersteller": [
+        {
+          "name": "R&M / Reichle & De-Massari",
+          "systeme": [],
+          "systemarten": [
+            "Kupferverkabelung",
+            "LWL-Verkabelung",
+            "RJ45-Datendose",
+            "Patchpanel",
+            "Rangierfeld",
+            "Datenkabel Cat.6A",
+            "Datenkabel Cat.7",
+            "LWL OM3",
+            "LWL OM4",
+            "LWL OS2",
+            "Spleißbox",
+            "Modulträger",
+            "Keystone-Modul"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Systemgarantie, falls vorhanden",
+            "Messprotokoll",
+            "Kalibrierzertifikat Messgerät",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "2.6",
+            "6.13",
+            "7.13",
+            "10.2",
+            "11.4",
+            "12.1.3"
+          ],
+          "geraetelisteKapitel": "6.13",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Telegärtner",
+          "systeme": [],
+          "systemarten": [
+            "Kupferverkabelung",
+            "LWL-Verkabelung",
+            "RJ45-Datendose",
+            "Patchpanel",
+            "Rangierfeld",
+            "Datenkabel Cat.6A",
+            "Datenkabel Cat.7",
+            "LWL OM3",
+            "LWL OM4",
+            "LWL OS2",
+            "Spleißbox",
+            "Modulträger",
+            "Keystone-Modul"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Systemgarantie, falls vorhanden",
+            "Messprotokoll",
+            "Kalibrierzertifikat Messgerät",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "2.6",
+            "6.13",
+            "7.13",
+            "10.2",
+            "11.4",
+            "12.1.3"
+          ],
+          "geraetelisteKapitel": "6.13",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Metz Connect",
+          "systeme": [],
+          "systemarten": [
+            "Kupferverkabelung",
+            "LWL-Verkabelung",
+            "RJ45-Datendose",
+            "Patchpanel",
+            "Rangierfeld",
+            "Datenkabel Cat.6A",
+            "Datenkabel Cat.7",
+            "LWL OM3",
+            "LWL OM4",
+            "LWL OS2",
+            "Spleißbox",
+            "Modulträger",
+            "Keystone-Modul"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Systemgarantie, falls vorhanden",
+            "Messprotokoll",
+            "Kalibrierzertifikat Messgerät",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "2.6",
+            "6.13",
+            "7.13",
+            "10.2",
+            "11.4",
+            "12.1.3"
+          ],
+          "geraetelisteKapitel": "6.13",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Dätwyler",
+          "systeme": [],
+          "systemarten": [
+            "Kupferverkabelung",
+            "LWL-Verkabelung",
+            "RJ45-Datendose",
+            "Patchpanel",
+            "Rangierfeld",
+            "Datenkabel Cat.6A",
+            "Datenkabel Cat.7",
+            "LWL OM3",
+            "LWL OM4",
+            "LWL OS2",
+            "Spleißbox",
+            "Modulträger",
+            "Keystone-Modul"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Systemgarantie, falls vorhanden",
+            "Messprotokoll",
+            "Kalibrierzertifikat Messgerät",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "2.6",
+            "6.13",
+            "7.13",
+            "10.2",
+            "11.4",
+            "12.1.3"
+          ],
+          "geraetelisteKapitel": "6.13",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Rutenbeck",
+          "systeme": [],
+          "systemarten": [
+            "Kupferverkabelung",
+            "LWL-Verkabelung",
+            "RJ45-Datendose",
+            "Patchpanel",
+            "Rangierfeld",
+            "Datenkabel Cat.6A",
+            "Datenkabel Cat.7",
+            "LWL OM3",
+            "LWL OM4",
+            "LWL OS2",
+            "Spleißbox",
+            "Modulträger",
+            "Keystone-Modul"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Systemgarantie, falls vorhanden",
+            "Messprotokoll",
+            "Kalibrierzertifikat Messgerät",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "2.6",
+            "6.13",
+            "7.13",
+            "10.2",
+            "11.4",
+            "12.1.3"
+          ],
+          "geraetelisteKapitel": "6.13",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Leoni / Kerpen",
+          "systeme": [],
+          "systemarten": [
+            "Kupferverkabelung",
+            "LWL-Verkabelung",
+            "RJ45-Datendose",
+            "Patchpanel",
+            "Rangierfeld",
+            "Datenkabel Cat.6A",
+            "Datenkabel Cat.7",
+            "LWL OM3",
+            "LWL OM4",
+            "LWL OS2",
+            "Spleißbox",
+            "Modulträger",
+            "Keystone-Modul"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Systemgarantie, falls vorhanden",
+            "Messprotokoll",
+            "Kalibrierzertifikat Messgerät",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "2.6",
+            "6.13",
+            "7.13",
+            "10.2",
+            "11.4",
+            "12.1.3"
+          ],
+          "geraetelisteKapitel": "6.13",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Corning",
+          "systeme": [],
+          "systemarten": [
+            "Kupferverkabelung",
+            "LWL-Verkabelung",
+            "RJ45-Datendose",
+            "Patchpanel",
+            "Rangierfeld",
+            "Datenkabel Cat.6A",
+            "Datenkabel Cat.7",
+            "LWL OM3",
+            "LWL OM4",
+            "LWL OS2",
+            "Spleißbox",
+            "Modulträger",
+            "Keystone-Modul"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Systemgarantie, falls vorhanden",
+            "Messprotokoll",
+            "Kalibrierzertifikat Messgerät",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "2.6",
+            "6.13",
+            "7.13",
+            "10.2",
+            "11.4",
+            "12.1.3"
+          ],
+          "geraetelisteKapitel": "6.13",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Panduit",
+          "systeme": [],
+          "systemarten": [
+            "Kupferverkabelung",
+            "LWL-Verkabelung",
+            "RJ45-Datendose",
+            "Patchpanel",
+            "Rangierfeld",
+            "Datenkabel Cat.6A",
+            "Datenkabel Cat.7",
+            "LWL OM3",
+            "LWL OM4",
+            "LWL OS2",
+            "Spleißbox",
+            "Modulträger",
+            "Keystone-Modul"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Systemgarantie, falls vorhanden",
+            "Messprotokoll",
+            "Kalibrierzertifikat Messgerät",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "2.6",
+            "6.13",
+            "7.13",
+            "10.2",
+            "11.4",
+            "12.1.3"
+          ],
+          "geraetelisteKapitel": "6.13",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "CommScope",
+          "systeme": [],
+          "systemarten": [
+            "Kupferverkabelung",
+            "LWL-Verkabelung",
+            "RJ45-Datendose",
+            "Patchpanel",
+            "Rangierfeld",
+            "Datenkabel Cat.6A",
+            "Datenkabel Cat.7",
+            "LWL OM3",
+            "LWL OM4",
+            "LWL OS2",
+            "Spleißbox",
+            "Modulträger",
+            "Keystone-Modul"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Systemgarantie, falls vorhanden",
+            "Messprotokoll",
+            "Kalibrierzertifikat Messgerät",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "2.6",
+            "6.13",
+            "7.13",
+            "10.2",
+            "11.4",
+            "12.1.3"
+          ],
+          "geraetelisteKapitel": "6.13",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Draka / Prysmian",
+          "systeme": [],
+          "systemarten": [
+            "Kupferverkabelung",
+            "LWL-Verkabelung",
+            "RJ45-Datendose",
+            "Patchpanel",
+            "Rangierfeld",
+            "Datenkabel Cat.6A",
+            "Datenkabel Cat.7",
+            "LWL OM3",
+            "LWL OM4",
+            "LWL OS2",
+            "Spleißbox",
+            "Modulträger",
+            "Keystone-Modul"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Systemgarantie, falls vorhanden",
+            "Messprotokoll",
+            "Kalibrierzertifikat Messgerät",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "2.6",
+            "6.13",
+            "7.13",
+            "10.2",
+            "11.4",
+            "12.1.3"
+          ],
+          "geraetelisteKapitel": "6.13",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Nexans",
+          "systeme": [],
+          "systemarten": [
+            "Kupferverkabelung",
+            "LWL-Verkabelung",
+            "RJ45-Datendose",
+            "Patchpanel",
+            "Rangierfeld",
+            "Datenkabel Cat.6A",
+            "Datenkabel Cat.7",
+            "LWL OM3",
+            "LWL OM4",
+            "LWL OS2",
+            "Spleißbox",
+            "Modulträger",
+            "Keystone-Modul"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Systemgarantie, falls vorhanden",
+            "Messprotokoll",
+            "Kalibrierzertifikat Messgerät",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "2.6",
+            "6.13",
+            "7.13",
+            "10.2",
+            "11.4",
+            "12.1.3"
+          ],
+          "geraetelisteKapitel": "6.13",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Niederspannungsschaltanlagen / Verteilungen",
+      "code": "NSHV",
+      "beschreibung": "Schaltanlagen und Verteilungen.",
+      "hersteller": [
+        {
+          "name": "Hager",
+          "systeme": [],
+          "systemarten": [
+            "NSHV",
+            "Hauptverteilung",
+            "Unterverteilung",
+            "Zähleranlage",
+            "Reiheneinbaugeräte",
+            "Installationsverteiler",
+            "Kleinverteiler",
+            "Industriegehäuse",
+            "Schaltgerätekombination nach DIN EN 61439"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Aufbauplan",
+            "Stromlaufplan",
+            "Verteilerplan",
+            "Stückliste",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Herstellererklärung",
+            "Prüfprotokoll"
+          ],
+          "kapitel": [
+            "2.4",
+            "6.3",
+            "7.3",
+            "10.1",
+            "12.1.1",
+            "12.3"
+          ],
+          "geraetelisteKapitel": "6.3",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 61439"
+          ]
+        },
+        {
+          "name": "ABB / Striebel & John",
+          "systeme": [],
+          "systemarten": [
+            "NSHV",
+            "Hauptverteilung",
+            "Unterverteilung",
+            "Zähleranlage",
+            "Reiheneinbaugeräte",
+            "Installationsverteiler",
+            "Kleinverteiler",
+            "Industriegehäuse",
+            "Schaltgerätekombination nach DIN EN 61439"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Aufbauplan",
+            "Stromlaufplan",
+            "Verteilerplan",
+            "Stückliste",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Herstellererklärung",
+            "Prüfprotokoll"
+          ],
+          "kapitel": [
+            "2.4",
+            "6.3",
+            "7.3",
+            "10.1",
+            "12.1.1",
+            "12.3"
+          ],
+          "geraetelisteKapitel": "6.3",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 61439"
+          ]
+        },
+        {
+          "name": "Siemens",
+          "systeme": [],
+          "systemarten": [
+            "NSHV",
+            "Hauptverteilung",
+            "Unterverteilung",
+            "Zähleranlage",
+            "Reiheneinbaugeräte",
+            "Installationsverteiler",
+            "Kleinverteiler",
+            "Industriegehäuse",
+            "Schaltgerätekombination nach DIN EN 61439"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Aufbauplan",
+            "Stromlaufplan",
+            "Verteilerplan",
+            "Stückliste",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Herstellererklärung",
+            "Prüfprotokoll"
+          ],
+          "kapitel": [
+            "2.4",
+            "6.3",
+            "7.3",
+            "10.1",
+            "12.1.1",
+            "12.3"
+          ],
+          "geraetelisteKapitel": "6.3",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 61439"
+          ]
+        },
+        {
+          "name": "Schneider Electric",
+          "systeme": [],
+          "systemarten": [
+            "NSHV",
+            "Hauptverteilung",
+            "Unterverteilung",
+            "Zähleranlage",
+            "Reiheneinbaugeräte",
+            "Installationsverteiler",
+            "Kleinverteiler",
+            "Industriegehäuse",
+            "Schaltgerätekombination nach DIN EN 61439"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Aufbauplan",
+            "Stromlaufplan",
+            "Verteilerplan",
+            "Stückliste",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Herstellererklärung",
+            "Prüfprotokoll"
+          ],
+          "kapitel": [
+            "2.4",
+            "6.3",
+            "7.3",
+            "10.1",
+            "12.1.1",
+            "12.3"
+          ],
+          "geraetelisteKapitel": "6.3",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 61439"
+          ]
+        },
+        {
+          "name": "Eaton",
+          "systeme": [],
+          "systemarten": [
+            "NSHV",
+            "Hauptverteilung",
+            "Unterverteilung",
+            "Zähleranlage",
+            "Reiheneinbaugeräte",
+            "Installationsverteiler",
+            "Kleinverteiler",
+            "Industriegehäuse",
+            "Schaltgerätekombination nach DIN EN 61439"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Aufbauplan",
+            "Stromlaufplan",
+            "Verteilerplan",
+            "Stückliste",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Herstellererklärung",
+            "Prüfprotokoll"
+          ],
+          "kapitel": [
+            "2.4",
+            "6.3",
+            "7.3",
+            "10.1",
+            "12.1.1",
+            "12.3"
+          ],
+          "geraetelisteKapitel": "6.3",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 61439"
+          ]
+        },
+        {
+          "name": "Hensel",
+          "systeme": [],
+          "systemarten": [
+            "NSHV",
+            "Hauptverteilung",
+            "Unterverteilung",
+            "Zähleranlage",
+            "Reiheneinbaugeräte",
+            "Installationsverteiler",
+            "Kleinverteiler",
+            "Industriegehäuse",
+            "Schaltgerätekombination nach DIN EN 61439"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Aufbauplan",
+            "Stromlaufplan",
+            "Verteilerplan",
+            "Stückliste",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Herstellererklärung",
+            "Prüfprotokoll"
+          ],
+          "kapitel": [
+            "2.4",
+            "6.3",
+            "7.3",
+            "10.1",
+            "12.1.1",
+            "12.3"
+          ],
+          "geraetelisteKapitel": "6.3",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 61439"
+          ]
+        },
+        {
+          "name": "Rittal",
+          "systeme": [],
+          "systemarten": [
+            "NSHV",
+            "Hauptverteilung",
+            "Unterverteilung",
+            "Zähleranlage",
+            "Reiheneinbaugeräte",
+            "Installationsverteiler",
+            "Kleinverteiler",
+            "Industriegehäuse",
+            "Schaltgerätekombination nach DIN EN 61439"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Aufbauplan",
+            "Stromlaufplan",
+            "Verteilerplan",
+            "Stückliste",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Herstellererklärung",
+            "Prüfprotokoll"
+          ],
+          "kapitel": [
+            "2.4",
+            "6.3",
+            "7.3",
+            "10.1",
+            "12.1.1",
+            "12.3"
+          ],
+          "geraetelisteKapitel": "6.3",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 61439"
+          ]
+        },
+        {
+          "name": "Spelsberg",
+          "systeme": [],
+          "systemarten": [
+            "NSHV",
+            "Hauptverteilung",
+            "Unterverteilung",
+            "Zähleranlage",
+            "Reiheneinbaugeräte",
+            "Installationsverteiler",
+            "Kleinverteiler",
+            "Industriegehäuse",
+            "Schaltgerätekombination nach DIN EN 61439"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Aufbauplan",
+            "Stromlaufplan",
+            "Verteilerplan",
+            "Stückliste",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Herstellererklärung",
+            "Prüfprotokoll"
+          ],
+          "kapitel": [
+            "2.4",
+            "6.3",
+            "7.3",
+            "10.1",
+            "12.1.1",
+            "12.3"
+          ],
+          "geraetelisteKapitel": "6.3",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 61439"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Beleuchtungsanlage",
+      "code": "BEL",
+      "beschreibung": "Beleuchtungsanlagen.",
+      "hersteller": [
+        {
+          "name": "TRILUX",
+          "systeme": [],
+          "systemarten": [
+            "Innenleuchte",
+            "Feuchtraumleuchte",
+            "Hallenleuchte",
+            "Außenleuchte",
+            "Mastleuchte",
+            "Lichtbandsystem",
+            "Einlegeleuchte",
+            "Anbauleuchte",
+            "Pendelleuchte",
+            "DALI-Leuchte"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Lichtberechnung, falls vorhanden",
+            "Messprotokoll Beleuchtungsstärke"
+          ],
+          "kapitel": [
+            "6.5",
+            "7.5",
+            "10.3",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.5",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1",
+            "DIN EN 12464-2"
+          ]
+        },
+        {
+          "name": "RZB",
+          "systeme": [],
+          "systemarten": [
+            "Innenleuchte",
+            "Feuchtraumleuchte",
+            "Hallenleuchte",
+            "Außenleuchte",
+            "Mastleuchte",
+            "Lichtbandsystem",
+            "Einlegeleuchte",
+            "Anbauleuchte",
+            "Pendelleuchte",
+            "DALI-Leuchte"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Lichtberechnung, falls vorhanden",
+            "Messprotokoll Beleuchtungsstärke"
+          ],
+          "kapitel": [
+            "6.5",
+            "7.5",
+            "10.3",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.5",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1",
+            "DIN EN 12464-2"
+          ]
+        },
+        {
+          "name": "SITECO",
+          "systeme": [],
+          "systemarten": [
+            "Innenleuchte",
+            "Feuchtraumleuchte",
+            "Hallenleuchte",
+            "Außenleuchte",
+            "Mastleuchte",
+            "Lichtbandsystem",
+            "Einlegeleuchte",
+            "Anbauleuchte",
+            "Pendelleuchte",
+            "DALI-Leuchte"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Lichtberechnung, falls vorhanden",
+            "Messprotokoll Beleuchtungsstärke"
+          ],
+          "kapitel": [
+            "6.5",
+            "7.5",
+            "10.3",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.5",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1",
+            "DIN EN 12464-2"
+          ]
+        },
+        {
+          "name": "Zumtobel",
+          "systeme": [],
+          "systemarten": [
+            "Innenleuchte",
+            "Feuchtraumleuchte",
+            "Hallenleuchte",
+            "Außenleuchte",
+            "Mastleuchte",
+            "Lichtbandsystem",
+            "Einlegeleuchte",
+            "Anbauleuchte",
+            "Pendelleuchte",
+            "DALI-Leuchte"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Lichtberechnung, falls vorhanden",
+            "Messprotokoll Beleuchtungsstärke"
+          ],
+          "kapitel": [
+            "6.5",
+            "7.5",
+            "10.3",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.5",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1",
+            "DIN EN 12464-2"
+          ]
+        },
+        {
+          "name": "LEDVANCE",
+          "systeme": [],
+          "systemarten": [
+            "Innenleuchte",
+            "Feuchtraumleuchte",
+            "Hallenleuchte",
+            "Außenleuchte",
+            "Mastleuchte",
+            "Lichtbandsystem",
+            "Einlegeleuchte",
+            "Anbauleuchte",
+            "Pendelleuchte",
+            "DALI-Leuchte"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Lichtberechnung, falls vorhanden",
+            "Messprotokoll Beleuchtungsstärke"
+          ],
+          "kapitel": [
+            "6.5",
+            "7.5",
+            "10.3",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.5",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1",
+            "DIN EN 12464-2"
+          ]
+        },
+        {
+          "name": "Regiolux",
+          "systeme": [],
+          "systemarten": [
+            "Innenleuchte",
+            "Feuchtraumleuchte",
+            "Hallenleuchte",
+            "Außenleuchte",
+            "Mastleuchte",
+            "Lichtbandsystem",
+            "Einlegeleuchte",
+            "Anbauleuchte",
+            "Pendelleuchte",
+            "DALI-Leuchte"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Lichtberechnung, falls vorhanden",
+            "Messprotokoll Beleuchtungsstärke"
+          ],
+          "kapitel": [
+            "6.5",
+            "7.5",
+            "10.3",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.5",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1",
+            "DIN EN 12464-2"
+          ]
+        },
+        {
+          "name": "Schuch",
+          "systeme": [],
+          "systemarten": [
+            "Innenleuchte",
+            "Feuchtraumleuchte",
+            "Hallenleuchte",
+            "Außenleuchte",
+            "Mastleuchte",
+            "Lichtbandsystem",
+            "Einlegeleuchte",
+            "Anbauleuchte",
+            "Pendelleuchte",
+            "DALI-Leuchte"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Lichtberechnung, falls vorhanden",
+            "Messprotokoll Beleuchtungsstärke"
+          ],
+          "kapitel": [
+            "6.5",
+            "7.5",
+            "10.3",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.5",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1",
+            "DIN EN 12464-2"
+          ]
+        },
+        {
+          "name": "Performance in Lighting",
+          "systeme": [],
+          "systemarten": [
+            "Innenleuchte",
+            "Feuchtraumleuchte",
+            "Hallenleuchte",
+            "Außenleuchte",
+            "Mastleuchte",
+            "Lichtbandsystem",
+            "Einlegeleuchte",
+            "Anbauleuchte",
+            "Pendelleuchte",
+            "DALI-Leuchte"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "CE-Bestätigung",
+            "Konformitätserklärung",
+            "Lichtberechnung, falls vorhanden",
+            "Messprotokoll Beleuchtungsstärke"
+          ],
+          "kapitel": [
+            "6.5",
+            "7.5",
+            "10.3",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.5",
+          "bemerkung": "",
+          "normen": [
+            "ASR A3.4",
+            "DIN EN 12464-1",
+            "DIN EN 12464-2"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Erdung / Potentialausgleich",
+      "code": "ERD",
+      "beschreibung": "Erdung, Potentialausgleich und Blitzschutz.",
+      "hersteller": [
+        {
+          "name": "DEHN",
+          "systeme": [],
+          "systemarten": [
+            "Potentialausgleich",
+            "Haupterdungsschiene",
+            "Erdungsanlage",
+            "Fundamenterder",
+            "Ringerder",
+            "Tiefenerder",
+            "Überspannungsschutz",
+            "Blitzschutzanlage",
+            "Fangeinrichtung",
+            "Ableitung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Prüfprotokoll",
+            "Messprotokoll Erdungsanlage",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Bestandsplan Potentialausgleich"
+          ],
+          "kapitel": [
+            "2.5",
+            "6.6",
+            "7.6",
+            "8.1",
+            "10.5",
+            "12.1.2"
+          ],
+          "geraetelisteKapitel": "6.6",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0100-410",
+            "DIN VDE 0100-540",
+            "DIN 18014"
+          ]
+        },
+        {
+          "name": "OBO Bettermann",
+          "systeme": [],
+          "systemarten": [
+            "Potentialausgleich",
+            "Haupterdungsschiene",
+            "Erdungsanlage",
+            "Fundamenterder",
+            "Ringerder",
+            "Tiefenerder",
+            "Überspannungsschutz",
+            "Blitzschutzanlage",
+            "Fangeinrichtung",
+            "Ableitung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Prüfprotokoll",
+            "Messprotokoll Erdungsanlage",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Bestandsplan Potentialausgleich"
+          ],
+          "kapitel": [
+            "2.5",
+            "6.6",
+            "7.6",
+            "8.1",
+            "10.5",
+            "12.1.2"
+          ],
+          "geraetelisteKapitel": "6.6",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0100-410",
+            "DIN VDE 0100-540",
+            "DIN 18014"
+          ]
+        },
+        {
+          "name": "Pröpster",
+          "systeme": [],
+          "systemarten": [
+            "Potentialausgleich",
+            "Haupterdungsschiene",
+            "Erdungsanlage",
+            "Fundamenterder",
+            "Ringerder",
+            "Tiefenerder",
+            "Überspannungsschutz",
+            "Blitzschutzanlage",
+            "Fangeinrichtung",
+            "Ableitung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Prüfprotokoll",
+            "Messprotokoll Erdungsanlage",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Bestandsplan Potentialausgleich"
+          ],
+          "kapitel": [
+            "2.5",
+            "6.6",
+            "7.6",
+            "8.1",
+            "10.5",
+            "12.1.2"
+          ],
+          "geraetelisteKapitel": "6.6",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0100-410",
+            "DIN VDE 0100-540",
+            "DIN 18014"
+          ]
+        },
+        {
+          "name": "Kleinhuis",
+          "systeme": [],
+          "systemarten": [
+            "Potentialausgleich",
+            "Haupterdungsschiene",
+            "Erdungsanlage",
+            "Fundamenterder",
+            "Ringerder",
+            "Tiefenerder",
+            "Überspannungsschutz",
+            "Blitzschutzanlage",
+            "Fangeinrichtung",
+            "Ableitung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Prüfprotokoll",
+            "Messprotokoll Erdungsanlage",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Bestandsplan Potentialausgleich"
+          ],
+          "kapitel": [
+            "2.5",
+            "6.6",
+            "7.6",
+            "8.1",
+            "10.5",
+            "12.1.2"
+          ],
+          "geraetelisteKapitel": "6.6",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0100-410",
+            "DIN VDE 0100-540",
+            "DIN 18014"
+          ]
+        },
+        {
+          "name": "Phoenix Contact",
+          "systeme": [],
+          "systemarten": [
+            "Potentialausgleich",
+            "Haupterdungsschiene",
+            "Erdungsanlage",
+            "Fundamenterder",
+            "Ringerder",
+            "Tiefenerder",
+            "Überspannungsschutz",
+            "Blitzschutzanlage",
+            "Fangeinrichtung",
+            "Ableitung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Prüfprotokoll",
+            "Messprotokoll Erdungsanlage",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Bestandsplan Potentialausgleich"
+          ],
+          "kapitel": [
+            "2.5",
+            "6.6",
+            "7.6",
+            "8.1",
+            "10.5",
+            "12.1.2"
+          ],
+          "geraetelisteKapitel": "6.6",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0100-410",
+            "DIN VDE 0100-540",
+            "DIN 18014"
+          ]
+        },
+        {
+          "name": "Hager",
+          "systeme": [],
+          "systemarten": [
+            "Potentialausgleich",
+            "Haupterdungsschiene",
+            "Erdungsanlage",
+            "Fundamenterder",
+            "Ringerder",
+            "Tiefenerder",
+            "Überspannungsschutz",
+            "Blitzschutzanlage",
+            "Fangeinrichtung",
+            "Ableitung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Prüfprotokoll",
+            "Messprotokoll Erdungsanlage",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Bestandsplan Potentialausgleich"
+          ],
+          "kapitel": [
+            "2.5",
+            "6.6",
+            "7.6",
+            "8.1",
+            "10.5",
+            "12.1.2"
+          ],
+          "geraetelisteKapitel": "6.6",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0100-410",
+            "DIN VDE 0100-540",
+            "DIN 18014"
+          ]
+        },
+        {
+          "name": "ABB",
+          "systeme": [],
+          "systemarten": [
+            "Potentialausgleich",
+            "Haupterdungsschiene",
+            "Erdungsanlage",
+            "Fundamenterder",
+            "Ringerder",
+            "Tiefenerder",
+            "Überspannungsschutz",
+            "Blitzschutzanlage",
+            "Fangeinrichtung",
+            "Ableitung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Prüfprotokoll",
+            "Messprotokoll Erdungsanlage",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Bestandsplan Potentialausgleich"
+          ],
+          "kapitel": [
+            "2.5",
+            "6.6",
+            "7.6",
+            "8.1",
+            "10.5",
+            "12.1.2"
+          ],
+          "geraetelisteKapitel": "6.6",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0100-410",
+            "DIN VDE 0100-540",
+            "DIN 18014"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rauchwarnmelderanlage",
+      "code": "RWM",
+      "beschreibung": "Rauchwarnmelderanlagen.",
+      "hersteller": [
+        {
+          "name": "Hekatron",
+          "systeme": [],
+          "systemarten": [
+            "Rauchwarnmelder",
+            "Funkvernetzung",
+            "230-V-Versorgung",
+            "Batteriebetrieb",
+            "Relaismodul",
+            "Schnittstelle"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Wartungshinweis",
+            "Einweisungsprotokoll",
+            "Konformitätserklärung"
+          ],
+          "kapitel": [
+            "4.3",
+            "6.12",
+            "7.12",
+            "9.2"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN 14676"
+          ]
+        },
+        {
+          "name": "Ei Electronics",
+          "systeme": [],
+          "systemarten": [
+            "Rauchwarnmelder",
+            "Funkvernetzung",
+            "230-V-Versorgung",
+            "Batteriebetrieb",
+            "Relaismodul",
+            "Schnittstelle"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Wartungshinweis",
+            "Einweisungsprotokoll",
+            "Konformitätserklärung"
+          ],
+          "kapitel": [
+            "4.3",
+            "6.12",
+            "7.12",
+            "9.2"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN 14676"
+          ]
+        },
+        {
+          "name": "Gira",
+          "systeme": [],
+          "systemarten": [
+            "Rauchwarnmelder",
+            "Funkvernetzung",
+            "230-V-Versorgung",
+            "Batteriebetrieb",
+            "Relaismodul",
+            "Schnittstelle"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Wartungshinweis",
+            "Einweisungsprotokoll",
+            "Konformitätserklärung"
+          ],
+          "kapitel": [
+            "4.3",
+            "6.12",
+            "7.12",
+            "9.2"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN 14676"
+          ]
+        },
+        {
+          "name": "Jung",
+          "systeme": [],
+          "systemarten": [
+            "Rauchwarnmelder",
+            "Funkvernetzung",
+            "230-V-Versorgung",
+            "Batteriebetrieb",
+            "Relaismodul",
+            "Schnittstelle"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Wartungshinweis",
+            "Einweisungsprotokoll",
+            "Konformitätserklärung"
+          ],
+          "kapitel": [
+            "4.3",
+            "6.12",
+            "7.12",
+            "9.2"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN 14676"
+          ]
+        },
+        {
+          "name": "Busch-Jaeger",
+          "systeme": [],
+          "systemarten": [
+            "Rauchwarnmelder",
+            "Funkvernetzung",
+            "230-V-Versorgung",
+            "Batteriebetrieb",
+            "Relaismodul",
+            "Schnittstelle"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Wartungshinweis",
+            "Einweisungsprotokoll",
+            "Konformitätserklärung"
+          ],
+          "kapitel": [
+            "4.3",
+            "6.12",
+            "7.12",
+            "9.2"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN 14676"
+          ]
+        },
+        {
+          "name": "EiMSIG",
+          "systeme": [],
+          "systemarten": [
+            "Rauchwarnmelder",
+            "Funkvernetzung",
+            "230-V-Versorgung",
+            "Batteriebetrieb",
+            "Relaismodul",
+            "Schnittstelle"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Wartungshinweis",
+            "Einweisungsprotokoll",
+            "Konformitätserklärung"
+          ],
+          "kapitel": [
+            "4.3",
+            "6.12",
+            "7.12",
+            "9.2"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN 14676"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Brandmeldeanlage",
+      "code": "GMA",
+      "beschreibung": "Brandmelde- und Gefahrenmeldeanlagen.",
+      "hersteller": [
+        {
+          "name": "Hekatron",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN 14675",
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-2",
+            "DIN EN 54"
+          ]
+        },
+        {
+          "name": "Esser by Honeywell",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN 14675",
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-2",
+            "DIN EN 54"
+          ]
+        },
+        {
+          "name": "Bosch",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN 14675",
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-2",
+            "DIN EN 54"
+          ]
+        },
+        {
+          "name": "Siemens Cerberus",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN 14675",
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-2",
+            "DIN EN 54"
+          ]
+        },
+        {
+          "name": "Telenot",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN 14675",
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-2",
+            "DIN EN 54"
+          ]
+        },
+        {
+          "name": "Honeywell / Novar",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN 14675",
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-2",
+            "DIN EN 54"
+          ]
+        },
+        {
+          "name": "Daitem",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN 14675",
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-2",
+            "DIN EN 54"
+          ]
+        },
+        {
+          "name": "Gira",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN 14675",
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-2",
+            "DIN EN 54"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gefahrenmelde- / Alarmanlage",
+      "code": "GMA",
+      "beschreibung": "Brandmelde- und Gefahrenmeldeanlagen.",
+      "hersteller": [
+        {
+          "name": "Hekatron",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-3"
+          ]
+        },
+        {
+          "name": "Esser by Honeywell",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-3"
+          ]
+        },
+        {
+          "name": "Bosch",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-3"
+          ]
+        },
+        {
+          "name": "Siemens Cerberus",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-3"
+          ]
+        },
+        {
+          "name": "Telenot",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-3"
+          ]
+        },
+        {
+          "name": "Honeywell / Novar",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-3"
+          ]
+        },
+        {
+          "name": "Daitem",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-3"
+          ]
+        },
+        {
+          "name": "Gira",
+          "systeme": [],
+          "systemarten": [
+            "Brandmeldezentrale",
+            "Handfeuermelder",
+            "Rauchmelder",
+            "Wärmemelder",
+            "Signalgeber",
+            "Koppler",
+            "Alarmanlage",
+            "Einbruchmeldeanlage",
+            "Übertragungseinrichtung"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Inbetriebnahmeprotokoll",
+            "Wartungsanweisung",
+            "Konformitätserklärung",
+            "CE-Bestätigung",
+            "Abnahmeprotokoll"
+          ],
+          "kapitel": [
+            "6.12",
+            "7.12",
+            "10.1",
+            "12.1.4"
+          ],
+          "geraetelisteKapitel": "6.12",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0833-1",
+            "DIN VDE 0833-3"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Telekommunikation",
+      "code": "TK",
+      "beschreibung": "Telekommunikationsanlagen.",
+      "hersteller": [
+        {
+          "name": "Rutenbeck",
+          "systeme": [],
+          "systemarten": [
+            "TAE",
+            "UAE",
+            "VoIP",
+            "Telefonanlage",
+            "SIP-Telefon",
+            "Patchfeld",
+            "Kommunikationsdose"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "6.7",
+            "7.7"
+          ],
+          "geraetelisteKapitel": "6.7",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Telegärtner",
+          "systeme": [],
+          "systemarten": [
+            "TAE",
+            "UAE",
+            "VoIP",
+            "Telefonanlage",
+            "SIP-Telefon",
+            "Patchfeld",
+            "Kommunikationsdose"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "6.7",
+            "7.7"
+          ],
+          "geraetelisteKapitel": "6.7",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Metz Connect",
+          "systeme": [],
+          "systemarten": [
+            "TAE",
+            "UAE",
+            "VoIP",
+            "Telefonanlage",
+            "SIP-Telefon",
+            "Patchfeld",
+            "Kommunikationsdose"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "6.7",
+            "7.7"
+          ],
+          "geraetelisteKapitel": "6.7",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Auerswald",
+          "systeme": [],
+          "systemarten": [
+            "TAE",
+            "UAE",
+            "VoIP",
+            "Telefonanlage",
+            "SIP-Telefon",
+            "Patchfeld",
+            "Kommunikationsdose"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "6.7",
+            "7.7"
+          ],
+          "geraetelisteKapitel": "6.7",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Agfeo",
+          "systeme": [],
+          "systemarten": [
+            "TAE",
+            "UAE",
+            "VoIP",
+            "Telefonanlage",
+            "SIP-Telefon",
+            "Patchfeld",
+            "Kommunikationsdose"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "6.7",
+            "7.7"
+          ],
+          "geraetelisteKapitel": "6.7",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Gigaset pro",
+          "systeme": [],
+          "systemarten": [
+            "TAE",
+            "UAE",
+            "VoIP",
+            "Telefonanlage",
+            "SIP-Telefon",
+            "Patchfeld",
+            "Kommunikationsdose"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "6.7",
+            "7.7"
+          ],
+          "geraetelisteKapitel": "6.7",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Grandstream",
+          "systeme": [],
+          "systemarten": [
+            "TAE",
+            "UAE",
+            "VoIP",
+            "Telefonanlage",
+            "SIP-Telefon",
+            "Patchfeld",
+            "Kommunikationsdose"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "6.7",
+            "7.7"
+          ],
+          "geraetelisteKapitel": "6.7",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Yealink",
+          "systeme": [],
+          "systemarten": [
+            "TAE",
+            "UAE",
+            "VoIP",
+            "Telefonanlage",
+            "SIP-Telefon",
+            "Patchfeld",
+            "Kommunikationsdose"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "6.7",
+            "7.7"
+          ],
+          "geraetelisteKapitel": "6.7",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Breitbandkommunikationsanlage",
+      "code": "BK",
+      "beschreibung": "BK-, SAT- und TV-Anlagen.",
+      "hersteller": [
+        {
+          "name": "Kathrein",
+          "systeme": [],
+          "systemarten": [
+            "BK-Verstärker",
+            "SAT-Verteilung",
+            "Multischalter",
+            "Antennendose",
+            "Koaxialkabel",
+            "Abzweiger",
+            "Verteiler",
+            "Kopfstelle"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Messprotokoll",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.4",
+            "6.11",
+            "7.11",
+            "10.6",
+            "12.1.5"
+          ],
+          "geraetelisteKapitel": "6.11",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "WISI",
+          "systeme": [],
+          "systemarten": [
+            "BK-Verstärker",
+            "SAT-Verteilung",
+            "Multischalter",
+            "Antennendose",
+            "Koaxialkabel",
+            "Abzweiger",
+            "Verteiler",
+            "Kopfstelle"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Messprotokoll",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.4",
+            "6.11",
+            "7.11",
+            "10.6",
+            "12.1.5"
+          ],
+          "geraetelisteKapitel": "6.11",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Axing",
+          "systeme": [],
+          "systemarten": [
+            "BK-Verstärker",
+            "SAT-Verteilung",
+            "Multischalter",
+            "Antennendose",
+            "Koaxialkabel",
+            "Abzweiger",
+            "Verteiler",
+            "Kopfstelle"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Messprotokoll",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.4",
+            "6.11",
+            "7.11",
+            "10.6",
+            "12.1.5"
+          ],
+          "geraetelisteKapitel": "6.11",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Televes",
+          "systeme": [],
+          "systemarten": [
+            "BK-Verstärker",
+            "SAT-Verteilung",
+            "Multischalter",
+            "Antennendose",
+            "Koaxialkabel",
+            "Abzweiger",
+            "Verteiler",
+            "Kopfstelle"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Messprotokoll",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.4",
+            "6.11",
+            "7.11",
+            "10.6",
+            "12.1.5"
+          ],
+          "geraetelisteKapitel": "6.11",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Triax",
+          "systeme": [],
+          "systemarten": [
+            "BK-Verstärker",
+            "SAT-Verteilung",
+            "Multischalter",
+            "Antennendose",
+            "Koaxialkabel",
+            "Abzweiger",
+            "Verteiler",
+            "Kopfstelle"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Messprotokoll",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.4",
+            "6.11",
+            "7.11",
+            "10.6",
+            "12.1.5"
+          ],
+          "geraetelisteKapitel": "6.11",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Astro",
+          "systeme": [],
+          "systemarten": [
+            "BK-Verstärker",
+            "SAT-Verteilung",
+            "Multischalter",
+            "Antennendose",
+            "Koaxialkabel",
+            "Abzweiger",
+            "Verteiler",
+            "Kopfstelle"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Messprotokoll",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.4",
+            "6.11",
+            "7.11",
+            "10.6",
+            "12.1.5"
+          ],
+          "geraetelisteKapitel": "6.11",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        },
+        {
+          "name": "Spaun",
+          "systeme": [],
+          "systemarten": [
+            "BK-Verstärker",
+            "SAT-Verteilung",
+            "Multischalter",
+            "Antennendose",
+            "Koaxialkabel",
+            "Abzweiger",
+            "Verteiler",
+            "Kopfstelle"
+          ],
+          "dokumentarten": [
+            "Produktdatenblatt",
+            "Montageanleitung",
+            "Bedienungsanleitung",
+            "Messprotokoll",
+            "Konformitätserklärung",
+            "CE-Bestätigung"
+          ],
+          "kapitel": [
+            "4.4",
+            "6.11",
+            "7.11",
+            "10.6",
+            "12.1.5"
+          ],
+          "geraetelisteKapitel": "6.11",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 50173",
+            "ISO/IEC 11801",
+            "DIN EN 50174"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Elektroinstallation / DIN VDE 0100",
+      "code": "",
+      "beschreibung": "Elektroinstallation / DIN VDE 0100",
+      "hersteller": [
+        {
+          "name": "Allgemein",
+          "systeme": [],
+          "systemarten": [],
+          "dokumentarten": [
+            "Konformitätserklärung"
+          ],
+          "kapitel": [],
+          "geraetelisteKapitel": "",
+          "bemerkung": "",
+          "normen": [
+            "DIN VDE 0100"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Kabeltragsysteme / Verlegesysteme mit Funktionserhalt",
+      "code": "KTS-FE",
+      "beschreibung": "Kabeltragsysteme / Verlegesysteme mit Funktionserhalt.",
+      "hersteller": [
+        {
+          "name": "Allgemein",
+          "systeme": [],
+          "systemarten": [
+            "E30",
+            "E60",
+            "E90"
+          ],
+          "dokumentarten": [
+            "Konformitätserklärung"
+          ],
+          "kapitel": [
+            "2.5",
+            "6.4",
+            "7.4",
+            "12.2"
+          ],
+          "geraetelisteKapitel": "6.4",
+          "bemerkung": "",
+          "normen": [
+            "DIN 4102-12"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Blitzschutzanlage",
+      "code": "",
+      "beschreibung": "Blitzschutzanlage",
+      "hersteller": [
+        {
+          "name": "Allgemein",
+          "systeme": [],
+          "systemarten": [],
+          "dokumentarten": [
+            "Konformitätserklärung"
+          ],
+          "kapitel": [],
+          "geraetelisteKapitel": "",
+          "bemerkung": "",
+          "normen": [
+            "DIN EN 62305",
+            "DIN VDE 0185-305"
+          ]
+        }
+      ]
+    }
+  ]
+}

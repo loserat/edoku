@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Leistungsbereiche | edoku</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <%- include("partials/header", { active }) %>
+    <main class="page compact-work-page">
+      <div class="page-title">
+        <p class="eyebrow">Projekt</p>
+        <h1>Leistungsbereiche</h1>
+        <p class="page-subtitle">Projektbezogene Gewerke auswählen und Systembezug strukturiert vorbereiten.</p>
+      </div>
+      <%- include("partials/flash", { flash }) %>
+      <%- include("partials/sectionTabs", { active }) %>
+
+      <form action="/leistungsbereiche" method="post" data-tabs="leistungsbereiche" data-autosave class="tab-shell">
+        <p class="notice">
+          Abgewählte Leistungsbereiche bleiben im Hintergrund erhalten. Zugehörige Gerätelisten werden deaktiviert und nicht exportiert; vorhandene Positionen werden nicht gelöscht.
+        </p>
+        <section class="summary-cards compact-summary">
+          <div class="summary-card"><span>Aktiv</span><strong><%= aktiv.length %></strong></div>
+          <div class="summary-card"><span>Optionen</span><strong><%= optionen.length %></strong></div>
+          <div class="summary-card"><span>Mit Systemauswahl</span><strong><%= Object.keys(systemeNachLeistungsbereich).length %></strong></div>
+        </section>
+
+        <div class="tabs" role="tablist" aria-label="Leistungsbereichsansichten">
+          <button class="tab-button" type="button" data-tab-target="alle">Alle Bereiche</button>
+          <button class="tab-button" type="button" data-tab-target="aktive">Aktive Auswahl</button>
+          <button class="tab-button" type="button" data-tab-target="systeme">Systembezug</button>
+        </div>
+
+        <section class="tab-panel" data-tab-panel="alle">
+          <div class="panel-head">
+            <div>
+              <h2>Alle Leistungsbereiche</h2>
+              <p>Grundauswahl für Dokumentenmatrix, Gerätelisten und Export.</p>
+            </div>
+          </div>
+          <div class="checkbox-grid dense">
+            <% optionen.forEach((option) => { %>
+              <label class="checkbox-card">
+                <input type="checkbox" name="leistungsbereiche" value="<%= option %>" <%= aktiv.includes(option) ? "checked" : "" %>>
+                <span><%= option %></span>
+              </label>
+            <% }) %>
+          </div>
+        </section>
+
+        <section class="tab-panel" data-tab-panel="aktive">
+          <div class="panel-head">
+            <div>
+              <h2>Aktive Auswahl</h2>
+              <p>Kontrollansicht der aktuell markierten Bereiche.</p>
+            </div>
+          </div>
+          <div class="checkbox-grid">
+            <% if (!aktiv.length) { %>
+              <p class="notice">Noch keine Leistungsbereiche aktiv.</p>
+            <% } %>
+            <% aktiv.forEach((option) => { %>
+              <div class="checkbox-card">
+                <span><%= option %></span>
+              </div>
+            <% }) %>
+          </div>
+        </section>
+
+        <section class="tab-panel" data-tab-panel="systeme">
+          <div class="panel-head">
+            <div>
+              <h2>Systembezug</h2>
+              <p>Legacy-Auswahl bleibt erhalten; die detaillierte Auswahl liegt unter Systemauswahl.</p>
+            </div>
+            <a class="button-link" href="/systemauswahl">Systemauswahl öffnen</a>
+          </div>
+          <div class="checkbox-grid">
+            <% optionen.forEach((option) => { %>
+              <% const systeme = systemeNachLeistungsbereich[option] || []; %>
+              <% if (aktiv.includes(option) && systeme.length > 0) { %>
+                <div class="checkbox-card stack">
+                  <label>
+                    <span><%= option %></span>
+                    <select name="systemAuswahl[<%= option %>]">
+                      <option value="">Bitte auswählen</option>
+                      <% systeme.forEach((system) => { %>
+                        <option value="<%= system.id %>" <%= systemAuswahl[option] === system.id ? "selected" : "" %>>
+                          <%= system.hersteller %> - <%= system.system %>
+                        </option>
+                      <% }) %>
+                    </select>
+                  </label>
+                  <% systeme.forEach((system) => { %>
+                    <p class="meta-line">
+                      <strong><%= system.hersteller %>:</strong>
+                      <%= system.normen.join(", ") %>
+                    </p>
+                  <% }) %>
+                </div>
+              <% } %>
+            <% }) %>
+          </div>
+        </section>
+
+      </form>
+    </main>
+    <%- include("partials/footer") %>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

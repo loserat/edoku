@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Projekte | edoku</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <%- include("partials/header", { active }) %>
+    <main class="page wide project-manager-page compact-work-page">
+      <div class="page-title">
+        <p class="eyebrow">Projektverwaltung</p>
+        <h1>Projekte</h1>
+        <p class="page-subtitle">Projekte anlegen, öffnen und als aktiven Arbeitskontext ins Programm laden.</p>
+      </div>
+
+      <%- include("partials/flash", { flash }) %>
+      <%- include("partials/sectionTabs", { active }) %>
+
+      <% const aktiveProjekte = projects.filter((project) => project.status === "aktiv"); %>
+      <% const archivProjekte = projects.filter((project) => project.status !== "aktiv"); %>
+      <% const currentProject = projects.find((project) => project.id === currentProjectId) || aktiveProjekte[0] || projects[0]; %>
+
+      <div data-tabs="projekte" class="tab-shell project-manager-shell">
+        <div class="tabs" role="tablist" aria-label="Projektverwaltung">
+          <button class="tab-button" type="button" data-tab-target="uebersicht">Projekt auswählen</button>
+          <button class="tab-button" type="button" data-tab-target="archiv">Archiv / Gelöscht</button>
+        </div>
+
+        <section class="project-manager-layout tab-panel" id="projekt-auswahl" data-tab-panel="uebersicht">
+          <div class="project-dashboard">
+            <section class="current-project-panel">
+              <div class="current-project-main">
+                <span class="current-marker">Aktuell geöffnet</span>
+                <h2><%= currentProject ? (currentProject.projektname || currentProject.id) : "Kein Projekt ausgewählt" %></h2>
+                <div class="current-project-id"><%= currentProject ? currentProject.id : "Bitte links ein Projekt auswählen oder ein neues Projekt anlegen." %></div>
+              </div>
+              <dl class="current-project-meta">
+                <div>
+                  <dt>Projektnummer</dt>
+                  <dd><%= currentProject && currentProject.projektnummer ? currentProject.projektnummer : "-" %></dd>
+                </div>
+                <div>
+                  <dt>Auftraggeber</dt>
+                  <dd><%= currentProject && currentProject.auftraggeber ? currentProject.auftraggeber : "-" %></dd>
+                </div>
+                <div>
+                  <dt>Liegenschaft</dt>
+                  <dd><%= currentProject && currentProject.liegenschaft ? currentProject.liegenschaft : "-" %></dd>
+                </div>
+                <div>
+                  <dt>Status</dt>
+                  <dd><%= currentProject && currentProject.status ? currentProject.status : "-" %></dd>
+                </div>
+              </dl>
+              <div class="current-project-actions">
+                <a class="button-link" href="/projekt">Stammdaten</a>
+                <a class="button-link secondary" href="/dashboard">Dashboard</a>
+              </div>
+            </section>
+
+            <section class="project-dashboard-stats">
+              <div>
+                <span>Aktiv</span>
+                <strong><%= aktiveProjekte.length %></strong>
+              </div>
+              <div>
+                <span>Archiviert / gelöscht</span>
+                <strong><%= archivProjekte.length %></strong>
+              </div>
+              <div>
+                <span>Gesamt</span>
+                <strong><%= projects.length %></strong>
+              </div>
+            </section>
+
+            <div class="panel-head">
+              <div>
+                <h2>Dashboard aktive Projekte</h2>
+                <p>Nur aktive, nicht archivierte Projekte werden hier als Arbeitsbestand angezeigt.</p>
+              </div>
+              <a class="button-link secondary" href="/projektarchiv">Projekt importieren</a>
+            </div>
+
+            <% if (!aktiveProjekte.length) { %>
+              <div class="empty-state">Noch keine aktiven Projekte vorhanden.</div>
+            <% } %>
+
+            <div class="project-grid">
+              <% aktiveProjekte.forEach((project) => { %>
+                <% const isCurrent = project.id === currentProjectId; %>
+                <article class="project-card <%= isCurrent ? "is-current" : "" %>">
+                  <div class="project-card-head">
+                    <div>
+                      <span class="project-label"><%= project.projektnummer || "ohne Projektnummer" %></span>
+                      <h3><%= project.projektname || project.id %></h3>
+                    </div>
+                    <span class="badge <%= isCurrent ? "current" : "on" %>"><%= isCurrent ? "aktuell" : project.status %></span>
+                  </div>
+                  <dl class="project-meta">
+                    <div>
+                      <dt>Auftraggeber</dt>
+                      <dd><%= project.auftraggeber || "-" %></dd>
+                    </div>
+                    <div>
+                      <dt>Liegenschaft</dt>
+                      <dd><%= project.liegenschaft || "-" %></dd>
+                    </div>
+                    <div>
+                      <dt>Geändert</dt>
+                      <dd><%= project.geaendertAm || "-" %></dd>
+                    </div>
+                    <div>
+                      <dt>Projekt-ID</dt>
+                      <dd><%= project.id %></dd>
+                    </div>
+                  </dl>
+                  <div class="project-actions">
+                    <form action="/projekte/<%= project.id %>/oeffnen" method="post">
+                      <button class="<%= isCurrent ? "secondary" : "" %>" type="submit"><%= isCurrent ? "Neu laden" : "Öffnen" %></button>
+                    </form>
+                    <form action="/projekte/<%= project.id %>/exportieren" method="post"><button class="secondary" type="submit">Export</button></form>
+                    <form action="/projekte/<%= project.id %>/archivieren" method="post"><button class="secondary" type="submit">Archiv</button></form>
+                    <form action="/projekte/<%= project.id %>/loeschen" method="post"><button class="secondary danger" type="submit">Löschen</button></form>
+                  </div>
+                </article>
+              <% }) %>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="projekt-archiv" data-tab-panel="archiv">
+          <div class="panel-head">
+            <div>
+              <h2>Archiv / Gelöscht</h2>
+              <p>Archivierte Projekte bleiben erhalten. Gelöschte Projekte werden nur als Status markiert.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Projektname</th>
+                  <th>Projektnummer</th>
+                  <th>Status</th>
+                  <th>Erstellt am</th>
+                  <th>Geändert am</th>
+                  <th>Aktionen</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (!archivProjekte.length) { %>
+                  <tr><td colspan="6">Keine archivierten oder gelöschten Projekte.</td></tr>
+                <% } %>
+                <% archivProjekte.forEach((project) => { %>
+                  <tr>
+                    <td><strong><%= project.projektname || project.id %></strong></td>
+                    <td><%= project.projektnummer || "-" %></td>
+                    <td><span class="badge off"><%= project.status %></span></td>
+                    <td><%= project.erstelltAm || "-" %></td>
+                    <td><%= project.geaendertAm || "-" %></td>
+                    <td class="actions-cell">
+                      <% if (project.status !== "geloescht") { %>
+                        <form action="/projekte/<%= project.id %>/oeffnen" method="post"><button type="submit">Öffnen</button></form>
+                        <form action="/projekte/<%= project.id %>/exportieren" method="post"><button type="submit">Exportieren</button></form>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+    <%- include("partials/footer") %>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

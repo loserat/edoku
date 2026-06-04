@@ -1,0 +1,22 @@
+[
+  {
+    "id": "bs_001",
+    "aktiv": true,
+    "geschoss": "",
+    "raum": "",
+    "bauteil": "",
+    "abschottungssystem": "",
+    "hersteller": "",
+    "system": "",
+    "zulassung": "",
+    "feuerwiderstand": "",
+    "medium": "",
+    "anzahl_kabel": "",
+    "durchmesser": "",
+    "ausfuehrungsdatum": "",
+    "monteur": "",
+    "foto_vorher": "",
+    "foto_nachher": "",
+    "bemerkung": ""
+  }
+]
