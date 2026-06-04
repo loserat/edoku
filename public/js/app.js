@@ -161,6 +161,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const attachmentCategoryDefaultsNode = document.querySelector("#attachment-category-defaults-json");
+  if (attachmentCategoryDefaultsNode) {
+    const attachmentCategoryDefaults = JSON.parse(attachmentCategoryDefaultsNode.textContent || "{}");
+    document.querySelectorAll(".attachment-upload select[name='category']").forEach((select) => {
+      select.addEventListener("change", () => {
+        const form = select.closest("form");
+        const chapterInput = form ? form.querySelector("input[name='kapitel']") : null;
+        const defaults = attachmentCategoryDefaults[select.value] || {};
+        if (chapterInput && defaults.kapitel) chapterInput.value = defaults.kapitel;
+      });
+    });
+  }
+
   const hashSectionLinks = Array.from(document.querySelectorAll(".section-tabs a[href*='#']"));
   if (hashSectionLinks.length) {
     function updateHashTabs() {
