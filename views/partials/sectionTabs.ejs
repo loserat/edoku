@@ -43,12 +43,16 @@
 <% } else if (documentationTabs.includes(active)) { %>
   <% tabs = [
     ["dokumente", "/dokumente", "Matrix", "grid"],
-    ["anhaenge", "/anhaenge", "Anhänge", "paperclip"],
+    ["anhaenge", "/anhaenge?kategorie=Brandschutz", "Brandschutz", "shield"],
     ["anhaenge", "/anhaenge?kategorie=Stromlaufpläne", "Stromlaufpläne", "file"],
     ["anhaenge", "/anhaenge?kategorie=Schaltpläne", "Schaltpläne", "file"],
     ["anhaenge", "/anhaenge?kategorie=Installationspläne", "Installationspläne", "file"],
     ["anhaenge", "/anhaenge?kategorie=Schemata", "Schemata", "file"],
-    ["anhaenge", "/anhaenge?kategorie=Messprotokolle", "Messprotokolle", "file"]
+    ["anhaenge", "/anhaenge?kategorie=Messprotokolle", "Messprotokolle", "file"],
+    ["anhaenge", "/anhaenge?kategorie=Fotos", "Fotos", "image"],
+    ["anhaenge", "/anhaenge?kategorie=Pläne", "Weitere Pläne", "file"],
+    ["anhaenge", "/anhaenge?kategorie=Nachweise", "Nachweise", "file"],
+    ["anhaenge", "/anhaenge?kategorie=Allgemein", "Allgemein", "paperclip"]
   ]; %>
 <% } else if (outputTabs.includes(active)) { %>
   <% tabs = [

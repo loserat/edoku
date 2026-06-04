@@ -55,6 +55,21 @@ function documentationAttachments(raw) {
   return normalizeAttachments(raw).filter(isDocumentationAttachment);
 }
 
+function attachmentDisplayTitle(entry, categoryMeta) {
+  const base = String(entry.title || entry.originalName || categoryMeta.title || "Dokument").trim();
+  const detailsByCategory = {
+    "Stromlaufpläne": [entry.stockwerk, entry.verteiler, entry.plannummer, entry.revision ? `Rev. ${entry.revision}` : ""],
+    "Schaltpläne": [entry.anlage, entry.verteiler, entry.plannummer, entry.revision ? `Rev. ${entry.revision}` : ""],
+    "Installationspläne": [entry.stockwerk, entry.bereich, entry.plannummer, entry.revision ? `Rev. ${entry.revision}` : ""],
+    "Schemata": [entry.anlage, entry.plannummer, entry.revision ? `Rev. ${entry.revision}` : ""],
+    "Messprotokolle": [entry.messart, entry.normgrundlage, entry.anlage || entry.bereich, entry.datum]
+  };
+  const details = (detailsByCategory[entry.category] || [entry.stockwerk])
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+  return details.length ? `${base} - ${details.join(" / ")}` : base;
+}
+
 function buildDocumentationAttachmentEntries(matrix, rawAttachments) {
   const attachments = documentationAttachments(rawAttachments).filter((entry) => entry.export !== false);
   if (!attachments.length) return [];
@@ -82,7 +97,7 @@ function buildDocumentationAttachmentEntries(matrix, rawAttachments) {
         kapitel: displayKapitel,
         originalKapitel,
         displayKapitel,
-        titel: [entry.title || entry.originalName || categoryMeta.title, entry.stockwerk ? `(${entry.stockwerk})` : ""].filter(Boolean).join(" "),
+        titel: attachmentDisplayTitle(entry, categoryMeta),
         ebene: 3,
         aktiv: true,
         export: true,
@@ -115,6 +130,14 @@ function updateAttachmentDocumentMeta(rawAttachments, attachmentId, values) {
       category: String(values.category || entry.category || "Allgemein").trim() || "Allgemein",
       kapitel: String(values.kapitel || categoryMeta.kapitel || "").trim(),
       stockwerk: String(values.stockwerk || "").trim(),
+      anlage: String(values.anlage || "").trim(),
+      verteiler: String(values.verteiler || "").trim(),
+      plannummer: String(values.plannummer || "").trim(),
+      revision: String(values.revision || "").trim(),
+      bereich: String(values.bereich || "").trim(),
+      messart: String(values.messart || "").trim(),
+      normgrundlage: String(values.normgrundlage || "").trim(),
+      datum: String(values.datum || "").trim(),
       export: Boolean(values.export)
     };
   });

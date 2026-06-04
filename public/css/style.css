@@ -2370,13 +2370,9 @@ tr:last-child td {
 }
 
 .attachment-topline {
-  align-items: end;
   border-bottom: 1px solid var(--line);
-  display: flex;
-  gap: 16px;
-  justify-content: space-between;
   margin-bottom: 12px;
-  padding-bottom: 10px;
+  padding-bottom: 8px;
 }
 
 .attachment-topline h1 {
@@ -2384,36 +2380,15 @@ tr:last-child td {
   margin: 0;
 }
 
-.attachment-stat-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: flex-end;
-}
-
-.attachment-stat-strip span {
-  background: var(--surface-muted);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 12px;
-  padding: 5px 10px;
-}
-
-.attachment-stat-strip strong {
-  color: var(--text);
-  margin-left: 4px;
-}
-
-.attachment-stat-strip .is-warning strong {
-  color: var(--warning);
-}
-
 .attachment-workspace {
   align-items: start;
   display: grid;
   gap: 14px;
   grid-template-columns: 250px minmax(0, 1fr);
+}
+
+.attachment-workspace-single {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .attachment-sidebar {
@@ -2486,7 +2461,7 @@ tr:last-child td {
   align-items: end;
   display: grid;
   gap: 8px;
-  grid-template-columns: minmax(220px, 1.4fr) minmax(220px, 1.2fr) minmax(180px, 0.9fr) 92px minmax(120px, 0.6fr) auto auto;
+  grid-template-columns: minmax(260px, 1.4fr) minmax(240px, 1.2fr) 92px minmax(130px, 0.7fr) auto auto;
 }
 
 .attachment-list-card {
@@ -2497,47 +2472,46 @@ tr:last-child td {
   align-items: center;
 }
 
-.attachment-table-wrap {
-  max-height: calc(100vh - 276px);
+.attachment-card-list {
+  display: grid;
+  gap: 10px;
 }
 
-.attachment-table {
-  min-width: 1620px;
+.attachment-empty,
+.attachment-item {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
 }
 
-.attachment-table th:nth-child(1) {
-  width: 360px;
+.attachment-empty {
+  color: var(--muted);
+  font-weight: 800;
 }
 
-.attachment-table th:nth-child(2) {
-  width: 150px;
+.attachment-item {
+  display: grid;
+  gap: 10px;
 }
 
-.attachment-table th:nth-child(3) {
-  width: 520px;
+.attachment-item-head {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
 }
 
-.attachment-table th:nth-child(4) {
-  width: 430px;
+.attachment-item-head h3 {
+  font-size: 15px;
+  margin: 0 0 3px;
 }
 
-.attachment-table th:nth-child(5) {
-  width: 160px;
-}
-
-.attachment-table td {
-  vertical-align: top;
-}
-
-.attachment-file-cell strong,
-.attachment-file-cell small {
-  display: block;
-}
-
-.attachment-file-cell small {
+.attachment-item-head p,
+.attachment-item-actions small {
   color: var(--muted);
   font-size: 12px;
-  margin-top: 3px;
+  margin: 0;
   overflow-wrap: anywhere;
 }
 
@@ -2546,6 +2520,13 @@ tr:last-child td {
   display: flex;
   flex-direction: column;
   gap: 5px;
+}
+
+.attachment-status-stack.horizontal {
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .panel-head.compact {
@@ -2606,17 +2587,17 @@ tr:last-child td {
   white-space: nowrap;
 }
 
-.attachment-meta-form {
+.attachment-detail-form {
   display: grid;
   gap: 8px;
-  grid-template-columns: minmax(170px, 1.35fr) minmax(145px, 0.9fr) 82px minmax(105px, 0.75fr) 56px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
-.attachment-meta-form label {
+.attachment-detail-form label {
   min-width: 0;
 }
 
-.attachment-meta-form label > span {
+.attachment-detail-form label > span {
   color: var(--muted);
   display: block;
   font-size: 0.72rem;
@@ -2624,8 +2605,8 @@ tr:last-child td {
   margin-bottom: 3px;
 }
 
-.attachment-meta-form input,
-.attachment-meta-form select {
+.attachment-detail-form input,
+.attachment-detail-form select {
   min-height: 30px;
   padding: 5px 9px;
 }
@@ -2660,12 +2641,21 @@ tr:last-child td {
   min-height: 48px;
 }
 
-.attachment-meta-form .compact-toggle {
+.attachment-detail-form .compact-toggle {
   min-height: 46px;
 }
 
-.attachment-meta-form .compact-toggle span {
+.attachment-detail-form .compact-toggle span {
   font-size: 12px;
+}
+
+.attachment-item-actions {
+  align-items: center;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding-top: 8px;
 }
 
 .compact-toggle input {

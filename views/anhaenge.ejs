@@ -22,42 +22,23 @@
           <p class="eyebrow">Projektdateien</p>
           <h1><%= selectedKategorie || "Anhänge" %></h1>
         </div>
-        <div class="attachment-stat-strip" aria-label="Anhangstatus">
-          <span>Gesamt <strong><%= attachmentStats.total %></strong></span>
-          <span>PDF <strong><%= attachmentStats.pdfs %></strong></span>
-          <span>Bilder <strong><%= attachmentStats.images %></strong></span>
-          <span>Export <strong><%= attachmentStats.export %></strong></span>
-          <% if (attachmentStats.missing) { %>
-            <span class="is-warning">Fehlt <strong><%= attachmentStats.missing %></strong></span>
-          <% } %>
-        </div>
       </section>
 
-      <section class="attachment-workspace">
-        <aside class="attachment-sidebar panel-card">
-          <div class="attachment-sidebar-head">
-            <h2>Kategorien</h2>
-            <a href="/anhaenge" class="<%= !selectedKategorie ? "active" : "" %>">
-              <span>Alle Dateien</span>
-              <strong><%= attachmentStats.total %></strong>
-            </a>
-          </div>
-          <nav class="attachment-category-list" aria-label="Anhangkategorien">
-            <% attachmentCategories.forEach((category) => { %>
-              <a href="/anhaenge?kategorie=<%= encodeURIComponent(category) %>" class="<%= selectedKategorie === category ? "active" : "" %>">
-                <span><%= category %></span>
-                <strong><%= attachmentCounts[category] || 0 %></strong>
-              </a>
-            <% }) %>
-          </nav>
-        </aside>
-
+      <section class="attachment-workspace attachment-workspace-single">
         <section class="attachment-main">
-          <form class="panel-card attachment-upload" action="/anhaenge/upload<%= selectedKategorie ? `?kategorie=${encodeURIComponent(selectedKategorie)}` : "" %>" method="post" enctype="multipart/form-data">
+          <form class="panel-card attachment-upload" action="/anhaenge/upload?kategorie=<%= encodeURIComponent(selectedKategorie) %>" method="post" enctype="multipart/form-data">
             <div class="panel-head compact">
               <div>
-                <h2>Datei hinzufügen</h2>
-                <p>PDFs werden im Export einsortiert, Bilder können Brandschottungen zugeordnet werden.</p>
+                <h2>Datei in <%= selectedKategorie %> hinzufügen</h2>
+                <p>
+                  <% if (["Stromlaufpläne", "Schaltpläne", "Installationspläne", "Schemata", "Messprotokolle"].includes(selectedKategorie)) { %>
+                    PDF hochladen und anschließend Kapitel sowie Stockwerk für Inhaltsverzeichnis und Export pflegen.
+                  <% } else if (selectedKategorie === "Brandschutz" || selectedKategorie === "Fotos") { %>
+                    Bilder hochladen und anschließend einer Brandschottung als Foto 1 oder Foto 2 zuordnen.
+                  <% } else { %>
+                    Datei hochladen und anschließend die Einordnung im aktuellen Bereich pflegen.
+                  <% } %>
+                </p>
               </div>
             </div>
             <div class="attachment-upload-grid">
@@ -69,14 +50,7 @@
                 <span>Titel</span>
                 <input type="text" name="title" placeholder="Titel für Inhaltsverzeichnis / Export">
               </label>
-              <label>
-                <span>Kategorie</span>
-                <select name="category">
-                  <% attachmentCategories.forEach((category) => { %>
-                    <option value="<%= category %>" <%= (selectedKategorie || "Brandschutz") === category ? "selected" : "" %>><%= category %></option>
-                  <% }) %>
-                </select>
-              </label>
+              <input type="hidden" name="category" value="<%= selectedKategorie %>">
               <label>
                 <span>Kapitel</span>
                 <input type="text" name="kapitel" value="<%= categoryDefaults.kapitel || "" %>" placeholder="z. B. 12.1">
@@ -97,121 +71,132 @@
             <div class="panel-head compact attachment-list-head">
               <div>
                 <h2>Dateien</h2>
-                <p><%= anhaenge.length %> Eintrag<%= anhaenge.length === 1 ? "" : "e" %><%= selectedKategorie ? ` in ${selectedKategorie}` : "" %>.</p>
+                <p><%= anhaenge.length %> Eintrag<%= anhaenge.length === 1 ? "" : "e" %> in <%= selectedKategorie %>.</p>
               </div>
-              <% if (selectedKategorie) { %>
-                <a class="button-link" href="/anhaenge">Alle anzeigen</a>
-              <% } %>
             </div>
-            <div class="table-wrap attachment-table-wrap">
-              <table class="attachment-table">
-                <thead>
-                  <tr>
-                    <th>Datei</th>
-                    <th>Status</th>
-                    <th>Einordnung</th>
-                    <th>Zuordnung</th>
-                    <th>Aktionen</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% if (!anhaenge.length) { %>
-                    <tr>
-                      <td colspan="5">Noch keine Anhänge vorhanden.</td>
-                    </tr>
+            <div class="attachment-card-list">
+              <% if (!anhaenge.length) { %>
+                <div class="attachment-empty">Noch keine Anhänge in dieser Kategorie vorhanden.</div>
+              <% } %>
+              <% anhaenge.forEach((entry) => { %>
+                <article class="attachment-item">
+                  <div class="attachment-item-head">
+                    <div>
+                      <h3><%= entry.title || entry.originalName %></h3>
+                      <p><%= entry.originalName %> · <%= entry.sizeKb %> KB · <%= entry.uploadedLabel %></p>
+                    </div>
+                    <div class="attachment-status-stack horizontal">
+                      <span class="badge <%= entry.exists ? "on" : "off" %>"><%= entry.exists ? "vorhanden" : "fehlt" %></span>
+                      <span class="badge <%= entry.export !== false ? "on" : "off" %>"><%= entry.export !== false ? "Export" : "kein Export" %></span>
+                      <span class="badge"><%= entry.isPdf ? "PDF" : entry.isImage ? "Bild" : entry.mimeType %></span>
+                    </div>
+                  </div>
+
+                  <% if (entry.isPdf) { %>
+                    <form class="attachment-detail-form" action="/anhaenge/<%= encodeURIComponent(entry.id) %>/aktualisieren" method="post" data-autosave>
+                      <input type="hidden" name="returnKategorie" value="<%= selectedKategorie || "" %>">
+                      <input type="hidden" name="category" value="<%= selectedKategorie %>">
+                      <label>
+                        <span>Titel</span>
+                        <input type="text" name="title" value="<%= entry.title || entry.originalName %>">
+                      </label>
+                      <label>
+                        <span>Kapitel</span>
+                        <input type="text" name="kapitel" value="<%= entry.kapitel || "" %>" placeholder="<%= categoryDefaults.kapitel || "" %>">
+                      </label>
+                      <% if (["Stromlaufpläne", "Installationspläne"].includes(selectedKategorie)) { %>
+                        <label>
+                          <span>Stockwerk</span>
+                          <input type="text" list="projekt-stockwerke" name="stockwerk" value="<%= entry.stockwerk || "" %>" placeholder="z. B. EG">
+                        </label>
+                      <% } %>
+                      <% if (["Stromlaufpläne", "Schaltpläne"].includes(selectedKategorie)) { %>
+                        <label>
+                          <span>Verteiler / Schrank</span>
+                          <input type="text" name="verteiler" value="<%= entry.verteiler || "" %>" placeholder="z. B. UV EG">
+                        </label>
+                      <% } %>
+                      <% if (["Schaltpläne", "Schemata", "Messprotokolle"].includes(selectedKategorie)) { %>
+                        <label>
+                          <span>Anlage / System</span>
+                          <input type="text" name="anlage" value="<%= entry.anlage || "" %>" placeholder="z. B. Sicherheitsbeleuchtung">
+                        </label>
+                      <% } %>
+                      <% if (selectedKategorie === "Installationspläne") { %>
+                        <label>
+                          <span>Bereich / Raumzone</span>
+                          <input type="text" name="bereich" value="<%= entry.bereich || "" %>" placeholder="z. B. Flur Nord">
+                        </label>
+                      <% } %>
+                      <% if (selectedKategorie === "Messprotokolle") { %>
+                        <label>
+                          <span>Messart</span>
+                          <input type="text" name="messart" value="<%= entry.messart || "" %>" placeholder="z. B. VDE 0100">
+                        </label>
+                        <label>
+                          <span>Norm / Grundlage</span>
+                          <input type="text" name="normgrundlage" value="<%= entry.normgrundlage || "" %>" placeholder="z. B. DIN VDE 0100-600">
+                        </label>
+                        <label>
+                          <span>Datum</span>
+                          <input type="text" name="datum" value="<%= entry.datum || "" %>" placeholder="TT.MM.JJJJ">
+                        </label>
+                      <% } %>
+                      <% if (["Stromlaufpläne", "Schaltpläne", "Installationspläne", "Schemata"].includes(selectedKategorie)) { %>
+                        <label>
+                          <span>Plannummer</span>
+                          <input type="text" name="plannummer" value="<%= entry.plannummer || "" %>" placeholder="optional">
+                        </label>
+                        <label>
+                          <span>Revision</span>
+                          <input type="text" name="revision" value="<%= entry.revision || "" %>" placeholder="optional">
+                        </label>
+                      <% } %>
+                      <label class="toggle-row compact-toggle">
+                        <input type="checkbox" name="export" <%= entry.export !== false ? "checked" : "" %>>
+                        <span>Export</span>
+                      </label>
+                    </form>
+                    <small class="attachment-target"><%= entry.documentStatus %></small>
                   <% } %>
-                  <% anhaenge.forEach((entry) => { %>
-                    <tr>
-                      <td class="attachment-file-cell">
-                        <strong><%= entry.title || entry.originalName %></strong>
-                        <small><%= entry.originalName %> · <%= entry.sizeKb %> KB · <%= entry.uploadedLabel %></small>
-                        <small class="meta-line"><%= entry.relativePath %></small>
-                      </td>
-                      <td>
-                        <div class="attachment-status-stack">
-                          <span class="badge <%= entry.exists ? "on" : "off" %>"><%= entry.exists ? "Datei vorhanden" : "Datei fehlt" %></span>
-                          <span class="badge <%= entry.export !== false ? "on" : "off" %>"><%= entry.export !== false ? "Export aktiv" : "kein Export" %></span>
-                          <span class="badge"><%= entry.isPdf ? "PDF" : entry.isImage ? "Bild" : entry.mimeType %></span>
-                        </div>
-                      </td>
-                      <td>
-                        <% if (entry.isPdf) { %>
-                          <form class="attachment-meta-form" action="/anhaenge/<%= encodeURIComponent(entry.id) %>/aktualisieren" method="post" data-autosave>
-                            <input type="hidden" name="returnKategorie" value="<%= selectedKategorie || "" %>">
-                            <label>
-                              <span>Titel</span>
-                              <input type="text" name="title" value="<%= entry.title || entry.originalName %>">
-                            </label>
-                            <label>
-                              <span>Kategorie</span>
-                              <select name="category">
-                                <% attachmentCategories.forEach((category) => { %>
-                                  <option value="<%= category %>" <%= entry.category === category ? "selected" : "" %>><%= category %></option>
-                                <% }) %>
-                              </select>
-                            </label>
-                            <label>
-                              <span>Kapitel</span>
-                              <input type="text" name="kapitel" value="<%= entry.kapitel || "" %>" placeholder="z. B. 12.1">
-                            </label>
-                            <label>
-                              <span>Stockwerk</span>
-                              <input type="text" list="projekt-stockwerke" name="stockwerk" value="<%= entry.stockwerk || "" %>" placeholder="optional">
-                            </label>
-                            <label class="toggle-row compact-toggle">
-                              <input type="checkbox" name="export" <%= entry.export !== false ? "checked" : "" %>>
-                              <span>Export</span>
-                            </label>
-                          </form>
-                          <small class="attachment-target"><%= entry.documentStatus %></small>
-                        <% } else { %>
-                          <span class="badge"><%= entry.category %></span>
-                          <small class="attachment-target">Bilder werden über Zuordnung in Brandschutzseiten verwendet.</small>
-                        <% } %>
-                      </td>
-                      <td>
-                        <% if (entry.isImage) { %>
-                          <form class="attachment-assign-form" action="/anhaenge/<%= encodeURIComponent(entry.id) %>/zuordnen" method="post">
-                            <select name="brandschutzId" required>
-                              <option value="">Brandschottung wählen</option>
-                              <% (brandschutz || []).forEach((schottung) => { %>
-                                <option value="<%= schottung.id %>"><%= schottung.id %> | <%= schottung.geschoss || "-" %> / <%= schottung.raum || "-" %></option>
-                              <% }) %>
-                            </select>
-                            <select name="slot" required>
-                              <option value="foto_vorher">Foto 1</option>
-                              <option value="foto_nachher">Foto 2</option>
-                            </select>
-                            <button type="submit">Zuordnen</button>
-                          </form>
-                          <% if (entry.assignedCount) { %>
-                            <div class="attachment-assignment-list">
-                              <% entry.assignedFoto1.forEach((schottung) => { %>
-                                <span>Foto 1: <%= schottung.geschoss || "-" %> / <%= schottung.raum || "-" %></span>
-                              <% }) %>
-                              <% entry.assignedFoto2.forEach((schottung) => { %>
-                                <span>Foto 2: <%= schottung.geschoss || "-" %> / <%= schottung.raum || "-" %></span>
-                              <% }) %>
-                            </div>
-                          <% } else { %>
-                            <small class="attachment-target">Noch nicht zugeordnet.</small>
-                          <% } %>
-                        <% } else { %>
-                          <small class="attachment-target">Keine Bildzuordnung erforderlich.</small>
-                        <% } %>
-                      </td>
-                      <td>
-                        <div class="table-actions">
-                          <a class="button-link" href="/anhaenge/download?id=<%= encodeURIComponent(entry.id) %>">Laden</a>
-                          <form action="/anhaenge/<%= encodeURIComponent(entry.id) %>/loeschen" method="post">
-                            <button class="danger-button" type="submit">Löschen</button>
-                          </form>
-                        </div>
-                      </td>
-                    </tr>
-                  <% }) %>
-                </tbody>
-              </table>
+
+                  <% if (entry.isImage) { %>
+                    <form class="attachment-assign-form" action="/anhaenge/<%= encodeURIComponent(entry.id) %>/zuordnen" method="post">
+                      <select name="brandschutzId" required>
+                        <option value="">Brandschottung wählen</option>
+                        <% (brandschutz || []).forEach((schottung) => { %>
+                          <option value="<%= schottung.id %>"><%= schottung.id %> | <%= schottung.geschoss || "-" %> / <%= schottung.raum || "-" %></option>
+                        <% }) %>
+                      </select>
+                      <select name="slot" required>
+                        <option value="foto_vorher">Foto 1</option>
+                        <option value="foto_nachher">Foto 2</option>
+                      </select>
+                      <button type="submit">Zuordnen</button>
+                    </form>
+                    <% if (entry.assignedCount) { %>
+                      <div class="attachment-assignment-list">
+                        <% entry.assignedFoto1.forEach((schottung) => { %>
+                          <span>Foto 1: <%= schottung.geschoss || "-" %> / <%= schottung.raum || "-" %></span>
+                        <% }) %>
+                        <% entry.assignedFoto2.forEach((schottung) => { %>
+                          <span>Foto 2: <%= schottung.geschoss || "-" %> / <%= schottung.raum || "-" %></span>
+                        <% }) %>
+                      </div>
+                    <% } %>
+                  <% } %>
+
+                  <div class="attachment-item-actions">
+                    <small><%= entry.relativePath %></small>
+                    <div class="table-actions">
+                      <a class="button-link" href="/anhaenge/download?id=<%= encodeURIComponent(entry.id) %>">Laden</a>
+                      <form action="/anhaenge/<%= encodeURIComponent(entry.id) %>/loeschen" method="post">
+                        <button class="danger-button" type="submit">Löschen</button>
+                      </form>
+                    </div>
+                  </div>
+                </article>
+              <% }) %>
             </div>
           </section>
         </section>

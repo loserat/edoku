@@ -987,12 +987,10 @@ app.get("/anhaenge", requireAuth, async (req, res, next) => {
       "Nachweise",
       "Allgemein"
     ];
-    const selectedKategorie = attachmentCategories.includes(req.query.kategorie) ? req.query.kategorie : "";
+    const selectedKategorie = attachmentCategories.includes(req.query.kategorie) ? req.query.kategorie : attachmentCategories[0];
     const categoryDefaults = defaultDocumentMetaForCategory(selectedKategorie);
     const attachmentView = await buildAttachmentViewModel(data.anhaenge, data.brandschutz, data.matrix);
-    const attachmentRows = selectedKategorie
-      ? attachmentView.rows.filter((entry) => entry.category === selectedKategorie)
-      : attachmentView.rows;
+    const attachmentRows = attachmentView.rows.filter((entry) => entry.category === selectedKategorie);
     res.render("anhaenge", {
       active: "anhaenge",
       anhaenge: attachmentRows,
@@ -1017,11 +1015,20 @@ app.post("/anhaenge/upload", requireAuth, async (req, res) => {
   try {
     const files = await currentFiles(req);
     const upload = await parseMultipartUpload(req);
-    const categoryDefaults = defaultDocumentMetaForCategory(upload.fields.category || req.query.kategorie || "");
+    const allowedCategories = [
+      "Brandschutz",
+      ...DOCUMENT_ATTACHMENT_CATEGORIES.map((entry) => entry.category),
+      "Fotos",
+      "Pläne",
+      "Nachweise",
+      "Allgemein"
+    ];
+    upload.fields.category = allowedCategories.includes(req.query.kategorie) ? req.query.kategorie : "Brandschutz";
+    const categoryDefaults = defaultDocumentMetaForCategory(upload.fields.category);
     if (!upload.fields.kapitel) upload.fields.kapitel = categoryDefaults.kapitel || "";
     const nextAttachments = await saveAttachment(ROOT_DIR, files, await readJson(files.anhaenge, []), upload);
     await writeJson(files.anhaenge, nextAttachments);
-    const target = req.query.kategorie ? `/anhaenge?kategorie=${encodeURIComponent(req.query.kategorie)}` : "/anhaenge";
+    const target = `/anhaenge?kategorie=${encodeURIComponent(upload.fields.category)}`;
     redirectWithFlash(res, target, "success", "Anhang wurde hochgeladen.");
   } catch (error) {
     fail(req, res, "/anhaenge", error);
@@ -1036,6 +1043,14 @@ app.post("/anhaenge/:id/aktualisieren", requireAuth, async (req, res) => {
       category: req.body.category,
       kapitel: req.body.kapitel,
       stockwerk: req.body.stockwerk,
+      anlage: req.body.anlage,
+      verteiler: req.body.verteiler,
+      plannummer: req.body.plannummer,
+      revision: req.body.revision,
+      bereich: req.body.bereich,
+      messart: req.body.messart,
+      normgrundlage: req.body.normgrundlage,
+      datum: req.body.datum,
       export: req.body.export === "on"
     });
     await writeJson(files.anhaenge, nextAttachments);
