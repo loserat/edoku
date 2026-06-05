@@ -2380,6 +2380,11 @@ tr:last-child td {
   margin: 0;
 }
 
+.compact-subtitle {
+  margin-top: 3px;
+  max-width: 760px;
+}
+
 .attachment-workspace {
   align-items: start;
   display: grid;
@@ -2461,7 +2466,16 @@ tr:last-child td {
   align-items: end;
   display: grid;
   gap: 8px;
-  grid-template-columns: minmax(260px, 1.4fr) minmax(240px, 1.2fr) 92px minmax(130px, 0.7fr) auto auto;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.attachment-upload-grid label:first-child,
+.attachment-upload-grid label:nth-child(2) {
+  grid-column: span 2;
+}
+
+.attachment-upload-grid button {
+  min-height: 34px;
 }
 
 .attachment-list-card {

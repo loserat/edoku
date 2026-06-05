@@ -16,29 +16,32 @@ function normalizeAttachments(raw) {
   if (!Array.isArray(raw)) return [];
   return raw
     .filter((entry) => entry && entry.id && entry.relativePath)
-    .map((entry) => ({
-      id: String(entry.id),
-      originalName: String(entry.originalName || entry.fileName || "Anhang"),
-      fileName: String(entry.fileName || entry.originalName || "anhang"),
-      relativePath: String(entry.relativePath),
-      mimeType: String(entry.mimeType || "application/octet-stream"),
-      size: Number(entry.size || 0),
-      category: String(entry.category || "Allgemein"),
-      title: String(entry.title || entry.originalName || entry.fileName || "Anhang"),
-      kapitel: String(entry.kapitel || ""),
-      stockwerk: String(entry.stockwerk || ""),
-      anlage: String(entry.anlage || ""),
-      verteiler: String(entry.verteiler || ""),
-      plannummer: String(entry.plannummer || ""),
-      revision: String(entry.revision || ""),
-      bereich: String(entry.bereich || ""),
-      messart: String(entry.messart || ""),
-      normgrundlage: String(entry.normgrundlage || ""),
-      datum: String(entry.datum || ""),
-      export: entry.export === undefined ? true : Boolean(entry.export),
-      sortierung: Number.isFinite(entry.sortierung) ? entry.sortierung : null,
-      uploadedAt: String(entry.uploadedAt || "")
-    }));
+    .map((entry) => {
+      const sortierung = Number.parseFloat(entry.sortierung);
+      return {
+        id: String(entry.id),
+        originalName: String(entry.originalName || entry.fileName || "Anhang"),
+        fileName: String(entry.fileName || entry.originalName || "anhang"),
+        relativePath: String(entry.relativePath),
+        mimeType: String(entry.mimeType || "application/octet-stream"),
+        size: Number(entry.size || 0),
+        category: String(entry.category || "Allgemein"),
+        title: String(entry.title || entry.originalName || entry.fileName || "Anhang"),
+        kapitel: String(entry.kapitel || ""),
+        stockwerk: String(entry.stockwerk || ""),
+        anlage: String(entry.anlage || ""),
+        verteiler: String(entry.verteiler || ""),
+        plannummer: String(entry.plannummer || ""),
+        revision: String(entry.revision || ""),
+        bereich: String(entry.bereich || ""),
+        messart: String(entry.messart || ""),
+        normgrundlage: String(entry.normgrundlage || ""),
+        datum: String(entry.datum || ""),
+        export: entry.export === undefined ? true : Boolean(entry.export),
+        sortierung: Number.isFinite(sortierung) ? sortierung : null,
+        uploadedAt: String(entry.uploadedAt || "")
+      };
+    });
 }
 
 function imageAttachments(raw) {
@@ -154,6 +157,7 @@ async function saveAttachment(rootDir, files, existingRaw, upload) {
   const title = String(upload.fields.title || path.basename(originalName, extension) || originalName).trim() || originalName;
   const kapitel = String(upload.fields.kapitel || "").trim();
   const stockwerk = String(upload.fields.stockwerk || "").trim();
+  const sortierung = Number.parseFloat(upload.fields.sortierung);
 
   return [
     ...attachments,
@@ -177,6 +181,7 @@ async function saveAttachment(rootDir, files, existingRaw, upload) {
       normgrundlage: String(upload.fields.normgrundlage || "").trim(),
       datum: String(upload.fields.datum || "").trim(),
       export: upload.fields.export === undefined ? true : upload.fields.export === "on",
+      sortierung: Number.isFinite(sortierung) ? sortierung : null,
       uploadedAt: new Date().toISOString()
     }
   ];

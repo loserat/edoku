@@ -1051,6 +1051,7 @@ app.post("/anhaenge/:id/aktualisieren", requireAuth, async (req, res) => {
       messart: req.body.messart,
       normgrundlage: req.body.normgrundlage,
       datum: req.body.datum,
+      sortierung: req.body.sortierung,
       export: req.body.export === "on"
     });
     await writeJson(files.anhaenge, nextAttachments);

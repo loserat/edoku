@@ -16,9 +16,25 @@ function statusClass(status) {
 
 function buildExportPreview({ projekt = {}, matrix = [], exportliste = [], projektSysteme = [] }) {
   const exportByKapitel = indexExportliste(exportliste);
-  const documents = sortDocuments(
+  const matrixDocuments = sortDocuments(
     applyLogicalChapterNumbers(matrix, { exportOnly: true }).filter((entry) => entry.aktiv && entry.export)
   );
+  const documents = (exportliste || []).length
+    ? (exportliste || []).map((entry) => {
+        const matrixEntry = matrixDocuments.find((document) => {
+          return String(document.originalKapitel || document.kapitel || "") === String(entry.originalKapitel || entry.kapitel || "");
+        }) || {};
+        return {
+          ...matrixEntry,
+          ...entry,
+          ebene: matrixEntry.ebene || String(entry.kapitel || "").split(".").filter(Boolean).length || 2,
+          displayKapitel: entry.kapitel || matrixEntry.displayKapitel || matrixEntry.kapitel || "",
+          originalKapitel: entry.originalKapitel || matrixEntry.originalKapitel || matrixEntry.kapitel || "",
+          titel: entry.titel || matrixEntry.titel || "Dokument",
+          pflicht: Boolean(entry.pflicht || matrixEntry.pflicht)
+        };
+      })
+    : matrixDocuments;
   const groups = [];
   const groupsByTop = new Map();
 
@@ -26,7 +42,7 @@ function buildExportPreview({ projekt = {}, matrix = [], exportliste = [], proje
     const originalKapitel = document.originalKapitel || document.kapitel || "";
     const displayKapitel = document.displayKapitel || document.kapitel || "";
     const topKapitel = String(displayKapitel).split(".")[0] || "0";
-    const exportEntry = exportByKapitel.get(originalKapitel) || {};
+    const exportEntry = exportByKapitel.get(originalKapitel) || exportByKapitel.get(displayKapitel) || document || {};
     const systemEntry = (projektSysteme || []).find((entry) => {
       return entry.leistungsbereich === document.leistungsbereich || (entry.kapitel || []).includes(originalKapitel);
     }) || {};
@@ -62,7 +78,7 @@ function buildExportPreview({ projekt = {}, matrix = [], exportliste = [], proje
     });
   });
 
-  const statusEntries = documents.map((document) => exportByKapitel.get(document.originalKapitel || document.kapitel || ""));
+  const statusEntries = documents.map((document) => exportByKapitel.get(document.originalKapitel || document.kapitel || document.titel || "") || document);
   const vorhandeneDateien = statusEntries.filter((entry) => entry && entry.status === "vorhanden").length;
   const fehlendeDateien = statusEntries.filter((entry) => entry && entry.status === "fehlt").length;
   const ungeprueft = documents.length - vorhandeneDateien - fehlendeDateien;
