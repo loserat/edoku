@@ -1,6 +1,6 @@
 const fs = require("fs/promises");
 const path = require("path");
-const { chapterFolderForKapitel, createProjectFolder, getProjectPaths } = require("./projectService");
+const { chapterFolderForKapitel, createProjectFolder, fileSafeName, getProjectPaths } = require("./projectService");
 const { writeJson } = require("./jsonService");
 const { applyLogicalChapterNumbers, sortDocuments } = require("./chapterNumberingService");
 const { buildDocumentationAttachmentEntries } = require("./documentAttachmentService");
@@ -26,6 +26,16 @@ async function listPdfFiles(dir) {
 
 function relative(rootDir, filePath) {
   return path.relative(rootDir, filePath).replaceAll(path.sep, "/");
+}
+
+function finalExportFileName(entry) {
+  const order = String(entry.reihenfolge || 0).padStart(3, "0");
+  const kapitel = String(entry.kapitel || entry.originalKapitel || "")
+    .replaceAll(".", "_")
+    .replace(/[^0-9_]/g, "");
+  const title = fileSafeName(entry.titel || path.basename(entry.dateipfad || "", ".pdf"), "Dokument");
+  const sourceExtension = path.extname(entry.dateipfad || "").toLowerCase() || ".pdf";
+  return [order, kapitel, title].filter(Boolean).join("_") + sourceExtension;
 }
 
 function matchByKapitel(files, kapitel) {
@@ -82,6 +92,17 @@ async function sourceExists(rootDir, relativePath) {
   return fs.access(path.join(rootDir, relativePath)).then(() => true).catch(() => false);
 }
 
+async function clearFinalExportFolder(finalPath) {
+  try {
+    const entries = await fs.readdir(finalPath, { withFileTypes: true });
+    await Promise.all(entries
+      .filter((entry) => entry.isFile() && [".pdf", ".txt"].includes(path.extname(entry.name).toLowerCase()))
+      .map((entry) => fs.unlink(path.join(finalPath, entry.name))));
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
+}
+
 async function buildExportliste(rootDir, projekt, matrix, exportlistePath, projektSysteme = [], anhaenge = [], geraetelisten = [], leistungsbereiche = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generated = await listPdfFiles(paths.generatedPath);
@@ -136,11 +157,13 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
 
   [...generated, ...external].forEach((file) => {
     if (usedFiles.has(file)) return;
+    const baseTitle = path.basename(file, ".pdf");
+    const isToc = baseTitle.toLowerCase() === "inhaltsverzeichnis";
     entries.push({
       reihenfolge: 0,
-      kapitel: "",
-      originalKapitel: "",
-      titel: path.basename(file, ".pdf"),
+      kapitel: isToc ? "0" : "",
+      originalKapitel: isToc ? "0" : "",
+      titel: baseTitle,
       dateipfad: relative(rootDir, file),
       quelle: file.startsWith(paths.generatedPath) ? "intern" : "extern",
       status: "vorhanden",
@@ -170,6 +193,7 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
 async function prepareFinalExport(rootDir, projekt, matrix, exportlistePath) {
   const paths = getProjectPaths(rootDir, projekt);
   await fs.mkdir(paths.finalPath, { recursive: true });
+  await clearFinalExportFolder(paths.finalPath);
   const content = await fs.readFile(exportlistePath, "utf8").catch(() => "[]");
   const exportliste = JSON.parse(content);
   const missingRequired = [];
@@ -186,7 +210,7 @@ async function prepareFinalExport(rootDir, projekt, matrix, exportlistePath) {
 
     if (entry.status === "vorhanden" && entry.dateipfad) {
       const source = path.join(rootDir, entry.dateipfad);
-      const target = path.join(paths.finalPath, `${String(entry.reihenfolge).padStart(3, "0")}_${path.basename(entry.dateipfad)}`);
+      const target = path.join(paths.finalPath, finalExportFileName(entry));
       await fs.copyFile(source, target).catch((error) => {
         console.error(`Fehler beim Kopieren von ${source}:`, error.message);
       });

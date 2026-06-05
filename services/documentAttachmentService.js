@@ -22,9 +22,9 @@ const DOCUMENT_ATTACHMENT_CATEGORIES = [
   },
   {
     category: "Schemata",
-    kapitel: "12.1",
+    kapitel: "12.4",
     title: "Schemata",
-    sortierung: 12012
+    sortierung: 12041
   },
   {
     category: "Messprotokolle",
@@ -81,12 +81,14 @@ function buildDocumentationAttachmentEntries(matrix, rawAttachments) {
   const countersByKapitel = new Map();
 
   return attachments
-    .map((entry) => {
+    .map((entry, index) => {
       const categoryMeta = defaultDocumentMetaForCategory(entry.category);
       const originalKapitel = String(entry.kapitel || categoryMeta.kapitel || "");
       const parent = parentByOriginal.get(originalKapitel);
       const next = (countersByKapitel.get(originalKapitel) || 0) + 1;
       countersByKapitel.set(originalKapitel, next);
+      const localSort = Number.isFinite(entry.sortierung) ? entry.sortierung : next;
+      const fallbackSort = Number.isFinite(categoryMeta.sortierung) ? categoryMeta.sortierung : 90000 + index;
       const displayKapitel = parent
         ? `${parent.displayKapitel || parent.kapitel}.${next}`
         : originalKapitel ? `${originalKapitel}.${next}` : "";
@@ -107,9 +109,7 @@ function buildDocumentationAttachmentEntries(matrix, rawAttachments) {
         formularart: "PDF-Import",
         quelle: "Anhang",
         dateipfad: entry.relativePath,
-        sortierung: Number.isFinite(entry.sortierung)
-          ? entry.sortierung
-          : (parent && Number.isFinite(parent.sortierung) ? parent.sortierung : categoryMeta.sortierung) + next / 100
+        sortierung: (parent && Number.isFinite(parent.sortierung) ? parent.sortierung : fallbackSort) + localSort / 100
       };
     })
     .sort((a, b) => {
@@ -138,6 +138,7 @@ function updateAttachmentDocumentMeta(rawAttachments, attachmentId, values) {
       messart: String(values.messart || "").trim(),
       normgrundlage: String(values.normgrundlage || "").trim(),
       datum: String(values.datum || "").trim(),
+      sortierung: Number.isFinite(Number.parseFloat(values.sortierung)) ? Number.parseFloat(values.sortierung) : null,
       export: Boolean(values.export)
     };
   });

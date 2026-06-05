@@ -21,6 +21,15 @@
         <div>
           <p class="eyebrow">Projektdateien</p>
           <h1><%= selectedKategorie || "Anhänge" %></h1>
+          <p class="page-subtitle compact-subtitle">
+            <% if (["Stromlaufpläne", "Schaltpläne", "Installationspläne", "Schemata", "Messprotokolle"].includes(selectedKategorie)) { %>
+              Diese Dateien werden im Inhaltsverzeichnis und im finalen Export unter ihrem Kapitel einsortiert.
+            <% } else if (selectedKategorie === "Brandschutz" || selectedKategorie === "Fotos") { %>
+              Bilder werden hier verwaltet und einer Brandschottung als Foto 1 oder Foto 2 zugeordnet.
+            <% } else { %>
+              Projektdateien dieser Kategorie verwalten und bei Bedarf für den Export markieren.
+            <% } %>
+          </p>
         </div>
       </section>
 
@@ -59,6 +68,54 @@
                 <span>Stockwerk</span>
                 <input type="text" list="projekt-stockwerke" name="stockwerk" placeholder="optional">
               </label>
+              <% if (["Stromlaufpläne", "Schaltpläne"].includes(selectedKategorie)) { %>
+                <label>
+                  <span>Verteiler / Schrank</span>
+                  <input type="text" name="verteiler" placeholder="z. B. UV EG">
+                </label>
+              <% } %>
+              <% if (["Schaltpläne", "Schemata", "Messprotokolle"].includes(selectedKategorie)) { %>
+                <label>
+                  <span>Anlage / System</span>
+                  <input type="text" name="anlage" placeholder="z. B. Sicherheitsbeleuchtung">
+                </label>
+              <% } %>
+              <% if (selectedKategorie === "Installationspläne") { %>
+                <label>
+                  <span>Bereich / Raumzone</span>
+                  <input type="text" name="bereich" placeholder="z. B. Flur Nord">
+                </label>
+              <% } %>
+              <% if (selectedKategorie === "Messprotokolle") { %>
+                <label>
+                  <span>Messart</span>
+                  <input type="text" name="messart" placeholder="z. B. VDE 0100">
+                </label>
+                <label>
+                  <span>Norm / Grundlage</span>
+                  <input type="text" name="normgrundlage" placeholder="z. B. DIN VDE 0100-600">
+                </label>
+                <label>
+                  <span>Datum</span>
+                  <input type="text" name="datum" placeholder="TT.MM.JJJJ">
+                </label>
+              <% } %>
+              <% if (["Stromlaufpläne", "Schaltpläne", "Installationspläne", "Schemata"].includes(selectedKategorie)) { %>
+                <label>
+                  <span>Plannummer</span>
+                  <input type="text" name="plannummer" placeholder="optional">
+                </label>
+                <label>
+                  <span>Revision</span>
+                  <input type="text" name="revision" placeholder="optional">
+                </label>
+              <% } %>
+              <% if (["Stromlaufpläne", "Schaltpläne", "Installationspläne", "Schemata", "Messprotokolle"].includes(selectedKategorie)) { %>
+                <label>
+                  <span>Position</span>
+                  <input type="number" step="1" min="1" name="sortierung" placeholder="auto">
+                </label>
+              <% } %>
               <label class="toggle-row compact-toggle">
                 <input type="checkbox" name="export" checked>
                 <span>Export</span>
@@ -103,6 +160,10 @@
                       <label>
                         <span>Kapitel</span>
                         <input type="text" name="kapitel" value="<%= entry.kapitel || "" %>" placeholder="<%= categoryDefaults.kapitel || "" %>">
+                      </label>
+                      <label>
+                        <span>Position</span>
+                        <input type="number" step="1" min="1" name="sortierung" value="<%= entry.sortierung || "" %>" placeholder="auto">
                       </label>
                       <% if (["Stromlaufpläne", "Installationspläne"].includes(selectedKategorie)) { %>
                         <label>
