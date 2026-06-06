@@ -1,5 +1,6 @@
 const fs = require("fs/promises");
 const path = require("path");
+const { PDFDocument } = require("pdf-lib");
 const { chapterFolderForKapitel, createProjectFolder, fileSafeName, getProjectPaths } = require("./projectService");
 const { writeJson } = require("./jsonService");
 const { applyLogicalChapterNumbers, sortDocuments } = require("./chapterNumberingService");
@@ -39,6 +40,11 @@ function finalExportFileName(entry) {
   const title = fileSafeName(entry.titel || path.basename(entry.dateipfad || "", ".pdf"), "Dokument");
   const sourceExtension = path.extname(entry.dateipfad || "").toLowerCase() || ".pdf";
   return [order, kapitel, title].filter(Boolean).join("_") + sourceExtension;
+}
+
+// Gesamt-PDF-Dateiname fuer den finalen Export.
+function completeDocumentationFileName(projekt) {
+  return `${fileSafeName(projekt.projektnummer || "Projekt")}_${fileSafeName(projekt.projektname || "edoku")}_Gesamtdokumentation.pdf`;
 }
 
 // Grobe Kapitelordner für den ZIP-Export. Die Ordnerstruktur bleibt bewusst flach.
@@ -154,6 +160,47 @@ async function writeZipFile(zipPath, files) {
   await fs.writeFile(zipPath, Buffer.concat([...chunks, ...central, end]));
 }
 
+/**
+ * Fuehrt vorhandene PDFs in Exportlisten-Reihenfolge zu einer Gesamt-PDF zusammen.
+ * Fehlerhafte oder nicht lesbare Quelldateien werden uebersprungen und protokolliert.
+ */
+async function mergePdfFiles(targetPath, orderedPdfFiles) {
+  const mergedPdf = await PDFDocument.create();
+  const skipped = [];
+  let pages = 0;
+
+  for (const file of orderedPdfFiles) {
+    try {
+      const sourceBytes = await fs.readFile(file.sourcePath);
+      const sourcePdf = await PDFDocument.load(sourceBytes, { ignoreEncryption: true });
+      const copiedPages = await mergedPdf.copyPages(sourcePdf, sourcePdf.getPageIndices());
+      copiedPages.forEach((page) => mergedPdf.addPage(page));
+      pages += copiedPages.length;
+    } catch (error) {
+      skipped.push({
+        file: file.sourcePath,
+        reason: error.message
+      });
+      console.error(`PDF konnte nicht in Gesamt-PDF uebernommen werden (${file.sourcePath}):`, error.message);
+    }
+  }
+
+  if (!pages) {
+    return {
+      targetPath: "",
+      pages: 0,
+      skipped
+    };
+  }
+
+  await fs.writeFile(targetPath, await mergedPdf.save());
+  return {
+    targetPath,
+    pages,
+    skipped
+  };
+}
+
 // Sucht eine generierte Datei anhand der Kapitelnummer im Dateinamen.
 function matchByKapitel(files, kapitel) {
   const normalized = String(kapitel).replaceAll(".", "_");
@@ -162,13 +209,19 @@ function matchByKapitel(files, kapitel) {
     .map((part) => part.padStart(2, "0"))
     .join("_");
   const chapterTokens = [normalized, padded].filter(Boolean);
-  return files.find((file) => {
+  return files.filter((file) => {
     const name = path.basename(file);
-    return chapterTokens.some((token) => {
-      const nextChar = name.charAt(token.length);
-      return name.startsWith(token) && (!nextChar || /[^0-9]/.test(nextChar));
-    });
+    return chapterTokens.some((token) => new RegExp(`^${token}(?:_[^0-9]|$)`).test(name));
   });
+}
+
+// Bei gleicher Kapitelnummer entscheidet zusaetzlich der Dateititel, damit
+// mehrere Dokumente in einem Kapitel nicht dieselbe PDF referenzieren.
+function matchGeneratedFile(files, entry, usedFiles) {
+  const candidates = matchByKapitel(files, entry.displayKapitel || entry.kapitel).filter((file) => !usedFiles.has(file));
+  if (!candidates.length) return "";
+  const safeTitle = fileSafeName(entry.titel || "", "").toLowerCase();
+  return candidates.find((file) => path.basename(file, ".pdf").toLowerCase().includes(safeTitle)) || candidates[0];
 }
 
 // Ergänzt Exporteinträge um System- und Herstellerinformationen aus der Projektauswahl.
@@ -243,7 +296,7 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
   const usedFiles = new Set();
 
   const entries = activeDocs.map((entry) => {
-    const generatedMatch = matchByKapitel(generated, entry.kapitel);
+    const generatedMatch = matchGeneratedFile(generated, entry, usedFiles);
     const chapterFolder = chapterFolderForKapitel(entry.kapitel);
     const externalMatch = external.find((file) => file.includes(`${path.sep}${chapterFolder}${path.sep}`));
     const found = generatedMatch || externalMatch;
@@ -287,6 +340,7 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
     if (usedFiles.has(file)) return;
     const baseTitle = path.basename(file, ".pdf");
     const isToc = baseTitle.toLowerCase() === "inhaltsverzeichnis";
+    if (!isToc) return;
     entries.push({
       reihenfolge: 0,
       kapitel: isToc ? "0" : "",
@@ -332,8 +386,11 @@ async function prepareFinalExport(rootDir, projekt, matrix, exportlistePath) {
   const missingRequired = [];
   const lines = [];
   const zipFiles = [];
+  const orderedPdfFiles = [];
 
-  for (const entry of exportliste) {
+  const orderedExportliste = [...exportliste].sort((a, b) => Number(a.reihenfolge || 0) - Number(b.reihenfolge || 0));
+
+  for (const entry of orderedExportliste) {
     const sourceKapitel = entry.originalKapitel || entry.kapitel;
     const matrixEntry = matrix.find((doc) => doc.kapitel === sourceKapitel);
     lines.push(`${String(entry.reihenfolge).padStart(3, "0")} | ${entry.kapitel} | ${entry.titel} | ${entry.status} | ${entry.dateipfad || "-"}`);
@@ -346,13 +403,24 @@ async function prepareFinalExport(rootDir, projekt, matrix, exportlistePath) {
       const source = path.join(rootDir, entry.dateipfad);
       const finalName = finalExportFileName(entry);
       const target = path.join(paths.finalPath, finalName);
-      await fs.copyFile(source, target).catch((error) => {
+      const zipPath = `${topChapterFolderName(entry)}/${finalName}`;
+      const copied = await fs.copyFile(source, target).then(() => true).catch((error) => {
         console.error(`Fehler beim Kopieren von ${source}:`, error.message);
+        return false;
       });
-      zipFiles.push({
-        sourcePath: source,
-        zipPath: `${topChapterFolderName(entry)}/${finalName}`
-      });
+      if (copied) {
+        if (path.extname(finalName).toLowerCase() === ".pdf") {
+          orderedPdfFiles.push({
+            sourcePath: target,
+            finalName,
+            zipPath
+          });
+        }
+        zipFiles.push({
+          sourcePath: target,
+          zipPath
+        });
+      }
     }
   }
 
@@ -369,11 +437,23 @@ async function prepareFinalExport(rootDir, projekt, matrix, exportlistePath) {
     zipPath: `00_Inhaltsverzeichnis/${path.basename(orderFile)}`
   });
 
+  const completePdfPath = path.join(paths.finalPath, completeDocumentationFileName(projekt));
+  const mergeResult = await mergePdfFiles(completePdfPath, orderedPdfFiles);
+  if (mergeResult.targetPath) {
+    zipFiles.unshift({
+      sourcePath: mergeResult.targetPath,
+      zipPath: `00_Inhaltsverzeichnis/${path.basename(mergeResult.targetPath)}`
+    });
+  }
+
   const zipName = `${fileSafeName(projekt.projektnummer || "Projekt")}_${fileSafeName(projekt.projektname || "edoku")}_Export.zip`;
   const zipPath = path.join(paths.finalPath, zipName);
   await writeZipFile(zipPath, zipFiles);
 
   return {
+    completePdfPath: mergeResult.targetPath,
+    completePdfPages: mergeResult.pages,
+    skippedMergeFiles: mergeResult.skipped,
     orderFile,
     zipPath,
     missingRequired

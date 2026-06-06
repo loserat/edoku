@@ -25,6 +25,8 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 - Anhänge werden nach Kategorie und Stockwerk für Inhaltsverzeichnis und Export sortiert
 - UI-Schalter für Aktiv-/Export-Optionen vereinheitlicht
 - interne Tagesupdates und lokale Arbeitsnotizen bleiben per `.gitignore` außerhalb des Repositories
+- Finaler Export erzeugt jetzt zusätzlich eine Gesamt-PDF und ein ZIP mit flacher Kapitelstruktur
+- PDF-Zuordnung in der Exportliste nutzt logische Kapitelnummern und Titelabgleich, damit gleich nummerierte Dokumente nicht verwechselt werden
 
 ### Bekannte Grenzen
 
