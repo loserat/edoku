@@ -2366,17 +2366,25 @@ tr:last-child td {
 }
 
 .attachments-page {
+  align-content: start;
+  grid-auto-rows: max-content;
+  gap: 8px;
   max-width: none;
+  padding-top: 8px;
 }
 
 .attachment-topline {
+  align-items: center;
   border-bottom: 1px solid var(--line);
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2px;
+  min-height: 0;
+  padding-bottom: 6px;
 }
 
 .attachment-topline h1 {
-  font-size: 24px;
+  font-size: 22px;
   margin: 0;
 }
 
@@ -2387,6 +2395,7 @@ tr:last-child td {
 
 .attachment-workspace {
   align-items: start;
+  align-self: start;
   display: grid;
   gap: 14px;
   grid-template-columns: 250px minmax(0, 1fr);

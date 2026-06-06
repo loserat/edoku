@@ -23,7 +23,7 @@
           <h1><%= selectedKategorie || "Anhänge" %></h1>
           <p class="page-subtitle compact-subtitle">
             <% if (["Stromlaufpläne", "Schaltpläne", "Installationspläne", "Schemata", "Messprotokolle"].includes(selectedKategorie)) { %>
-              Diese Dateien werden im Inhaltsverzeichnis und im finalen Export unter ihrem Kapitel einsortiert.
+              Diese Dateien werden automatisch im passenden Kapitel einsortiert und nach Projekt-Stockwerk geordnet.
             <% } else if (selectedKategorie === "Brandschutz" || selectedKategorie === "Fotos") { %>
               Bilder werden hier verwaltet und einer Brandschottung als Foto 1 oder Foto 2 zugeordnet.
             <% } else { %>
@@ -41,7 +41,7 @@
                 <h2>Datei in <%= selectedKategorie %> hinzufügen</h2>
                 <p>
                   <% if (["Stromlaufpläne", "Schaltpläne", "Installationspläne", "Schemata", "Messprotokolle"].includes(selectedKategorie)) { %>
-                    PDF hochladen und anschließend Kapitel sowie Stockwerk für Inhaltsverzeichnis und Export pflegen.
+                    PDF hochladen, Stockwerk zuordnen und die Datei wird automatisch im Inhaltsverzeichnis einsortiert.
                   <% } else if (selectedKategorie === "Brandschutz" || selectedKategorie === "Fotos") { %>
                     Bilder hochladen und anschließend einer Brandschottung als Foto 1 oder Foto 2 zuordnen.
                   <% } else { %>
@@ -60,10 +60,7 @@
                 <input type="text" name="title" placeholder="Titel für Inhaltsverzeichnis / Export">
               </label>
               <input type="hidden" name="category" value="<%= selectedKategorie %>">
-              <label>
-                <span>Kapitel</span>
-                <input type="text" name="kapitel" value="<%= categoryDefaults.kapitel || "" %>" placeholder="z. B. 12.1">
-              </label>
+              <input type="hidden" name="kapitel" value="<%= categoryDefaults.kapitel || "" %>">
               <label>
                 <span>Stockwerk</span>
                 <input type="text" list="projekt-stockwerke" name="stockwerk" placeholder="optional">
@@ -110,12 +107,6 @@
                   <input type="text" name="revision" placeholder="optional">
                 </label>
               <% } %>
-              <% if (["Stromlaufpläne", "Schaltpläne", "Installationspläne", "Schemata", "Messprotokolle"].includes(selectedKategorie)) { %>
-                <label>
-                  <span>Position</span>
-                  <input type="number" step="1" min="1" name="sortierung" placeholder="auto">
-                </label>
-              <% } %>
               <label class="toggle-row compact-toggle">
                 <input type="checkbox" name="export" checked>
                 <span>Export</span>
@@ -153,19 +144,12 @@
                     <form class="attachment-detail-form" action="/anhaenge/<%= encodeURIComponent(entry.id) %>/aktualisieren" method="post" data-autosave>
                       <input type="hidden" name="returnKategorie" value="<%= selectedKategorie || "" %>">
                       <input type="hidden" name="category" value="<%= selectedKategorie %>">
+                      <input type="hidden" name="kapitel" value="<%= entry.kapitel || categoryDefaults.kapitel || "" %>">
                       <label>
                         <span>Titel</span>
                         <input type="text" name="title" value="<%= entry.title || entry.originalName %>">
                       </label>
-                      <label>
-                        <span>Kapitel</span>
-                        <input type="text" name="kapitel" value="<%= entry.kapitel || "" %>" placeholder="<%= categoryDefaults.kapitel || "" %>">
-                      </label>
-                      <label>
-                        <span>Position</span>
-                        <input type="number" step="1" min="1" name="sortierung" value="<%= entry.sortierung || "" %>" placeholder="auto">
-                      </label>
-                      <% if (["Stromlaufpläne", "Installationspläne"].includes(selectedKategorie)) { %>
+                      <% if (["Stromlaufpläne", "Schaltpläne", "Installationspläne", "Schemata", "Messprotokolle"].includes(selectedKategorie)) { %>
                         <label>
                           <span>Stockwerk</span>
                           <input type="text" list="projekt-stockwerke" name="stockwerk" value="<%= entry.stockwerk || "" %>" placeholder="z. B. EG">
