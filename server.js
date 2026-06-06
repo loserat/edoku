@@ -901,7 +901,8 @@ app.post("/export/final", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
   const result = await prepareFinalExport(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste);
   const zipName = result.zipPath ? path.basename(result.zipPath) : "Export.zip";
-  redirectWithFlash(res, "/export#aktionen", "success", `Finaler Export wurde vorbereitet (${zipName}).`);
+  const pdfInfo = result.completePdfPath ? `, Gesamt-PDF mit ${result.completePdfPages} Seite(n)` : "";
+  redirectWithFlash(res, "/export#aktionen", "success", `Finaler Export wurde vorbereitet (${zipName}${pdfInfo}).`);
 });
 
 // Einstellungen: Systemvorgaben, Erstellerstammdaten, Ordnerstruktur und Formulare.
