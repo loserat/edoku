@@ -203,8 +203,8 @@ async function fileExistsForAttachment(relativePath) {
   }
 }
 
-async function buildAttachmentViewModel(attachments, brandschutz, matrix) {
-  const tocEntries = buildDocumentationAttachmentEntries(matrix, attachments);
+async function buildAttachmentViewModel(attachments, brandschutz, matrix, projekt = {}) {
+  const tocEntries = buildDocumentationAttachmentEntries(matrix, attachments, projekt);
   const tocByAttachmentId = new Map(tocEntries.map((entry) => [entry.attachmentId, entry]));
   const rows = await Promise.all(normalizeAttachments(attachments).map(async (entry) => {
     const assignedFoto1 = (brandschutz || []).filter((schottung) => schottung.foto_vorher === entry.relativePath);
@@ -989,8 +989,18 @@ app.get("/anhaenge", requireAuth, async (req, res, next) => {
     ];
     const selectedKategorie = attachmentCategories.includes(req.query.kategorie) ? req.query.kategorie : attachmentCategories[0];
     const categoryDefaults = defaultDocumentMetaForCategory(selectedKategorie);
-    const attachmentView = await buildAttachmentViewModel(data.anhaenge, data.brandschutz, data.matrix);
-    const attachmentRows = attachmentView.rows.filter((entry) => entry.category === selectedKategorie);
+    const attachmentView = await buildAttachmentViewModel(data.anhaenge, data.brandschutz, data.matrix, data.projekt);
+    const attachmentRows = attachmentView.rows
+      .filter((entry) => entry.category === selectedKategorie)
+      .sort((a, b) => {
+        const sortA = a.tocEntry && Number.isFinite(a.tocEntry.sortierung) ? a.tocEntry.sortierung : 999999;
+        const sortB = b.tocEntry && Number.isFinite(b.tocEntry.sortierung) ? b.tocEntry.sortierung : 999999;
+        if (sortA !== sortB) return sortA - sortB;
+        return String(a.title || a.originalName || "").localeCompare(String(b.title || b.originalName || ""), "de", {
+          numeric: true,
+          sensitivity: "base"
+        });
+      });
     res.render("anhaenge", {
       active: "anhaenge",
       anhaenge: attachmentRows,

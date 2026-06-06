@@ -38,6 +38,40 @@ const DOCUMENT_ATTACHMENT_CATEGORIES_BY_NAME = new Map(
   DOCUMENT_ATTACHMENT_CATEGORIES.map((entry) => [entry.category, entry])
 );
 
+const DEFAULT_STOCKWERK_ORDER = ["UG", "EG", "1. OG", "2. OG", "3. OG", "4. OG", "DG"];
+
+function normalizeStockwerk(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace(/\./g, "");
+}
+
+function stockwerkOrderMap(projekt = {}) {
+  const configured = Array.isArray(projekt.stockwerke) ? projekt.stockwerke : [];
+  const values = configured.length ? configured : DEFAULT_STOCKWERK_ORDER;
+  return new Map(values.map((stockwerk, index) => [normalizeStockwerk(stockwerk), index]));
+}
+
+function fallbackStockwerkRank(value) {
+  const normalized = normalizeStockwerk(value);
+  if (!normalized) return 900;
+  if (normalized === "kg") return 0;
+  if (normalized === "ug") return 10;
+  if (normalized === "eg") return 20;
+  const ogMatch = normalized.match(/^(\d+)og$/);
+  if (ogMatch) return 20 + Number.parseInt(ogMatch[1], 10);
+  if (normalized === "dg") return 100;
+  return 500;
+}
+
+function stockwerkRank(value, orderMap) {
+  const normalized = normalizeStockwerk(value);
+  if (orderMap.has(normalized)) return orderMap.get(normalized);
+  return fallbackStockwerkRank(value);
+}
+
 function defaultDocumentMetaForCategory(category) {
   return DOCUMENT_ATTACHMENT_CATEGORIES_BY_NAME.get(category) || {
     category,
@@ -70,7 +104,7 @@ function attachmentDisplayTitle(entry, categoryMeta) {
   return details.length ? `${base} - ${details.join(" / ")}` : base;
 }
 
-function buildDocumentationAttachmentEntries(matrix, rawAttachments) {
+function buildDocumentationAttachmentEntries(matrix, rawAttachments, projekt = {}) {
   const attachments = documentationAttachments(rawAttachments).filter((entry) => entry.export !== false);
   if (!attachments.length) return [];
 
@@ -79,15 +113,33 @@ function buildDocumentationAttachmentEntries(matrix, rawAttachments) {
     matrixLogical.map((entry) => [String(entry.originalKapitel || entry.kapitel || ""), entry])
   );
   const countersByKapitel = new Map();
+  const orderMap = stockwerkOrderMap(projekt);
+  const orderedAttachments = attachments.sort((a, b) => {
+    const metaA = defaultDocumentMetaForCategory(a.category);
+    const metaB = defaultDocumentMetaForCategory(b.category);
+    const kapitelA = String(a.kapitel || metaA.kapitel || "");
+    const kapitelB = String(b.kapitel || metaB.kapitel || "");
+    if (kapitelA !== kapitelB) {
+      return kapitelA.localeCompare(kapitelB, "de", { numeric: true });
+    }
 
-  return attachments
+    const stockwerkA = stockwerkRank(a.stockwerk, orderMap);
+    const stockwerkB = stockwerkRank(b.stockwerk, orderMap);
+    if (stockwerkA !== stockwerkB) return stockwerkA - stockwerkB;
+
+    return String(a.title || a.originalName || "").localeCompare(String(b.title || b.originalName || ""), "de", {
+      numeric: true,
+      sensitivity: "base"
+    });
+  });
+
+  return orderedAttachments
     .map((entry, index) => {
       const categoryMeta = defaultDocumentMetaForCategory(entry.category);
       const originalKapitel = String(entry.kapitel || categoryMeta.kapitel || "");
       const parent = parentByOriginal.get(originalKapitel);
       const next = (countersByKapitel.get(originalKapitel) || 0) + 1;
       countersByKapitel.set(originalKapitel, next);
-      const localSort = Number.isFinite(entry.sortierung) ? entry.sortierung : next;
       const fallbackSort = Number.isFinite(categoryMeta.sortierung) ? categoryMeta.sortierung : 90000 + index;
       const displayKapitel = parent
         ? `${parent.displayKapitel || parent.kapitel}.${next}`
@@ -109,7 +161,7 @@ function buildDocumentationAttachmentEntries(matrix, rawAttachments) {
         formularart: "PDF-Import",
         quelle: "Anhang",
         dateipfad: entry.relativePath,
-        sortierung: (parent && Number.isFinite(parent.sortierung) ? parent.sortierung : fallbackSort) + localSort / 100
+        sortierung: (parent && Number.isFinite(parent.sortierung) ? parent.sortierung : fallbackSort) + next / 100
       };
     })
     .sort((a, b) => {

@@ -69,7 +69,7 @@ function filterExportGeraetelisten(geraetelisten = [], leistungsbereiche = {}) {
   });
 }
 
-function buildInhaltsverzeichnisEntries(matrix, geraetelisten = [], anhaenge = [], leistungsbereiche = {}) {
+function buildInhaltsverzeichnisEntries(matrix, geraetelisten = [], anhaenge = [], leistungsbereiche = {}, projekt = {}) {
   const activeLists = filterExportGeraetelisten(geraetelisten, leistungsbereiche);
   const matrixByKapitel = new Map((matrix || []).map((entry) => [String(entry.kapitel || ""), entry]));
   const tocBaseById = new Map();
@@ -136,7 +136,7 @@ function buildInhaltsverzeichnisEntries(matrix, geraetelisten = [], anhaenge = [
       };
     });
 
-  const attachmentEntries = buildDocumentationAttachmentEntries(matrix, anhaenge);
+  const attachmentEntries = buildDocumentationAttachmentEntries(matrix, anhaenge, projekt);
 
   return [...docs, ...listEntries, ...attachmentEntries].sort((a, b) => {
     const sortA = Number.isFinite(a.sortierung) ? a.sortierung : 0;
@@ -669,7 +669,7 @@ async function generateAnlagenbeschreibungPdf(rootDir, projekt, entry, leistungs
 async function generateInhaltsverzeichnis(rootDir, projekt, matrix, systemSettings = {}, geraetelisten = [], anhaenge = [], leistungsbereiche = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const filePath = path.join(paths.generatedPath, "Inhaltsverzeichnis.pdf");
-  const docs = buildInhaltsverzeichnisEntries(matrix, geraetelisten, anhaenge, leistungsbereiche);
+  const docs = buildInhaltsverzeichnisEntries(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt);
 
   await writePdf(filePath, "Inhaltsverzeichnis", (doc) => {
     writeProjectHeader(doc, projekt, rootDir, systemSettings);
