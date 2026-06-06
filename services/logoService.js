@@ -8,6 +8,7 @@ const ALLOWED_LOGO_TYPES = {
   "image/webp": ".webp"
 };
 
+// Multipart-Auswertung für Logo-Uploads ohne zusätzliche Upload-Middleware.
 function parseMultipart(buffer, contentType) {
   const boundaryMatch = String(contentType || "").match(/boundary=([^;]+)/);
   if (!boundaryMatch) {
@@ -39,6 +40,7 @@ function parseMultipart(buffer, contentType) {
   return parts;
 }
 
+// Extrahiert den Formularteil "logo" und prüft den erlaubten Bildtyp.
 function logoPartFromUpload(buffer, contentType) {
   const part = parseMultipart(buffer, contentType).find((entry) => entry.headers.includes('name="logo"'));
   if (!part || !part.body.length) {
@@ -62,6 +64,7 @@ function logoPartFromUpload(buffer, contentType) {
   };
 }
 
+// Speichert ein projektbezogenes Logo im Projektordner.
 async function saveProjectLogo(projectRoot, uploadBuffer, contentType) {
   const upload = logoPartFromUpload(uploadBuffer, contentType);
   const assetsDir = ensureInsideBase(projectRoot, path.join(projectRoot, "assets"));
@@ -75,6 +78,7 @@ async function saveProjectLogo(projectRoot, uploadBuffer, contentType) {
   return path.relative(projectRoot, targetPath).replaceAll(path.sep, "/");
 }
 
+// Speichert das zentrale Erstellerlogo im Storage-Bereich.
 async function saveCreatorLogo(storageDir, uploadBuffer, contentType) {
   const upload = logoPartFromUpload(uploadBuffer, contentType);
   const assetsDir = ensureInsideBase(storageDir, path.join(storageDir, "creator"));
@@ -88,6 +92,7 @@ async function saveCreatorLogo(storageDir, uploadBuffer, contentType) {
   return path.relative(storageDir, targetPath).replaceAll(path.sep, "/");
 }
 
+// Löst den gespeicherten Erstellerlogo-Pfad sicher auf einen echten Dateipfad auf.
 function resolveCreatorLogo(storageDir, logoPath) {
   if (!logoPath || String(logoPath).includes("..")) {
     throw new Error("Kein gültiger Erstellerlogo-Pfad hinterlegt.");
@@ -102,6 +107,7 @@ function resolveCreatorLogo(storageDir, logoPath) {
   return target;
 }
 
+// Löst einen projektbezogenen Logo-Pfad sicher auf einen echten Dateipfad auf.
 function resolveProjectLogo(projectRoot, logoPath) {
   if (!logoPath || String(logoPath).includes("..")) {
     throw new Error("Kein gültiger Logo-Pfad hinterlegt.");

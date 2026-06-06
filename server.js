@@ -20,7 +20,7 @@ const {
   updateProjectStatus,
   upsertProjectFromData
 } = require("./services/projectArchiveService");
-const { createProjectFolder } = require("./services/projectService");
+const { createProjectFolder, fileSafeName } = require("./services/projectService");
 const { buildDashboardStats } = require("./services/dashboardService");
 const { buildExportPreview } = require("./services/exportPreviewService");
 const { listPdfPreviewFiles, resolvePdfPreviewFile } = require("./services/pdfPreviewService");
@@ -29,7 +29,7 @@ const { generateBrandschutzPdf, generateFormularPdfs, generateGeraetelisten, gen
 const { applyLogicalChapterNumbers, sortDocuments } = require("./services/chapterNumberingService");
 const { BRANDSCHUTZ_REQUIRED_FIELDS, addBrandschutzEintrag, normalizeBrandschutz, normalizePostedBrandschutz } = require("./services/brandschutzService");
 const { deviceListFieldsForLeistungsbereich, normalizeGeraetelisten, normalizePostedGeraetelisten, syncGeraetelistenFromLeistungsbereiche } = require("./services/geraetelistenService");
-const { mergeFormTemplates, normalizePostedFormTemplates } = require("./services/formTemplateService");
+const { formEnabledForLeistungsbereiche, mergeFormTemplates, normalizePostedFormTemplates } = require("./services/formTemplateService");
 const {
   flattenSystemConfigForLegacy,
   buildGeraetelistenSuggestions,
@@ -41,11 +41,14 @@ const {
 } = require("./services/systemService");
 const {
   DEFAULT_SYSTEM_SETTINGS,
+  DEFAULT_THEME_SETTINGS,
+  THEME_PRESETS,
   mergeSystemSettings,
   normalizePostedErstellerStammdaten,
   normalizePostedLeistungsbereiche,
   normalizePostedOrdnerstruktur,
-  normalizePostedSystemSettings
+  normalizePostedSystemSettings,
+  normalizePostedThemeSettings
 } = require("./services/settingsService");
 const { resolveCreatorLogo, saveCreatorLogo } = require("./services/logoService");
 const { safeJoin } = require("./services/pathService");
@@ -55,7 +58,8 @@ const {
   deleteAttachment,
   normalizeAttachments,
   parseMultipartUpload,
-  saveAttachment
+  saveAttachment,
+  syncAttachmentFileName
 } = require("./services/attachmentService");
 const {
   DOCUMENT_ATTACHMENT_CATEGORIES,
@@ -64,6 +68,8 @@ const {
   updateAttachmentDocumentMeta
 } = require("./services/documentAttachmentService");
 
+// Zentrale Pfade der Anwendung. Alle Dateioperationen werden relativ zu
+// diesen Ordnern aufgebaut, damit lokaler Start und Docker-Start gleich laufen.
 const ROOT_DIR = __dirname;
 const DATA_DIR = path.join(ROOT_DIR, "data");
 const CONFIG_DIR = path.join(ROOT_DIR, "config");
@@ -73,6 +79,8 @@ const STORAGE_DIR = path.join(ROOT_DIR, "storage");
 const PORT = Number(process.env.PORT || 3000);
 const DEFAULT_STOCKWERKE = ["UG", "EG", "1. OG", "2. OG", "3. OG", "4. OG", "5. OG", "DG", "Dach"];
 
+// Startinitialisierung: Ordner und Default-Dateien vorbereiten, Datenbank
+// öffnen, Demo-Benutzer bereitstellen und ältere Projektregister migrieren.
 bootstrapStorage({ ROOT_DIR, DATA_DIR, CONFIG_DIR, OUTPUT_DIR, TEMPLATES_DIR, STORAGE_DIR });
 initDatabase(STORAGE_DIR);
 ensureDefaultUser();
@@ -88,11 +96,24 @@ app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 app.use(express.json({ limit: "25mb" }));
 app.use(parseCookies);
 app.use(attachUser);
+
+// Gemeinsamer Template-Kontext für eingeloggte Benutzer. Die Views nutzen diese
+// Werte für Flash-Meldungen, Projektanzeige und die Projektliste in der Sidebar.
 app.use(async (req, res, next) => {
   res.locals.flash = flashFromQuery(req);
   res.locals.currentProjectId = "";
   res.locals.currentProjectName = "";
   res.locals.projectSidebarProjects = [];
+  res.locals.deleteConfirmDialogs = true;
+  res.locals.systemSettings = mergeSystemSettings(DEFAULT_SYSTEM_SETTINGS);
+
+  try {
+    const systemSettings = mergeSystemSettings(await readJson(path.join(CONFIG_DIR, "systemEinstellungen.json"), DEFAULT_SYSTEM_SETTINGS));
+    res.locals.systemSettings = systemSettings;
+    res.locals.deleteConfirmDialogs = systemSettings.deleteConfirmDialogs !== false;
+  } catch (error) {
+    console.error("Systemeinstellungen konnten nicht vorbereitet werden:", error.message);
+  }
 
   if (!req.user) return next();
 
@@ -109,15 +130,30 @@ app.use(async (req, res, next) => {
   next();
 });
 
+// Lokaler Demo-Benutzer für Version 1. Das Passwort wird nicht im Klartext
+// gespeichert, sondern bei jedem Start als Hash/Salt-Kombination gesetzt.
 function ensureDefaultUser() {
   const salt = crypto.randomBytes(16).toString("hex");
-  const passwordHash = crypto.scryptSync("nick", salt, 64).toString("hex");
+  const passwordHash = crypto.scryptSync("admin", salt, 64).toString("hex");
   const now = new Date().toISOString();
-  const existing = getUserByEmail("nick");
-  if (existing) {
+  const existingAdmin = getUserByEmail("admin");
+  if (existingAdmin) {
     connection().prepare(`
       UPDATE users
-      SET name = 'nick',
+      SET name = 'admin',
+          password_hash = ?,
+          password_salt = ?,
+          updated_at = ?
+      WHERE lower(email) = lower('admin')
+    `).run(passwordHash, salt, now);
+    return;
+  }
+  const existingLegacyUser = getUserByEmail("nick");
+  if (existingLegacyUser) {
+    connection().prepare(`
+      UPDATE users
+      SET email = 'admin',
+          name = 'admin',
           password_hash = ?,
           password_salt = ?,
           updated_at = ?
@@ -127,8 +163,8 @@ function ensureDefaultUser() {
   }
   createUser({
     id: "user_demo",
-    email: "nick",
-    name: "nick",
+    email: "admin",
+    name: "admin",
     passwordHash,
     passwordSalt: salt,
     currentProjectId: "projekt_demo",
@@ -144,6 +180,7 @@ function flashFromQuery(req) {
   };
 }
 
+// Fügt nach einem Redirect eine Erfolg- oder Fehlermeldung als Query-Parameter an.
 function redirectWithFlash(res, target, type, message) {
   const [baseTarget, hash = ""] = target.split("#");
   const joiner = baseTarget.includes("?") ? "&" : "?";
@@ -151,6 +188,7 @@ function redirectWithFlash(res, target, type, message) {
   res.redirect(`${baseTarget}${joiner}${type}=${encodeURIComponent(message)}${hashSuffix}`);
 }
 
+// Einheitlicher Erfolgsweg für normale Formular-POSTs und Auto-Save-Requests.
 function okOrRedirect(req, res, target, message = "Gespeichert.") {
   if ((req.headers.accept || "").includes("application/json")) {
     res.json({ ok: true, message });
@@ -159,6 +197,7 @@ function okOrRedirect(req, res, target, message = "Gespeichert.") {
   redirectWithFlash(res, target, "success", message);
 }
 
+// Einheitliche Fehlerantwort für HTML-Formulare und JSON-basierte Auto-Saves.
 function fail(req, res, target, error) {
   const message = error && error.message ? error.message : String(error || "Fehler");
   if ((req.headers.accept || "").includes("application/json")) {
@@ -168,6 +207,7 @@ function fail(req, res, target, error) {
   redirectWithFlash(res, target, "error", message);
 }
 
+// Normalisiert frei eingegebene Stockwerke zu einer eindeutigen Liste.
 function normalizeStockwerke(value) {
   const raw = Array.isArray(value) ? value : String(value || "").split(/[\n,;]/);
   return [...new Set(raw
@@ -175,6 +215,7 @@ function normalizeStockwerke(value) {
     .filter(Boolean))];
 }
 
+// Kombiniert Preset-Auswahl und freie Stockwerksangaben aus dem Projektformular.
 function normalizePostedStockwerke(body) {
   return normalizeStockwerke([
     ...(Array.isArray(body.stockwerkePreset) ? body.stockwerkePreset : body.stockwerkePreset ? [body.stockwerkePreset] : []),
@@ -182,10 +223,12 @@ function normalizePostedStockwerke(body) {
   ]);
 }
 
+// Bereitet Stockwerke für Textarea-Ausgaben als mehrzeiligen Text vor.
 function stockwerkeText(projekt) {
   return normalizeStockwerke(projekt.stockwerke || []).join("\n");
 }
 
+// Erweitert Dropdown-Optionen um bereits gespeicherte Werte aus vorhandenen Daten.
 function mergeStockwerkOptions(stockwerke, values = []) {
   return [...new Set([
     ...normalizeStockwerke(stockwerke),
@@ -193,6 +236,7 @@ function mergeStockwerkOptions(stockwerke, values = []) {
   ])];
 }
 
+// Prüft projektbezogene Anhangspfade innerhalb des erlaubten Root-Verzeichnisses.
 async function fileExistsForAttachment(relativePath) {
   if (!relativePath) return false;
   try {
@@ -203,6 +247,11 @@ async function fileExistsForAttachment(relativePath) {
   }
 }
 
+/**
+ * Baut die View-Daten für die Anhangsverwaltung.
+ * Ergänzt Rohdaten um Dateistatus, Typ-Erkennung, Inhaltsverzeichnis-Zuordnung
+ * und Brandschutz-Fotoverweise.
+ */
 async function buildAttachmentViewModel(attachments, brandschutz, matrix, projekt = {}) {
   const tocEntries = buildDocumentationAttachmentEntries(matrix, attachments, projekt);
   const tocByAttachmentId = new Map(tocEntries.map((entry) => [entry.attachmentId, entry]));
@@ -249,10 +298,46 @@ async function buildAttachmentViewModel(attachments, brandschutz, matrix, projek
   return { rows, stats, countsByCategory };
 }
 
+// Baut eine Browser-URL für vorhandene PDF-Vorschauen innerhalb des Projektordners.
+function pdfPreviewUrl(file) {
+  return file ? `/export/pdf-preview?file=${encodeURIComponent(file.id)}#toolbar=1` : "";
+}
+
+// Sucht in den generierten PDFs nach einem Dateinamen-Muster, ohne Kapitelnummern
+// doppelt berechnen zu müssen. Die Kapitelnummer steht im Dateipräfix und darf
+// sich durch aktive Leistungsbereiche logisch ändern.
+function findGeneratedPdf(pdfPreviewFiles, folderName, suffix) {
+  const normalizedSuffix = String(suffix || "").toLowerCase();
+  return (pdfPreviewFiles || []).find((file) => {
+    const relativePath = String(file.relativePath || file.id || "").replaceAll("\\", "/");
+    return relativePath.startsWith(`04_Generiert/${folderName}/`) && String(file.name || "").toLowerCase().endsWith(normalizedSuffix);
+  });
+}
+
+// Ordnet jeder Geräteliste die vorhandene generierte PDF zu, falls diese bereits
+// erzeugt wurde. Fehlt die Datei, bleibt die Liste ohne Vorschau-Button.
+function buildGeraetelistenPreviewMap(geraetelisten, pdfPreviewFiles) {
+  return (geraetelisten || []).reduce((previewMap, liste) => {
+    const suffix = `_${fileSafeName(liste.leistungsbereich)}_${fileSafeName(liste.titel)}.pdf`;
+    const previewFile = findGeneratedPdf(pdfPreviewFiles, "Geraetelisten", suffix);
+    if (previewFile) previewMap[liste.id] = pdfPreviewUrl(previewFile);
+    return previewMap;
+  }, {});
+}
+
+// Brandschutz wird aktuell als ein zusammenhängendes Dokument generiert; die
+// Tabellenzeilen verweisen deshalb alle auf dieselbe vorhandene PDF-Vorschau.
+function buildBrandschutzPreviewUrl(pdfPreviewFiles) {
+  const previewFile = findGeneratedPdf(pdfPreviewFiles, "Brandschutz", "_Bilddokumentation_Brandschottungen.pdf");
+  return pdfPreviewUrl(previewFile);
+}
+
 async function currentFiles(req) {
   return getCurrentDataFiles(ROOT_DIR, DATA_DIR, req.user.id);
 }
 
+// Lädt den vollständigen Projektzustand aus JSON/Config-Dateien und normalisiert
+// die Daten für Views, Services und PDF-Ausgabe.
 async function loadCurrent(req) {
   const files = await currentFiles(req);
   const [
@@ -304,7 +389,23 @@ async function loadCurrent(req) {
   };
 }
 
-function updateMatrixFromLeistungsbereiche(matrix, leistungsbereiche, projektSysteme) {
+// Leitet aus aktiven Leistungsbereichen und Systemzuordnungen ab,
+// welche Matrixeinträge aktiv und exportierbar sind.
+function templateKeyForMatrixEntry(entry) {
+  if (entry.dokumenttyp === "Konformitätserklärung") return "konformitaet";
+  if (entry.dokumenttyp === "CE-Bestätigung") return "ceBestaetigung";
+  if (/DGUV/i.test(entry.titel || "")) return "dguv";
+  if (/Errichter/i.test(entry.titel || "")) return "errichter";
+  return "";
+}
+
+function formGenerationEnabled(entry, entryLeistungsbereiche, templates) {
+  const templateKey = templateKeyForMatrixEntry(entry);
+  if (!templateKey || !entryLeistungsbereiche.length) return true;
+  return formEnabledForLeistungsbereiche(templates[templateKey] || {}, entryLeistungsbereiche);
+}
+
+function updateMatrixFromLeistungsbereiche(matrix, leistungsbereiche, projektSysteme, templates = {}) {
   const activeSet = new Set(leistungsbereiche.aktiv || []);
   const activeKapitel = new Set(
     (projektSysteme || [])
@@ -320,7 +421,8 @@ function updateMatrixFromLeistungsbereiche(matrix, leistungsbereiche, projektSys
     const isGeneral = entryLeistungsbereiche.length === 0 || entryLeistungsbereiche.includes("Allgemein");
     const activeByLeistungsbereich = entryLeistungsbereiche.some((leistungsbereich) => activeSet.has(leistungsbereich));
     const activeByKapitel = activeKapitel.has(entry.kapitel);
-    const aktiv = Boolean(entry.pflicht || isGeneral || activeByLeistungsbereich || activeByKapitel);
+    const generationEnabled = formGenerationEnabled(entry, entryLeistungsbereiche, templates);
+    const aktiv = generationEnabled && Boolean(entry.pflicht || isGeneral || activeByLeistungsbereich || activeByKapitel);
     const autoExport = Boolean(entry.autoAktiv && (activeByLeistungsbereich || activeByKapitel));
     return {
       ...entry,
@@ -330,6 +432,7 @@ function updateMatrixFromLeistungsbereiche(matrix, leistungsbereiche, projektSys
   });
 }
 
+// Übernimmt manuelle Checkbox-Änderungen aus der Dokumentenmatrix.
 function updatePostedMatrix(matrix, body) {
   const activeIds = new Set(Array.isArray(body.aktiv) ? body.aktiv : body.aktiv ? [body.aktiv] : []);
   const exportIds = new Set(Array.isArray(body.export) ? body.export : body.export ? [body.export] : []);
@@ -340,12 +443,15 @@ function updatePostedMatrix(matrix, body) {
   }));
 }
 
+// Synchronisiert Folge-Daten nach Änderungen an Leistungsbereichen.
+// Dadurch bleiben Systemauswahl, Matrix und Gerätelisten im gleichen Stand.
 async function syncProjectDerivedData(files) {
   const leistungsbereiche = await readJson(files.leistungsbereiche, { aktiv: [] });
   const systemConfig = normalizeSystemConfig(await readJson(path.join(DATA_DIR, "systeme.json"), { leistungsbereiche: [] }));
+  const templates = mergeFormTemplates(await readJson(path.join(CONFIG_DIR, "formularTemplates.json"), {}));
   const existingProjektSysteme = await readJson(files.projektSysteme, []);
   const projektSysteme = syncProjektSysteme(systemConfig, existingProjektSysteme, leistungsbereiche.aktiv || []);
-  const matrix = updateMatrixFromLeistungsbereiche(await readJson(files.dokumentenmatrix, []), leistungsbereiche, projektSysteme);
+  const matrix = updateMatrixFromLeistungsbereiche(await readJson(files.dokumentenmatrix, []), leistungsbereiche, projektSysteme, templates);
   const geraetelisten = syncGeraetelistenFromLeistungsbereiche(await readJson(files.geraetelisten, []), leistungsbereiche.aktiv || [], projektSysteme);
 
   await Promise.all([
@@ -355,8 +461,10 @@ async function syncProjectDerivedData(files) {
   ]);
 }
 
+// Startseite: angemeldete Benutzer landen immer im Dashboard.
 app.get("/", requireAuth, (req, res) => res.redirect("/dashboard"));
 
+// Login, Registrierung und Logout.
 app.get("/login", (req, res) => {
   if (req.user) return res.redirect("/dashboard");
   res.render("login", { flash: flashFromQuery(req) });
@@ -392,6 +500,7 @@ app.post("/logout", (req, res) => {
   res.redirect("/login");
 });
 
+// Dashboard: fasst Projektfortschritt, fehlende Angaben und nächste Schritte zusammen.
 app.get("/dashboard", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -410,6 +519,7 @@ app.get("/dashboard", requireAuth, async (req, res, next) => {
   }
 });
 
+// Projektverwaltung: Projekte anzeigen, öffnen, archivieren, löschen und exportieren.
 app.get("/projekte", requireAuth, async (req, res, next) => {
   try {
     res.render("projekte", {
@@ -459,6 +569,7 @@ app.post("/projekte/:projectId/exportieren", requireAuth, async (req, res) => {
   }
 });
 
+// Projektstammdaten inklusive Objektstruktur und Stockwerksauswahl.
 app.get("/projekt", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -489,6 +600,7 @@ app.post("/projekt", requireAuth, async (req, res) => {
   }
 });
 
+// Leistungsbereiche steuern, welche Systeme, Dokumente und Gerätelisten aktiv werden.
 app.get("/leistungsbereiche", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -529,6 +641,7 @@ app.post("/leistungsbereiche", requireAuth, async (req, res) => {
   }
 });
 
+// Projektspezifische Systemauswahl je Leistungsbereich.
 app.get("/systemauswahl", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -556,6 +669,7 @@ app.post("/systemauswahl", requireAuth, async (req, res) => {
   }
 });
 
+// Dokumentenmatrix: fachliche Dokumente prüfen und Exportstatus verwalten.
 app.get("/dokumente", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -584,6 +698,7 @@ app.post("/dokumente/aktualisieren", requireAuth, async (req, res) => {
   redirectWithFlash(res, "/dokumente", "success", "Dokumentenmatrix wurde aktualisiert.");
 });
 
+// Gerätelisten: Positionen pro aktivem Leistungsbereich tabellarisch bearbeiten.
 app.get("/geraetelisten", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -593,13 +708,15 @@ app.get("/geraetelisten", requireAuth, async (req, res, next) => {
       liste.leistungsbereich,
       deviceListFieldsForLeistungsbereich(liste.leistungsbereich)
     ]));
+    const pdfPreviewFiles = await listPdfPreviewFiles(ROOT_DIR, data.projekt);
     res.render("geraetelisten", {
       active: "geraetelisten",
       geraetelisten: listen,
       aktiveLeistungsbereiche: data.leistungsbereiche.aktiv,
       nurAktive,
       suggestions: buildGeraetelistenSuggestions(data.systemConfig),
-      fieldProfiles
+      fieldProfiles,
+      previewByListId: buildGeraetelistenPreviewMap(listen, pdfPreviewFiles)
     });
   } catch (error) {
     next(error);
@@ -622,12 +739,15 @@ app.post("/geraetelisten/aktualisieren", requireAuth, async (req, res) => {
   redirectWithFlash(res, "/geraetelisten", "success", "Gerätelisten wurden aktualisiert.");
 });
 
+// Brandschutz: Brandschottungen erfassen und Pflichtangaben prüfen.
 app.get("/brandschutz", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
+    const pdfPreviewFiles = await listPdfPreviewFiles(ROOT_DIR, data.projekt);
     res.render("brandschutz", {
       active: "brandschutz",
       brandschutz: data.brandschutz,
+      brandschutzPreviewUrl: buildBrandschutzPreviewUrl(pdfPreviewFiles),
       stockwerke: mergeStockwerkOptions(
         data.projekt.stockwerke,
         data.brandschutz.map((entry) => entry.geschoss)
@@ -655,6 +775,7 @@ app.post("/brandschutz/hinzufuegen", requireAuth, async (req, res) => {
   redirectWithFlash(res, "/brandschutz", "success", "Brandschutz-Eintrag wurde hinzugefügt.");
 });
 
+// Export: Vorschau, PDF-Erzeugung, Exportliste und finaler Projekt-Export.
 app.get("/export", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -778,16 +899,19 @@ app.post("/export/exportliste", requireAuth, async (req, res) => {
 
 app.post("/export/final", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
-  await prepareFinalExport(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste);
-  redirectWithFlash(res, "/export#aktionen", "success", "Finaler Export wurde vorbereitet.");
+  const result = await prepareFinalExport(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste);
+  const zipName = result.zipPath ? path.basename(result.zipPath) : "Export.zip";
+  redirectWithFlash(res, "/export#aktionen", "success", `Finaler Export wurde vorbereitet (${zipName}).`);
 });
 
+// Einstellungen: Systemvorgaben, Erstellerstammdaten, Ordnerstruktur und Formulare.
 app.get("/einstellungen", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
     res.render("einstellungen", {
       active: "einstellungen",
       systemSettings: data.systemSettings,
+      themePresets: THEME_PRESETS,
       ordnerstruktur: data.ordnerstruktur,
       leistungsbereiche: data.leistungsbereiche,
       systemConfig: data.systemConfig,
@@ -805,6 +929,32 @@ app.post("/einstellungen/system", requireAuth, async (req, res) => {
     okOrRedirect(req, res, "/einstellungen#system");
   } catch (error) {
     fail(req, res, "/einstellungen#system", error);
+  }
+});
+
+app.post("/einstellungen/theme", requireAuth, async (req, res) => {
+  try {
+    const current = mergeSystemSettings(await readJson(path.join(CONFIG_DIR, "systemEinstellungen.json"), {}));
+    await writeJson(path.join(CONFIG_DIR, "systemEinstellungen.json"), {
+      ...current,
+      theme: normalizePostedThemeSettings(req.body, current.theme)
+    });
+    okOrRedirect(req, res, "/einstellungen#theme-editor", "Theme wurde gespeichert.");
+  } catch (error) {
+    fail(req, res, "/einstellungen#theme-editor", error);
+  }
+});
+
+app.post("/einstellungen/theme/defaults", requireAuth, async (req, res) => {
+  try {
+    const current = mergeSystemSettings(await readJson(path.join(CONFIG_DIR, "systemEinstellungen.json"), {}));
+    await writeJson(path.join(CONFIG_DIR, "systemEinstellungen.json"), {
+      ...current,
+      theme: DEFAULT_THEME_SETTINGS
+    });
+    okOrRedirect(req, res, "/einstellungen#theme-editor", "Theme wurde auf Apple Light zurückgesetzt.");
+  } catch (error) {
+    fail(req, res, "/einstellungen#theme-editor", error);
   }
 });
 
@@ -890,6 +1040,18 @@ app.post("/einstellungen/leistungsbereiche", requireAuth, async (req, res) => {
   }
 });
 
+app.post("/einstellungen/leistungsbereiche-formulare", requireAuth, async (req, res) => {
+  try {
+    const files = await currentFiles(req);
+    await writeJson(files.leistungsbereiche, normalizePostedLeistungsbereiche(req.body, await readJson(files.leistungsbereiche, {})));
+    await writeJson(path.join(CONFIG_DIR, "formularTemplates.json"), normalizePostedFormTemplates(req.body));
+    await syncProjectDerivedData(files);
+    okOrRedirect(req, res, "/einstellungen#leistungsbereiche-admin", "Leistungsbereiche und Formulare wurden gespeichert.");
+  } catch (error) {
+    fail(req, res, "/einstellungen#leistungsbereiche-admin", error);
+  }
+});
+
 app.post("/einstellungen/leistungsbereiche/defaults", requireAuth, async (req, res) => {
   const files = await currentFiles(req);
   await writeJson(files.leistungsbereiche, { optionen: DEFAULT_LEISTUNGSBEREICHE, aktiv: [], systemAuswahl: {} });
@@ -917,6 +1079,7 @@ app.post("/einstellungen/formulare", requireAuth, async (req, res) => {
   }
 });
 
+// Projektarchiv: Projektpakete exportieren, prüfen und wieder importieren.
 app.get("/projektarchiv", requireAuth, async (req, res, next) => {
   try {
     res.render("projektarchiv", {
@@ -976,6 +1139,7 @@ app.get("/projektarchiv/download", requireAuth, async (req, res, next) => {
   }
 });
 
+// Anhänge: importierte PDFs und Bilder verwalten, kategorisieren und zuordnen.
 app.get("/anhaenge", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -1064,7 +1228,16 @@ app.post("/anhaenge/:id/aktualisieren", requireAuth, async (req, res) => {
       sortierung: req.body.sortierung,
       export: req.body.export === "on"
     });
-    await writeJson(files.anhaenge, nextAttachments);
+    const synced = await syncAttachmentFileName(ROOT_DIR, files, nextAttachments, req.params.id);
+    await writeJson(files.anhaenge, synced.attachments);
+    if (synced.renamed) {
+      const brandschutz = normalizeBrandschutz(await readJson(files.brandschutz, []));
+      await writeJson(files.brandschutz, brandschutz.map((entry) => ({
+        ...entry,
+        foto_vorher: entry.foto_vorher === synced.renamed.oldRelativePath ? synced.renamed.newRelativePath : entry.foto_vorher,
+        foto_nachher: entry.foto_nachher === synced.renamed.oldRelativePath ? synced.renamed.newRelativePath : entry.foto_nachher
+      })));
+    }
     const target = req.body.returnKategorie ? `/anhaenge?kategorie=${encodeURIComponent(req.body.returnKategorie)}` : "/anhaenge";
     okOrRedirect(req, res, target, "Anhang wurde aktualisiert.");
   } catch (error) {

@@ -4,10 +4,16 @@ const Database = require("better-sqlite3");
 
 let db;
 
+// Einheitliches ISO-Zeitformat für Datenbank-Metadaten.
 function nowIso() {
   return new Date().toISOString();
 }
 
+/**
+ * Initialisiert die lokale SQLite-Datenbank.
+ * Enthält nur Benutzer, Sessions und Projektregister; fachliche Projektdaten
+ * bleiben weiterhin dateibasiert in JSON-Dateien.
+ */
 function initDatabase(storageDir) {
   fs.mkdirSync(storageDir, { recursive: true });
   db = new Database(path.join(storageDir, "app.db"));
@@ -49,11 +55,13 @@ function initDatabase(storageDir) {
   return db;
 }
 
+// Liefert die aktive DB-Verbindung und verhindert Zugriffe vor initDatabase().
 function connection() {
   if (!db) throw new Error("Datenbank wurde nicht initialisiert.");
   return db;
 }
 
+// Benutzerabfragen werden case-insensitive über die E-Mail bzw. Loginkennung ausgeführt.
 function getUserByEmail(email) {
   return connection().prepare("SELECT * FROM users WHERE lower(email) = lower(?)").get(email);
 }
@@ -93,6 +101,7 @@ function deleteExpiredSessions() {
   connection().prepare("DELETE FROM sessions WHERE expires_at <= ?").run(nowIso());
 }
 
+// Projektregister pro Benutzer. Die eigentlichen Projektinhalte liegen in storage/users/...
 function listProjectsForUser(userId) {
   return connection().prepare(`
     SELECT id, user_id AS userId, status, created_at AS erstelltAm, updated_at AS geaendertAm, original_project_id AS originalProjectId
@@ -110,6 +119,7 @@ function getProject(userId, projectId) {
   `).get(userId, projectId);
 }
 
+// Fügt ein Projektregister hinzu oder aktualisiert vorhandene Metadaten.
 function upsertProject(project) {
   const existing = getProject(project.userId, project.id);
   if (existing) {
@@ -164,6 +174,8 @@ function setCurrentProjectId(userId, projectId) {
   `).run(projectId, nowIso(), userId);
 }
 
+// Einmalige Migration aus einer älteren JSON-basierten Projektliste.
+// Fehler werden nur protokolliert, damit die App weiter starten kann.
 function migrateProjectsJson(rootDir) {
   const filePath = path.join(rootDir, "storage", "projects.json");
   if (!fs.existsSync(filePath)) return;

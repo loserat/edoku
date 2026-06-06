@@ -7,9 +7,11 @@
     <link rel="stylesheet" href="/css/style.css">
   </head>
   <body>
+    <%# Gerätelistenansicht: aktive Leistungsbereiche werden als linke Tabs auswählbar. %>
     <%- include("partials/header", { active }) %>
     <main class="page wide device-list-page">
       <%- include("partials/flash", { flash }) %>
+      <%# Nur aktive Listen werden bevorzugt in der Sidebar angezeigt, Fallback sind alle Listen. %>
       <% const aktiveListen = geraetelisten.filter((liste) => liste.aktiv); %>
       <%- include("partials/sectionTabs", { active, deviceListTabs: aktiveListen.length ? aktiveListen : geraetelisten }) %>
 
@@ -22,6 +24,7 @@
           <div class="summary-card"><span>Positionen</span><strong><%= positionenGesamt %></strong></div>
         </section>
 
+        <%# Übersicht aller Gerätelisten mit Status und Positionenzahl. %>
         <section class="tab-panel" data-device-dashboard-panel>
           <div class="panel-head">
             <div>
@@ -45,10 +48,12 @@
                   <th data-sortable-column>Aktiv</th>
                   <th data-sortable-column>Export</th>
                   <th data-sortable-column>Positionen</th>
+                  <th>Vorschau</th>
                 </tr>
               </thead>
               <tbody>
                 <% geraetelisten.forEach((liste) => { %>
+                  <% const dashboardPreviewUrl = previewByListId && previewByListId[liste.id] ? previewByListId[liste.id] : ""; %>
                   <tr>
                     <td><%= liste.titel %></td>
                     <td><%= liste.leistungsbereich %></td>
@@ -56,6 +61,20 @@
                     <td><span class="badge <%= liste.aktiv ? "on" : "off" %>"><%= liste.aktiv ? "Ja" : "Nein" %></span></td>
                     <td><%= liste.export ? "Ja" : "Nein" %></td>
                     <td><%= liste.positionen.length %></td>
+                    <td>
+                      <% if (dashboardPreviewUrl) { %>
+                        <button
+                          class="secondary preview-button"
+                          type="button"
+                          data-pdf-modal-open
+                          data-pdf-src="<%= dashboardPreviewUrl %>"
+                          data-pdf-title="Geräteliste: <%= liste.titel %>">
+                          Vorschau
+                        </button>
+                      <% } else { %>
+                        <span class="preview-missing">Noch nicht erzeugt</span>
+                      <% } %>
+                    </td>
                   </tr>
                 <% }) %>
               </tbody>
@@ -63,6 +82,7 @@
           </div>
         </section>
 
+        <%# Bearbeitungsbereich: sichtbare Liste wird clientseitig über data-device-list-panel gesteuert. %>
         <section class="tab-panel">
           <div class="panel-head">
             <div>
@@ -78,6 +98,7 @@
             <% geraetelisten.forEach((liste, listenIndex) => { %>
               <% const listSuggestions = suggestions[liste.leistungsbereich] || { alleHersteller: [], alleSysteme: [], alleTypen: [] }; %>
               <% const listFields = fieldProfiles[liste.leistungsbereich] || []; %>
+              <% const previewUrl = previewByListId && previewByListId[liste.id] ? previewByListId[liste.id] : ""; %>
               <section class="edit-section <%= liste.aktiv ? "" : "is-inactive" %>" data-device-list-panel="<%= liste.id %>" data-suggestion-leistungsbereich="<%= liste.leistungsbereich %>">
                 <div class="edit-section-head">
                   <div>
@@ -89,16 +110,28 @@
                   </div>
                   <div class="list-tools">
                     <div class="flag-row">
-                      <label class="cell-check">
+                      <label class="switch-control">
                         <input type="checkbox" name="geraetelisten[<%= listenIndex %>][aktiv]" <%= liste.aktiv ? "checked" : "" %>>
+                        <span class="switch-track" aria-hidden="true"></span>
                         <span>Aktiv</span>
                       </label>
-                      <label class="cell-check">
+                      <label class="switch-control">
                         <input type="checkbox" name="geraetelisten[<%= listenIndex %>][export]" <%= liste.export ? "checked" : "" %>>
+                        <span class="switch-track" aria-hidden="true"></span>
                         <span>Export</span>
                       </label>
                     </div>
                     <div class="add-position-control">
+                      <% if (previewUrl) { %>
+                        <button
+                          class="secondary preview-button"
+                          type="button"
+                          data-pdf-modal-open
+                          data-pdf-src="<%= previewUrl %>"
+                          data-pdf-title="Geräteliste: <%= liste.titel %>">
+                          Vorschau
+                        </button>
+                      <% } %>
                       <input type="number" min="1" max="25" value="1" aria-label="Anzahl Geräte">
                       <button
                         type="button"
@@ -143,7 +176,7 @@
                         <% listFields.forEach((field) => { %>
                           <th data-col="<%= field.name %>" data-sortable-column><%= field.label %></th>
                         <% }) %>
-                        <th data-col="delete">Löschen</th>
+                        <th data-col="delete">Entfernen</th>
                       </tr>
                     </thead>
                     <tbody data-position-body="<%= listenIndex %>">
@@ -155,10 +188,7 @@
                             <td data-col="<%= field.name %>"><input type="text" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][<%= field.name %>]" value="<%= position[field.name] || "" %>" <%- listAttr %>></td>
                           <% }) %>
                           <td data-col="delete">
-                            <label class="cell-check">
-                              <input type="checkbox" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][_delete]" value="1">
-                              <span>Löschen</span>
-                            </label>
+                            <button class="row-delete-button danger icon-only-button" type="button" data-delete-row data-delete-label="Geräteposition <%= position.pos || posIndex + 1 %>" aria-label="Geräteposition löschen"><%- include("partials/icon", { name: "trash" }) %></button>
                           </td>
                         </tr>
                       <% }) %>

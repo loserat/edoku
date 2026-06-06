@@ -12,6 +12,8 @@ const ALLOWED_MIME_TYPES = new Set([
   "application/pdf"
 ]);
 
+// Vereinheitlicht gespeicherte Anhangsdaten aus JSON. Fehlende Felder bekommen
+// stabile Defaults, damit alte Projektstände weiter angezeigt werden können.
 function normalizeAttachments(raw) {
   if (!Array.isArray(raw)) return [];
   return raw
@@ -44,10 +46,12 @@ function normalizeAttachments(raw) {
     });
 }
 
+// Filter für Anhänge, die als Bilder einer Brandschottung zugeordnet werden können.
 function imageAttachments(raw) {
   return normalizeAttachments(raw).filter((entry) => entry.mimeType.startsWith("image/"));
 }
 
+// Trennt einen Buffer anhand eines Multipart-Boundary.
 function splitBuffer(buffer, separator) {
   const parts = [];
   let start = 0;
@@ -63,6 +67,7 @@ function splitBuffer(buffer, separator) {
   return parts;
 }
 
+// Wandelt den Headerblock eines Multipart-Teils in ein kleines Header-Objekt um.
 function parseHeaderBlock(value) {
   return String(value || "")
     .split(/\r?\n/)
@@ -74,6 +79,8 @@ function parseHeaderBlock(value) {
     }, {});
 }
 
+// Minimaler Multipart-Parser für Uploads ohne zusätzliche Upload-Bibliothek.
+// Gibt Formularfelder und genau eine Datei zurück.
 async function parseMultipartUpload(req) {
   const contentType = req.headers["content-type"] || "";
   const boundaryMatch = contentType.match(/boundary=([^;]+)/);
@@ -127,10 +134,49 @@ async function parseMultipartUpload(req) {
   return { fields, file };
 }
 
+// Ermittelt den Projektwurzelordner aus dem data-Verzeichnis des aktuellen Projekts.
 function projectRootFromFiles(files) {
   return path.dirname(files.dataDir);
 }
 
+// Lesbarer Kategoriename als Bestandteil logisch erzeugter Dateinamen.
+function logicalCategoryName(category) {
+  const names = {
+    "Stromlaufpläne": "Stromlaufplan",
+    "Schaltpläne": "Schaltplan",
+    "Installationspläne": "Installationsplan",
+    "Schemata": "Schema",
+    "Messprotokolle": "Messprotokoll",
+    "Brandschutz": "Brandschutz",
+    "Fotos": "Foto",
+    "Pläne": "Plan",
+    "Nachweise": "Nachweis",
+    "Allgemein": "Anhang"
+  };
+  return names[category] || category || "Anhang";
+}
+
+// Erzeugt nachvollziehbare Dateinamen aus Kategorie, Stockwerk und Metadaten.
+// Die ID bleibt enthalten, damit gleich benannte Uploads sich nicht überschreiben.
+function logicalAttachmentFileName(fields, originalBaseName, extension, id) {
+  const category = String(fields.category || "Allgemein").trim() || "Allgemein";
+  const title = String(fields.title || originalBaseName || "Anhang").trim();
+  const partsByCategory = {
+    "Stromlaufpläne": [logicalCategoryName(category), fields.stockwerk, fields.verteiler, fields.plannummer, fields.revision ? `Rev_${fields.revision}` : "", title],
+    "Schaltpläne": [logicalCategoryName(category), fields.stockwerk, fields.anlage, fields.verteiler, fields.plannummer, fields.revision ? `Rev_${fields.revision}` : "", title],
+    "Installationspläne": [logicalCategoryName(category), fields.stockwerk, fields.bereich, fields.plannummer, fields.revision ? `Rev_${fields.revision}` : "", title],
+    "Schemata": [logicalCategoryName(category), fields.stockwerk, fields.anlage, fields.plannummer, fields.revision ? `Rev_${fields.revision}` : "", title],
+    "Messprotokolle": [logicalCategoryName(category), fields.stockwerk, fields.messart, fields.normgrundlage, fields.anlage || fields.bereich, fields.datum, title],
+    "Brandschutz": [logicalCategoryName(category), fields.stockwerk, title],
+    "Fotos": [logicalCategoryName(category), fields.stockwerk, title]
+  };
+  const parts = partsByCategory[category] || [logicalCategoryName(category), fields.stockwerk, title];
+  const base = sanitizeFileName(parts.filter(Boolean).join("_"), "anhang").slice(0, 112);
+  const safeId = sanitizeFileName(id, "anhang_id");
+  return `${base}_${safeId}${extension || ".dat"}`;
+}
+
+// Speichert einen neuen Upload im Projektordner und ergänzt den JSON-Eintrag.
 async function saveAttachment(rootDir, files, existingRaw, upload) {
   if (!upload.file || !upload.file.originalName || !upload.file.buffer.length) {
     throw new Error("Bitte eine Datei auswaehlen.");
@@ -148,16 +194,23 @@ async function saveAttachment(rootDir, files, existingRaw, upload) {
   const extension = path.extname(originalName).toLowerCase();
   const baseName = sanitizeFileName(path.basename(originalName, extension), "anhang");
   const id = `anh_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
-  const fileName = `${baseName}_${id}${extension || ".dat"}`;
-  const targetPath = path.join(attachmentDir, fileName);
-  await fs.writeFile(targetPath, upload.file.buffer);
-
-  const relativePath = path.relative(rootDir, targetPath).split(path.sep).join("/");
   const category = String(upload.fields.category || "Allgemein").trim() || "Allgemein";
   const title = String(upload.fields.title || path.basename(originalName, extension) || originalName).trim() || originalName;
   const kapitel = String(upload.fields.kapitel || "").trim();
   const stockwerk = String(upload.fields.stockwerk || "").trim();
   const sortierung = Number.parseFloat(upload.fields.sortierung);
+  const fields = {
+    ...upload.fields,
+    category,
+    title,
+    kapitel,
+    stockwerk
+  };
+  const fileName = logicalAttachmentFileName(fields, baseName, extension, id);
+  const targetPath = path.join(attachmentDir, fileName);
+  await fs.writeFile(targetPath, upload.file.buffer);
+
+  const relativePath = path.relative(rootDir, targetPath).split(path.sep).join("/");
 
   return [
     ...attachments,
@@ -187,6 +240,43 @@ async function saveAttachment(rootDir, files, existingRaw, upload) {
   ];
 }
 
+// Benennt eine vorhandene Datei nach geänderten Metadaten um.
+// Gibt zusätzlich alte/neue Pfade zurück, damit Referenzen aktualisiert werden können.
+async function syncAttachmentFileName(rootDir, files, attachmentsRaw, attachmentId) {
+  const attachments = normalizeAttachments(attachmentsRaw);
+  const projectRoot = projectRootFromFiles(files);
+  const attachmentDir = path.join(projectRoot, "anhaenge");
+  const target = attachments.find((entry) => entry.id === attachmentId);
+  if (!target) return { attachments, renamed: null };
+
+  const extension = path.extname(target.fileName || target.originalName || target.relativePath).toLowerCase() || ".dat";
+  const originalBaseName = sanitizeFileName(path.basename(target.originalName || target.fileName || "anhang", extension), "anhang");
+  const nextFileName = logicalAttachmentFileName(target, originalBaseName, extension, target.id);
+  if (nextFileName === target.fileName) return { attachments, renamed: null };
+
+  const oldPath = path.join(rootDir, target.relativePath);
+  const nextPath = path.join(attachmentDir, nextFileName);
+  const nextRelativePath = path.relative(rootDir, nextPath).split(path.sep).join("/");
+
+  try {
+    await fs.mkdir(attachmentDir, { recursive: true });
+    await fs.rename(oldPath, nextPath);
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
+
+  return {
+    attachments: attachments.map((entry) => entry.id === attachmentId
+      ? { ...entry, fileName: nextFileName, relativePath: nextRelativePath }
+      : entry),
+    renamed: {
+      oldRelativePath: target.relativePath,
+      newRelativePath: nextRelativePath
+    }
+  };
+}
+
+// Entfernt Datei und JSON-Eintrag eines Anhangs. Fehlende Dateien werden toleriert.
 async function deleteAttachment(rootDir, attachmentsRaw, attachmentId) {
   const attachments = normalizeAttachments(attachmentsRaw);
   const target = attachments.find((entry) => entry.id === attachmentId);
@@ -202,6 +292,7 @@ async function deleteAttachment(rootDir, attachmentsRaw, attachmentId) {
   return attachments.filter((entry) => entry.id !== attachmentId);
 }
 
+// Löscht Bildverweise aus Brandschottungen, wenn der zugehörige Anhang entfernt wurde.
 function clearAttachmentReferencesFromBrandschutz(brandschutz, relativePath) {
   return (Array.isArray(brandschutz) ? brandschutz : []).map((entry) => ({
     ...entry,
@@ -210,6 +301,7 @@ function clearAttachmentReferencesFromBrandschutz(brandschutz, relativePath) {
   }));
 }
 
+// Ordnet ein Bild einer Brandschottung als Foto 1 oder Foto 2 zu.
 function assignAttachmentToBrandschutz(brandschutz, relativePath, brandschutzId, slot) {
   if (!["foto_vorher", "foto_nachher"].includes(slot)) {
     throw new Error("Ungueltige Foto-Zuordnung.");
@@ -236,5 +328,6 @@ module.exports = {
   imageAttachments,
   normalizeAttachments,
   parseMultipartUpload,
-  saveAttachment
+  saveAttachment,
+  syncAttachmentFileName
 };

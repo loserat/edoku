@@ -1,16 +1,27 @@
-const savedTheme = localStorage.getItem("dm-theme") || "light";
-document.documentElement.setAttribute("data-theme", savedTheme);
+// Theme wird vor DOMContentLoaded gesetzt, damit beim Laden kein hell/dunkel-Flackern entsteht.
+function resolveEdokuThemeMode(mode) {
+  if (mode === "system") {
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  return mode === "dark" ? "dark" : "light";
+}
+
+const savedTheme = localStorage.getItem("dm-theme") || window.edokuThemeDefaultMode || "light";
+document.documentElement.setAttribute("data-theme", resolveEdokuThemeMode(savedTheme));
 
 document.addEventListener("DOMContentLoaded", () => {
   const notices = document.querySelectorAll(".notice");
   const themeToggle = document.querySelector("[data-theme-toggle]");
 
+  // Statusmeldungen für Screenreader als dynamische Hinweise markieren.
   notices.forEach((notice) => {
     notice.setAttribute("role", "status");
   });
 
+  // Sicherheitsabfrage für Formulare, die eine Bestätigung verlangen.
   document.querySelectorAll("form[data-confirm]").forEach((form) => {
     form.addEventListener("submit", (event) => {
+      if (window.edokuDeleteConfirmDialogs === false) return;
       const message = form.dataset.confirm || "Diese Aktion wirklich ausführen?";
       if (!window.confirm(message)) {
         event.preventDefault();
@@ -18,14 +29,43 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  function updateThemeButton(theme) {
-    if (!themeToggle) return;
-    themeToggle.textContent = theme === "dark" ? "Nacht" : "Tag";
-    themeToggle.setAttribute("aria-label", `Theme wechseln, aktuell ${theme === "dark" ? "Nacht" : "Tag"}`);
+  function deleteConfirmDialogsEnabled() {
+    return window.edokuDeleteConfirmDialogs !== false;
   }
 
-  updateThemeButton(savedTheme);
+  function submitAutosaveForm(form) {
+    if (!form) return;
+    if (form.matches("form[data-autosave]") && typeof form.requestSubmit === "function") {
+      form.requestSubmit();
+      return;
+    }
+    form.dispatchEvent(new Event("change", { bubbles: true }));
+  }
 
+  function trashIconMarkup() {
+    return `
+      <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6h18"></path>
+        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        <path d="M19 6l-1 16H6L5 6"></path>
+        <path d="M10 11v6"></path>
+        <path d="M14 11v6"></path>
+      </svg>`;
+  }
+
+  // Aktualisiert Beschriftung und Accessibility-Text des Theme-Schalters.
+  function updateThemeButton(theme) {
+    if (!themeToggle) return;
+    const label = themeToggle.querySelector("[data-theme-toggle-label]");
+    themeToggle.dataset.themeCurrent = theme;
+    if (label) label.textContent = theme === "dark" ? "Nacht" : "Tag";
+    themeToggle.setAttribute("aria-label", `Theme wechseln, aktuell ${theme === "dark" ? "Nacht" : "Tag"}`);
+    themeToggle.setAttribute("title", `Theme wechseln, aktuell ${theme === "dark" ? "Nacht" : "Tag"}`);
+  }
+
+  updateThemeButton(resolveEdokuThemeMode(savedTheme));
+
+  // Tag-/Nacht-Theme lokal im Browser speichern.
   if (themeToggle) {
     themeToggle.addEventListener("click", () => {
       const current = document.documentElement.getAttribute("data-theme") || "light";
@@ -36,6 +76,39 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const settingsTabs = Array.from(document.querySelectorAll("[data-settings-tab]"));
+  const settingsPanels = Array.from(document.querySelectorAll("[data-settings-panel]"));
+  if (settingsTabs.length && settingsPanels.length) {
+    const storageKey = "edoku-settings-tab";
+    const validTabIds = new Set(settingsTabs.map((tab) => tab.dataset.settingsTab));
+
+    // Schaltet Einstellungsbereiche intern um. Es wird kein URL-Hash gesetzt,
+    // damit der Browser nicht scrollt und kein Verlaufseintrag entsteht.
+    function activateSettingsTab(tabId) {
+      const nextTabId = validTabIds.has(tabId) ? tabId : settingsTabs[0].dataset.settingsTab;
+
+      settingsTabs.forEach((tab) => {
+        const isActive = tab.dataset.settingsTab === nextTabId;
+        tab.classList.toggle("is-active", isActive);
+        tab.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+
+      settingsPanels.forEach((panel) => {
+        panel.hidden = panel.dataset.settingsPanel !== nextTabId;
+      });
+
+      localStorage.setItem(storageKey, nextTabId);
+    }
+
+    settingsTabs.forEach((tab) => {
+      tab.addEventListener("click", () => activateSettingsTab(tab.dataset.settingsTab));
+    });
+
+    activateSettingsTab(localStorage.getItem(storageKey));
+  }
+
+  // Auto-Save für Formulare mit data-autosave. Änderungen werden verzögert
+  // gesendet, parallele Speichervorgänge werden über pending nachgezogen.
   const autosaveForms = Array.from(document.querySelectorAll("form[data-autosave]"));
   if (autosaveForms.length) {
     const autosaveStatus = document.createElement("div");
@@ -108,6 +181,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Einheitlicher Löschbutton für wiederholbare Formularbereiche. Der passende
+  // Container wird entfernt; dadurch bleiben die bestehenden Backend-Normalisierungen unverändert.
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-delete-row]");
+    if (!button) return;
+
+    event.preventDefault();
+    const label = button.dataset.deleteLabel || "diesen Eintrag";
+    if (deleteConfirmDialogsEnabled() && !window.confirm(`${label} wirklich löschen?`)) return;
+
+    const row = button.closest("tr") || button.closest("[data-system-default-card]") || button.closest("[data-leistungsbereich-card]");
+    const form = button.closest("form");
+    if (row) row.remove();
+    submitAutosaveForm(form);
+  });
+
+  // Generisches Tab-System. tab-shell ist eine Layout-Sonderform, bei der Panels sichtbar bleiben.
   document.querySelectorAll("[data-tabs]").forEach((tabRoot) => {
     const tabs = Array.from(tabRoot.querySelectorAll("[data-tab-target]"));
     const panels = Array.from(tabRoot.querySelectorAll("[data-tab-panel]"));
@@ -153,6 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
     activateTab(localStorage.getItem(storageKey));
   });
 
+  // PDF-Vorschau-Iframe aus dem ausgewählten PDF-Pfad aktualisieren.
   const pdfPreviewSelect = document.querySelector("[data-pdf-preview-select]");
   const pdfPreviewFrame = document.querySelector("[data-pdf-preview-frame]");
   if (pdfPreviewSelect && pdfPreviewFrame) {
@@ -161,6 +252,150 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const themeEditor = document.querySelector("[data-theme-editor]");
+  const themePresetsNode = document.querySelector("#theme-presets-json");
+  if (themeEditor) {
+    const presets = themePresetsNode ? JSON.parse(themePresetsNode.textContent || "{}") : {};
+    const rootStyle = document.documentElement.style;
+    const themeAliasMap = {
+      "--color-bg-light": [],
+      "--color-bg-dark": [],
+      "--color-surface": ["--surface-solid"],
+      "--color-surface-muted": ["--surface-muted"],
+      "--color-surface-dark": [],
+      "--color-surface-muted-dark": [],
+      "--color-text": ["--text"],
+      "--color-text-muted": ["--muted"],
+      "--color-text-dark": [],
+      "--color-text-muted-dark": [],
+      "--color-border": ["--border", "--line"],
+      "--color-border-dark": [],
+      "--color-primary": ["--accent"],
+      "--color-button-primary": ["--primary"],
+      "--color-warning": ["--warning"],
+      "--color-danger": ["--danger"],
+      "--color-success": ["--success"],
+      "--radius-button": [],
+      "--border-width": [],
+      "--spacing-md": [],
+      "--page-spacing": [],
+      "--card-spacing": [],
+      "--form-spacing": [],
+      "--table-row-height": [],
+      "--font-size-base": [],
+      "--font-size-heading": [],
+      "--font-size-label": [],
+      "--font-size-button": [],
+      "--line-height-base": []
+    };
+
+    function fieldValue(name, fallback = "") {
+      const input = themeEditor.querySelector(`[name="${name}"]`);
+      return input ? input.value : fallback;
+    }
+
+    // Hält die alten CSS-Aliase synchron, damit bestehende Komponenten sofort
+    // auf geänderte Light-/Dark-Farben reagieren.
+    function syncResolvedThemeAliases() {
+      const isDark = document.documentElement.dataset.theme === "dark";
+      const bg = isDark ? fieldValue("bgDark") : fieldValue("bgLight");
+      const surface = isDark ? fieldValue("surfaceDark", fieldValue("surface")) : fieldValue("surface");
+      const surfaceMuted = isDark ? fieldValue("surfaceMutedDark", fieldValue("surfaceMuted")) : fieldValue("surfaceMuted");
+      const text = isDark ? fieldValue("textDark", fieldValue("text")) : fieldValue("text");
+      const muted = isDark ? fieldValue("textMutedDark", fieldValue("textMuted")) : fieldValue("textMuted");
+      const border = isDark ? fieldValue("borderDark", fieldValue("border")) : fieldValue("border");
+
+      if (bg) rootStyle.setProperty("--bg", bg);
+      if (surface) {
+        rootStyle.setProperty("--color-surface", surface);
+        rootStyle.setProperty("--surface-solid", surface);
+        rootStyle.setProperty("--surface", `color-mix(in srgb, ${surface} 82%, transparent)`);
+      }
+      if (surfaceMuted) {
+        rootStyle.setProperty("--color-surface-muted", surfaceMuted);
+        rootStyle.setProperty("--surface-muted", `color-mix(in srgb, ${surfaceMuted} 86%, transparent)`);
+      }
+      if (text) {
+        rootStyle.setProperty("--color-text", text);
+        rootStyle.setProperty("--text", text);
+      }
+      if (muted) {
+        rootStyle.setProperty("--color-text-muted", muted);
+        rootStyle.setProperty("--muted", muted);
+      }
+      if (border) {
+        rootStyle.setProperty("--color-border", border);
+        rootStyle.setProperty("--border", `color-mix(in srgb, ${border} 48%, transparent)`);
+        rootStyle.setProperty("--line", `color-mix(in srgb, ${border} 48%, transparent)`);
+      }
+    }
+
+    function applyThemeInput(input) {
+      if (!input.dataset.themeVar) return;
+      const value = `${input.value}${input.dataset.themeUnit || ""}`;
+      rootStyle.setProperty(input.dataset.themeVar, value);
+      (themeAliasMap[input.dataset.themeVar] || []).forEach((alias) => rootStyle.setProperty(alias, value));
+      if (input.dataset.themeVar === "--color-button-primary") {
+        rootStyle.setProperty("--primary-strong", `color-mix(in srgb, ${input.value} 82%, #000)`);
+      }
+      syncResolvedThemeAliases();
+    }
+
+    function applyThemeMode(mode) {
+      localStorage.setItem("dm-theme", mode);
+      document.documentElement.setAttribute("data-theme", resolveEdokuThemeMode(mode));
+      updateThemeButton(resolveEdokuThemeMode(mode));
+      syncResolvedThemeAliases();
+    }
+
+    function setInput(name, value) {
+      const input = themeEditor.querySelector(`[name="${name}"]`);
+      if (!input || typeof value === "undefined") return;
+      input.value = value;
+      applyThemeInput(input);
+    }
+
+    function applyPreset(presetKey) {
+      const preset = presets[presetKey];
+      if (!preset) return;
+      setInput("preset", presetKey);
+      setInput("name", preset.name || presetKey);
+      const modeInput = themeEditor.querySelector(`[name="mode"][value="${preset.mode || "light"}"]`);
+      if (modeInput) {
+        modeInput.checked = true;
+        applyThemeMode(modeInput.value);
+      }
+      Object.entries(preset.colors || {}).forEach(([key, value]) => setInput(key, value));
+      Object.entries(preset.shape || {}).forEach(([key, value]) => setInput(key, value));
+      setInput("shadowStrength", preset.shadow ? preset.shadow.strength : "");
+      setInput("shadowSoftness", preset.shadow ? preset.shadow.softness : "");
+      setInput("globalSpacing", preset.spacing ? preset.spacing.global : "");
+      setInput("pageSpacing", preset.spacing ? preset.spacing.page : "");
+      setInput("cardSpacing", preset.spacing ? preset.spacing.card : "");
+      setInput("formSpacing", preset.spacing ? preset.spacing.form : "");
+      setInput("tableRowHeight", preset.spacing ? preset.spacing.tableRowHeight : "");
+      setInput("fontSizeBase", preset.typography ? preset.typography.base : "");
+      setInput("fontSizeHeading", preset.typography ? preset.typography.heading : "");
+      setInput("fontSizeLabel", preset.typography ? preset.typography.label : "");
+      setInput("fontSizeButton", preset.typography ? preset.typography.button : "");
+      setInput("lineHeightBase", preset.typography ? preset.typography.lineHeight : "");
+      syncResolvedThemeAliases();
+    }
+
+    themeEditor.querySelectorAll("[data-theme-var]").forEach((input) => {
+      input.addEventListener("input", () => applyThemeInput(input));
+    });
+
+    themeEditor.querySelectorAll('input[name="mode"]').forEach((input) => {
+      input.addEventListener("change", () => applyThemeMode(input.value));
+    });
+
+    themeEditor.querySelectorAll("[data-theme-preset]").forEach((button) => {
+      button.addEventListener("click", () => applyPreset(button.dataset.themePreset));
+    });
+  }
+
+  // Standardkapitel beim Upload anhand der gewählten Anhangskategorie setzen.
   const attachmentCategoryDefaultsNode = document.querySelector("#attachment-category-defaults-json");
   if (attachmentCategoryDefaultsNode) {
     const attachmentCategoryDefaults = JSON.parse(attachmentCategoryDefaultsNode.textContent || "{}");
@@ -174,6 +409,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Markiert aktive Hash-Tabs in älteren Abschnittsnavigationen.
   const hashSectionLinks = Array.from(document.querySelectorAll(".section-tabs a[href*='#']"));
   if (hashSectionLinks.length) {
     function updateHashTabs() {
@@ -193,6 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateHashTabs();
   }
 
+  // Sortierbare Tabellen für Brandschutz, Gerätelisten und ähnliche Übersichten.
   document.querySelectorAll("[data-sortable-table]").forEach((table) => {
     const tbody = table.querySelector("tbody");
     if (!tbody) return;
@@ -247,6 +484,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Hauptnavigation innerhalb der Gerätelisten: Dashboard oder konkrete Liste anzeigen.
   const deviceMainTabs = document.querySelector("[data-device-main-tabs]");
   if (deviceMainTabs) {
     const buttons = Array.from(deviceMainTabs.querySelectorAll("[data-device-main-target]"));
@@ -290,6 +528,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const fieldProfilesNode = document.querySelector("#device-field-profiles-json");
     const fieldProfiles = fieldProfilesNode ? JSON.parse(fieldProfilesNode.textContent || "{}") : {};
 
+    // Fügt clientseitig neue Positionszeilen hinzu; gespeichert wird anschließend per Auto-Save.
     button.addEventListener("click", () => {
       const listIndex = button.dataset.listIndex;
       const tbody = document.querySelector(`[data-position-body="${listIndex}"]`);
@@ -331,7 +570,7 @@ document.addEventListener("DOMContentLoaded", () => {
         row.innerHTML = [
           cell("pos", pos),
           ...fields.map(fieldCell),
-          `<td data-col="delete"><label class="cell-check"><input type="checkbox" name="geraetelisten[${listIndex}][positionen][${nextIndex}][_delete]" value="1"><span>Löschen</span></label></td>`
+          `<td data-col="delete"><button class="row-delete-button danger icon-only-button" type="button" data-delete-row data-delete-label="Geräteposition ${pos}" aria-label="Geräteposition löschen">${trashIconMarkup()}</button></td>`
         ].join("");
         tbody.appendChild(row);
         nextIndex += 1;
@@ -351,6 +590,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (deviceSuggestionsNode && filteredSuggestionsList) {
     const suggestions = JSON.parse(deviceSuggestionsNode.textContent || "{}");
 
+    // Hersteller-/System-/Typvorschläge werden aus den Systemdefaults gefiltert.
     function normalized(value) {
       return String(value || "").trim().toLowerCase();
     }
@@ -427,25 +667,131 @@ document.addEventListener("DOMContentLoaded", () => {
   const addLeistungsbereichButton = document.querySelector("[data-add-leistungsbereich]");
   const leistungsbereicheBody = document.querySelector("[data-leistungsbereiche-body]");
   if (addLeistungsbereichButton && leistungsbereicheBody) {
+    const openStateKey = "edoku-leistungsbereiche-open";
+
+    function leistungsbereichStateKey(card, fallbackIndex = 0) {
+      const input = card ? card.querySelector("[data-leistungsbereich-name]") : null;
+      return (input && input.value.trim()) || `index-${fallbackIndex}`;
+    }
+
+    function readOpenState() {
+      try {
+        return JSON.parse(localStorage.getItem(openStateKey) || "{}");
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function writeOpenState() {
+      const state = {};
+      leistungsbereicheBody.querySelectorAll("[data-leistungsbereich-card]").forEach((card, index) => {
+        state[leistungsbereichStateKey(card, index)] = card.open;
+      });
+      localStorage.setItem(openStateKey, JSON.stringify(state));
+    }
+
+    function syncLeistungsbereichCardName(card) {
+      const nameInput = card ? card.querySelector("[data-leistungsbereich-name]") : null;
+      if (!nameInput) return;
+      const value = nameInput.value.trim();
+      card.querySelectorAll("[data-template-leistungsbereich-name]").forEach((input) => {
+        input.value = value;
+      });
+      const title = card.querySelector("summary strong");
+      if (title) title.textContent = value || "Neuer Leistungsbereich";
+      const activeText = card.querySelector("summary small");
+      const activeInput = card.querySelector('input[name$="[aktiv]"]');
+      if (activeText && activeInput) activeText.textContent = activeInput.checked ? "aktiv" : "inaktiv";
+    }
+
+    const existingState = readOpenState();
+    leistungsbereicheBody.querySelectorAll("[data-leistungsbereich-card]").forEach((card, index) => {
+      syncLeistungsbereichCardName(card);
+      const key = leistungsbereichStateKey(card, index);
+      card.open = existingState[key] === true;
+      card.addEventListener("toggle", writeOpenState);
+    });
+
+    leistungsbereicheBody.addEventListener("input", (event) => {
+      if (!event.target.matches("[data-leistungsbereich-name]")) return;
+      syncLeistungsbereichCardName(event.target.closest("[data-leistungsbereich-card]"));
+      writeOpenState();
+    });
+
+    leistungsbereicheBody.addEventListener("change", (event) => {
+      if (!event.target.matches('input[name$="[aktiv]"]')) return;
+      syncLeistungsbereichCardName(event.target.closest("[data-leistungsbereich-card]"));
+    });
+
+    // Ergänzt einen neuen klappbaren Leistungsbereich inklusive leerer Formulartexte.
     addLeistungsbereichButton.addEventListener("click", () => {
-      const index = leistungsbereicheBody.querySelectorAll("tr").length;
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td><input type="text" name="leistungsbereiche[${index}][name]" value="" placeholder="Neuer Leistungsbereich"></td>
-        <td>
-          <label class="cell-check">
-            <input type="checkbox" name="leistungsbereiche[${index}][aktiv]" checked>
-            <span>Aktiv</span>
-          </label>
-        </td>
-        <td>
-          <label class="cell-check">
-            <input type="checkbox" name="leistungsbereiche[${index}][_delete]" value="1">
-            <span>Löschen</span>
-          </label>
-        </td>`;
-      leistungsbereicheBody.appendChild(row);
-      const newNameInput = row.querySelector("input[type='text']");
+      const index = leistungsbereicheBody.querySelectorAll("[data-leistungsbereich-card]").length;
+      const templateSource = document.getElementById("form-template-names-json");
+      let templates = {};
+      if (templateSource) {
+        try {
+          templates = JSON.parse(templateSource.textContent || "{}");
+        } catch (error) {
+          console.warn("Formularvorlagen konnten nicht für den neuen Leistungsbereich gelesen werden.", error);
+        }
+      }
+      const card = document.createElement("details");
+      card.className = "leistungsbereich-list-row";
+      card.dataset.leistungsbereichCard = "true";
+      card.open = true;
+      const templateCards = Object.entries(templates)
+        .map(([key, label]) => `
+          <article class="variant-text template-text-card">
+            <div class="template-text-card-head">
+              <span>${label}</span>
+              <label class="switch-control">
+                <input type="hidden" name="templates[${key}][leistungsbereichFormulare][${index}][erzeugen]" value="false">
+                <input type="checkbox" name="templates[${key}][leistungsbereichFormulare][${index}][erzeugen]" checked>
+                <span class="switch-track" aria-hidden="true"></span>
+                <span>erzeugen</span>
+              </label>
+            </div>
+            <input type="hidden" data-template-leistungsbereich-name name="templates[${key}][leistungsbereichFormulare][${index}][leistungsbereich]" value="">
+            <textarea name="templates[${key}][leistungsbereichFormulare][${index}][text]" rows="4"></textarea>
+          </article>`)
+        .join("");
+      card.innerHTML = `
+        <summary class="leistungsbereich-row-summary">
+          <span class="leistungsbereich-summary-title">
+            <strong>Neuer Leistungsbereich</strong>
+            <small>aktiv</small>
+          </span>
+          <i aria-hidden="true"></i>
+        </summary>
+        <div class="leistungsbereich-config-body">
+          <section class="leistungsbereich-config-section">
+            <div class="form-grid compact">
+              <label>
+                <span>Name</span>
+                <input type="text" data-leistungsbereich-name name="leistungsbereiche[${index}][name]" value="" placeholder="Neuer Leistungsbereich">
+              </label>
+              <label class="switch-control">
+                <input type="checkbox" name="leistungsbereiche[${index}][aktiv]" checked>
+                <span class="switch-track" aria-hidden="true"></span>
+                <span>Aktiv</span>
+              </label>
+              <button class="row-delete-button danger icon-only-button" type="button" data-delete-row data-delete-label="Leistungsbereich" aria-label="Leistungsbereich löschen">${trashIconMarkup()}</button>
+            </div>
+          </section>
+          <section class="leistungsbereich-config-section">
+            <div class="edit-section-head">
+              <div>
+                <h2>Formulargenerator</h2>
+                <p>Texte für automatisch erzeugte Formulare dieses Leistungsbereichs.</p>
+              </div>
+            </div>
+            <div class="template-text-grid">${templateCards}</div>
+          </section>
+        </div>`;
+      const newNameInput = card.querySelector("[data-leistungsbereich-name]");
+      leistungsbereicheBody.appendChild(card);
+      card.addEventListener("toggle", writeOpenState);
+      syncLeistungsbereichCardName(card);
       if (newNameInput) {
         newNameInput.dispatchEvent(new Event("input", { bubbles: true }));
         newNameInput.focus();
@@ -454,6 +800,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.querySelectorAll("[data-add-system-default]").forEach((button) => {
+    // Fügt einen neuen Herstellerblock in den Systemdefaults hinzu.
     button.addEventListener("click", () => {
       const bereichIndex = button.dataset.addSystemDefault;
       const container = document.querySelector(`[data-system-defaults-body="${bereichIndex}"]`);
@@ -469,10 +816,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <span>Systemhersteller</span>
             <strong>Neuer Hersteller</strong>
           </div>
-          <label class="cell-check">
-            <input type="checkbox" name="${namePrefix}[_delete]" value="1">
-            <span>Löschen</span>
-          </label>
+          <button class="row-delete-button danger icon-only-button" type="button" data-delete-row data-delete-label="Systemhersteller" aria-label="Systemhersteller löschen">${trashIconMarkup()}</button>
         </div>
         <div class="form-grid compact">
           <label>
@@ -524,6 +868,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const previewKey = templatePreview.dataset.templatePreview;
     const fields = document.querySelectorAll(`[data-template-key="${previewKey}"]`);
 
+    // Live-Vorschau für den Formulargenerator in den Einstellungen.
     function templateField(name) {
       return document.querySelector(`[data-template-key="${previewKey}"][data-template-field="${name}"]`);
     }
@@ -577,6 +922,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const systemConfig = JSON.parse(systemConfigNode.textContent);
     const byName = new Map((systemConfig.leistungsbereiche || []).map((entry) => [entry.name, entry]));
 
+    // Aktualisiert abhängige System-/Dokumentart-Auswahlen nach Herstellerwechsel.
     document.querySelectorAll("[data-system-hersteller]").forEach((select) => {
       select.addEventListener("change", () => {
         const section = select.closest("[data-system-section]");
@@ -619,6 +965,46 @@ document.addEventListener("DOMContentLoaded", () => {
           dokumentarten.appendChild(label);
         });
       });
+    });
+  }
+
+  const pdfModal = document.querySelector("[data-pdf-modal]");
+  if (pdfModal) {
+    const pdfFrame = pdfModal.querySelector("[data-pdf-modal-frame]");
+    const pdfTitle = pdfModal.querySelector("[data-pdf-modal-title]");
+
+    // Öffnet vorhandene Projekt-PDFs in einem Overlay, ohne die aktuelle Seite zu verlassen.
+    function openPdfModal(button) {
+      const source = button.dataset.pdfSrc;
+      if (!source || !pdfFrame) return;
+      if (pdfTitle) pdfTitle.textContent = button.dataset.pdfTitle || "PDF-Vorschau";
+      pdfFrame.src = source;
+      pdfModal.hidden = false;
+      document.body.classList.add("modal-open");
+    }
+
+    function closePdfModal() {
+      pdfModal.hidden = true;
+      if (pdfFrame) pdfFrame.src = "about:blank";
+      document.body.classList.remove("modal-open");
+    }
+
+    document.addEventListener("click", (event) => {
+      const openButton = event.target.closest("[data-pdf-modal-open]");
+      if (openButton) {
+        event.preventDefault();
+        openPdfModal(openButton);
+        return;
+      }
+
+      if (event.target.closest("[data-pdf-modal-close]")) {
+        event.preventDefault();
+        closePdfModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (!pdfModal.hidden && event.key === "Escape") closePdfModal();
     });
   }
 });

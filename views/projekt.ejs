@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/css/style.css">
   </head>
   <body>
+    <%# Projektstammdaten: alle Felder speichern per Auto-Save in projekt.json des aktuellen Projekts. %>
     <%- include("partials/header", { active }) %>
     <main class="page compact-work-page">
       <div class="page-title">
@@ -17,6 +18,7 @@
       <%- include("partials/flash", { flash }) %>
       <%- include("partials/sectionTabs", { active }) %>
 
+      <%# Interne Tabs gruppieren Stammdaten logisch, bleiben aber Teil eines Formulars. %>
       <form action="/projekt" method="post" data-tabs="projekt" data-autosave class="tab-shell">
         <div class="tabs" role="tablist" aria-label="Projektbereiche">
           <button class="tab-button" type="button" data-tab-target="basis">Basisdaten</button>
@@ -67,6 +69,7 @@
               <p>Stockwerke per Vorauswahl aktivieren und bei Brandschottungen sowie Plan-Zuordnungen nutzen.</p>
             </div>
           </div>
+          <%# Stockwerke dienen später als Dropdown-Vorgaben für Pläne und Brandschottungen. %>
           <% const aktiveStockwerke = Array.isArray(projekt.stockwerke) ? projekt.stockwerke : String(stockwerkeText || "").split(/\n/).filter(Boolean); %>
           <% const presetStockwerke = typeof defaultStockwerke !== "undefined" ? defaultStockwerke : ["UG", "EG", "1. OG", "2. OG", "3. OG", "DG"]; %>
           <% const customStockwerke = aktiveStockwerke.filter((stockwerk) => !presetStockwerke.includes(stockwerk)); %>

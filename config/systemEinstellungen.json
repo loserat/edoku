@@ -3,6 +3,7 @@
   "standardGewerk": "Elektrotechnik",
   "standardEinheit": "Stk",
   "autosaveHinweis": true,
+  "deleteConfirmDialogs": true,
   "pdfFooterText": "Bearbeiter | Ort / Datum",
   "exportOrdnerPrefix": "ProjektExport",
   "datumFormat": "de-DE",
@@ -14,6 +15,56 @@
     "email": "",
     "webseite": "",
     "bearbeiter": "",
-    "logoPfad": ""
+    "logoPfad": "creator/921bbd3c-d2ab-448e-ada2-106e6781f692.png"
+  },
+  "theme": {
+    "preset": "graphite",
+    "name": "Graphite",
+    "mode": "dark",
+    "colors": {
+      "bgLight": "#edf0f3",
+      "bgDark": "#15191f",
+      "surface": "#f7f8fa",
+      "surfaceMuted": "#e8edf2",
+      "surfaceDark": "#242a32",
+      "surfaceMutedDark": "#313944",
+      "text": "#18202a",
+      "textMuted": "#687485",
+      "textDark": "#f4f7fb",
+      "textMutedDark": "#aeb7c3",
+      "accent": "#8ea2b8",
+      "border": "#aeb8c4",
+      "borderDark": "#66717f",
+      "buttonPrimary": "#8ea2b8",
+      "buttonSecondary": "#303844",
+      "warning": "#eab308",
+      "danger": "#ef4444",
+      "success": "#22c55e"
+    },
+    "shape": {
+      "globalRadius": 12,
+      "cardRadius": 18,
+      "buttonRadius": 999,
+      "inputRadius": 12,
+      "borderWidth": 1
+    },
+    "shadow": {
+      "strength": 18,
+      "softness": 34
+    },
+    "spacing": {
+      "global": 11,
+      "page": 16,
+      "card": 13,
+      "form": 9,
+      "tableRowHeight": 40
+    },
+    "typography": {
+      "base": 14,
+      "heading": 23,
+      "label": 12,
+      "button": 13,
+      "lineHeight": 1.4
+    }
   }
 }

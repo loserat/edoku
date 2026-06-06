@@ -1,5 +1,6 @@
 const path = require("path");
 
+// Wandelt Umlaute und Akzente in dateisystemfreundliche Schreibweisen um.
 function normalizeGerman(value) {
   return String(value || "")
     .replace(/ä/g, "ae")
@@ -13,6 +14,7 @@ function normalizeGerman(value) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+// Erzeugt sichere Dateinamen für Uploads, PDFs und Exportdateien.
 function sanitizeFileName(value, fallback = "datei") {
   const cleaned = normalizeGerman(value)
     .replace(/[^a-zA-Z0-9._-]+/g, "_")
@@ -22,6 +24,7 @@ function sanitizeFileName(value, fallback = "datei") {
   return cleaned || fallback;
 }
 
+// Erzeugt kurze technische IDs für Projekte, Benutzer und ähnliche Schlüssel.
 function sanitizeId(value, fallback = "projekt") {
   const cleaned = normalizeGerman(value)
     .toLowerCase()
@@ -32,6 +35,7 @@ function sanitizeId(value, fallback = "projekt") {
   return cleaned || fallback;
 }
 
+// Sicherheitsprüfung gegen Path Traversal: Zielpfade müssen im Basisordner bleiben.
 function ensureInsideBase(basePath, targetPath) {
   const resolvedBase = path.resolve(basePath);
   const resolvedTarget = path.resolve(targetPath);
@@ -44,6 +48,7 @@ function ensureInsideBase(basePath, targetPath) {
   return resolvedTarget;
 }
 
+// Kombiniert Pfade nur dann, wenn keine unsicheren Bestandteile enthalten sind.
 function safeJoin(basePath, ...segments) {
   const unsafeSegment = segments.find((segment) => String(segment || "").includes(".."));
   if (unsafeSegment) {

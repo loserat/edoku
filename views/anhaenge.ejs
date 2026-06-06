@@ -7,10 +7,12 @@
     <link rel="stylesheet" href="/css/style.css">
   </head>
   <body>
+    <%# Anhangsverwaltung: Upload, Metadaten und Zuordnung laufen immer in der aktuell ausgewählten Kategorie. %>
     <%- include("partials/header", { active }) %>
     <main class="page wide compact-work-page attachments-page">
       <%- include("partials/flash", { flash }) %>
       <%- include("partials/sectionTabs", { active, selectedKategorie }) %>
+      <%# Projekt-Stockwerke als Vorschlagsliste für Pläne, Messprotokolle und Brandschutzbilder. %>
       <datalist id="projekt-stockwerke">
         <% (stockwerke || []).forEach((stockwerk) => { %>
           <option value="<%= stockwerk %>"></option>
@@ -33,6 +35,7 @@
         </div>
       </section>
 
+      <%# Arbeitsbereich der Kategorie: oben Upload, darunter vorhandene Dateien bearbeiten. %>
       <section class="attachment-workspace attachment-workspace-single">
         <section class="attachment-main">
           <form class="panel-card attachment-upload" action="/anhaenge/upload?kategorie=<%= encodeURIComponent(selectedKategorie) %>" method="post" enctype="multipart/form-data">
@@ -107,14 +110,16 @@
                   <input type="text" name="revision" placeholder="optional">
                 </label>
               <% } %>
-              <label class="toggle-row compact-toggle">
+              <label class="switch-control compact-toggle">
                 <input type="checkbox" name="export" checked>
+                <span class="switch-track" aria-hidden="true"></span>
                 <span>Export</span>
               </label>
               <button type="submit">Hochladen</button>
             </div>
           </form>
 
+          <%# Dateiliste der aktuellen Kategorie. PDFs erhalten Export-Metadaten, Bilder können Brandschottungen zugeordnet werden. %>
           <section class="panel-card attachment-list-card">
             <div class="panel-head compact attachment-list-head">
               <div>
@@ -197,8 +202,9 @@
                           <input type="text" name="revision" value="<%= entry.revision || "" %>" placeholder="optional">
                         </label>
                       <% } %>
-                      <label class="toggle-row compact-toggle">
+                      <label class="switch-control compact-toggle">
                         <input type="checkbox" name="export" <%= entry.export !== false ? "checked" : "" %>>
+                        <span class="switch-track" aria-hidden="true"></span>
                         <span>Export</span>
                       </label>
                     </form>
@@ -235,8 +241,8 @@
                     <small><%= entry.relativePath %></small>
                     <div class="table-actions">
                       <a class="button-link" href="/anhaenge/download?id=<%= encodeURIComponent(entry.id) %>">Laden</a>
-                      <form action="/anhaenge/<%= encodeURIComponent(entry.id) %>/loeschen" method="post">
-                        <button class="danger-button" type="submit">Löschen</button>
+                      <form action="/anhaenge/<%= encodeURIComponent(entry.id) %>/loeschen" method="post" data-confirm="Anhang wirklich löschen?">
+                        <button class="danger-button icon-only-button" type="submit" aria-label="Anhang löschen"><%- include("partials/icon", { name: "trash" }) %></button>
                       </form>
                     </div>
                   </div>

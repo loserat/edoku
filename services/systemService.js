@@ -1,3 +1,5 @@
+// Unterstützt sowohl die aktuelle verschachtelte Systemstruktur als auch ältere
+// flache Systemlisten aus frühen Projektständen.
 function normalizeSystemConfig(raw) {
   if (raw && Array.isArray(raw.leistungsbereiche)) {
     return raw;
@@ -33,6 +35,7 @@ function normalizeSystemConfig(raw) {
   return { leistungsbereiche: [] };
 }
 
+// Textarea-/CSV-Eingaben aus Einstellungsformularen in Listen umwandeln.
 function listFromText(value) {
   return String(value || "")
     .split(/\r?\n|,/)
@@ -40,6 +43,7 @@ function listFromText(value) {
     .filter(Boolean);
 }
 
+// Normalisiert bearbeitete Systemvorgaben aus dem Einstellungsformular.
 function normalizePostedSystemConfig(posted) {
   const entries = Array.isArray(posted) ? posted : Object.values(posted || {});
   const leistungsbereiche = entries
@@ -73,11 +77,13 @@ function normalizePostedSystemConfig(posted) {
   return { leistungsbereiche };
 }
 
+// Liefert die Systemvorgaben für einen konkreten Leistungsbereich.
 function getLeistungsbereichConfig(systemConfig, leistungsbereich) {
   const config = normalizeSystemConfig(systemConfig);
   return config.leistungsbereiche.find((entry) => entry.name === leistungsbereich);
 }
 
+// Erstellt eine Projektauswahl aus dem ersten verfügbaren Hersteller/System.
 function defaultSelectionForLeistungsbereich(configEntry, aktiv) {
   const firstHersteller = (configEntry.hersteller || [])[0] || {};
   return {
@@ -95,12 +101,14 @@ function defaultSelectionForLeistungsbereich(configEntry, aktiv) {
   };
 }
 
+// Holt Herstellerkonfiguration oder fällt auf den ersten Hersteller zurück.
 function selectedHerstellerConfig(configEntry, herstellerName) {
   return (configEntry.hersteller || []).find((hersteller) => hersteller.name === herstellerName)
     || (configEntry.hersteller || [])[0]
     || {};
 }
 
+// Synchronisiert die projektspezifische Systemauswahl mit aktiven Leistungsbereichen.
 function syncProjektSysteme(systemConfig, existingSelections, aktiveLeistungsbereiche) {
   const config = normalizeSystemConfig(systemConfig);
   const activeSet = new Set(aktiveLeistungsbereiche || []);
@@ -142,6 +150,7 @@ function syncProjektSysteme(systemConfig, existingSelections, aktiveLeistungsber
   return result;
 }
 
+// Normalisiert gespeicherte Projekt-Systemauswahl aus Formularwerten.
 function normalizePostedProjektSysteme(posted, systemConfig, aktiveLeistungsbereiche) {
   const config = normalizeSystemConfig(systemConfig);
   const activeSet = new Set(aktiveLeistungsbereiche || []);
@@ -174,6 +183,7 @@ function normalizePostedProjektSysteme(posted, systemConfig, aktiveLeistungsbere
     });
 }
 
+// Kompatibilitätsschicht für ältere Views, die noch flache Systemlisten erwarten.
 function flattenSystemConfigForLegacy(systemConfig) {
   const config = normalizeSystemConfig(systemConfig);
   return config.leistungsbereiche.flatMap((leistungsbereich) =>
@@ -189,6 +199,7 @@ function flattenSystemConfigForLegacy(systemConfig) {
   );
 }
 
+// Sammelt aktive Kapitel aus der projektspezifischen Systemauswahl.
 function kapitelFromProjektSysteme(projektSysteme) {
   const kapitel = new Set();
   (projektSysteme || [])
@@ -199,10 +210,12 @@ function kapitelFromProjektSysteme(projektSysteme) {
   return kapitel;
 }
 
+// Map-Zugriff für Templates: Leistungsbereich -> Auswahl.
 function selectionByLeistungsbereich(projektSysteme) {
   return new Map((projektSysteme || []).map((entry) => [entry.leistungsbereich, entry]));
 }
 
+// Doppelte Vorschlagswerte entfernen, ohne die sichtbare Schreibweise zu verändern.
 function uniqueValues(values) {
   const seen = new Set();
   return values
@@ -216,6 +229,7 @@ function uniqueValues(values) {
     });
 }
 
+// Erstellt Hersteller-, System- und Typvorschläge für die Eingabe in Gerätelisten.
 function buildGeraetelistenSuggestions(systemConfig) {
   const config = normalizeSystemConfig(systemConfig);
   return Object.fromEntries(config.leistungsbereiche.map((bereich) => {
