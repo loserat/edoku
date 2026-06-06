@@ -13,6 +13,7 @@ const { sanitizeId } = require("./pathService");
 const SESSION_COOKIE = "dm_session";
 const SESSION_DAYS = 14;
 
+// Erzeugt kryptografisch zufällige Tokens für Sessions und User-IDs.
 function randomToken(bytes = 32) {
   return crypto.randomBytes(bytes).toString("hex");
 }
@@ -21,11 +22,13 @@ function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
 }
 
+// Passwort-Hashing mit scrypt. Salt und Hash werden getrennt in SQLite gespeichert.
 function hashPassword(password, salt = crypto.randomBytes(16).toString("hex")) {
   const hash = crypto.scryptSync(String(password), salt, 64).toString("hex");
   return { salt, hash };
 }
 
+// Timing-sicherer Passwortvergleich gegen den gespeicherten Hash.
 function verifyPassword(password, salt, expectedHash) {
   const { hash } = hashPassword(password, salt);
   const left = Buffer.from(hash, "hex");
@@ -33,6 +36,7 @@ function verifyPassword(password, salt, expectedHash) {
   return left.length === right.length && crypto.timingSafeEqual(left, right);
 }
 
+// Cookie-Einstellungen für die lokale Session. httpOnly verhindert Zugriff per Frontend-JS.
 function cookieOptions() {
   return {
     httpOnly: true,
@@ -41,10 +45,12 @@ function cookieOptions() {
   };
 }
 
+// Stabile, aber nicht erratbare User-ID aus Loginname und Zufallsanteil.
 function createUserId(email) {
   return `user_${sanitizeId(email.split("@")[0], "konto")}_${randomToken(4)}`;
 }
 
+// Registriert einen Benutzer und legt ihn in der lokalen SQLite-Datenbank an.
 function registerUser({ email, name, password }) {
   const normalizedEmail = normalizeEmail(email);
   if (!normalizedEmail || !normalizedEmail.includes("@")) {
@@ -73,6 +79,7 @@ function registerUser({ email, name, password }) {
   return getUserById(user.id);
 }
 
+// Prüft Login-Daten und liefert den Benutzer für die Session-Erstellung zurück.
 function loginUser(email, password) {
   const user = getUserByEmail(normalizeEmail(email));
   if (!user || !verifyPassword(password, user.password_salt, user.password_hash)) {
@@ -81,6 +88,7 @@ function loginUser(email, password) {
   return user;
 }
 
+// Startet eine neue Server-Session und setzt das Session-Cookie im Browser.
 function startSession(res, userId) {
   deleteExpiredSessions();
   const token = randomToken();
@@ -89,6 +97,7 @@ function startSession(res, userId) {
   res.cookie(SESSION_COOKIE, token, cookieOptions());
 }
 
+// Beendet die Session serverseitig und entfernt das Cookie.
 function endSession(req, res) {
   if (req.cookies && req.cookies[SESSION_COOKIE]) {
     deleteSession(req.cookies[SESSION_COOKIE]);
@@ -96,6 +105,7 @@ function endSession(req, res) {
   res.clearCookie(SESSION_COOKIE);
 }
 
+// Minimaler Cookie-Parser ohne zusätzliche Middleware-Abhängigkeit.
 function parseCookies(req, res, next) {
   const header = req.headers.cookie || "";
   req.cookies = Object.fromEntries(
@@ -112,6 +122,7 @@ function parseCookies(req, res, next) {
   next();
 }
 
+// Hängt den angemeldeten Benutzer an req/res.locals, falls die Session gültig ist.
 function attachUser(req, res, next) {
   const token = req.cookies ? req.cookies[SESSION_COOKIE] : "";
   const session = token ? getSession(token) : null;
@@ -129,6 +140,7 @@ function attachUser(req, res, next) {
   next();
 }
 
+// Route-Guard für alle geschützten Seiten und Dateioperationen.
 function requireAuth(req, res, next) {
   if (!req.user) {
     res.redirect(`/login?error=${encodeURIComponent("Bitte zuerst anmelden.")}`);

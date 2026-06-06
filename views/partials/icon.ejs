@@ -48,6 +48,24 @@
     <path d="M4 5h5l2 2h9v5H4z"></path>
     <path d="M6 12v6h6"></path>
     <path d="M12 18h8"></path>
+  <% } else if (name === "sun") { %>
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2"></path>
+    <path d="M12 20v2"></path>
+    <path d="m4.93 4.93 1.41 1.41"></path>
+    <path d="m17.66 17.66 1.41 1.41"></path>
+    <path d="M2 12h2"></path>
+    <path d="M20 12h2"></path>
+    <path d="m6.34 17.66-1.41 1.41"></path>
+    <path d="m19.07 4.93-1.41 1.41"></path>
+  <% } else if (name === "moon") { %>
+    <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 7 7 0 1 0 20.5 14.5z"></path>
+  <% } else if (name === "trash") { %>
+    <path d="M3 6h18"></path>
+    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+    <path d="M19 6l-1 16H6L5 6"></path>
+    <path d="M10 11v6"></path>
+    <path d="M14 11v6"></path>
   <% } else { %>
     <circle cx="12" cy="12" r="9"></circle>
   <% } %>

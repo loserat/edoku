@@ -15,6 +15,7 @@ const APP_NAME = "edoku";
 const APP_VERSION = "0.1.0";
 const EXPORT_VERSION = "1.0";
 
+// Fachliche JSON-Dateien, die pro Projekt in storage/users/... gespiegelt werden.
 const DATA_FILE_NAMES = [
   "projekt.json",
   "leistungsbereiche.json",
@@ -27,6 +28,7 @@ const DATA_FILE_NAMES = [
   "files.json"
 ];
 
+// Kleine Existenzprüfung für Dateien und Ordner.
 async function exists(targetPath) {
   try {
     await fs.access(targetPath);
@@ -36,6 +38,7 @@ async function exists(targetPath) {
   }
 }
 
+// Lokaler JSON-Reader für Import/Export-Prozesse. Fehler fallen bewusst auf den Fallback zurück.
 async function readJson(filePath, fallback) {
   try {
     return JSON.parse(await fs.readFile(filePath, "utf8"));
@@ -44,11 +47,13 @@ async function readJson(filePath, fallback) {
   }
 }
 
+// Schreibt Projektpaket-Dateien und legt Zielordner automatisch an.
 async function writeJson(filePath, data) {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
 }
 
+// Kopiert optionale Ordner oder Dateien nur dann, wenn sie im Projekt vorhanden sind.
 async function copyIfExists(source, target) {
   if (!(await exists(source))) return false;
   await fs.mkdir(path.dirname(target), { recursive: true });
@@ -56,6 +61,7 @@ async function copyIfExists(source, target) {
   return true;
 }
 
+// Entfernt absolute Pfade aus Exportdaten, damit Projektpakete auf anderen Rechnern nutzbar bleiben.
 function stripAbsolutePaths(value) {
   if (Array.isArray(value)) {
     return value.map(stripAbsolutePaths);
@@ -74,6 +80,7 @@ function stripAbsolutePaths(value) {
   return value;
 }
 
+// Kopiert JSON-Dateien in Projektpakete und ersetzt absolute Pfade durch portable Werte.
 async function copyJsonWithoutAbsolutePaths(source, target) {
   if (!(await exists(source))) return false;
   const data = await readJson(source, null);
@@ -85,18 +92,22 @@ async function copyJsonWithoutAbsolutePaths(source, target) {
   return true;
 }
 
+// Zeitstempel für eindeutige Export- und Importordner.
 function timestampForPath(date = new Date()) {
   return date.toISOString().replace(/[:.]/g, "-");
 }
 
+// Datenordner eines Projekts innerhalb des benutzerbezogenen Storage-Bereichs.
 function projectDataDir(rootDir, userId, projectId) {
   return path.join(rootDir, "storage", "users", sanitizeId(userId, "user_demo"), "projects", sanitizeId(projectId, "projekt_demo"), "data");
 }
 
+// Projektwurzelordner inklusive data, uploads und output.
 function projectRootDir(rootDir, userId, projectId) {
   return path.join(rootDir, "storage", "users", sanitizeId(userId, "user_demo"), "projects", sanitizeId(projectId, "projekt_demo"));
 }
 
+// Zentrale Storage-Unterordner für Benutzerprojekte, Importpakete und Exportpakete.
 function storagePaths(rootDir) {
   const storageDir = path.join(rootDir, "storage");
   return {
@@ -107,6 +118,7 @@ function storagePaths(rootDir) {
   };
 }
 
+// Stellt sicher, dass die Storage-Registry-Struktur vorhanden ist.
 async function ensureProjectRegistry(rootDir) {
   const paths = storagePaths(rootDir);
   await fs.mkdir(paths.exportsDir, { recursive: true });
@@ -114,6 +126,8 @@ async function ensureProjectRegistry(rootDir) {
   await fs.mkdir(paths.usersDir, { recursive: true });
 }
 
+// Ermittelt oder erzeugt das aktuelle Projekt eines Benutzers.
+// Fehlende projektbezogene JSON-Dateien werden aus data/ oder Defaults gefüllt.
 async function ensureCurrentProject(rootDir, dataDir, userId) {
   if (!userId) throw new Error("Kein Benutzer angemeldet.");
   await ensureProjectRegistry(rootDir);
@@ -144,6 +158,7 @@ async function ensureCurrentProject(rootDir, dataDir, userId) {
   return { projectId, dataDir: targetDataDir };
 }
 
+// Liefert alle relevanten JSON-Pfade für ein bestimmtes Projekt.
 function dataFilesForProject(rootDir, userId, projectId) {
   const dataDir = projectDataDir(rootDir, userId, projectId);
   return {
@@ -160,16 +175,19 @@ function dataFilesForProject(rootDir, userId, projectId) {
   };
 }
 
+// Ältere currentProject.json-Unterstützung für Kompatibilität mit frühen Versionen.
 async function getCurrentProjectId(rootDir, dataDir) {
   const current = await readJson(path.join(dataDir, "currentProject.json"), { projectId: "" });
   return sanitizeId(current.projectId, "");
 }
 
+// Einstieg für Routen: aktuelles Projekt sicherstellen und dessen Dateipfade liefern.
 async function getCurrentDataFiles(rootDir, dataDir, userId) {
   const current = await ensureCurrentProject(rootDir, dataDir, userId);
   return dataFilesForProject(rootDir, userId, current.projectId);
 }
 
+// Liest Projektregister aus SQLite und ergänzt sichtbare Stammdaten aus projekt.json.
 async function listProjects(rootDir, userId) {
   const registry = listProjectsForUser(userId);
   const projects = [];
@@ -189,11 +207,13 @@ async function listProjects(rootDir, userId) {
   return projects;
 }
 
+// Statusänderungen bleiben im SQLite-Projektregister, nicht in projekt.json.
 async function updateProjectStatus(rootDir, userId, projectId, status) {
   const sanitizedProjectId = sanitizeId(projectId, "projekt_demo");
   dbUpdateProjectStatus(userId, sanitizedProjectId, status);
 }
 
+// Wechselt das aktive Projekt des Benutzers und verhindert Zugriff auf gelöschte/fremde Projekte.
 async function setCurrentProject(rootDir, dataDir, userId, projectId) {
   const sanitizedProjectId = sanitizeId(projectId, "projekt_demo");
   const project = getProject(userId, sanitizedProjectId);
@@ -203,6 +223,7 @@ async function setCurrentProject(rootDir, dataDir, userId, projectId) {
   setCurrentProjectId(userId, sanitizedProjectId);
 }
 
+// Legt ein neues Projekt mit eigenen JSON-Dateien im Benutzer-Storage an.
 async function createProject(rootDir, dataDir, userId, input = {}) {
   const projektname = String(input.projektname || "").trim() || "Neues Projekt";
   const projektnummer = String(input.projektnummer || "").trim();
@@ -256,6 +277,7 @@ async function upsertProjectFromData(rootDir, userId, projectId) {
   upsertProject({ id: projectId, userId, updatedAt: now });
 }
 
+// Manifest beschreibt ein Projektpaket für spätere Validierung und Import.
 async function createManifest(rootDir, userId, projectId, options) {
   const files = dataFilesForProject(rootDir, userId, projectId);
   const projekt = await readJson(files.projekt, {});
@@ -286,6 +308,7 @@ async function createManifest(rootDir, userId, projectId, options) {
   };
 }
 
+// Exportiert ein Projekt als Ordnerpaket mit Manifest und optionalen Upload-/Output-Ordnern.
 async function exportProject(rootDir, projectId, userId, options = {}) {
   const exportOptions = {
     includeUploads: options.includeUploads !== false,
@@ -357,6 +380,7 @@ async function exportProject(rootDir, projectId, userId, options = {}) {
   };
 }
 
+// Prüft, ob ein Projektpaket die erwartete Manifest-Version und Pflichtdateien enthält.
 async function validateProjectArchive(archivePath) {
   const manifestPath = path.join(archivePath, "manifest.json");
   const manifestFound = await exists(manifestPath);
@@ -381,6 +405,7 @@ async function validateProjectArchive(archivePath) {
   };
 }
 
+// Verhindert ID-Kollisionen beim Import vorhandener Projektpakete.
 async function uniqueProjectId(rootDir, userId, requestedId) {
   const projects = await listProjects(rootDir, userId);
   const used = new Set(projects.map((project) => project.id));
@@ -397,6 +422,7 @@ async function uniqueProjectId(rootDir, userId, requestedId) {
   return candidate;
 }
 
+// Importiert ein validiertes Projektpaket in den Storage des angemeldeten Benutzers.
 async function importProject(rootDir, archivePathOrName, userId) {
   const importsDir = storagePaths(rootDir).importsDir;
   const archivePath = safeJoin(importsDir, archivePathOrName);
@@ -433,6 +459,7 @@ async function importProject(rootDir, archivePathOrName, userId) {
   return { projectId: newProjectId, validation };
 }
 
+// Listet vorbereitete Projektpakete für die Archivansicht.
 async function listExports(rootDir, userId, projectId) {
   const base = safeJoin(storagePaths(rootDir).exportsDir, sanitizeId(userId, "user"), sanitizeId(projectId, "projekt_demo"));
   if (!(await exists(base))) return [];

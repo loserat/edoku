@@ -1,10 +1,12 @@
 const { hasMissingRequiredBrandschutzFields, normalizeBrandschutz } = require("./brandschutzService");
 const { isGeraetelisteComplete, normalizeGeraetelisten } = require("./geraetelistenService");
 
+// Begrenzt Fortschrittswerte auf gültige Prozentbereiche.
 function clampPercent(value) {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
+// Verdichtet alle Projektbereiche zu Dashboard-Kennzahlen, Fortschritt und Workflow.
 function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten, brandschutz, exportliste, projektSysteme }) {
   const aktiveLeistungsbereiche = leistungsbereiche.aktiv || [];
   const dokumente = Array.isArray(matrix) ? matrix : [];

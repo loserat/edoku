@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/css/style.css">
   </head>
   <body>
+    <%# Exportansicht: bündelt PDF-Vorschau, Exportstruktur, Aktionen und finale Exportliste. %>
     <%- include("partials/header", { active }) %>
     <main class="page compact-work-page">
       <div class="page-title">
@@ -18,6 +19,7 @@
       <%- include("partials/flash", { flash }) %>
       <%- include("partials/sectionTabs", { active }) %>
 
+      <%# Kleine Statuszählung für die kompakten Export-Kennzahlen. %>
       <% const vorhanden = exportliste.filter((entry) => entry.status === "vorhanden").length; %>
       <% const fehlt = exportliste.filter((entry) => entry.status === "fehlt").length; %>
 
@@ -30,6 +32,7 @@
 
         <% const selectedPdf = pdfPreviewFiles[0]; %>
 
+        <%# Browser-Vorschau vorhandener PDF-Dateien aus generiert/final/externer Ablage. %>
         <section id="pdf" class="tab-panel">
           <div class="panel-head">
             <div>
@@ -70,6 +73,7 @@
           <% } %>
         </section>
 
+        <%# Logische Exportstruktur mit fortlaufenden Kapitelnummern und Dateistatus. %>
         <section id="vorschau" class="tab-panel">
           <div class="panel-head">
             <div>
@@ -146,15 +150,30 @@
             </div>
           </div>
           <section class="export-actions">
-            <form class="export-action-primary" action="/export/dokumentation" method="post"><button type="submit">Dokumentation zentral generieren</button></form>
-            <form action="/export/pdfs-loeschen" method="post" data-confirm="Alle generierten und finalen PDFs dieses Projekts löschen?"><button class="danger" type="submit">Alle PDFs löschen</button></form>
-            <form action="/export/projektordner" method="post"><button class="secondary" type="submit">Projektordner erstellen</button></form>
-            <form action="/export/inhaltsverzeichnis" method="post"><button type="submit">Inhaltsverzeichnis generieren</button></form>
-            <form action="/export/formulare" method="post"><button type="submit">Formular-PDFs generieren</button></form>
-            <form action="/export/geraetelisten" method="post"><button type="submit">Gerätelisten generieren</button></form>
-            <form action="/export/brandschutz" method="post"><button type="submit">Brandschutzdokumentation generieren</button></form>
-            <form action="/export/exportliste" method="post"><button type="submit">Exportliste aktualisieren</button></form>
-            <form action="/export/final" method="post"><button type="submit">Finalen Export vorbereiten</button></form>
+            <form class="export-action-primary" action="/export/dokumentation" method="post">
+              <button type="submit">
+                <span>Dokumentation generieren</span>
+                <small>Interne PDFs neu erzeugen und Exportliste aktualisieren</small>
+              </button>
+            </form>
+            <form action="/export/exportliste" method="post">
+              <button class="secondary" type="submit">
+                <span>Exportliste prüfen</span>
+                <small>Reihenfolge, Anhänge und Dateistatus aktualisieren</small>
+              </button>
+            </form>
+            <form action="/export/final" method="post">
+              <button class="secondary" type="submit">
+                <span>Finalen Export vorbereiten</span>
+                <small>PDFs ordnen und ZIP mit Kapitelstruktur erstellen</small>
+              </button>
+            </form>
+            <form action="/export/pdfs-loeschen" method="post" data-confirm="Alle generierten und finalen PDFs dieses Projekts löschen?">
+              <button class="danger" type="submit">
+                <span>PDFs löschen</span>
+                <small>Generierte und finale Dateien entfernen</small>
+              </button>
+            </form>
           </section>
         </section>
 

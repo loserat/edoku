@@ -3,6 +3,7 @@ const path = require("path");
 const { DEFAULT_FORM_TEMPLATES } = require("./formTemplateService");
 const { DEFAULT_SYSTEM_SETTINGS } = require("./settingsService");
 
+// Fachliche Default-Leistungsbereiche für neue oder unvollständige Projekte.
 const DEFAULT_LEISTUNGSBEREICHE = [
   "Elektroinstallation / DIN VDE 0100",
   "Sicherheitsbeleuchtung",
@@ -24,12 +25,14 @@ const DEFAULT_LEISTUNGSBEREICHE = [
   "Bilddokumentation"
 ];
 
+// Legt einen Ordner rekursiv an, falls er noch nicht existiert.
 function ensureDirectoryExists(dirPath) {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
   }
 }
 
+// Prüft vorhandene JSON-Dateien auf Lesbarkeit, überschreibt sie aber nie automatisch.
 function validateJsonFile(filePath) {
   try {
     JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -38,6 +41,7 @@ function validateJsonFile(filePath) {
   }
 }
 
+// Legt fehlende JSON-Dateien mit Default-Inhalten an.
 function ensureJsonFile(filePath, defaultValue) {
   if (fs.existsSync(filePath)) {
     validateJsonFile(filePath);
@@ -49,6 +53,7 @@ function ensureJsonFile(filePath, defaultValue) {
   console.log(`Default-JSON angelegt: ${filePath}`);
 }
 
+// Default-Stammdaten für ein neues Basisprojekt.
 function defaultProjekt() {
   return {
     projektname: "Beispielprojekt",
@@ -68,6 +73,7 @@ function defaultProjekt() {
   };
 }
 
+// Default-Dokumentenmatrix mit Grundstruktur, Normbezügen und Auto-Aktivierungen.
 function defaultDokumentenmatrix() {
   return [
     {
@@ -341,6 +347,7 @@ function defaultDokumentenmatrix() {
   ];
 }
 
+// Systemdefaults für Hersteller-/Systemvorschläge und projektbezogene Auswahl.
 function defaultSysteme() {
   return {
     leistungsbereiche: [
@@ -399,6 +406,7 @@ function defaultSysteme() {
   };
 }
 
+// Beispiel-Gerätelisten für neue Projekte und Tests.
 function defaultGeraetelisten() {
   return [
     {
@@ -424,6 +432,7 @@ function defaultGeraetelisten() {
   ];
 }
 
+// Beispiel-Brandschottungen für neue Projekte und PDF-Vorschau.
 function defaultBrandschutz() {
   return [
     {
@@ -449,6 +458,7 @@ function defaultBrandschutz() {
   ];
 }
 
+// Default-Ordnerstruktur für Projektordner und Exportablage.
 function defaultOrdnerstruktur() {
   return {
     basisordner: "output/projekte/[projektnummer]_[projektname]",
@@ -477,6 +487,7 @@ function defaultOrdnerstruktur() {
   };
 }
 
+// Stellt beim App-Start alle benötigten Ordner und Default-Dateien bereit.
 function bootstrapStorage(paths) {
   [
     paths.DATA_DIR,

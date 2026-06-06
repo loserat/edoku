@@ -1,3 +1,5 @@
+<%# Gemeinsamer Header für alle angemeldeten Seiten: Branding, Projektstatus, Hauptnavigation, Benutzer und Theme-Schalter. %>
+<%- include("themeVariables") %>
 <header class="site-header">
   <div class="brand-block">
     <a class="brand" href="/">
@@ -25,5 +27,9 @@
       </form>
     </div>
   <% } %>
-  <button class="theme-toggle" type="button" data-theme-toggle>Tag/Nacht</button>
+  <button class="theme-toggle" type="button" data-theme-toggle aria-label="Theme wechseln">
+    <span class="theme-toggle-icon theme-toggle-sun"><%- include("icon", { name: "sun" }) %></span>
+    <span class="theme-toggle-icon theme-toggle-moon"><%- include("icon", { name: "moon" }) %></span>
+    <span class="theme-toggle-label" data-theme-toggle-label>Theme</span>
+  </button>
 </header>

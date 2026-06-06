@@ -1,6 +1,8 @@
 const { applyLogicalChapterNumbers } = require("./chapterNumberingService");
 const { normalizeAttachments } = require("./attachmentService");
 
+// Kategorien, die als importierte Dokumentations-PDFs im Inhaltsverzeichnis
+// erscheinen. Andere Anhänge bleiben reine Dateien oder Bildzuordnungen.
 const DOCUMENT_ATTACHMENT_CATEGORIES = [
   {
     category: "Stromlaufpläne",
@@ -38,6 +40,8 @@ const DOCUMENT_ATTACHMENT_CATEGORIES_BY_NAME = new Map(
   DOCUMENT_ATTACHMENT_CATEGORIES.map((entry) => [entry.category, entry])
 );
 
+// Stockwerke werden für die Sortierung vereinheitlicht, damit "1. OG" und
+// ähnliche Schreibweisen zuverlässig vergleichbar sind.
 const DEFAULT_STOCKWERK_ORDER = ["UG", "EG", "1. OG", "2. OG", "3. OG", "4. OG", "DG"];
 
 function normalizeStockwerk(value) {
@@ -48,12 +52,14 @@ function normalizeStockwerk(value) {
     .replace(/\./g, "");
 }
 
+// Nutzt projektbezogene Stockwerke, wenn sie gepflegt sind; sonst Default-Reihenfolge.
 function stockwerkOrderMap(projekt = {}) {
   const configured = Array.isArray(projekt.stockwerke) ? projekt.stockwerke : [];
   const values = configured.length ? configured : DEFAULT_STOCKWERK_ORDER;
   return new Map(values.map((stockwerk, index) => [normalizeStockwerk(stockwerk), index]));
 }
 
+// Fallback-Sortierung für Stockwerke, die nicht in der Projektstruktur enthalten sind.
 function fallbackStockwerkRank(value) {
   const normalized = normalizeStockwerk(value);
   if (!normalized) return 900;
@@ -66,6 +72,7 @@ function fallbackStockwerkRank(value) {
   return 500;
 }
 
+// Gesamtrang für Stockwerks-Sortierung in Anhängen und später im Inhaltsverzeichnis.
 function stockwerkRank(value, orderMap) {
   const normalized = normalizeStockwerk(value);
   if (orderMap.has(normalized)) return orderMap.get(normalized);
@@ -81,6 +88,7 @@ function defaultDocumentMetaForCategory(category) {
   };
 }
 
+// Nur PDFs aus bekannten Dokumentationskategorien werden in den PDF-Export einsortiert.
 function isDocumentationAttachment(entry) {
   return entry && entry.mimeType === "application/pdf" && DOCUMENT_ATTACHMENT_CATEGORIES_BY_NAME.has(entry.category);
 }
@@ -89,6 +97,7 @@ function documentationAttachments(raw) {
   return normalizeAttachments(raw).filter(isDocumentationAttachment);
 }
 
+// Baut einen sprechenden Titel aus Kategorie-spezifischen Metadaten.
 function attachmentDisplayTitle(entry, categoryMeta) {
   const base = String(entry.title || entry.originalName || categoryMeta.title || "Dokument").trim();
   const detailsByCategory = {
@@ -104,6 +113,11 @@ function attachmentDisplayTitle(entry, categoryMeta) {
   return details.length ? `${base} - ${details.join(" / ")}` : base;
 }
 
+/**
+ * Erzeugt virtuelle Matrixeinträge für importierte Dokumentations-PDFs.
+ * Die Einträge bekommen logische Kapitelnummern und werden nach Kategorie,
+ * Kapitel und Stockwerk sortiert.
+ */
 function buildDocumentationAttachmentEntries(matrix, rawAttachments, projekt = {}) {
   const attachments = documentationAttachments(rawAttachments).filter((entry) => entry.export !== false);
   if (!attachments.length) return [];
@@ -170,6 +184,7 @@ function buildDocumentationAttachmentEntries(matrix, rawAttachments, projekt = {
     });
 }
 
+// Aktualisiert die Dokumentations-Metadaten eines vorhandenen Anhangs.
 function updateAttachmentDocumentMeta(rawAttachments, attachmentId, values) {
   let found = false;
   const attachments = normalizeAttachments(rawAttachments).map((entry) => {

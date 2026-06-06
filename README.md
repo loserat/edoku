@@ -102,8 +102,8 @@ http://localhost:3000
 Für die lokale Entwicklung wird beim Start ein Demo-Benutzer vorbereitet:
 
 ```text
-Benutzer: nick
-Passwort: nick
+Benutzer: admin
+Passwort: admin
 ```
 
 Die Zugangsdaten sind nur für lokale Entwicklung und Tests gedacht.
@@ -114,7 +114,7 @@ Die Zugangsdaten sind nur für lokale Entwicklung und Tests gedacht.
 .
 ├── config/              # System- und Formular-Konfiguration
 ├── data/                # globale Startdaten und JSON-Defaults
-├── docs/                # technische Doku, Projektupdate, GitHub-Checkliste
+├── docs/                # technische Doku, Projektupdate und Release Notes
 ├── intern/              # lokale interne Notizen, größtenteils ignoriert
 ├── public/              # CSS, JavaScript, Logo
 ├── services/            # Backend-Services
@@ -183,7 +183,7 @@ Siehe auch:
 
 - [Technische Dokumentation](docs/TECHNIK.md)
 - [Projektupdate](docs/PROJEKTUPDATE.md)
-- [GitHub-Checkliste](docs/GITHUB_CHECKLISTE.md)
+- [Release Notes](docs/RELEASE_NOTES.md)
 
 ## Aktuelle Grenzen
 

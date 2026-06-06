@@ -1,19 +1,23 @@
 const { applyLogicalChapterNumbers, sortDocuments } = require("./chapterNumberingService");
 
+// Kleine Anzeigehilfe für leere Stammdatenfelder in der Exportvorschau.
 function valueOrDash(value) {
   return value && String(value).trim() ? value : "-";
 }
 
+// Indexiert die Exportliste nach Kapitel/Titel, damit Matrixeinträge ihren Dateistatus finden.
 function indexExportliste(exportliste) {
   return new Map((exportliste || []).map((entry) => [entry.originalKapitel || entry.kapitel || entry.titel, entry]));
 }
 
+// CSS-Statusklasse für vorhandene, fehlende oder ungeprüfte Exportdateien.
 function statusClass(status) {
   if (status === "vorhanden") return "on";
   if (status === "fehlt") return "off";
   return "";
 }
 
+// Baut die strukturierte Vorschau der späteren Exportdokumentation.
 function buildExportPreview({ projekt = {}, matrix = [], exportliste = [], projektSysteme = [] }) {
   const exportByKapitel = indexExportliste(exportliste);
   const matrixDocuments = sortDocuments(

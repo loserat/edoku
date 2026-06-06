@@ -11,6 +11,7 @@ const PROJECT_ROOTS = [
   "06_Final"
 ];
 
+// Kapitelordner für manuell einsortierte externe PDFs im Projektordner.
 const CONFIG_CHAPTER_FOLDERS = [
   "01_Betriebskarteien",
   "02_Konformitaet_CE",
@@ -27,6 +28,7 @@ const CONFIG_CHAPTER_FOLDERS = [
   "13_Sonstiges"
 ];
 
+// Pfadbestandteile für Projektordner und Dateinamen bereinigen.
 function sanitizePart(value, fallback) {
   const cleaned = String(value || "")
     .replace(/ä/g, "ae")
@@ -44,12 +46,14 @@ function sanitizePart(value, fallback) {
   return cleaned || fallback;
 }
 
+// Ordnername aus Projektnummer und Projektname.
 function projectFolderName(projekt) {
   const nummer = sanitizePart(projekt.projektnummer, "ohne_nummer");
   const name = sanitizePart(projekt.projektname, "Projekt");
   return `${nummer}_${name}`;
 }
 
+// Liefert alle wichtigen Output-Pfade für ein Projekt.
 function getProjectPaths(rootDir, projekt) {
   const projectPath = path.join(rootDir, "output", "projekte", projectFolderName(projekt));
   return {
@@ -61,6 +65,7 @@ function getProjectPaths(rootDir, projekt) {
   };
 }
 
+// Legt die Projektordnerstruktur im output-Ordner an.
 async function createProjectFolder(rootDir, projekt) {
   const paths = getProjectPaths(rootDir, projekt);
   await fs.mkdir(path.join(rootDir, "output", "projekte"), { recursive: true });
@@ -76,11 +81,13 @@ async function createProjectFolder(rootDir, projekt) {
   return paths;
 }
 
+// Ermittelt den passenden Kapitelordner für eine Dokumentnummer.
 function chapterFolderForKapitel(kapitel) {
   const hauptkapitel = String(kapitel || "").split(".")[0].padStart(2, "0");
   return CONFIG_CHAPTER_FOLDERS.find((folder) => folder.startsWith(`${hauptkapitel}_`)) || "";
 }
 
+// Kürzere öffentliche Variante für PDF- und Exportdateinamen.
 function fileSafeName(value, fallback = "Dokument") {
   return sanitizePart(value, fallback).slice(0, 120);
 }

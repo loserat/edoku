@@ -1,3 +1,4 @@
+<%# Zentrale Sidebar-/Bereichsnavigation. Die Tabs hängen vom aktiven Hauptmenü ab. %>
 <% const projectTabs = ["projekte", "projekt", "leistungsbereiche", "systemauswahl", "projektarchiv"]; %>
 <% const documentationTabs = ["dokumente", "anhaenge"]; %>
 <% const outputTabs = ["export"]; %>
@@ -6,6 +7,7 @@
 <% const selectedCategoryValue = typeof selectedKategorie !== "undefined" ? selectedKategorie : ""; %>
 <% const hasDeviceListTabs = active === "geraetelisten" && typeof deviceListTabs !== "undefined" && Array.isArray(deviceListTabs); %>
 <% if (hasDeviceListTabs) { %>
+  <%# Sonderfall Gerätelisten: jede aktive Geräteliste wird direkt als linker Haupttab angezeigt. %>
   <nav class="section-tabs device-main-tabs" data-device-main-tabs aria-label="Gerätelisten">
     <div class="section-tabs-head">
       <span>Gerätelisten</span>
@@ -32,6 +34,7 @@
     <% }) %>
   </nav>
 <% } else if (projectTabs.includes(active)) { %>
+  <%# Projektbereich: Projektmanager, Stammdaten, Leistungsbereiche und Archiv. %>
   <% tabs = [
     ["projekte", "/projekte#projekt-auswahl", "Projektübersicht", "overview"],
     ["projekt", "/projekt", "Stammdaten", "edit"],
@@ -41,6 +44,7 @@
     ["projektarchiv", "/projektarchiv", "Import / Pakete", "folder-tree"]
   ]; %>
 <% } else if (documentationTabs.includes(active)) { %>
+  <%# Dokumentationsbereich: Matrix und kategorisierte Anhänge/Nachweise. %>
   <% tabs = [
     ["dokumente", "/dokumente", "Matrix", "grid"],
     ["anhaenge", "/anhaenge?kategorie=Brandschutz", "Brandschutz", "shield"],
@@ -55,6 +59,7 @@
     ["anhaenge", "/anhaenge?kategorie=Allgemein", "Allgemein", "paperclip"]
   ]; %>
 <% } else if (outputTabs.includes(active)) { %>
+  <%# Exportbereich: Vorschau, Schritte, Ordnerstruktur und Exportliste. %>
   <% tabs = [
     ["export", "/export#pdf", "PDF-Vorschau", "file"],
     ["export", "/export#vorschau", "Exportstruktur", "grid"],
@@ -63,6 +68,7 @@
     ["export", "/export#liste", "Exportliste", "list"]
   ]; %>
 <% } else if (systemTabs.includes(active)) { %>
+  <%# Systembereich: globale Einstellungen und Formularvorlagen. %>
   <% tabs = [
     ["einstellungen", "/einstellungen#system", "Grundeinstellungen", "system"],
     ["einstellungen", "/einstellungen#ersteller", "Erstellerstammdaten", "project"],
@@ -73,6 +79,7 @@
 <% } %>
 
 <% if (!hasDeviceListTabs && tabs.length) { %>
+  <%# Gemeinsames Rendering der Bereichsnavigation mit optionalem Projektmanager. %>
   <% const navTitle = projectTabs.includes(active) ? "Projekte" : documentationTabs.includes(active) ? "Dokumentation" : outputTabs.includes(active) ? "Export" : "System"; %>
   <% const navSubtitle = projectTabs.includes(active) ? "Auswahl, Stammdaten und Projektvorgaben" : documentationTabs.includes(active) ? "Matrix, Anhänge und Nachweise" : outputTabs.includes(active) ? "PDF, Archiv und Ausgabe" : "Vorgaben und Vorlagen"; %>
   <nav class="section-tabs" aria-label="Bereichsnavigation">

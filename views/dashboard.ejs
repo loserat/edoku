@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/css/style.css">
   </head>
   <body>
+    <%# Dashboard: verdichtete Projektkennzahlen aus dashboardService.buildDashboardStats. %>
     <%- include("partials/header", { active }) %>
     <main class="page wide">
       <div class="page-title">
@@ -15,6 +16,7 @@
       </div>
       <%- include("partials/flash", { flash }) %>
 
+      <%# Fortschrittsanzeige auf Basis notwendiger Angaben, Pflichtdokumente und fehlender Dateien. %>
       <section class="completion-panel" aria-label="Fertigstellungsgrad der Dokumentation">
         <div class="completion-main">
           <div>
@@ -47,6 +49,7 @@
         <a class="button-link" href="<%= stats.nextStep.href %>">Öffnen</a>
       </section>
 
+      <%# Workflow-Karten führen durch die geplante Reihenfolge der Dokumentation. %>
       <section class="workflow-board" aria-label="Arbeitsablauf">
         <% stats.workflow.forEach((step) => { %>
           <a class="workflow-step <%= step.status %>" href="<%= step.href %>">

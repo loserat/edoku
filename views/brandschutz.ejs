@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="/css/style.css">
   </head>
   <body>
+    <%# Brandschutzverwaltung: eine breite, sortierbare Tabelle für alle Schottungen. %>
     <%- include("partials/header", { active }) %>
-    <main class="page wide compact-work-page">
+    <main class="page wide compact-work-page full-width-page brandschutz-page">
       <div class="page-title">
         <p class="eyebrow">Brandschutzdokumentation</p>
         <h1>Brandschutz</h1>
@@ -17,6 +18,7 @@
       <%- include("partials/flash", { flash }) %>
       <%- include("partials/sectionTabs", { active }) %>
 
+      <%# Statuswerte werden direkt aus den Pflichtfeldern berechnet und in der Tabelle angezeigt. %>
       <% const aktiveBrandschutz = brandschutz.filter((entry) => entry.aktiv); %>
       <% const unvollstaendig = brandschutz.filter((entry) => entry.aktiv && requiredBrandschutzFields.some((field) => !String(entry[field] || "").trim())); %>
       <datalist id="projekt-stockwerke">
@@ -31,11 +33,24 @@
             <h2>Brandschottungen</h2>
             <p><%= brandschutz.length %> Einträge · <%= aktiveBrandschutz.length %> aktiv · <%= unvollstaendig.length %> unvollständig</p>
           </div>
-          <form action="/brandschutz/hinzufuegen" method="post">
-            <button type="submit">Brandschottung hinzufügen</button>
-          </form>
+          <div class="toolbar">
+            <% if (brandschutzPreviewUrl) { %>
+              <button
+                class="secondary preview-button"
+                type="button"
+                data-pdf-modal-open
+                data-pdf-src="<%= brandschutzPreviewUrl %>"
+                data-pdf-title="Brandschutzdokumentation">
+                Vorschau
+              </button>
+            <% } %>
+            <form action="/brandschutz/hinzufuegen" method="post">
+              <button type="submit">Brandschottung hinzufügen</button>
+            </form>
+          </div>
         </div>
 
+        <%# Auto-Save-Formular: Änderungen an Schottungen werden ohne Speichern-Button geschrieben. %>
         <form action="/brandschutz" method="post" data-autosave>
           <div class="table-wrap brandschutz-list-wrap">
             <table class="editable-table brandschutz-table" data-sortable-table>
@@ -53,15 +68,17 @@
                         <th data-col="zulassung" data-sortable-column>Zulassung / abZ / ETA</th>
                         <th data-col="feuerwiderstand" data-sortable-column>Feuerwiderstand</th>
                         <th data-col="medium" data-sortable-column>Medium / Durchführung (optional)</th>
-                        <th data-col="anzahl_kabel" data-sortable-column>Kabelanzahl</th>
+                        <th data-col="anzahl_kabel" data-sortable-column>Kabelanzahl (optional)</th>
                         <th data-col="durchmesser" data-sortable-column>Durchmesser / Abmessung</th>
                         <th data-col="ausfuehrungsdatum" data-sortable-column>Ausführungsdatum</th>
                         <th data-col="monteur" data-sortable-column>Monteur</th>
                         <th data-col="bemerkung" data-sortable-column>Bemerkung (optional)</th>
-                        <th data-col="delete">Löschen</th>
+                        <th data-col="preview">Vorschau</th>
+                        <th data-col="delete">Entfernen</th>
                       </tr>
                     </thead>
                     <tbody>
+                      <% const bauteilOptionen = ["Bauteil", "Wand", "Decke"]; %>
                       <% brandschutz.forEach((entry, index) => { %>
                         <% const missingRequired = entry.aktiv && requiredBrandschutzFields.some((field) => !String(entry[field] || "").trim()); %>
                         <tr id="brandschottung-<%= entry.id %>">
@@ -82,7 +99,17 @@
                           </td>
                           <td data-col="geschoss"><input type="text" list="projekt-stockwerke" name="brandschutz[<%= index %>][geschoss]" value="<%= entry.geschoss %>"></td>
                           <td data-col="raum"><input type="text" name="brandschutz[<%= index %>][raum]" value="<%= entry.raum %>"></td>
-                          <td data-col="bauteil"><input type="text" name="brandschutz[<%= index %>][bauteil]" value="<%= entry.bauteil %>"></td>
+                          <td data-col="bauteil">
+                            <select name="brandschutz[<%= index %>][bauteil]">
+                              <option value="">Bitte wählen</option>
+                              <% if (entry.bauteil && !bauteilOptionen.includes(entry.bauteil)) { %>
+                                <option value="<%= entry.bauteil %>" selected><%= entry.bauteil %></option>
+                              <% } %>
+                              <% bauteilOptionen.forEach((option) => { %>
+                                <option value="<%= option %>" <%= entry.bauteil === option ? "selected" : "" %>><%= option %></option>
+                              <% }) %>
+                            </select>
+                          </td>
                           <td data-col="abschottungssystem"><input type="text" name="brandschutz[<%= index %>][abschottungssystem]" value="<%= entry.abschottungssystem %>"></td>
                           <td data-col="hersteller"><input type="text" name="brandschutz[<%= index %>][hersteller]" value="<%= entry.hersteller %>"></td>
                           <td data-col="system"><input type="text" name="brandschutz[<%= index %>][system]" value="<%= entry.system %>"></td>
@@ -94,11 +121,22 @@
                           <td data-col="ausfuehrungsdatum"><input type="text" name="brandschutz[<%= index %>][ausfuehrungsdatum]" value="<%= entry.ausfuehrungsdatum %>"></td>
                           <td data-col="monteur"><input type="text" name="brandschutz[<%= index %>][monteur]" value="<%= entry.monteur %>"></td>
                           <td data-col="bemerkung"><input type="text" name="brandschutz[<%= index %>][bemerkung]" value="<%= entry.bemerkung %>"></td>
+                          <td data-col="preview">
+                            <% if (brandschutzPreviewUrl) { %>
+                              <button
+                                class="secondary preview-button"
+                                type="button"
+                                data-pdf-modal-open
+                                data-pdf-src="<%= brandschutzPreviewUrl %>"
+                                data-pdf-title="Brandschutzdokumentation">
+                                Vorschau
+                              </button>
+                            <% } else { %>
+                              <span class="preview-missing">Noch nicht erzeugt</span>
+                            <% } %>
+                          </td>
                           <td data-col="delete">
-                            <label class="cell-check">
-                              <input type="checkbox" name="brandschutz[<%= index %>][_delete]" value="1">
-                              <span>Löschen</span>
-                            </label>
+                            <button class="row-delete-button danger icon-only-button" type="button" data-delete-row data-delete-label="Brandschottung <%= index + 1 %>" aria-label="Brandschottung löschen"><%- include("partials/icon", { name: "trash" }) %></button>
                           </td>
                         </tr>
                       <% }) %>

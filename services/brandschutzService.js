@@ -1,5 +1,7 @@
 const BRANDSCHUTZ_REQUIRED_FIELDS = ["geschoss", "raum", "bauteil"];
 
+// Vorlage für eine neue Brandschottung. Optionale Felder bleiben leer, werden
+// aber bewusst mitgeführt, damit GUI, JSON und PDF dieselbe Struktur nutzen.
 function emptyBrandschutzEintrag(index = 1) {
   return {
     id: `bs_${String(index).padStart(3, "0")}`,
@@ -23,10 +25,12 @@ function emptyBrandschutzEintrag(index = 1) {
   };
 }
 
+// Pflichtfeldprüfung für Dashboard und Vollständigkeitsstatus.
 function hasMissingRequiredBrandschutzFields(entry) {
   return BRANDSCHUTZ_REQUIRED_FIELDS.some((field) => !String(entry[field] || "").trim());
 }
 
+// Normalisiert gespeicherte JSON-Daten und ergänzt fehlende Felder aus der Vorlage.
 function normalizeBrandschutz(raw) {
   if (!Array.isArray(raw)) return [];
   return raw.map((entry, index) => ({
@@ -37,6 +41,7 @@ function normalizeBrandschutz(raw) {
   }));
 }
 
+// Wandelt Formularwerte aus der Tabelle zurück in die JSON-Struktur.
 function normalizePostedBrandschutz(posted) {
   const rows = Array.isArray(posted) ? posted : Object.values(posted || {});
   return rows
@@ -63,6 +68,7 @@ function normalizePostedBrandschutz(posted) {
     }));
 }
 
+// Fügt eine neue leere Schottung am Ende der vorhandenen Liste hinzu.
 function addBrandschutzEintrag(raw) {
   const entries = normalizeBrandschutz(raw);
   return [...entries, emptyBrandschutzEintrag(entries.length + 1)];

@@ -1,0 +1,106 @@
+<%#
+  Globale Theme-Variablen aus den Systemeinstellungen.
+  Die neuen --color-*-Variablen sind die zentrale API; alte Variablennamen
+  bleiben als Alias erhalten, damit vorhandene Komponenten weiter funktionieren.
+%>
+<%
+  const theme = (typeof systemSettings !== "undefined" && systemSettings.theme) ? systemSettings.theme : {};
+  const colors = theme.colors || {};
+  const shape = theme.shape || {};
+  const shadow = theme.shadow || {};
+  const spacing = theme.spacing || {};
+  const typography = theme.typography || {};
+  const defaultMode = ["light", "dark", "system"].includes(theme.mode) ? theme.mode : "light";
+%>
+<style id="edoku-theme-vars">
+  :root {
+    --color-bg-light: <%= colors.bgLight || "#f5f7fb" %>;
+    --color-bg-dark: <%= colors.bgDark || "#111827" %>;
+    --color-bg: var(--color-bg-light);
+    --color-surface: <%= colors.surface || "#ffffff" %>;
+    --color-surface-muted: <%= colors.surfaceMuted || "#eef4fb" %>;
+    --color-surface-dark: <%= colors.surfaceDark || "#1f2937" %>;
+    --color-surface-muted-dark: <%= colors.surfaceMutedDark || "#273244" %>;
+    --color-text: <%= colors.text || "#172033" %>;
+    --color-text-muted: <%= colors.textMuted || "#66738a" %>;
+    --color-text-dark: <%= colors.textDark || "#f9fafb" %>;
+    --color-text-muted-dark: <%= colors.textMutedDark || "#a7b1c2" %>;
+    --color-border: <%= colors.border || "#b8c6d8" %>;
+    --color-border-dark: <%= colors.borderDark || "#56677f" %>;
+    --color-primary: <%= colors.accent || "#1473e6" %>;
+    --color-primary-hover: color-mix(in srgb, var(--color-primary) 82%, #000);
+    --color-button-primary: <%= colors.buttonPrimary || colors.accent || "#1473e6" %>;
+    --color-button-secondary: <%= colors.buttonSecondary || "#eef4fb" %>;
+    --color-success: <%= colors.success || "#16a34a" %>;
+    --color-warning: <%= colors.warning || "#d97706" %>;
+    --color-danger: <%= colors.danger || "#dc2626" %>;
+    --radius-sm: <%= shape.globalRadius || 14 %>px;
+    --radius-md: <%= shape.inputRadius || 14 %>px;
+    --radius-lg: <%= shape.cardRadius || 22 %>px;
+    --radius-xl: <%= shape.cardRadius || 22 %>px;
+    --radius-button: <%= shape.buttonRadius || 999 %>px;
+    --border-width: <%= shape.borderWidth || 1 %>px;
+    --shadow-strength: <%= shadow.strength || 14 %>;
+    --shadow-softness: <%= shadow.softness || 34 %>px;
+    --shadow-sm: 0 1px 2px rgba(21, 35, 60, calc(var(--shadow-strength) / 220));
+    --shadow-md: 0 12px var(--shadow-softness) rgba(21, 35, 60, calc(var(--shadow-strength) / 120));
+    --shadow-lg: 0 18px calc(var(--shadow-softness) * 1.35) rgba(21, 35, 60, calc(var(--shadow-strength) / 100));
+    --spacing-xs: calc(<%= spacing.global || 12 %>px * 0.35);
+    --spacing-sm: calc(<%= spacing.global || 12 %>px * 0.65);
+    --spacing-md: <%= spacing.global || 12 %>px;
+    --spacing-lg: calc(<%= spacing.global || 12 %>px * 1.5);
+    --spacing-xl: calc(<%= spacing.global || 12 %>px * 2);
+    --page-spacing: <%= spacing.page || 16 %>px;
+    --card-spacing: <%= spacing.card || 14 %>px;
+    --form-spacing: <%= spacing.form || 10 %>px;
+    --table-row-height: <%= spacing.tableRowHeight || 42 %>px;
+    --font-size-base: <%= typography.base || 14 %>px;
+    --font-size-sm: calc(var(--font-size-base) - 2px);
+    --font-size-lg: calc(var(--font-size-base) + 2px);
+    --font-size-heading: <%= typography.heading || 24 %>px;
+    --font-size-label: <%= typography.label || 12 %>px;
+    --font-size-button: <%= typography.button || 13 %>px;
+    --line-height-base: <%= typography.lineHeight || 1.42 %>;
+    --bg: var(--color-bg);
+    --surface: color-mix(in srgb, var(--color-surface) 82%, transparent);
+    --surface-solid: var(--color-surface);
+    --surface-muted: color-mix(in srgb, var(--color-surface-muted) 86%, transparent);
+    --text: var(--color-text);
+    --muted: var(--color-text-muted);
+    --border: color-mix(in srgb, var(--color-border) 48%, transparent);
+    --primary: var(--color-button-primary);
+    --primary-strong: var(--color-primary-hover);
+    --danger: var(--color-danger);
+    --warning: var(--color-warning);
+    --success: var(--color-success);
+    --focus: color-mix(in srgb, var(--color-primary) 18%, transparent);
+    --panel: var(--surface);
+    --line: var(--border);
+    --accent: var(--color-primary);
+    --accent-dark: var(--color-primary-hover);
+    --shadow-soft: var(--shadow-md);
+    --shadow-card: var(--shadow-lg);
+    --button-glow: 0 10px 24px color-mix(in srgb, var(--color-button-primary) 20%, transparent);
+  }
+
+  [data-theme="dark"] {
+    --color-bg: var(--color-bg-dark);
+    --color-surface: var(--color-surface-dark);
+    --color-surface-muted: var(--color-surface-muted-dark);
+    --color-text: var(--color-text-dark);
+    --color-text-muted: var(--color-text-muted-dark);
+    --color-border: var(--color-border-dark);
+    --color-primary-hover: color-mix(in srgb, var(--color-primary) 74%, #fff);
+    --surface: color-mix(in srgb, var(--color-surface) 82%, transparent);
+    --surface-solid: var(--color-surface);
+    --surface-muted: color-mix(in srgb, var(--color-surface-muted) 86%, transparent);
+    --text: var(--color-text);
+    --muted: var(--color-text-muted);
+    --border: color-mix(in srgb, var(--color-border) 48%, transparent);
+    --line: var(--border);
+    --primary-strong: var(--color-primary-hover);
+  }
+</style>
+<script>
+  window.edokuThemeDefaultMode = "<%= defaultMode %>";
+</script>

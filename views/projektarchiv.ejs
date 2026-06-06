@@ -40,10 +40,10 @@
           </div>
           <form action="/projektarchiv/exportieren" method="post" class="stack-form">
             <input type="hidden" name="projectId" value="<%= currentProjectId %>">
-            <label class="checkbox-card compact"><input type="checkbox" name="includeUploads" checked> Uploads einschließen</label>
-            <label class="checkbox-card compact"><input type="checkbox" name="includeGenerated" checked> generierte PDFs einschließen</label>
-            <label class="checkbox-card compact"><input type="checkbox" name="includeFinal" checked> finale PDFs einschließen</label>
-            <label class="checkbox-card compact"><input type="checkbox" name="createZip" checked> ZIP erzeugen vorbereiten</label>
+            <label class="switch-control"><input type="checkbox" name="includeUploads" checked><span class="switch-track" aria-hidden="true"></span><span>Uploads einschließen</span></label>
+            <label class="switch-control"><input type="checkbox" name="includeGenerated" checked><span class="switch-track" aria-hidden="true"></span><span>generierte PDFs einschließen</span></label>
+            <label class="switch-control"><input type="checkbox" name="includeFinal" checked><span class="switch-track" aria-hidden="true"></span><span>finale PDFs einschließen</span></label>
+            <label class="switch-control"><input type="checkbox" name="createZip" checked><span class="switch-track" aria-hidden="true"></span><span>ZIP erzeugen vorbereiten</span></label>
             <button type="submit">Projekt exportieren</button>
           </form>
         </section>
