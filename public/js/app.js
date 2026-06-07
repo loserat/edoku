@@ -16,6 +16,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Statusmeldungen für Screenreader als dynamische Hinweise markieren.
   notices.forEach((notice) => {
     notice.setAttribute("role", "status");
+    // * INFO: Toasts verschwinden automatisch, damit sie Arbeitsbereiche nicht verdecken.
+    window.setTimeout(() => {
+      notice.classList.add("is-hiding");
+      window.setTimeout(() => {
+        if (notice.parentElement) notice.remove();
+      }, 220);
+    }, 4200);
   });
 
   // Sicherheitsabfrage für Formulare, die eine Bestätigung verlangen.

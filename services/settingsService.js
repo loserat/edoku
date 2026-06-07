@@ -265,6 +265,13 @@ const DEFAULT_SYSTEM_SETTINGS = {
   pdfFooterText: "Bearbeiter | Ort / Datum",
   exportOrdnerPrefix: "ProjektExport",
   datumFormat: "de-DE",
+  // * INFO: Exportbezogene Anzeigeoptionen, die nicht projektfachlich sind.
+  export: {
+    trennstreifen: {
+      showInnenText: false,
+      showRegisterTitel: false
+    }
+  },
   ersteller: {
     name: "",
     firma: "",
@@ -337,6 +344,14 @@ function mergeSystemSettings(settings = {}) {
     ersteller: {
       ...DEFAULT_SYSTEM_SETTINGS.ersteller,
       ...((settings || {}).ersteller || {})
+    },
+    export: {
+      ...DEFAULT_SYSTEM_SETTINGS.export,
+      ...((settings || {}).export || {}),
+      trennstreifen: {
+        ...DEFAULT_SYSTEM_SETTINGS.export.trennstreifen,
+        ...(((settings || {}).export || {}).trennstreifen || {})
+      }
     },
     theme: mergeThemeSettings((settings || {}).theme || DEFAULT_THEME_SETTINGS)
   };

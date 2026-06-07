@@ -365,39 +365,47 @@ function writeCoverPage(doc, projekt, rootDir, systemSettings, entry) {
   writeFooter(doc, projekt);
 }
 
-function writeSeparatorPage(doc, projekt, entry) {
+function writeSeparatorPage(doc, projekt, entry, options = {}) {
   const width = doc.page.width;
   const height = doc.page.height;
   const margin = 18;
   const registerWidth = 86;
   const chapter = entry.displayKapitel || entry.kapitel || "";
   const title = entry.titel || "Unterkategorie";
+  const showInnenText = options.showInnenText === true;
+  const showRegisterTitel = options.showRegisterTitel === true;
+  const registerLabel = showRegisterTitel ? `${chapter}  ${title}` : chapter;
+  // * INFO: Der linke Bereich bleibt wegen Lochung frei; Text beginnt bewusst weiter rechts.
+  const punchSafeLeft = margin + 54;
 
   doc.save();
   doc.fillColor("#ffffff").rect(0, 0, width, height).fill();
-  doc.strokeColor("#cbd5e1").lineWidth(1).rect(margin, margin, width - margin * 2, height - margin * 2).stroke();
-  doc.fillColor("#eff6ff").rect(width - margin - registerWidth, margin, registerWidth, height - margin * 2).fill();
-  doc.strokeColor("#60a5fa").lineWidth(1.2).rect(width - margin - registerWidth, margin, registerWidth, height - margin * 2).stroke();
-  doc.strokeColor("#94a3b8").dash(4, { space: 4 }).moveTo(width - margin - registerWidth, margin).lineTo(width - margin - registerWidth, height - margin).stroke().undash();
+  doc.strokeColor("#cbd5e1").lineWidth(0.8).rect(margin, margin, width - margin * 2, height - margin * 2).stroke();
+  // * INFO: Nur eine gestrichelte Falz-/Registerlinie, kein farbiger Kasten. Das spart Toner/Tinte.
+  doc.strokeColor("#cbd5e1").dash(4, { space: 4 }).moveTo(width - margin - registerWidth, margin).lineTo(width - margin - registerWidth, height - margin).stroke().undash();
 
-  doc.fillColor("#111827").font("Helvetica-Bold").fontSize(26).text(chapter, margin + 18, margin + 34, {
-    width: width - registerWidth - margin * 3,
-    lineBreak: false
-  });
-  doc.font("Helvetica-Bold").fontSize(18).text(title, margin + 18, margin + 76, {
-    width: width - registerWidth - margin * 3,
-    height: 86,
-    ellipsis: true
-  });
-  doc.font("Helvetica").fontSize(8).fillColor("#64748b").text(projekt.projektname || "Projekt", margin + 18, height - margin - 28, {
-    width: width - registerWidth - margin * 3,
-    ellipsis: true
-  });
+  if (showInnenText) {
+    doc.fillColor("#111827").font("Helvetica-Bold").fontSize(22).text(chapter, punchSafeLeft, margin + 34, {
+      width: width - registerWidth - punchSafeLeft - margin,
+      lineBreak: false
+    });
+    doc.font("Helvetica-Bold").fontSize(15).text(title, punchSafeLeft, margin + 72, {
+      width: width - registerWidth - punchSafeLeft - margin,
+      height: 70,
+      ellipsis: true
+    });
+  } else {
+    doc.fillColor("#111827").font("Helvetica-Bold").fontSize(30).text(chapter, punchSafeLeft, margin + 42, {
+      width: width - registerWidth - punchSafeLeft - margin,
+      lineBreak: false
+    });
+  }
 
   doc.save();
   doc.translate(width - margin - registerWidth / 2, height / 2);
   doc.rotate(-90);
-  doc.fillColor("#1d4ed8").font("Helvetica-Bold").fontSize(17).text(`${chapter}  ${title}`, -((height - margin * 3) / 2), -11, {
+  // * INFO: Standard ist nur die Kapitelnummer am Registerrand; Titel wird nur optional ergänzt.
+  doc.fillColor("#111827").font("Helvetica-Bold").fontSize(showRegisterTitel ? 10 : 17).text(registerLabel, -((height - margin * 3) / 2), showRegisterTitel ? -7 : -11, {
     width: height - margin * 3,
     align: "center",
     ellipsis: true
@@ -558,9 +566,12 @@ async function writePdf(filePath, title, writer, options = {}) {
     stream.on("error", reject);
     writer(doc, { title });
     const pageRange = doc.bufferedPageRange();
-    for (let pageIndex = pageRange.start; pageIndex < pageRange.start + pageRange.count; pageIndex += 1) {
-      doc.switchToPage(pageIndex);
-      writeGithubBranding(doc);
+    // ! WICHTIG: Trennstreifen deaktivieren GitHub-Branding explizit, weil Registerdruck ohne Fußlogo erfolgen soll.
+    if (options.includeGithubBranding !== false) {
+      for (let pageIndex = pageRange.start; pageIndex < pageRange.start + pageRange.count; pageIndex += 1) {
+        doc.switchToPage(pageIndex);
+        writeGithubBranding(doc);
+      }
     }
     doc.end();
   });
@@ -806,7 +817,7 @@ async function generateDeckblaetter(rootDir, projekt, matrix, systemSettings = {
 }
 
 // Generiert separat druckbare Register-/Trennstreifen für Unterkategorien.
-async function generateTrennstreifen(rootDir, projekt, matrix, systemSettings = {}, geraetelisten = [], anhaenge = [], leistungsbereiche = {}) {
+async function generateTrennstreifen(rootDir, projekt, matrix, systemSettings = {}, geraetelisten = [], anhaenge = [], leistungsbereiche = {}, options = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generatedDir = path.join(paths.generatedPath, "Trennstreifen");
   await clearGeneratedPdfs(generatedDir);
@@ -818,11 +829,13 @@ async function generateTrennstreifen(rootDir, projekt, matrix, systemSettings = 
   await writePdf(filePath, "Trennstreifen Unterkategorien", (doc) => {
     entries.forEach((entry, index) => {
       if (index > 0) doc.addPage();
-      writeSeparatorPage(doc, projekt, entry);
+      writeSeparatorPage(doc, projekt, entry, options);
     });
   }, {
     size: [TRENNSTREIFEN_WIDTH, TRENNSTREIFEN_HEIGHT],
-    margin: 0
+    margin: 0,
+    // ! WICHTIG: Auf Trennstreifen generell kein GitHub-Logo ausgeben.
+    includeGithubBranding: false
   });
 
   return [filePath];

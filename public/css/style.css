@@ -1954,22 +1954,48 @@ tr:last-child td {
   color: var(--warning);
 }
 
+.flash-toast-stack {
+  /* * INFO: Toasts liegen über der UI und reservieren keinen Platz im Dokumentfluss. */
+  display: grid;
+  gap: 8px;
+  max-width: min(420px, calc(100vw - 32px));
+  pointer-events: none;
+  position: fixed;
+  right: 16px;
+  top: 74px;
+  width: max-content;
+  z-index: 2000;
+}
+
 .notice {
-  border-radius: 8px;
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 14px 36px rgba(2, 6, 23, 0.26);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
+  line-height: 1.25;
   margin: 0;
-  order: 10;
-  padding: 9px 10px;
+  max-width: 100%;
+  opacity: 1;
+  overflow-wrap: anywhere;
+  padding: 10px 14px;
+  transform: translateY(0);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.notice.is-hiding {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 .notice.success {
-  background: color-mix(in srgb, var(--success) 18%, var(--surface));
-  color: var(--accent-dark);
+  background: color-mix(in srgb, var(--success) 20%, var(--surface) 78%);
+  color: color-mix(in srgb, var(--success) 58%, var(--text));
 }
 
 .notice.error {
-  background: color-mix(in srgb, var(--danger) 16%, var(--surface));
+  background: color-mix(in srgb, var(--danger) 18%, var(--surface) 80%);
   color: var(--danger);
 }
 
@@ -2158,6 +2184,22 @@ tr:last-child td {
 
 .export-artifact-actions form {
   margin: 0;
+}
+
+.separator-options-form {
+  /* * INFO: Kompakte Optionszeile für Trennstreifen, damit der Exportbereich nicht wieder hoch aufbaut. */
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.separator-options-form .compact-toggle {
+  background: color-mix(in srgb, var(--surface-muted) 70%, transparent);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  min-height: 32px;
+  padding: 3px 10px 3px 5px;
 }
 
 .export-artifact-actions .button-link {
