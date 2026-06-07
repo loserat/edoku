@@ -34,8 +34,12 @@ Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. 
 - Plan-/Messprotokoll-Kategorien für PDF-Importe
 - PDF-Erzeugung mit Projektkopf, Logo und GitHub-Branding
 - Inhaltsverzeichnis, Formular-PDFs, Gerätelisten und Brandschutz-PDFs
+- separate PDF-Trennstreifen im Maß 24 x 10,5 cm
+- Deckblätter für Hauptkategorien
 - Exportliste und finaler Exportordner
 - Tag-/Nacht-Theme
+- Theme-Editor mit Presets
+- schwebende Statusmeldungen, die die Oberfläche nicht verschieben
 - Docker-Start
 
 ## Screens und Bedienkonzept
@@ -84,7 +88,7 @@ docker compose logs -f
 
 ## Start ohne Docker
 
-Voraussetzung: Node.js 20 oder neuer.
+Voraussetzung: Node.js 20 oder neuer. Docker nutzt ebenfalls Node.js 20.
 
 ```bash
 npm install
@@ -148,6 +152,8 @@ edoku erzeugt aktuell:
 
 - Inhaltsverzeichnis
 - Anlagenbeschreibung unter Kapitel `3.1`
+- Deckblätter für Hauptkategorien
+- separate Trennstreifen für Unterkategorien
 - Konformitätserklärungen
 - CE-Bestätigungen
 - DGUV-/Errichterbestätigungen
@@ -157,6 +163,8 @@ edoku erzeugt aktuell:
 - finalen Exportordner
 
 Importierte PDF-Anhänge können über Kategorien wie Stromlaufpläne, Schaltpläne, Installationspläne, Schemata und Messprotokolle in Inhaltsverzeichnis und Exportliste aufgenommen werden.
+
+Trennstreifen werden separat erzeugt und bewusst ohne GitHub-Branding gedruckt. Der Standarddruck ist tintensparend: schwarze Kapitelnummer am Registerrand, keine blaue Fläche und kein zusätzlicher Projekttext.
 
 ## GitHub-Hinweise
 
@@ -189,8 +197,7 @@ Siehe auch:
 
 - keine externe Datenbank
 - keine Rollen/Rechteverwaltung
-- keine echte PDF-Zusammenführung zu einer Gesamtdatei
-- ZIP-Erstellung für Projektarchive ist vorbereitet, aber noch nicht final
+- PDF-Gesamtdatei und ZIP-Export sind als Beta-Funktion vorhanden und müssen weiter visuell geprüft werden
 - automatisierte Tests sind noch nicht aufgebaut
 
 ## Lizenz

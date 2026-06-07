@@ -26,6 +26,8 @@
       <% const zipFile = finalFiles.find((file) => file.kind === "zip"); %>
       <% const orderFile = finalFiles.find((file) => file.kind === "reihenfolge"); %>
       <% const separatorPdf = pdfPreviewFiles.find((file) => /Trennstreifen/i.test(file.name)); %>
+      <%# * INFO: Gespeicherte Trennstreifen-Optionen werden in den Switches wiederhergestellt. %>
+      <% const separatorSettings = (((systemSettings || {}).export || {}).trennstreifen || {}); %>
       <% const selectedPdf = (completePdf && pdfPreviewFiles.find((file) => file.id === completePdf.id)) || pdfPreviewFiles[0]; %>
       <% const formatSize = (bytes) => {
         if (!bytes) return "-";
@@ -135,12 +137,23 @@
                 </div>
                 <span class="badge <%= separatorPdf ? "on" : "off" %>"><%= separatorPdf ? "bereit" : "fehlt" %></span>
               </div>
-              <p>Jede Unterkategorie bekommt einen rechts lesbaren Registerbereich mit Kapitelnummer und Titel.</p>
+              <p>Standard: rechts nur die Kapitelnummer in Schwarz, ohne farbigen Registerkasten.</p>
               <div class="export-artifact-meta">
                 <small><%= separatorPdf ? "In PDF-Vorschau verfügbar" : "Separat erzeugen" %></small>
               </div>
               <div class="export-artifact-actions">
-                <form action="/export/trennstreifen" method="post">
+                <%# * INFO: Diese Optionen beeinflussen nur das Layout der separat erzeugten Registerstreifen. %>
+                <form class="separator-options-form" action="/export/trennstreifen" method="post">
+                  <label class="switch-control compact-toggle">
+                    <input type="checkbox" name="showInnenText" value="1" <%= separatorSettings.showInnenText ? "checked" : "" %>>
+                    <span class="switch-track" aria-hidden="true"></span>
+                    <span>Innenbereich mit Titel drucken</span>
+                  </label>
+                  <label class="switch-control compact-toggle">
+                    <input type="checkbox" name="showRegisterTitel" value="1" <%= separatorSettings.showRegisterTitel ? "checked" : "" %>>
+                    <span class="switch-track" aria-hidden="true"></span>
+                    <span>Registertitel zusätzlich anzeigen</span>
+                  </label>
                   <button type="submit">Trennstreifen erzeugen</button>
                 </form>
                 <% if (separatorPdf) { %>

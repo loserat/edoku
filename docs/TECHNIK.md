@@ -70,8 +70,18 @@ Aktuell erzeugt werden:
 - DGUV-/Errichterbestätigungen
 - Gerätelisten
 - Brandschutzdokumentation
+- Deckblätter für Hauptkategorien
+- separate Trennstreifen für Unterkategorien im Maß 24 x 10,5 cm
+- finale Gesamt-PDF und ZIP-Ausgabe als Beta-Funktion
 
-Die finale PDF-Zusammenführung zu einer Gesamtdatei ist noch nicht Bestandteil der Beta.
+Die Trennstreifen werden ohne GitHub-Branding erzeugt, damit sie als reine Registerstreifen gedruckt werden können. Layoutoptionen für Trennstreifen werden in den Systemeinstellungen gespeichert.
+
+## Oberfläche und Theme
+
+- Globale Farben, Radien, Schatten, Abstände und Typografie werden über CSS-Variablen gesteuert.
+- Der Theme-Editor speichert Werte in `config/systemEinstellungen.json`.
+- Statusmeldungen werden als schwebende Toasts dargestellt und verschieben keine Seiteninhalte.
+- Tag-/Nacht-Umschaltung und Theme-Presets greifen global auf Header, Navigation, Karten, Tabellen, Formulare und Buttons.
 
 ## Anhänge und importierte PDFs
 
@@ -88,6 +98,8 @@ Diese PDF-Anhänge können in Inhaltsverzeichnis und Exportliste aufgenommen wer
 ## Docker
 
 Die Anwendung ist über `Dockerfile` und `docker-compose.yml` startbar. Persistente lokale Ordner werden als Volumes eingebunden.
+
+Der Container nutzt Node.js 20. Für lokale Entwicklung sollte ebenfalls Node.js 20 oder neuer verwendet werden.
 
 ## GitHub-Upload
 
@@ -107,6 +119,5 @@ Nicht ins Repository gehören:
 - keine Rollen- und Rechteverwaltung
 - keine produktive Webserver-Härtung
 - keine automatisierte Test-Suite
-- keine echte PDF-Gesamtzusammenführung
-- Projektarchive ohne finale ZIP-Erzeugung
+- PDF-Gesamtdatei, ZIP-Export und Archivstruktur weiter im Praxistest prüfen
 - fachliche Texte und Normbezüge müssen weiter geprüft werden

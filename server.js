@@ -907,7 +907,22 @@ app.post("/export/brandschutz", requireAuth, async (req, res) => {
 
 app.post("/export/trennstreifen", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
-  const generated = await generateTrennstreifen(ROOT_DIR, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche);
+  const settingsPath = path.join(CONFIG_DIR, "systemEinstellungen.json");
+  // * INFO: Die Trennstreifen-Optionen werden gespeichert, damit die UI nach dem Generieren stabil bleibt.
+  const separatorOptions = {
+    showInnenText: req.body.showInnenText === "1",
+    showRegisterTitel: req.body.showRegisterTitel === "1"
+  };
+  const currentSettings = mergeSystemSettings(await readJson(settingsPath, DEFAULT_SYSTEM_SETTINGS));
+  const updatedSettings = {
+    ...currentSettings,
+    export: {
+      ...currentSettings.export,
+      trennstreifen: separatorOptions
+    }
+  };
+  await writeJson(settingsPath, updatedSettings);
+  const generated = await generateTrennstreifen(ROOT_DIR, data.projekt, data.matrix, updatedSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche, separatorOptions);
   redirectWithFlash(res, "/export", "success", `Trennstreifen wurden separat generiert (${generated.length} PDF).`);
 });
 

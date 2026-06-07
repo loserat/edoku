@@ -1,6 +1,11 @@
-<% if (flash && flash.success) { %>
-  <p class="notice success"><%= flash.success %></p>
-<% } %>
-<% if (flash && flash.error) { %>
-  <p class="notice error"><%= flash.error %></p>
+<% if (flash && (flash.success || flash.error)) { %>
+  <%# * INFO: Flash-Meldungen schweben als Toast, damit sie das Seitenlayout nicht verschieben. %>
+  <div class="flash-toast-stack" aria-live="polite" aria-atomic="true">
+    <% if (flash.success) { %>
+      <p class="notice success"><%= flash.success %></p>
+    <% } %>
+    <% if (flash.error) { %>
+      <p class="notice error"><%= flash.error %></p>
+    <% } %>
+  </div>
 <% } %>

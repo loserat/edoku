@@ -23,8 +23,10 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Plan-/Messprotokoll-Kategorien
 - Kategoriebezogene Anhangsverwaltung mit Stockwerkssortierung
 - PDF-Erzeugung
+- Deckblätter und separate PDF-Trennstreifen
 - Exportliste und finaler Exportordner
 - Theme-System mit Editor und Presets
+- schwebende Statusmeldungen ohne Layoutverschiebung
 - Docker-Setup
 
 ## Technischer Stand
@@ -39,6 +41,15 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Containerisierung: Docker Compose
 - Zielumgebung: Node.js 20 im Docker-Container
 
+## Update 2026-06-07 Abend
+
+- Trennstreifen-Layout tintensparend überarbeitet.
+- Trennstreifen werden ohne GitHub-Logo, ohne Projektname und ohne blaue Registerfläche erzeugt.
+- Optionen für Innentext und zusätzlichen Registertitel werden gespeichert.
+- Innenbereich der Trennstreifen wurde wegen Lochung weiter nach rechts gesetzt.
+- Flash-/Statusmeldungen schweben jetzt als kompakte Toasts und verschieben die GUI nicht mehr.
+- GitHub-Dokumentation und technische Hinweise für die Beta nachgezogen.
+
 ## Wichtige Beta-Einschränkungen
 
 - keine Rollen- und Rechteverwaltung
@@ -52,8 +63,8 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 ## Nächste sinnvolle Schritte
 
 - PDF-Layout final visuell prüfen
-- PDF-Gesamtzusammenführung einbauen
-- Projektarchive als echte ZIP-Dateien erzeugen
+- PDF-Gesamtzusammenführung im Praxistest prüfen
+- ZIP-Export und Projektarchive im Praxistest prüfen
 - Anhänge/Pläne weiter fachlich ausbauen
 - BK 01 und BK 02 definieren
 - automatisierte Tests ergänzen

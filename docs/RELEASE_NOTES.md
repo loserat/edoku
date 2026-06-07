@@ -27,11 +27,14 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 - interne Tagesupdates und lokale Arbeitsnotizen bleiben per `.gitignore` außerhalb des Repositories
 - Finaler Export erzeugt jetzt zusätzlich eine Gesamt-PDF und ein ZIP mit flacher Kapitelstruktur
 - PDF-Zuordnung in der Exportliste nutzt logische Kapitelnummern und Titelabgleich, damit gleich nummerierte Dokumente nicht verwechselt werden
+- Separate Trennstreifen können für Unterkategorien erzeugt werden
+- Trennstreifen wurden auf tintensparenden Schwarz-Weiß-Druck ohne GitHub-Branding umgestellt
+- Statusmeldungen erscheinen als schwebende Toasts und verschieben die Oberfläche nicht mehr
 
 ### Bekannte Grenzen
 
 - Noch keine produktive Server-Härtung
 - Noch keine Rollen- und Rechteverwaltung
 - Noch keine automatisierte Test-Suite
-- Gesamt-PDF-Merge und ZIP-Archivierung sind vorbereitet, aber noch nicht final
+- Gesamt-PDF, ZIP-Export und Trennstreifen müssen im Praxiseinsatz weiter visuell geprüft werden
 - Normtexte und erzeugte Formulartexte müssen fachlich weiter geprüft werden

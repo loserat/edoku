@@ -7,6 +7,12 @@
   "pdfFooterText": "Bearbeiter | Ort / Datum",
   "exportOrdnerPrefix": "ProjektExport",
   "datumFormat": "de-DE",
+  "export": {
+    "trennstreifen": {
+      "showInnenText": false,
+      "showRegisterTitel": false
+    }
+  },
   "ersteller": {
     "name": "",
     "firma": "",
@@ -18,7 +24,6 @@
     "logoPfad": "creator/921bbd3c-d2ab-448e-ada2-106e6781f692.png"
   },
   "theme": {
-    "preset": "graphite",
     "name": "Graphite",
     "mode": "dark",
     "colors": {
@@ -65,6 +70,7 @@
       "label": 12,
       "button": 13,
       "lineHeight": 1.4
-    }
+    },
+    "preset": "graphite"
   }
 }
