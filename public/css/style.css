@@ -2014,8 +2014,10 @@ tr:last-child td {
 }
 
 .export-tab-shell {
+  align-content: start;
   display: grid;
   gap: 10px;
+  grid-auto-rows: max-content;
   margin: 0;
   max-width: none;
   order: 30;
@@ -2030,17 +2032,46 @@ tr:last-child td {
 }
 
 .export-tabs {
-  border-radius: 999px;
+  align-items: center;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: var(--glass-blur);
+  border: var(--border-width) solid var(--line);
+  border-radius: min(var(--radius-lg), 22px);
+  box-shadow: var(--shadow-soft);
+  flex-wrap: nowrap;
+  height: 48px;
   justify-content: center;
   margin: 0 auto;
+  max-height: 48px;
   max-width: min(100%, 920px);
-  padding: 5px;
+  min-height: 48px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 6px;
+  scrollbar-width: thin;
 }
 
 .export-tabs .tab-button {
-  border-radius: 999px;
+  align-items: center;
+  border: 0;
+  border-radius: var(--radius-button);
+  box-shadow: none;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 800;
+  height: 34px;
   min-height: 34px;
-  padding-inline: 14px;
+  padding: 0 14px;
+}
+
+.export-tabs .tab-button:hover,
+.export-tabs .tab-button.active {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  border: var(--border-width) solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  box-shadow: var(--shadow-sm);
+  color: var(--accent-dark);
+  transform: none;
 }
 
 .export-panel {
