@@ -23,7 +23,7 @@ const {
 const { createProjectFolder, fileSafeName } = require("./services/projectService");
 const { buildDashboardStats } = require("./services/dashboardService");
 const { buildExportPreview } = require("./services/exportPreviewService");
-const { listPdfPreviewFiles, resolvePdfPreviewFile } = require("./services/pdfPreviewService");
+const { listPdfPreviewFiles, listFinalExportFiles, resolvePdfPreviewFile, resolveExportDownloadFile } = require("./services/pdfPreviewService");
 const { buildExportliste, prepareFinalExport } = require("./services/exportService");
 const { generateBrandschutzPdf, generateFormularPdfs, generateGeraetelisten, generateInhaltsverzeichnis } = require("./services/pdfService");
 const { applyLogicalChapterNumbers, sortDocuments } = require("./services/chapterNumberingService");
@@ -779,6 +779,9 @@ app.post("/brandschutz/hinzufuegen", requireAuth, async (req, res) => {
 app.get("/export", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
+    const pdfPreviewFiles = await listPdfPreviewFiles(ROOT_DIR, data.projekt);
+    const finalExportFiles = await listFinalExportFiles(ROOT_DIR, data.projekt);
+
     res.render("export", {
       active: "export",
       exportliste: data.exportliste,
@@ -789,7 +792,8 @@ app.get("/export", requireAuth, async (req, res, next) => {
         exportliste: data.exportliste,
         projektSysteme: data.projektSysteme
       }),
-      pdfPreviewFiles: await listPdfPreviewFiles(ROOT_DIR, data.projekt)
+      pdfPreviewFiles,
+      finalExportFiles
     });
   } catch (error) {
     next(error);
@@ -800,6 +804,15 @@ app.get("/export/pdf-preview", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
     res.sendFile(await resolvePdfPreviewFile(ROOT_DIR, data.projekt, req.query.file));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/export/download", requireAuth, async (req, res, next) => {
+  try {
+    const data = await loadCurrent(req);
+    res.download(await resolveExportDownloadFile(ROOT_DIR, data.projekt, req.query.file));
   } catch (error) {
     next(error);
   }

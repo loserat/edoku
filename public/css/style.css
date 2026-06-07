@@ -2013,6 +2013,68 @@ tr:last-child td {
   line-height: 1.25;
 }
 
+.export-artifacts {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.export-artifact-card {
+  background: color-mix(in srgb, var(--panel) 86%, transparent);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.export-artifact-card.is-missing {
+  opacity: 0.72;
+}
+
+.export-artifact-card-head {
+  align-items: flex-start;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.export-artifact-card-head span:first-child {
+  color: var(--muted);
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.export-artifact-card-head strong {
+  display: block;
+  font-size: 14px;
+  line-height: 1.25;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+.export-artifact-card p,
+.export-artifact-meta {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.export-artifact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.export-artifact-actions .button-link {
+  min-height: 32px;
+  padding: 6px 12px;
+}
+
 .compact-select {
   min-width: min(420px, 100%);
 }
@@ -4356,6 +4418,10 @@ body.modal-open {
 }
 
 @media (max-width: 1180px) {
+  .export-artifacts {
+    grid-template-columns: 1fr;
+  }
+
   .attachment-workspace {
     grid-template-columns: 1fr;
   }

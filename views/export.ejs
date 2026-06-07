@@ -22,6 +22,17 @@
       <%# Kleine Statuszählung für die kompakten Export-Kennzahlen. %>
       <% const vorhanden = exportliste.filter((entry) => entry.status === "vorhanden").length; %>
       <% const fehlt = exportliste.filter((entry) => entry.status === "fehlt").length; %>
+      <% const finalFiles = finalExportFiles || []; %>
+      <% const completePdf = finalFiles.find((file) => file.kind === "gesamt-pdf"); %>
+      <% const zipFile = finalFiles.find((file) => file.kind === "zip"); %>
+      <% const orderFile = finalFiles.find((file) => file.kind === "reihenfolge"); %>
+      <% const selectedPdf = (completePdf && pdfPreviewFiles.find((file) => file.id === completePdf.id)) || pdfPreviewFiles[0]; %>
+      <% const formatSize = (bytes) => {
+        if (!bytes) return "-";
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+        return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+      }; %>
 
       <div class="tab-shell export-scroll">
         <section class="summary-cards compact-summary">
@@ -30,7 +41,66 @@
           <div class="summary-card"><span>Fehlt</span><strong><%= fehlt %></strong></div>
         </section>
 
-        <% const selectedPdf = pdfPreviewFiles[0]; %>
+        <%# Finale Export-Artefakte: Gesamt-PDF, ZIP und Reihenfolgeliste aus dem finalen Projektordner. %>
+        <section class="export-artifacts" aria-label="Finale Exportdateien">
+          <article class="export-artifact-card <%= completePdf ? "" : "is-missing" %>">
+            <div class="export-artifact-card-head">
+              <div>
+                <span>Gesamt-PDF</span>
+                <strong><%= completePdf ? completePdf.name : "Noch nicht erzeugt" %></strong>
+              </div>
+              <span class="badge <%= completePdf ? "on" : "off" %>"><%= completePdf ? "bereit" : "fehlt" %></span>
+            </div>
+            <p>Zusammengeführte Dokumentation für Prüfung und Versand.</p>
+            <div class="export-artifact-meta">
+              <small><%= completePdf ? formatSize(completePdf.size) : "Finalen Export vorbereiten" %></small>
+            </div>
+            <% if (completePdf) { %>
+              <div class="export-artifact-actions">
+                <a class="button-link" href="/export/pdf-preview?file=<%= encodeURIComponent(completePdf.id) %>#toolbar=1">Vorschau</a>
+                <a class="button-link secondary" href="/export/download?file=<%= encodeURIComponent(completePdf.id) %>">Download</a>
+              </div>
+            <% } %>
+          </article>
+
+          <article class="export-artifact-card <%= zipFile ? "" : "is-missing" %>">
+            <div class="export-artifact-card-head">
+              <div>
+                <span>ZIP-Export</span>
+                <strong><%= zipFile ? zipFile.name : "Noch nicht erzeugt" %></strong>
+              </div>
+              <span class="badge <%= zipFile ? "on" : "off" %>"><%= zipFile ? "bereit" : "fehlt" %></span>
+            </div>
+            <p>Ordnerstruktur mit PDFs passend zur Exportreihenfolge.</p>
+            <div class="export-artifact-meta">
+              <small><%= zipFile ? formatSize(zipFile.size) : "Finalen Export vorbereiten" %></small>
+            </div>
+            <% if (zipFile) { %>
+              <div class="export-artifact-actions">
+                <a class="button-link secondary" href="/export/download?file=<%= encodeURIComponent(zipFile.id) %>">Download</a>
+              </div>
+            <% } %>
+          </article>
+
+          <article class="export-artifact-card <%= orderFile ? "" : "is-missing" %>">
+            <div class="export-artifact-card-head">
+              <div>
+                <span>Export-Reihenfolge</span>
+                <strong><%= orderFile ? orderFile.name : "Noch nicht erzeugt" %></strong>
+              </div>
+              <span class="badge <%= orderFile ? "on" : "off" %>"><%= orderFile ? "bereit" : "fehlt" %></span>
+            </div>
+            <p>Textprotokoll der finalen Sortierung und ausgelassenen Dateien.</p>
+            <div class="export-artifact-meta">
+              <small><%= orderFile ? formatSize(orderFile.size) : "Finalen Export vorbereiten" %></small>
+            </div>
+            <% if (orderFile) { %>
+              <div class="export-artifact-actions">
+                <a class="button-link secondary" href="/export/download?file=<%= encodeURIComponent(orderFile.id) %>">Download</a>
+              </div>
+            <% } %>
+          </article>
+        </section>
 
         <%# Browser-Vorschau vorhandener PDF-Dateien aus generiert/final/externer Ablage. %>
         <section id="pdf" class="tab-panel">
@@ -44,7 +114,7 @@
                 <span>Datei</span>
                 <select data-pdf-preview-select>
                   <% pdfPreviewFiles.forEach((file) => { %>
-                    <option value="/export/pdf-preview?file=<%= encodeURIComponent(file.id) %>">
+                    <option value="/export/pdf-preview?file=<%= encodeURIComponent(file.id) %>" <%= selectedPdf && file.id === selectedPdf.id ? "selected" : "" %>>
                       <%= file.source %> - <%= file.name %>
                     </option>
                   <% }) %>
