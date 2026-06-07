@@ -9,7 +9,7 @@
   <body>
     <%# Exportansicht: bündelt PDF-Vorschau, Exportstruktur, Aktionen und finale Exportliste. %>
     <%- include("partials/header", { active }) %>
-    <main class="page compact-work-page">
+    <main class="page compact-work-page full-width-page">
       <div class="page-title">
         <p class="eyebrow">Ausgabe</p>
         <h1>Export</h1>
@@ -17,7 +17,6 @@
       </div>
 
       <%- include("partials/flash", { flash }) %>
-      <%- include("partials/sectionTabs", { active }) %>
 
       <%# Kleine Statuszählung für die kompakten Export-Kennzahlen. %>
       <% const vorhanden = exportliste.filter((entry) => entry.status === "vorhanden").length; %>
@@ -26,6 +25,7 @@
       <% const completePdf = finalFiles.find((file) => file.kind === "gesamt-pdf"); %>
       <% const zipFile = finalFiles.find((file) => file.kind === "zip"); %>
       <% const orderFile = finalFiles.find((file) => file.kind === "reihenfolge"); %>
+      <% const separatorPdf = pdfPreviewFiles.find((file) => /Trennstreifen/i.test(file.name)); %>
       <% const selectedPdf = (completePdf && pdfPreviewFiles.find((file) => file.id === completePdf.id)) || pdfPreviewFiles[0]; %>
       <% const formatSize = (bytes) => {
         if (!bytes) return "-";
@@ -34,80 +34,26 @@
         return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
       }; %>
 
-      <div class="tab-shell export-scroll">
+      <div data-tabs="export" class="export-tab-shell export-scroll">
+        <nav class="tabs export-tabs" aria-label="Exportbereiche">
+          <button class="tab-button" type="button" data-tab-target="pdf-dokumentation">PDF-Dokumentation</button>
+          <button class="tab-button" type="button" data-tab-target="pdf-trennstreifen">PDF-Trennstreifen</button>
+          <button class="tab-button" type="button" data-tab-target="zip-export">ZIP-Export</button>
+          <button class="tab-button" type="button" data-tab-target="export-einstellungen">Exporteinstellungen</button>
+        </nav>
+
         <section class="summary-cards compact-summary">
           <div class="summary-card"><span>Einträge</span><strong><%= exportliste.length %></strong></div>
           <div class="summary-card"><span>Vorhanden</span><strong><%= vorhanden %></strong></div>
           <div class="summary-card"><span>Fehlt</span><strong><%= fehlt %></strong></div>
         </section>
 
-        <%# Finale Export-Artefakte: Gesamt-PDF, ZIP und Reihenfolgeliste aus dem finalen Projektordner. %>
-        <section class="export-artifacts" aria-label="Finale Exportdateien">
-          <article class="export-artifact-card <%= completePdf ? "" : "is-missing" %>">
-            <div class="export-artifact-card-head">
-              <div>
-                <span>Gesamt-PDF</span>
-                <strong><%= completePdf ? completePdf.name : "Noch nicht erzeugt" %></strong>
-              </div>
-              <span class="badge <%= completePdf ? "on" : "off" %>"><%= completePdf ? "bereit" : "fehlt" %></span>
-            </div>
-            <p>Zusammengeführte Dokumentation für Prüfung und Versand.</p>
-            <div class="export-artifact-meta">
-              <small><%= completePdf ? formatSize(completePdf.size) : "Finalen Export vorbereiten" %></small>
-            </div>
-            <% if (completePdf) { %>
-              <div class="export-artifact-actions">
-                <a class="button-link" href="/export/pdf-preview?file=<%= encodeURIComponent(completePdf.id) %>#toolbar=1">Vorschau</a>
-                <a class="button-link secondary" href="/export/download?file=<%= encodeURIComponent(completePdf.id) %>">Download</a>
-              </div>
-            <% } %>
-          </article>
-
-          <article class="export-artifact-card <%= zipFile ? "" : "is-missing" %>">
-            <div class="export-artifact-card-head">
-              <div>
-                <span>ZIP-Export</span>
-                <strong><%= zipFile ? zipFile.name : "Noch nicht erzeugt" %></strong>
-              </div>
-              <span class="badge <%= zipFile ? "on" : "off" %>"><%= zipFile ? "bereit" : "fehlt" %></span>
-            </div>
-            <p>Ordnerstruktur mit PDFs passend zur Exportreihenfolge.</p>
-            <div class="export-artifact-meta">
-              <small><%= zipFile ? formatSize(zipFile.size) : "Finalen Export vorbereiten" %></small>
-            </div>
-            <% if (zipFile) { %>
-              <div class="export-artifact-actions">
-                <a class="button-link secondary" href="/export/download?file=<%= encodeURIComponent(zipFile.id) %>">Download</a>
-              </div>
-            <% } %>
-          </article>
-
-          <article class="export-artifact-card <%= orderFile ? "" : "is-missing" %>">
-            <div class="export-artifact-card-head">
-              <div>
-                <span>Export-Reihenfolge</span>
-                <strong><%= orderFile ? orderFile.name : "Noch nicht erzeugt" %></strong>
-              </div>
-              <span class="badge <%= orderFile ? "on" : "off" %>"><%= orderFile ? "bereit" : "fehlt" %></span>
-            </div>
-            <p>Textprotokoll der finalen Sortierung und ausgelassenen Dateien.</p>
-            <div class="export-artifact-meta">
-              <small><%= orderFile ? formatSize(orderFile.size) : "Finalen Export vorbereiten" %></small>
-            </div>
-            <% if (orderFile) { %>
-              <div class="export-artifact-actions">
-                <a class="button-link secondary" href="/export/download?file=<%= encodeURIComponent(orderFile.id) %>">Download</a>
-              </div>
-            <% } %>
-          </article>
-        </section>
-
         <%# Browser-Vorschau vorhandener PDF-Dateien aus generiert/final/externer Ablage. %>
-        <section id="pdf" class="tab-panel">
+        <section id="pdf" class="tab-panel export-panel" data-tab-panel="pdf-dokumentation">
           <div class="panel-head">
             <div>
-              <h2>PDF-Vorschau</h2>
-              <p>Direkte Ansicht der bereits erzeugten oder abgelegten PDF-Dateien des aktuellen Projekts.</p>
+              <h2>PDF-Dokumentation</h2>
+              <p>Interne Dokumentations-PDFs erzeugen und direkt prüfen.</p>
             </div>
             <% if (pdfPreviewFiles.length) { %>
               <label class="compact-select">
@@ -123,6 +69,39 @@
             <% } %>
           </div>
 
+          <section class="export-actions export-actions-compact">
+            <form class="export-action-primary" action="/export/dokumentation" method="post">
+              <button type="submit">
+                <span>Dokumentation generieren</span>
+                <small>Inhaltsverzeichnis, Deckblätter, Formulare, Listen und Brandschutz neu erzeugen</small>
+              </button>
+            </form>
+            <form action="/export/inhaltsverzeichnis" method="post">
+              <button class="secondary" type="submit">
+                <span>Inhaltsverzeichnis</span>
+                <small>Nur Inhaltsverzeichnis neu erzeugen</small>
+              </button>
+            </form>
+            <form action="/export/formulare" method="post">
+              <button class="secondary" type="submit">
+                <span>Formulare</span>
+                <small>Konformität, CE, DGUV und Errichterbestätigung</small>
+              </button>
+            </form>
+            <form action="/export/geraetelisten" method="post">
+              <button class="secondary" type="submit">
+                <span>Gerätelisten</span>
+                <small>Tabellen-PDFs für aktive Gerätelisten erzeugen</small>
+              </button>
+            </form>
+            <form action="/export/brandschutz" method="post">
+              <button class="secondary" type="submit">
+                <span>Brandschutz</span>
+                <small>Brandschottungen als Bilddokumentation erzeugen</small>
+              </button>
+            </form>
+          </section>
+
           <% if (selectedPdf) { %>
             <div class="pdf-preview-shell">
               <iframe
@@ -134,23 +113,146 @@
           <% } else { %>
             <div class="pdf-empty">
               <strong>Noch keine PDF für die Vorschau vorhanden.</strong>
-              <span>Erzeuge zuerst ein Inhaltsverzeichnis oder Formular-PDF, danach erscheint die Vorschau hier automatisch.</span>
-              <div class="pdf-empty-actions">
-                <form action="/export/dokumentation" method="post"><button type="submit">Dokumentation generieren</button></form>
-                <form action="/export/formulare" method="post"><button class="secondary" type="submit">Nur Formular-PDFs</button></form>
-              </div>
+              <span>Erzeuge zuerst die Dokumentation, danach erscheint die Vorschau hier automatisch.</span>
             </div>
           <% } %>
         </section>
 
-        <%# Logische Exportstruktur mit fortlaufenden Kapitelnummern und Dateistatus. %>
-        <section id="vorschau" class="tab-panel">
+        <section id="trennstreifen" class="tab-panel export-panel" data-tab-panel="pdf-trennstreifen">
           <div class="panel-head">
             <div>
-              <h2>Exportstruktur</h2>
-              <p>Aktueller Stand der späteren Exportstruktur mit logisch fortlaufenden Kapitelnummern.</p>
+              <h2>PDF-Trennstreifen</h2>
+              <p>Separate Registerstreifen im Maß 24 x 10,5 cm für Unterkategorien erzeugen.</p>
             </div>
           </div>
+
+          <section class="export-artifacts export-artifacts-single" aria-label="Trennstreifen">
+            <article class="export-artifact-card <%= separatorPdf ? "" : "is-missing" %>">
+              <div class="export-artifact-card-head">
+                <div>
+                  <span>Registerstreifen</span>
+                  <strong><%= separatorPdf ? separatorPdf.name : "Noch nicht erzeugt" %></strong>
+                </div>
+                <span class="badge <%= separatorPdf ? "on" : "off" %>"><%= separatorPdf ? "bereit" : "fehlt" %></span>
+              </div>
+              <p>Jede Unterkategorie bekommt einen rechts lesbaren Registerbereich mit Kapitelnummer und Titel.</p>
+              <div class="export-artifact-meta">
+                <small><%= separatorPdf ? "In PDF-Vorschau verfügbar" : "Separat erzeugen" %></small>
+              </div>
+              <div class="export-artifact-actions">
+                <form action="/export/trennstreifen" method="post">
+                  <button type="submit">Trennstreifen erzeugen</button>
+                </form>
+                <% if (separatorPdf) { %>
+                  <a class="button-link secondary" href="/export/pdf-preview?file=<%= encodeURIComponent(separatorPdf.id) %>#toolbar=1">Vorschau</a>
+                <% } %>
+              </div>
+            </article>
+          </section>
+        </section>
+
+        <section id="zip" class="tab-panel export-panel" data-tab-panel="zip-export">
+          <div class="panel-head">
+            <div>
+              <h2>ZIP-Export</h2>
+              <p>Finale Gesamt-PDF und ZIP-Datei mit passender Ordnerstruktur vorbereiten.</p>
+            </div>
+          </div>
+
+          <%# Finale Export-Artefakte: Gesamt-PDF, ZIP und Reihenfolgeliste aus dem finalen Projektordner. %>
+          <section class="export-artifacts" aria-label="Finale Exportdateien">
+            <article class="export-artifact-card <%= completePdf ? "" : "is-missing" %>">
+              <div class="export-artifact-card-head">
+                <div>
+                  <span>Gesamt-PDF</span>
+                  <strong><%= completePdf ? completePdf.name : "Noch nicht erzeugt" %></strong>
+                </div>
+                <span class="badge <%= completePdf ? "on" : "off" %>"><%= completePdf ? "bereit" : "fehlt" %></span>
+              </div>
+              <p>Zusammengeführte Dokumentation für Prüfung und Versand.</p>
+              <div class="export-artifact-meta">
+                <small><%= completePdf ? formatSize(completePdf.size) : "Finalen Export vorbereiten" %></small>
+              </div>
+              <% if (completePdf) { %>
+                <div class="export-artifact-actions">
+                  <a class="button-link" href="/export/pdf-preview?file=<%= encodeURIComponent(completePdf.id) %>#toolbar=1">Vorschau</a>
+                  <a class="button-link secondary" href="/export/download?file=<%= encodeURIComponent(completePdf.id) %>">Download</a>
+                </div>
+              <% } %>
+            </article>
+
+            <article class="export-artifact-card <%= zipFile ? "" : "is-missing" %>">
+              <div class="export-artifact-card-head">
+                <div>
+                  <span>ZIP-Export</span>
+                  <strong><%= zipFile ? zipFile.name : "Noch nicht erzeugt" %></strong>
+                </div>
+                <span class="badge <%= zipFile ? "on" : "off" %>"><%= zipFile ? "bereit" : "fehlt" %></span>
+              </div>
+              <p>Ordnerstruktur mit PDFs passend zur Exportreihenfolge.</p>
+              <div class="export-artifact-meta">
+                <small><%= zipFile ? formatSize(zipFile.size) : "Finalen Export vorbereiten" %></small>
+              </div>
+              <% if (zipFile) { %>
+                <div class="export-artifact-actions">
+                  <a class="button-link secondary" href="/export/download?file=<%= encodeURIComponent(zipFile.id) %>">Download</a>
+                </div>
+              <% } %>
+            </article>
+
+            <article class="export-artifact-card <%= orderFile ? "" : "is-missing" %>">
+              <div class="export-artifact-card-head">
+                <div>
+                  <span>Export-Reihenfolge</span>
+                  <strong><%= orderFile ? orderFile.name : "Noch nicht erzeugt" %></strong>
+                </div>
+                <span class="badge <%= orderFile ? "on" : "off" %>"><%= orderFile ? "bereit" : "fehlt" %></span>
+              </div>
+              <p>Textprotokoll der finalen Sortierung und ausgelassenen Dateien.</p>
+              <div class="export-artifact-meta">
+                <small><%= orderFile ? formatSize(orderFile.size) : "Finalen Export vorbereiten" %></small>
+              </div>
+              <% if (orderFile) { %>
+                <div class="export-artifact-actions">
+                  <a class="button-link secondary" href="/export/download?file=<%= encodeURIComponent(orderFile.id) %>">Download</a>
+                </div>
+              <% } %>
+            </article>
+          </section>
+
+          <section class="export-actions export-actions-compact">
+            <form class="export-action-primary" action="/export/final" method="post">
+              <button type="submit">
+                <span>Finalen Export vorbereiten</span>
+                <small>Gesamt-PDF, ZIP und Reihenfolge-Datei neu erzeugen</small>
+              </button>
+            </form>
+          </section>
+        </section>
+
+        <%# Logische Exportstruktur mit fortlaufenden Kapitelnummern und Dateistatus. %>
+        <section id="einstellungen" class="tab-panel export-panel" data-tab-panel="export-einstellungen">
+          <div class="panel-head">
+            <div>
+              <h2>Exporteinstellungen</h2>
+              <p>Exportstruktur prüfen, Ordnerstruktur anzeigen und Exportliste aktualisieren.</p>
+            </div>
+          </div>
+
+          <section class="export-actions export-actions-compact">
+            <form action="/export/exportliste" method="post">
+              <button type="submit">
+                <span>Exportliste prüfen</span>
+                <small>Reihenfolge, Anhänge und Dateistatus aktualisieren</small>
+              </button>
+            </form>
+            <form action="/export/pdfs-loeschen" method="post" data-confirm="Alle generierten und finalen PDFs dieses Projekts löschen?">
+              <button class="danger" type="submit">
+                <span>PDFs löschen</span>
+                <small>Generierte und finale Dateien entfernen</small>
+              </button>
+            </form>
+          </section>
 
           <section class="preview-head">
             <div>
@@ -210,45 +312,8 @@
               </section>
             <% }) %>
           </div>
-        </section>
 
-        <section id="aktionen" class="tab-panel">
-          <div class="panel-head">
-            <div>
-              <h2>Export-Schritte</h2>
-              <p>Von Projektordner über PDFs bis zur finalen Vorbereitung.</p>
-            </div>
-          </div>
-          <section class="export-actions">
-            <form class="export-action-primary" action="/export/dokumentation" method="post">
-              <button type="submit">
-                <span>Dokumentation generieren</span>
-                <small>Interne PDFs neu erzeugen und Exportliste aktualisieren</small>
-              </button>
-            </form>
-            <form action="/export/exportliste" method="post">
-              <button class="secondary" type="submit">
-                <span>Exportliste prüfen</span>
-                <small>Reihenfolge, Anhänge und Dateistatus aktualisieren</small>
-              </button>
-            </form>
-            <form action="/export/final" method="post">
-              <button class="secondary" type="submit">
-                <span>Finalen Export vorbereiten</span>
-                <small>PDFs ordnen und ZIP mit Kapitelstruktur erstellen</small>
-              </button>
-            </form>
-            <form action="/export/pdfs-loeschen" method="post" data-confirm="Alle generierten und finalen PDFs dieses Projekts löschen?">
-              <button class="danger" type="submit">
-                <span>PDFs löschen</span>
-                <small>Generierte und finale Dateien entfernen</small>
-              </button>
-            </form>
-          </section>
-        </section>
-
-        <section id="struktur" class="tab-panel">
-          <div class="panel-head">
+          <div class="panel-head export-subsection-head">
             <div>
               <h2>Projektordner-Struktur</h2>
               <p>Externe PDFs können später in `02_Config_Projekt` in die passenden Kapitelordner gelegt werden.</p>
@@ -259,10 +324,8 @@
               <li><%= ordner %></li>
             <% }) %>
           </ul>
-        </section>
 
-        <section id="liste" class="tab-panel">
-          <div class="panel-head">
+          <div class="panel-head export-subsection-head">
             <div>
               <h2>Exportliste</h2>
               <p>Reihenfolge, Quellenstatus und Hersteller-/Systembezug.</p>

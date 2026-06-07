@@ -18,6 +18,9 @@ const FOOTER_Y_OFFSET = 60;
 const GITHUB_Y_OFFSET = 34;
 const SIGNATURE_HEIGHT = 54;
 const SIGNATURE_BOTTOM_OFFSET = 104;
+const CM_TO_PT = 28.3464567;
+const TRENNSTREIFEN_WIDTH = 24 * CM_TO_PT;
+const TRENNSTREIFEN_HEIGHT = 10.5 * CM_TO_PT;
 
 // Seitengeometrie-Helfer für einheitliche PDF-Abstände.
 function pageLeft(doc) {
@@ -342,6 +345,67 @@ function writeDocumentTitle(doc, title, subtitle = "") {
   doc.fillColor("#000");
 }
 
+function writeCoverPage(doc, projekt, rootDir, systemSettings, entry) {
+  writeProjectHeader(doc, projekt, rootDir, systemSettings);
+  doc.moveDown(1.4);
+  doc.font("Helvetica-Bold").fontSize(52).fillColor("#111827").text(entry.displayKapitel || entry.kapitel, pageLeft(doc), doc.y, {
+    width: pageContentWidth(doc),
+    align: "center"
+  });
+  doc.moveDown(0.5);
+  doc.font("Helvetica-Bold").fontSize(24).fillColor("#111827").text(entry.titel || "Kapitel", pageLeft(doc), doc.y, {
+    width: pageContentWidth(doc),
+    align: "center"
+  });
+  doc.moveDown(1.2);
+  doc.font("Helvetica").fontSize(10).fillColor("#6b7280").text("Deckblatt Hauptkategorie", pageLeft(doc), doc.y, {
+    width: pageContentWidth(doc),
+    align: "center"
+  });
+  writeFooter(doc, projekt);
+}
+
+function writeSeparatorPage(doc, projekt, entry) {
+  const width = doc.page.width;
+  const height = doc.page.height;
+  const margin = 18;
+  const registerWidth = 86;
+  const chapter = entry.displayKapitel || entry.kapitel || "";
+  const title = entry.titel || "Unterkategorie";
+
+  doc.save();
+  doc.fillColor("#ffffff").rect(0, 0, width, height).fill();
+  doc.strokeColor("#cbd5e1").lineWidth(1).rect(margin, margin, width - margin * 2, height - margin * 2).stroke();
+  doc.fillColor("#eff6ff").rect(width - margin - registerWidth, margin, registerWidth, height - margin * 2).fill();
+  doc.strokeColor("#60a5fa").lineWidth(1.2).rect(width - margin - registerWidth, margin, registerWidth, height - margin * 2).stroke();
+  doc.strokeColor("#94a3b8").dash(4, { space: 4 }).moveTo(width - margin - registerWidth, margin).lineTo(width - margin - registerWidth, height - margin).stroke().undash();
+
+  doc.fillColor("#111827").font("Helvetica-Bold").fontSize(26).text(chapter, margin + 18, margin + 34, {
+    width: width - registerWidth - margin * 3,
+    lineBreak: false
+  });
+  doc.font("Helvetica-Bold").fontSize(18).text(title, margin + 18, margin + 76, {
+    width: width - registerWidth - margin * 3,
+    height: 86,
+    ellipsis: true
+  });
+  doc.font("Helvetica").fontSize(8).fillColor("#64748b").text(projekt.projektname || "Projekt", margin + 18, height - margin - 28, {
+    width: width - registerWidth - margin * 3,
+    ellipsis: true
+  });
+
+  doc.save();
+  doc.translate(width - margin - registerWidth / 2, height / 2);
+  doc.rotate(-90);
+  doc.fillColor("#1d4ed8").font("Helvetica-Bold").fontSize(17).text(`${chapter}  ${title}`, -((height - margin * 3) / 2), -11, {
+    width: height - margin * 3,
+    align: "center",
+    ellipsis: true
+  });
+  doc.restore();
+  doc.restore();
+}
+
 function writeConfirmationMeta(doc, rows = []) {
   const x = pageLeft(doc);
   const width = pageContentWidth(doc);
@@ -483,8 +547,8 @@ async function writePdf(filePath, title, writer, options = {}) {
   await fsp.mkdir(path.dirname(filePath), { recursive: true });
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({
-      margin: options.margin || 48,
-      size: "A4",
+      margin: options.margin ?? 48,
+      size: options.size || "A4",
       layout: options.layout || "portrait",
       bufferPages: true
     });
@@ -716,6 +780,49 @@ async function generateInhaltsverzeichnis(rootDir, projekt, matrix, systemSettin
       doc.moveDown(0.25);
     });
     writeFooter(doc, projekt);
+  });
+
+  return [filePath];
+}
+
+// Generiert Deckblätter für Hauptkapitel. Diese PDFs laufen im normalen Export mit.
+async function generateDeckblaetter(rootDir, projekt, matrix, systemSettings = {}, geraetelisten = [], anhaenge = [], leistungsbereiche = {}) {
+  const paths = await createProjectFolder(rootDir, projekt);
+  const docs = buildInhaltsverzeichnisEntries(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt)
+    .filter((entry) => Number(entry.ebene || 1) === 1)
+    .filter((entry) => String(entry.displayKapitel || entry.kapitel || "") !== "0");
+  const generated = [];
+
+  for (const entry of docs) {
+    const displayKapitel = entry.displayKapitel || entry.kapitel;
+    const filePath = path.join(paths.generatedPath, `${String(displayKapitel).replaceAll(".", "_")}_${fileSafeName(entry.titel || "Deckblatt")}.pdf`);
+    await writePdf(filePath, entry.titel || "Deckblatt", (doc) => {
+      writeCoverPage(doc, projekt, rootDir, systemSettings, entry);
+    });
+    generated.push(filePath);
+  }
+
+  return generated;
+}
+
+// Generiert separat druckbare Register-/Trennstreifen für Unterkategorien.
+async function generateTrennstreifen(rootDir, projekt, matrix, systemSettings = {}, geraetelisten = [], anhaenge = [], leistungsbereiche = {}) {
+  const paths = await createProjectFolder(rootDir, projekt);
+  const generatedDir = path.join(paths.generatedPath, "Trennstreifen");
+  await clearGeneratedPdfs(generatedDir);
+  const filePath = path.join(generatedDir, "Trennstreifen_Unterkategorien_24x10_5cm.pdf");
+  const docs = buildInhaltsverzeichnisEntries(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt)
+    .filter((entry) => Number(entry.ebene || 1) === 2);
+  const entries = docs.length ? docs : [{ kapitel: "", displayKapitel: "", titel: "Keine Unterkategorien vorhanden" }];
+
+  await writePdf(filePath, "Trennstreifen Unterkategorien", (doc) => {
+    entries.forEach((entry, index) => {
+      if (index > 0) doc.addPage();
+      writeSeparatorPage(doc, projekt, entry);
+    });
+  }, {
+    size: [TRENNSTREIFEN_WIDTH, TRENNSTREIFEN_HEIGHT],
+    margin: 0
   });
 
   return [filePath];
@@ -1175,7 +1282,9 @@ async function generateBrandschutzPdf(rootDir, projekt, brandschutz, systemSetti
 module.exports = {
   buildInhaltsverzeichnisEntries,
   generateBrandschutzPdf,
+  generateDeckblaetter,
   generateFormularPdfs,
   generateGeraetelisten,
-  generateInhaltsverzeichnis
+  generateInhaltsverzeichnis,
+  generateTrennstreifen
 };

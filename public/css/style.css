@@ -2013,10 +2013,65 @@ tr:last-child td {
   line-height: 1.25;
 }
 
+.export-tab-shell {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  max-width: none;
+  order: 30;
+  width: 100%;
+}
+
+.compact-work-page .export-tab-shell.export-scroll {
+  margin-left: 0;
+  margin-right: 0;
+  max-width: none;
+  width: 100%;
+}
+
+.export-tabs {
+  border-radius: 999px;
+  justify-content: center;
+  margin: 0 auto;
+  max-width: min(100%, 920px);
+  padding: 5px;
+}
+
+.export-tabs .tab-button {
+  border-radius: 999px;
+  min-height: 34px;
+  padding-inline: 14px;
+}
+
+.export-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.export-actions-compact {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 0;
+}
+
+.export-actions-compact .export-action-primary {
+  grid-column: span 2;
+}
+
+.export-subsection-head {
+  border-top: 1px solid var(--line);
+  margin-bottom: 0;
+  margin-top: 6px;
+  padding-top: 10px;
+}
+
 .export-artifacts {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.export-artifacts-single {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .export-artifact-card {
@@ -2068,6 +2123,10 @@ tr:last-child td {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.export-artifact-actions form {
+  margin: 0;
 }
 
 .export-artifact-actions .button-link {

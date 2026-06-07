@@ -25,7 +25,7 @@ const { buildDashboardStats } = require("./services/dashboardService");
 const { buildExportPreview } = require("./services/exportPreviewService");
 const { listPdfPreviewFiles, listFinalExportFiles, resolvePdfPreviewFile, resolveExportDownloadFile } = require("./services/pdfPreviewService");
 const { buildExportliste, prepareFinalExport } = require("./services/exportService");
-const { generateBrandschutzPdf, generateFormularPdfs, generateGeraetelisten, generateInhaltsverzeichnis } = require("./services/pdfService");
+const { generateBrandschutzPdf, generateDeckblaetter, generateFormularPdfs, generateGeraetelisten, generateInhaltsverzeichnis, generateTrennstreifen } = require("./services/pdfService");
 const { applyLogicalChapterNumbers, sortDocuments } = require("./services/chapterNumberingService");
 const { BRANDSCHUTZ_REQUIRED_FIELDS, addBrandschutzEintrag, normalizeBrandschutz, normalizePostedBrandschutz } = require("./services/brandschutzService");
 const { deviceListFieldsForLeistungsbereich, normalizeGeraetelisten, normalizePostedGeraetelisten, syncGeraetelistenFromLeistungsbereiche } = require("./services/geraetelistenService");
@@ -847,6 +847,7 @@ async function generateCompleteDocumentation(rootDir, data) {
   await createProjectFolder(rootDir, data.projekt);
   generated.push(...await generateInhaltsverzeichnis(rootDir, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche));
   generated.push(...await generateFormularPdfs(rootDir, data.projekt, data.matrix, data.leistungsbereiche, data.systemConfig, data.projektSysteme, data.templates, data.systemSettings));
+  generated.push(...await generateDeckblaetter(rootDir, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche));
   generated.push(...await generateGeraetelisten(rootDir, data.projekt, data.geraetelisten, data.systemSettings, data.matrix, data.leistungsbereiche));
   generated.push(...await generateBrandschutzPdf(rootDir, data.projekt, data.brandschutz, data.systemSettings, data.matrix, data.geraetelisten, data.leistungsbereiche));
   await buildExportliste(rootDir, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche);
@@ -862,9 +863,9 @@ app.post("/export/dokumentation", requireAuth, async (req, res) => {
   try {
     const data = await loadCurrent(req);
     const generated = await generateCompleteDocumentation(ROOT_DIR, data);
-    redirectWithFlash(res, "/export#pdf", "success", `Dokumentation wurde generiert (${generated.length} PDFs).`);
+    redirectWithFlash(res, "/export", "success", `Dokumentation wurde generiert (${generated.length} PDFs).`);
   } catch (error) {
-    fail(req, res, "/export#aktionen", error);
+    fail(req, res, "/export", error);
   }
 });
 
@@ -874,40 +875,46 @@ app.post("/export/pdfs-loeschen", requireAuth, async (req, res) => {
     const paths = await createProjectFolder(ROOT_DIR, data.projekt);
     const deleted = await deletePdfFilesRecursive(paths.generatedPath) + await deletePdfFilesRecursive(paths.finalPath);
     await buildExportliste(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche);
-    redirectWithFlash(res, "/export#pdf", "success", `${deleted} PDF-Datei(en) wurden gelöscht.`);
+    redirectWithFlash(res, "/export", "success", `${deleted} PDF-Datei(en) wurden gelöscht.`);
   } catch (error) {
-    fail(req, res, "/export#aktionen", error);
+    fail(req, res, "/export", error);
   }
 });
 
 app.post("/export/inhaltsverzeichnis", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
   await generateInhaltsverzeichnis(ROOT_DIR, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche);
-  redirectWithFlash(res, "/export#pdf", "success", "Inhaltsverzeichnis wurde generiert.");
+  redirectWithFlash(res, "/export", "success", "Inhaltsverzeichnis wurde generiert.");
 });
 
 app.post("/export/formulare", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
   await generateFormularPdfs(ROOT_DIR, data.projekt, data.matrix, data.leistungsbereiche, data.systemConfig, data.projektSysteme, data.templates, data.systemSettings);
-  redirectWithFlash(res, "/export#pdf", "success", "Formular-PDFs wurden generiert.");
+  redirectWithFlash(res, "/export", "success", "Formular-PDFs wurden generiert.");
 });
 
 app.post("/export/geraetelisten", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
   await generateGeraetelisten(ROOT_DIR, data.projekt, data.geraetelisten, data.systemSettings, data.matrix, data.leistungsbereiche);
-  redirectWithFlash(res, "/export#pdf", "success", "Gerätelisten wurden generiert.");
+  redirectWithFlash(res, "/export", "success", "Gerätelisten wurden generiert.");
 });
 
 app.post("/export/brandschutz", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
   await generateBrandschutzPdf(ROOT_DIR, data.projekt, data.brandschutz, data.systemSettings, data.matrix, data.geraetelisten, data.leistungsbereiche);
-  redirectWithFlash(res, "/export#pdf", "success", "Brandschutzdokumentation wurde generiert.");
+  redirectWithFlash(res, "/export", "success", "Brandschutzdokumentation wurde generiert.");
+});
+
+app.post("/export/trennstreifen", requireAuth, async (req, res) => {
+  const data = await loadCurrent(req);
+  const generated = await generateTrennstreifen(ROOT_DIR, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche);
+  redirectWithFlash(res, "/export", "success", `Trennstreifen wurden separat generiert (${generated.length} PDF).`);
 });
 
 app.post("/export/exportliste", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
   await buildExportliste(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche);
-  redirectWithFlash(res, "/export#liste", "success", "Exportliste wurde aktualisiert.");
+  redirectWithFlash(res, "/export", "success", "Exportliste wurde aktualisiert.");
 });
 
 app.post("/export/final", requireAuth, async (req, res) => {
@@ -915,7 +922,7 @@ app.post("/export/final", requireAuth, async (req, res) => {
   const result = await prepareFinalExport(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste);
   const zipName = result.zipPath ? path.basename(result.zipPath) : "Export.zip";
   const pdfInfo = result.completePdfPath ? `, Gesamt-PDF mit ${result.completePdfPages} Seite(n)` : "";
-  redirectWithFlash(res, "/export#aktionen", "success", `Finaler Export wurde vorbereitet (${zipName}${pdfInfo}).`);
+  redirectWithFlash(res, "/export", "success", `Finaler Export wurde vorbereitet (${zipName}${pdfInfo}).`);
 });
 
 // Einstellungen: Systemvorgaben, Erstellerstammdaten, Ordnerstruktur und Formulare.
