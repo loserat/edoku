@@ -12,4 +12,6 @@ Hier werden beim Betrieb erzeugt:
 - Exporte
 - erzeugte Projektarchive
 
+Für lokale Tests werden Benutzer automatisch in `app.db` angelegt. Die Passwörter liegen nicht im Klartext in dieser Datei, sondern als Hash/Salt-Kombination.
+
 Diese Inhalte sollen nicht ins GitHub-Repository. Die `.gitignore` erlaubt nur diese README.

@@ -130,26 +130,46 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Lokaler Demo-Benutzer für Version 1. Das Passwort wird nicht im Klartext
+// Lokale Demo-Benutzer für Version 1. Passwörter werden nicht im Klartext
 // gespeichert, sondern bei jedem Start als Hash/Salt-Kombination gesetzt.
-function ensureDefaultUser() {
+function hashSeedPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
-  const passwordHash = crypto.scryptSync("admin", salt, 64).toString("hex");
+  const passwordHash = crypto.scryptSync(password, salt, 64).toString("hex");
+  return { passwordHash, salt };
+}
+
+function ensureSeedUser({ id, email, name, password, currentProjectId = "projekt_demo" }) {
+  const { passwordHash, salt } = hashSeedPassword(password);
   const now = new Date().toISOString();
-  const existingAdmin = getUserByEmail("admin");
-  if (existingAdmin) {
+  const existingUser = getUserByEmail(email);
+  if (existingUser) {
     connection().prepare(`
       UPDATE users
-      SET name = 'admin',
+      SET name = ?,
           password_hash = ?,
           password_salt = ?,
           updated_at = ?
-      WHERE lower(email) = lower('admin')
-    `).run(passwordHash, salt, now);
+      WHERE lower(email) = lower(?)
+    `).run(name, passwordHash, salt, now, email);
     return;
   }
+
+  createUser({
+    id,
+    email,
+    name,
+    passwordHash,
+    passwordSalt: salt,
+    currentProjectId,
+    createdAt: now,
+    updatedAt: now
+  });
+}
+
+function ensureDefaultUser() {
   const existingLegacyUser = getUserByEmail("nick");
-  if (existingLegacyUser) {
+  if (existingLegacyUser && !getUserByEmail("admin")) {
+    const { passwordHash, salt } = hashSeedPassword("admin");
     connection().prepare(`
       UPDATE users
       SET email = 'admin',
@@ -158,19 +178,14 @@ function ensureDefaultUser() {
           password_salt = ?,
           updated_at = ?
       WHERE lower(email) = lower('nick')
-    `).run(passwordHash, salt, now);
-    return;
+    `).run(passwordHash, salt, new Date().toISOString());
   }
-  createUser({
-    id: "user_demo",
-    email: "admin",
-    name: "admin",
-    passwordHash,
-    passwordSalt: salt,
-    currentProjectId: "projekt_demo",
-    createdAt: now,
-    updatedAt: now
-  });
+
+  [
+    { id: "user_demo", email: "admin", name: "admin", password: "admin" },
+    { id: "user_marx", email: "marx", name: "Marx", password: "marx" },
+    { id: "user_berg", email: "berg", name: "Berg", password: "berg" }
+  ].forEach(ensureSeedUser);
 }
 
 function flashFromQuery(req) {

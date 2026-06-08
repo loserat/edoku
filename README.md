@@ -41,6 +41,7 @@ Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. 
 - Theme-Editor mit Presets
 - schwebende Statusmeldungen, die die Oberfläche nicht verschieben
 - Docker-Start
+- GitHub-/VS-Code-inspirierte Theme-Presets mit stabilen Layoutgrößen
 
 ## Screens und Bedienkonzept
 
@@ -103,14 +104,20 @@ http://localhost:3000
 
 ## Standard-Benutzer im lokalen Demo-Stand
 
-Für die lokale Entwicklung wird beim Start ein Demo-Benutzer vorbereitet:
+Für die lokale Entwicklung werden beim Start Demo-Benutzer vorbereitet:
 
 ```text
 Benutzer: admin
 Passwort: admin
+
+Benutzer: marx
+Passwort: marx
+
+Benutzer: berg
+Passwort: berg
 ```
 
-Die Zugangsdaten sind nur für lokale Entwicklung und Tests gedacht.
+Die Zugangsdaten sind nur für lokale Entwicklung und Tests gedacht. Passwörter werden nicht im Klartext gespeichert, sondern beim Start gehasht in SQLite abgelegt.
 
 ## Projektstruktur
 
@@ -165,6 +172,25 @@ edoku erzeugt aktuell:
 Importierte PDF-Anhänge können über Kategorien wie Stromlaufpläne, Schaltpläne, Installationspläne, Schemata und Messprotokolle in Inhaltsverzeichnis und Exportliste aufgenommen werden.
 
 Trennstreifen werden separat erzeugt und bewusst ohne GitHub-Branding gedruckt. Der Standarddruck ist tintensparend: schwarze Kapitelnummer am Registerrand, keine blaue Fläche und kein zusätzlicher Projekttext.
+
+## Theme-System
+
+Das Theme-System nutzt zentrale CSS-Variablen für Farben, Radien, Schatten, Abstände und Typografie. Die Default-Presets verwenden identische Radius-, Spacing- und Typografiewerte, damit beim Wechsel zwischen Themes keine sichtbaren Layoutsprünge entstehen.
+
+Aktuelle Presets:
+
+- Apple Light
+- Apple Dark
+- Graphite
+- Blue Steel
+- GitHub Light
+- GitHub Dark
+- GitHub Dimmed
+- High Contrast
+- Sage Copper
+- Warm Graphite
+- Nordic Light
+- Violet Amber
 
 ## GitHub-Hinweise
 
