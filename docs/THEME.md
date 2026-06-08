@@ -36,6 +36,8 @@ Neue Komponenten sollten bevorzugt diese Variablen nutzen:
 - `--color-success`
 - `--color-warning`
 - `--color-danger`
+- `--on-primary`
+- `--on-danger`
 - `--radius-sm`
 - `--radius-md`
 - `--radius-lg`
@@ -89,17 +91,24 @@ Ein Preset sollte diese Gruppen enthalten:
 
 Nach dem Ergänzen erscheint das Preset automatisch im Theme-Editor, weil die View `themePresets` aus dem Server-Kontext liest.
 
+Damit Themewechsel keine Layoutsprünge erzeugen, verwenden die Default-Presets gemeinsame Werte für `shape`, `spacing` und `typography`. Presets unterscheiden sich aktuell hauptsächlich über Farben und Schatten. Anpassungen an Radien, Abständen oder Schriftgrößen sind weiterhin im Theme-Editor möglich, sollten aber bewusst erfolgen.
+
 Aktuelle Presets:
 
 - Apple Light
 - Apple Dark
 - Graphite
 - Blue Steel
+- GitHub Light
+- GitHub Dark
+- GitHub Dimmed
 - High Contrast
 - Sage Copper
 - Warm Graphite
 - Nordic Light
 - Violet Amber
+
+Die GitHub-Presets orientieren sich farblich an GitHub-/VS-Code-Themes und bleiben wie die anderen Presets bei denselben Größenwerten.
 
 ## Neue Komponenten anbinden
 

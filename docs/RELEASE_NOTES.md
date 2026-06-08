@@ -31,6 +31,14 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 - Trennstreifen wurden auf tintensparenden Schwarz-Weiß-Druck ohne GitHub-Branding umgestellt
 - Statusmeldungen erscheinen als schwebende Toasts und verschieben die Oberfläche nicht mehr
 
+### Nachtrag 2026-06-08
+
+- Zusätzliche lokale Testbenutzer ergänzt: `marx` / `marx` und `berg` / `berg`
+- Theme-Presets verwenden gemeinsame Radius-, Spacing- und Typografiewerte, damit beim Themewechsel keine Layoutsprünge entstehen
+- GitHub-/VS-Code-orientierte Presets ergänzt: GitHub Light, GitHub Dark und GitHub Dimmed
+- Aktive Buttons, Tabs und Badges nutzen Theme-Kontrastvariablen statt festem Weiß
+- Einzelne Preset-Farbwerte für bessere Lesbarkeit nachgeschärft
+
 ### Bekannte Grenzen
 
 - Noch keine produktive Server-Härtung

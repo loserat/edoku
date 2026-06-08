@@ -24,6 +24,7 @@
     "logoPfad": "creator/921bbd3c-d2ab-448e-ada2-106e6781f692.png"
   },
   "theme": {
+    "preset": "graphite",
     "name": "Graphite",
     "mode": "dark",
     "colors": {
@@ -43,14 +44,14 @@
       "buttonPrimary": "#8ea2b8",
       "buttonSecondary": "#303844",
       "warning": "#eab308",
-      "danger": "#ef4444",
+      "danger": "#ff6b6b",
       "success": "#22c55e"
     },
     "shape": {
-      "globalRadius": 12,
-      "cardRadius": 18,
+      "globalRadius": 14,
+      "cardRadius": 22,
       "buttonRadius": 999,
-      "inputRadius": 12,
+      "inputRadius": 14,
       "borderWidth": 1
     },
     "shadow": {
@@ -58,19 +59,18 @@
       "softness": 34
     },
     "spacing": {
-      "global": 11,
+      "global": 12,
       "page": 16,
-      "card": 13,
-      "form": 9,
-      "tableRowHeight": 40
+      "card": 14,
+      "form": 10,
+      "tableRowHeight": 42
     },
     "typography": {
       "base": 14,
-      "heading": 23,
+      "heading": 24,
       "label": 12,
       "button": 13,
-      "lineHeight": 1.4
-    },
-    "preset": "graphite"
+      "lineHeight": 1.42
+    }
   }
 }

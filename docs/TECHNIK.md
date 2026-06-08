@@ -46,6 +46,8 @@ storage/users/[userId]/projects/[projectId]/
 - Sessions werden als zufällige Tokens in SQLite gespeichert.
 - Fachseiten sind nur nach Login erreichbar.
 - Projektzugriff erfolgt über die angemeldete `userId`.
+- Für lokale Tests werden Seed-Benutzer vorbereitet: `admin`, `marx` und `berg`.
+- Der bestehende Admin-Datensatz behält intern seine stabile ID, damit vorhandene Demo-Projekte nicht verloren gehen.
 
 ## Projektkonzept
 
@@ -82,6 +84,8 @@ Die Trennstreifen werden ohne GitHub-Branding erzeugt, damit sie als reine Regis
 - Der Theme-Editor speichert Werte in `config/systemEinstellungen.json`.
 - Statusmeldungen werden als schwebende Toasts dargestellt und verschieben keine Seiteninhalte.
 - Tag-/Nacht-Umschaltung und Theme-Presets greifen global auf Header, Navigation, Karten, Tabellen, Formulare und Buttons.
+- Default-Presets teilen sich identische Radius-, Spacing- und Typografiewerte, damit beim Themewechsel keine Layoutgrößen springen.
+- GitHub Light, GitHub Dark und GitHub Dimmed sind als GitHub-/VS-Code-orientierte Presets ergänzt.
 
 ## Anhänge und importierte PDFs
 

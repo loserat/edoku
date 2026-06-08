@@ -1,3 +1,7 @@
+const DEFAULT_THEME_SHAPE = { globalRadius: 14, cardRadius: 22, buttonRadius: 999, inputRadius: 14, borderWidth: 1 };
+const DEFAULT_THEME_SPACING = { global: 12, page: 16, card: 14, form: 10, tableRowHeight: 42 };
+const DEFAULT_THEME_TYPOGRAPHY = { base: 14, heading: 24, label: 12, button: 13, lineHeight: 1.42 };
+
 const THEME_PRESETS = {
   "apple-light": {
     name: "Apple Light",
@@ -18,14 +22,14 @@ const THEME_PRESETS = {
       borderDark: "#56677f",
       buttonPrimary: "#1473e6",
       buttonSecondary: "#eef4fb",
-      warning: "#d97706",
+      warning: "#a65a00",
       danger: "#dc2626",
-      success: "#16a34a"
+      success: "#0f7a35"
     },
-    shape: { globalRadius: 14, cardRadius: 22, buttonRadius: 999, inputRadius: 14, borderWidth: 1 },
+    shape: DEFAULT_THEME_SHAPE,
     shadow: { strength: 14, softness: 34 },
-    spacing: { global: 12, page: 16, card: 14, form: 10, tableRowHeight: 42 },
-    typography: { base: 14, heading: 24, label: 12, button: 13, lineHeight: 1.42 }
+    spacing: DEFAULT_THEME_SPACING,
+    typography: DEFAULT_THEME_TYPOGRAPHY
   },
   "apple-dark": {
     name: "Apple Dark",
@@ -50,10 +54,10 @@ const THEME_PRESETS = {
       danger: "#f87171",
       success: "#4ade80"
     },
-    shape: { globalRadius: 14, cardRadius: 22, buttonRadius: 999, inputRadius: 14, borderWidth: 1 },
+    shape: DEFAULT_THEME_SHAPE,
     shadow: { strength: 22, softness: 42 },
-    spacing: { global: 12, page: 16, card: 14, form: 10, tableRowHeight: 42 },
-    typography: { base: 14, heading: 24, label: 12, button: 13, lineHeight: 1.42 }
+    spacing: DEFAULT_THEME_SPACING,
+    typography: DEFAULT_THEME_TYPOGRAPHY
   },
   graphite: {
     name: "Graphite",
@@ -75,13 +79,13 @@ const THEME_PRESETS = {
       buttonPrimary: "#8ea2b8",
       buttonSecondary: "#303844",
       warning: "#eab308",
-      danger: "#ef4444",
+      danger: "#ff6b6b",
       success: "#22c55e"
     },
-    shape: { globalRadius: 12, cardRadius: 18, buttonRadius: 999, inputRadius: 12, borderWidth: 1 },
+    shape: DEFAULT_THEME_SHAPE,
     shadow: { strength: 18, softness: 34 },
-    spacing: { global: 11, page: 16, card: 13, form: 9, tableRowHeight: 40 },
-    typography: { base: 14, heading: 23, label: 12, button: 13, lineHeight: 1.4 }
+    spacing: DEFAULT_THEME_SPACING,
+    typography: DEFAULT_THEME_TYPOGRAPHY
   },
   "blue-steel": {
     name: "Blue Steel",
@@ -106,10 +110,94 @@ const THEME_PRESETS = {
       danger: "#fb7185",
       success: "#34d399"
     },
-    shape: { globalRadius: 13, cardRadius: 20, buttonRadius: 999, inputRadius: 13, borderWidth: 1 },
+    shape: DEFAULT_THEME_SHAPE,
     shadow: { strength: 20, softness: 40 },
-    spacing: { global: 12, page: 16, card: 14, form: 10, tableRowHeight: 42 },
-    typography: { base: 14, heading: 24, label: 12, button: 13, lineHeight: 1.42 }
+    spacing: DEFAULT_THEME_SPACING,
+    typography: DEFAULT_THEME_TYPOGRAPHY
+  },
+  "github-light": {
+    name: "GitHub Light",
+    mode: "light",
+    colors: {
+      bgLight: "#f6f8fa",
+      bgDark: "#0d1117",
+      surface: "#ffffff",
+      surfaceMuted: "#f6f8fa",
+      surfaceDark: "#161b22",
+      surfaceMutedDark: "#21262d",
+      text: "#1f2328",
+      textMuted: "#656d76",
+      textDark: "#e6edf3",
+      textMutedDark: "#7d8590",
+      accent: "#0969da",
+      border: "#d0d7de",
+      borderDark: "#30363d",
+      buttonPrimary: "#1f883d",
+      buttonSecondary: "#f6f8fa",
+      warning: "#9a6700",
+      danger: "#cf222e",
+      success: "#1f883d"
+    },
+    shape: DEFAULT_THEME_SHAPE,
+    shadow: { strength: 10, softness: 26 },
+    spacing: DEFAULT_THEME_SPACING,
+    typography: DEFAULT_THEME_TYPOGRAPHY
+  },
+  "github-dark": {
+    name: "GitHub Dark",
+    mode: "dark",
+    colors: {
+      bgLight: "#f6f8fa",
+      bgDark: "#0d1117",
+      surface: "#ffffff",
+      surfaceMuted: "#f6f8fa",
+      surfaceDark: "#161b22",
+      surfaceMutedDark: "#21262d",
+      text: "#1f2328",
+      textMuted: "#656d76",
+      textDark: "#e6edf3",
+      textMutedDark: "#7d8590",
+      accent: "#2f81f7",
+      border: "#d0d7de",
+      borderDark: "#30363d",
+      buttonPrimary: "#238636",
+      buttonSecondary: "#21262d",
+      warning: "#d29922",
+      danger: "#f85149",
+      success: "#3fb950"
+    },
+    shape: DEFAULT_THEME_SHAPE,
+    shadow: { strength: 16, softness: 34 },
+    spacing: DEFAULT_THEME_SPACING,
+    typography: DEFAULT_THEME_TYPOGRAPHY
+  },
+  "github-dimmed": {
+    name: "GitHub Dimmed",
+    mode: "dark",
+    colors: {
+      bgLight: "#f6f8fa",
+      bgDark: "#22272e",
+      surface: "#ffffff",
+      surfaceMuted: "#f6f8fa",
+      surfaceDark: "#2d333b",
+      surfaceMutedDark: "#373e47",
+      text: "#1f2328",
+      textMuted: "#656d76",
+      textDark: "#adbac7",
+      textMutedDark: "#768390",
+      accent: "#539bf5",
+      border: "#d0d7de",
+      borderDark: "#444c56",
+      buttonPrimary: "#347d39",
+      buttonSecondary: "#373e47",
+      warning: "#c69026",
+      danger: "#e5534b",
+      success: "#57ab5a"
+    },
+    shape: DEFAULT_THEME_SHAPE,
+    shadow: { strength: 16, softness: 34 },
+    spacing: DEFAULT_THEME_SPACING,
+    typography: DEFAULT_THEME_TYPOGRAPHY
   },
   "high-contrast": {
     name: "High Contrast",
@@ -134,10 +222,10 @@ const THEME_PRESETS = {
       danger: "#ff4d4d",
       success: "#00d084"
     },
-    shape: { globalRadius: 8, cardRadius: 12, buttonRadius: 999, inputRadius: 8, borderWidth: 2 },
+    shape: DEFAULT_THEME_SHAPE,
     shadow: { strength: 0, softness: 0 },
-    spacing: { global: 12, page: 16, card: 14, form: 10, tableRowHeight: 44 },
-    typography: { base: 15, heading: 26, label: 13, button: 14, lineHeight: 1.5 }
+    spacing: DEFAULT_THEME_SPACING,
+    typography: DEFAULT_THEME_TYPOGRAPHY
   },
   "sage-copper": {
     name: "Sage Copper",
@@ -153,19 +241,19 @@ const THEME_PRESETS = {
       textMuted: "#66746c",
       textDark: "#f4fbf7",
       textMutedDark: "#aab8af",
-      accent: "#2f8f6b",
+      accent: "#237a59",
       border: "#b9c9bf",
       borderDark: "#4f665b",
       buttonPrimary: "#2f8f6b",
       buttonSecondary: "#edf4ee",
-      warning: "#c7781f",
-      danger: "#d64545",
-      success: "#1f9d63"
+      warning: "#9b5618",
+      danger: "#b91c1c",
+      success: "#157347"
     },
-    shape: { globalRadius: 15, cardRadius: 24, buttonRadius: 999, inputRadius: 15, borderWidth: 1 },
+    shape: DEFAULT_THEME_SHAPE,
     shadow: { strength: 12, softness: 32 },
-    spacing: { global: 12, page: 18, card: 14, form: 10, tableRowHeight: 42 },
-    typography: { base: 14, heading: 24, label: 12, button: 13, lineHeight: 1.43 }
+    spacing: DEFAULT_THEME_SPACING,
+    typography: DEFAULT_THEME_TYPOGRAPHY
   },
   "warm-graphite": {
     name: "Warm Graphite",
@@ -190,10 +278,10 @@ const THEME_PRESETS = {
       danger: "#ef6f6c",
       success: "#62c184"
     },
-    shape: { globalRadius: 13, cardRadius: 20, buttonRadius: 999, inputRadius: 13, borderWidth: 1 },
+    shape: DEFAULT_THEME_SHAPE,
     shadow: { strength: 18, softness: 36 },
-    spacing: { global: 12, page: 16, card: 14, form: 10, tableRowHeight: 42 },
-    typography: { base: 14, heading: 24, label: 12, button: 13, lineHeight: 1.42 }
+    spacing: DEFAULT_THEME_SPACING,
+    typography: DEFAULT_THEME_TYPOGRAPHY
   },
   "nordic-light": {
     name: "Nordic Light",
@@ -214,14 +302,14 @@ const THEME_PRESETS = {
       borderDark: "#506b80",
       buttonPrimary: "#2b7bbb",
       buttonSecondary: "#eaf2f8",
-      warning: "#c77b18",
-      danger: "#d84f5f",
-      success: "#2f9e73"
+      warning: "#985c12",
+      danger: "#b42335",
+      success: "#1e7657"
     },
-    shape: { globalRadius: 12, cardRadius: 18, buttonRadius: 999, inputRadius: 12, borderWidth: 1 },
+    shape: DEFAULT_THEME_SHAPE,
     shadow: { strength: 10, softness: 28 },
-    spacing: { global: 11, page: 16, card: 13, form: 9, tableRowHeight: 40 },
-    typography: { base: 14, heading: 23, label: 12, button: 13, lineHeight: 1.42 }
+    spacing: DEFAULT_THEME_SPACING,
+    typography: DEFAULT_THEME_TYPOGRAPHY
   },
   "violet-amber": {
     name: "Violet Amber",
@@ -237,7 +325,7 @@ const THEME_PRESETS = {
       textMuted: "#736783",
       textDark: "#faf7ff",
       textMutedDark: "#b8acc9",
-      accent: "#8b5cf6",
+      accent: "#a78bfa",
       border: "#c5b8df",
       borderDark: "#6e5d8c",
       buttonPrimary: "#8b5cf6",
@@ -246,10 +334,10 @@ const THEME_PRESETS = {
       danger: "#ef5b7a",
       success: "#3fc38b"
     },
-    shape: { globalRadius: 16, cardRadius: 26, buttonRadius: 999, inputRadius: 16, borderWidth: 1 },
+    shape: DEFAULT_THEME_SHAPE,
     shadow: { strength: 20, softness: 46 },
-    spacing: { global: 12, page: 18, card: 15, form: 10, tableRowHeight: 42 },
-    typography: { base: 14, heading: 24, label: 12, button: 13, lineHeight: 1.43 }
+    spacing: DEFAULT_THEME_SPACING,
+    typography: DEFAULT_THEME_TYPOGRAPHY
   }
 };
 
