@@ -74,6 +74,7 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Beim Abwählen von Leistungsbereichen erscheint eine Bestätigung, weil zugehörige Gerätelisten und Dokumente deaktiviert werden.
 - Login-/Registrierungsbildschirm mittig zentriert; Anmeldehinweise erscheinen oben mittig als Toast.
 - Dokumentation bereinigt: konkrete lokale Demo-Zugänge aus der Haupt-README entfernt und in `INSTALL.md` verschoben.
+- Toolbar-Branding nachgeschärft: `edoku` wird oben links größer dargestellt und bevorzugt eine Pixel-/Geist-Pixel-Schrift, falls diese lokal oder später als Webfont verfügbar ist.
 
 ## Wichtige Beta-Einschränkungen
 
