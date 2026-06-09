@@ -141,12 +141,21 @@ a {
   align-items: center;
   color: var(--accent-dark);
   display: inline-flex;
-  font-size: 15px;
+  font-size: 19px;
   font-weight: 700;
   gap: 9px;
   line-height: 1.1;
   text-decoration: none;
   white-space: nowrap;
+}
+
+.brand-name {
+  font-family: "Geist Pixel", "Geist Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 1em;
+  font-weight: 850;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  text-rendering: geometricPrecision;
 }
 
 .brand-logo {
@@ -4296,7 +4305,7 @@ body.modal-open {
     flex-basis: 190px;
   }
 
-  .brand span {
+  .brand-name {
     max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -4348,7 +4357,7 @@ body.modal-open {
     min-width: 0;
   }
 
-  .brand span {
+  .brand-name {
     max-width: 190px;
   }
 
@@ -4568,7 +4577,7 @@ body.modal-open {
   }
 
   .brand {
-    font-size: 13px;
+    font-size: 16px;
   }
 
   .brand-logo {
@@ -4576,7 +4585,7 @@ body.modal-open {
     width: 28px;
   }
 
-  .brand span {
+  .brand-name {
     max-width: 150px;
   }
 
