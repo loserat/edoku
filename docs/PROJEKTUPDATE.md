@@ -66,6 +66,8 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Benutzerverwaltung um Rollen erweitert: `viewer`, `user`, `admin`, `systemadmin`.
 - Systemadmins können Benutzer in den Einstellungen anlegen und Rollen verwalten.
 - Viewer-Schreibzugriffe werden serverseitig blockiert.
+- Benutzerkonten können gesperrt und wieder aktiviert werden.
+- Systemadmins können Benutzerpasswörter zurücksetzen; bestehende Sessions des betroffenen Kontos werden beendet.
 - `admin` und `berg` sind als lokale Systemadmin-Konten vorbereitet; `marx` bleibt als normaler User vorgesehen.
 - Projektbereich neu geordnet: Archiv und Import/Pakete sind im linken Projektmanager angeordnet.
 - Projektübersicht zeigt rechts nur noch das aktuell geöffnete Projekt mit kompaktem Status statt aller aktiven Projektkarten.
@@ -91,3 +93,4 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - BK 01 und BK 02 definieren
 - automatisierte Tests ergänzen
 - Lizenzentscheidung treffen
+- Benutzerverwaltung weiter ausbauen: eigene Passwortänderung, optionale 2FA und Audit-Log prüfen

@@ -2476,6 +2476,25 @@ body.modal-open {
   min-width: 130px;
 }
 
+.user-management-actions {
+  display: grid;
+  gap: 6px;
+  min-width: 260px;
+}
+
+.user-management-actions .inline-role-form {
+  align-items: center;
+}
+
+.user-management-actions input,
+.user-management-actions select {
+  min-height: 30px;
+}
+
+.user-management-actions button {
+  min-width: 82px;
+}
+
 .toolbar {
   display: flex;
   justify-content: flex-end;

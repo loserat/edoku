@@ -320,10 +320,11 @@
                   <tr>
                     <th>Login</th>
                     <th>Name</th>
+                    <th>Status</th>
                     <th>Rolle</th>
                     <th>Aktuelles Projekt</th>
                     <th>Aktualisiert</th>
-                    <th>Aktion</th>
+                    <th>Aktionen</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -331,18 +332,31 @@
                     <tr>
                       <td><strong><%= account.email %></strong></td>
                       <td><%= account.name %></td>
+                      <td><span class="badge <%= account.status === "disabled" ? "off" : "on" %>"><%= account.status === "disabled" ? "gesperrt" : "aktiv" %></span></td>
                       <td><span class="badge <%= account.role === "systemadmin" ? "current" : account.role === "viewer" ? "off" : "on" %>"><%= account.role %></span></td>
                       <td><%= account.currentProjectId || "-" %></td>
                       <td><%= account.updatedAt || "-" %></td>
                       <td>
-                        <form action="/einstellungen/benutzer/<%= account.id %>/rolle" method="post" class="inline-role-form">
-                          <select name="role" <%= account.id === user.id ? "disabled" : "" %>>
-                            <% (userRoles || []).forEach((role) => { %>
-                              <option value="<%= role %>" <%= role === account.role ? "selected" : "" %>><%= role %></option>
-                            <% }) %>
-                          </select>
-                          <button class="secondary compact-button" type="submit" <%= account.id === user.id ? "disabled" : "" %>>Speichern</button>
-                        </form>
+                        <div class="user-management-actions">
+                          <form action="/einstellungen/benutzer/<%= account.id %>/rolle" method="post" class="inline-role-form">
+                            <select name="role" <%= account.id === user.id ? "disabled" : "" %>>
+                              <% (userRoles || []).forEach((role) => { %>
+                                <option value="<%= role %>" <%= role === account.role ? "selected" : "" %>><%= role %></option>
+                              <% }) %>
+                            </select>
+                            <button class="secondary compact-button" type="submit" <%= account.id === user.id ? "disabled" : "" %>>Rolle</button>
+                          </form>
+                          <form action="/einstellungen/benutzer/<%= account.id %>/passwort" method="post" class="inline-role-form" data-confirm="Passwort für <%= account.email %> wirklich zurücksetzen? Bestehende Sessions werden beendet.">
+                            <input type="password" name="password" placeholder="neues Passwort" autocomplete="new-password">
+                            <button class="secondary compact-button" type="submit">Passwort</button>
+                          </form>
+                          <form action="/einstellungen/benutzer/<%= account.id %>/status" method="post" class="inline-role-form" data-confirm="<%= account.status === "disabled" ? "Benutzer wirklich aktivieren?" : "Benutzer wirklich sperren? Bestehende Sessions werden beendet." %>">
+                            <input type="hidden" name="status" value="<%= account.status === "disabled" ? "active" : "disabled" %>">
+                            <button class="secondary compact-button <%= account.status === "disabled" ? "" : "danger" %>" type="submit" <%= account.id === user.id ? "disabled" : "" %>>
+                              <%= account.status === "disabled" ? "Aktivieren" : "Sperren" %>
+                            </button>
+                          </form>
+                        </div>
                       </td>
                     </tr>
                   <% }) %>

@@ -4,6 +4,7 @@ const {
   createUser,
   deleteExpiredSessions,
   deleteSession,
+  deleteSessionsForUser,
   getSession,
   getUserByEmail,
   getUserById,
@@ -71,6 +72,7 @@ function registerUser({ email, name, password }) {
     email: normalizedEmail,
     name: String(name || "").trim() || normalizedEmail,
     role: "user",
+    status: "active",
     passwordHash: hash,
     passwordSalt: salt,
     currentProjectId: null,
@@ -86,6 +88,9 @@ function loginUser(email, password) {
   const user = getUserByEmail(normalizeEmail(email));
   if (!user || !verifyPassword(password, user.password_salt, user.password_hash)) {
     throw new Error("E-Mail-Adresse oder Passwort ist falsch.");
+  }
+  if (user.status === "disabled") {
+    throw new Error("Dieses Benutzerkonto ist gesperrt.");
   }
   return user;
 }
@@ -128,12 +133,13 @@ function parseCookies(req, res, next) {
 function attachUser(req, res, next) {
   const token = req.cookies ? req.cookies[SESSION_COOKIE] : "";
   const session = token ? getSession(token) : null;
-  if (session && new Date(session.expires_at) > new Date()) {
+  if (session && new Date(session.expires_at) > new Date() && session.status !== "disabled") {
     req.user = {
       id: session.user_id,
       email: session.email,
       name: session.name,
       role: normalizeUserRole(session.role),
+      status: session.status || "active",
       currentProjectId: session.current_project_id
     };
     res.locals.user = req.user;
@@ -176,6 +182,7 @@ function blockViewerWrites(req, res, next) {
 module.exports = {
   attachUser,
   blockViewerWrites,
+  deleteSessionsForUser,
   endSession,
   loginUser,
   parseCookies,
