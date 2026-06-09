@@ -21,7 +21,7 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 ### Geändert
 
 - Projektname und Branding auf `edoku` bereinigt
-- Default-Demozugang auf `admin` / `admin` umgestellt
+- Default-Demozugang auf ein lokales Admin-Konto umgestellt; konkrete lokale Defaults stehen in `INSTALL.md`
 - Anhänge werden nach Kategorie und Stockwerk für Inhaltsverzeichnis und Export sortiert
 - UI-Schalter für Aktiv-/Export-Optionen vereinheitlicht
 - interne Tagesupdates und lokale Arbeitsnotizen bleiben per `.gitignore` außerhalb des Repositories
@@ -33,16 +33,27 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 
 ### Nachtrag 2026-06-08
 
-- Zusätzliche lokale Testbenutzer ergänzt: `marx` / `marx` und `berg` / `berg`
+- Zusätzliche lokale Testbenutzer ergänzt; konkrete lokale Defaults stehen in `INSTALL.md`
 - Theme-Presets verwenden gemeinsame Radius-, Spacing- und Typografiewerte, damit beim Themewechsel keine Layoutsprünge entstehen
-- GitHub-/VS-Code-orientierte Presets ergänzt: GitHub Light, GitHub Dark und GitHub Dimmed
+- GitHub-/VS-Code-orientierte Presets konsolidiert: GitHub Light und GitHub Dark
 - Aktive Buttons, Tabs und Badges nutzen Theme-Kontrastvariablen statt festem Weiß
 - Einzelne Preset-Farbwerte für bessere Lesbarkeit nachgeschärft
+
+### Nachtrag 2026-06-09
+
+- Rollenmodell ergänzt: `viewer`, `user`, `admin`, `systemadmin`
+- Systemadmin-Benutzerverwaltung in den Einstellungen ergänzt
+- Viewer-Schreibzugriffe werden serverseitig blockiert
+- Projektmanager links erweitert: aktive Projekte, Archiv und Import/Pakete sind dort gebündelt
+- Projektübersicht zeigt nur noch das aktuell geöffnete Projekt mit Mini-Status
+- Leistungsbereiche fragen beim Abwählen eine Bestätigung ab
+- Login-Maske und Auth-Meldungen optisch zentriert
+- Installationshinweise und lokale Demo-Defaults nach `INSTALL.md` ausgelagert
 
 ### Bekannte Grenzen
 
 - Noch keine produktive Server-Härtung
-- Noch keine Rollen- und Rechteverwaltung
+- Rollen- und Rechteverwaltung ist Beta und muss vor produktiver Nutzung weiter geprüft werden
 - Noch keine automatisierte Test-Suite
 - Gesamt-PDF, ZIP-Export und Trennstreifen müssen im Praxiseinsatz weiter visuell geprüft werden
 - Normtexte und erzeugte Formulartexte müssen fachlich weiter geprüft werden

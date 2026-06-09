@@ -3,6 +3,7 @@ const path = require("path");
 const Database = require("better-sqlite3");
 
 let db;
+const USER_ROLES = ["viewer", "user", "admin", "systemadmin"];
 
 // Einheitliches ISO-Zeitformat für Datenbank-Metadaten.
 function nowIso() {
@@ -25,6 +26,7 @@ function initDatabase(storageDir) {
       id TEXT PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
       name TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'user',
       password_hash TEXT NOT NULL,
       password_salt TEXT NOT NULL,
       current_project_id TEXT,
@@ -52,6 +54,11 @@ function initDatabase(storageDir) {
     );
   `);
 
+  const userColumns = connection().prepare("PRAGMA table_info(users)").all().map((column) => column.name);
+  if (!userColumns.includes("role")) {
+    connection().prepare("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'").run();
+  }
+
   return db;
 }
 
@@ -72,9 +79,9 @@ function getUserById(userId) {
 
 function createUser(user) {
   connection().prepare(`
-    INSERT INTO users (id, email, name, password_hash, password_salt, current_project_id, created_at, updated_at)
-    VALUES (@id, @email, @name, @passwordHash, @passwordSalt, @currentProjectId, @createdAt, @updatedAt)
-  `).run(user);
+    INSERT INTO users (id, email, name, role, password_hash, password_salt, current_project_id, created_at, updated_at)
+    VALUES (@id, @email, @name, @role, @passwordHash, @passwordSalt, @currentProjectId, @createdAt, @updatedAt)
+  `).run({ ...user, role: normalizeUserRole(user.role) });
 }
 
 function createSession(token, userId, expiresAt) {
@@ -86,11 +93,38 @@ function createSession(token, userId, expiresAt) {
 
 function getSession(token) {
   return connection().prepare(`
-    SELECT sessions.token, sessions.user_id, sessions.expires_at, users.email, users.name, users.current_project_id
+    SELECT sessions.token, sessions.user_id, sessions.expires_at, users.email, users.name, users.role, users.current_project_id
     FROM sessions
     JOIN users ON users.id = sessions.user_id
     WHERE sessions.token = ?
   `).get(token);
+}
+
+function normalizeUserRole(role) {
+  return USER_ROLES.includes(role) ? role : "user";
+}
+
+function listUsers() {
+  return connection().prepare(`
+    SELECT id, email, name, role, current_project_id AS currentProjectId, created_at AS createdAt, updated_at AS updatedAt
+    FROM users
+    ORDER BY
+      CASE role
+        WHEN 'systemadmin' THEN 1
+        WHEN 'admin' THEN 2
+        WHEN 'user' THEN 3
+        ELSE 4
+      END,
+      lower(name)
+  `).all();
+}
+
+function updateUserRole(userId, role) {
+  connection().prepare(`
+    UPDATE users
+    SET role = ?, updated_at = ?
+    WHERE id = ?
+  `).run(normalizeUserRole(role), nowIso(), userId);
 }
 
 function deleteSession(token) {
@@ -210,9 +244,13 @@ module.exports = {
   getUserByEmail,
   getUserById,
   initDatabase,
+  listUsers,
   listProjectsForUser,
   migrateProjectsJson,
+  normalizeUserRole,
   setCurrentProjectId,
+  updateUserRole,
   updateProjectStatus,
-  upsertProject
+  upsertProject,
+  USER_ROLES
 };

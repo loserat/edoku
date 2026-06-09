@@ -6,8 +6,8 @@ const express = require("express");
 
 const { bootstrapStorage, DEFAULT_LEISTUNGSBEREICHE } = require("./services/bootstrapService");
 const { readJson, writeJson } = require("./services/jsonService");
-const { initDatabase, connection, getUserByEmail, createUser, migrateProjectsJson } = require("./services/dbService");
-const { attachUser, endSession, loginUser, parseCookies, registerUser, requireAuth, startSession } = require("./services/authService");
+const { initDatabase, connection, getUserByEmail, createUser, listUsers, migrateProjectsJson, normalizeUserRole, updateUserRole, USER_ROLES } = require("./services/dbService");
+const { attachUser, blockViewerWrites, endSession, loginUser, parseCookies, registerUser, requireAuth, requireSystemAdmin, startSession } = require("./services/authService");
 const {
   createProject,
   ensureCurrentProject,
@@ -103,6 +103,7 @@ app.use(async (req, res, next) => {
   res.locals.flash = flashFromQuery(req);
   res.locals.currentProjectId = "";
   res.locals.currentProjectName = "";
+  res.locals.currentProjectNumber = "";
   res.locals.projectSidebarProjects = [];
   res.locals.deleteConfirmDialogs = true;
   res.locals.systemSettings = mergeSystemSettings(DEFAULT_SYSTEM_SETTINGS);
@@ -123,6 +124,7 @@ app.use(async (req, res, next) => {
     res.locals.projectSidebarProjects = await listProjects(ROOT_DIR, req.user.id);
     const currentProject = res.locals.projectSidebarProjects.find((project) => project.id === current.projectId);
     res.locals.currentProjectName = currentProject ? currentProject.projektname || currentProject.id : current.projectId;
+    res.locals.currentProjectNumber = currentProject ? currentProject.projektnummer || "" : "";
   } catch (error) {
     console.error("Projektkontext konnte nicht vorbereitet werden:", error.message);
   }
@@ -138,7 +140,7 @@ function hashSeedPassword(password) {
   return { passwordHash, salt };
 }
 
-function ensureSeedUser({ id, email, name, password, currentProjectId = "projekt_demo" }) {
+function ensureSeedUser({ id, email, name, password, role = "user", currentProjectId = "projekt_demo" }) {
   const { passwordHash, salt } = hashSeedPassword(password);
   const now = new Date().toISOString();
   const existingUser = getUserByEmail(email);
@@ -146,11 +148,12 @@ function ensureSeedUser({ id, email, name, password, currentProjectId = "projekt
     connection().prepare(`
       UPDATE users
       SET name = ?,
+          role = ?,
           password_hash = ?,
           password_salt = ?,
           updated_at = ?
       WHERE lower(email) = lower(?)
-    `).run(name, passwordHash, salt, now, email);
+    `).run(name, normalizeUserRole(role), passwordHash, salt, now, email);
     return;
   }
 
@@ -158,6 +161,7 @@ function ensureSeedUser({ id, email, name, password, currentProjectId = "projekt
     id,
     email,
     name,
+    role: normalizeUserRole(role),
     passwordHash,
     passwordSalt: salt,
     currentProjectId,
@@ -174,6 +178,7 @@ function ensureDefaultUser() {
       UPDATE users
       SET email = 'admin',
           name = 'admin',
+          role = 'systemadmin',
           password_hash = ?,
           password_salt = ?,
           updated_at = ?
@@ -182,9 +187,9 @@ function ensureDefaultUser() {
   }
 
   [
-    { id: "user_demo", email: "admin", name: "admin", password: "admin" },
+    { id: "user_demo", email: "admin", name: "admin", password: "admin", role: "systemadmin" },
     { id: "user_marx", email: "marx", name: "Marx", password: "marx" },
-    { id: "user_berg", email: "berg", name: "Berg", password: "berg" }
+    { id: "user_berg", email: "berg", name: "Berg", password: "berg", role: "systemadmin" }
   ].forEach(ensureSeedUser);
 }
 
@@ -515,6 +520,8 @@ app.post("/logout", (req, res) => {
   res.redirect("/login");
 });
 
+app.use(blockViewerWrites);
+
 // Dashboard: fasst Projektfortschritt, fehlende Angaben und nächste Schritte zusammen.
 app.get("/dashboard", requireAuth, async (req, res, next) => {
   try {
@@ -615,22 +622,14 @@ app.post("/projekt", requireAuth, async (req, res) => {
   }
 });
 
-// Leistungsbereiche steuern, welche Systeme, Dokumente und Gerätelisten aktiv werden.
+// Leistungsbereiche steuern, welche Dokumente und Gerätelisten projektbezogen aktiv werden.
 app.get("/leistungsbereiche", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
     res.render("leistungsbereiche", {
       active: "leistungsbereiche",
       optionen: data.leistungsbereiche.optionen,
-      aktiv: data.leistungsbereiche.aktiv,
-      systemAuswahl: data.leistungsbereiche.systemAuswahl,
-      systemeNachLeistungsbereich: Object.groupBy
-        ? Object.groupBy(flattenSystemConfigForLegacy(data.systemConfig), (system) => system.leistungsbereich)
-        : flattenSystemConfigForLegacy(data.systemConfig).reduce((acc, system) => {
-          acc[system.leistungsbereich] = acc[system.leistungsbereich] || [];
-          acc[system.leistungsbereich].push(system);
-          return acc;
-        }, {})
+      aktiv: data.leistungsbereiche.aktiv
     });
   } catch (error) {
     next(error);
@@ -959,6 +958,7 @@ app.post("/export/final", requireAuth, async (req, res) => {
 app.get("/einstellungen", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
+    const isSystemAdmin = req.user && req.user.role === "systemadmin";
     res.render("einstellungen", {
       active: "einstellungen",
       systemSettings: data.systemSettings,
@@ -966,7 +966,10 @@ app.get("/einstellungen", requireAuth, async (req, res, next) => {
       ordnerstruktur: data.ordnerstruktur,
       leistungsbereiche: data.leistungsbereiche,
       systemConfig: data.systemConfig,
-      templates: data.templates
+      templates: data.templates,
+      isSystemAdmin,
+      users: isSystemAdmin ? listUsers() : [],
+      userRoles: USER_ROLES
     });
   } catch (error) {
     next(error);
@@ -980,6 +983,46 @@ app.post("/einstellungen/system", requireAuth, async (req, res) => {
     okOrRedirect(req, res, "/einstellungen#system");
   } catch (error) {
     fail(req, res, "/einstellungen#system", error);
+  }
+});
+
+app.post("/einstellungen/benutzer", requireSystemAdmin, async (req, res) => {
+  try {
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const name = String(req.body.name || "").trim() || email;
+    const password = String(req.body.password || "");
+    if (!email) throw new Error("Bitte eine Loginkennung angeben.");
+    if (getUserByEmail(email)) throw new Error("Dieser Benutzer existiert bereits.");
+    if (!password.trim()) throw new Error("Bitte ein Passwort angeben.");
+    const { passwordHash, salt } = hashSeedPassword(password);
+    const now = new Date().toISOString();
+    createUser({
+      id: `user_${email.replace(/[^a-z0-9_-]+/gi, "_").toLowerCase()}_${crypto.randomBytes(3).toString("hex")}`,
+      email,
+      name,
+      role: normalizeUserRole(req.body.role),
+      passwordHash,
+      passwordSalt: salt,
+      currentProjectId: "projekt_demo",
+      createdAt: now,
+      updatedAt: now
+    });
+    okOrRedirect(req, res, "/einstellungen#benutzer", "Benutzer wurde angelegt.");
+  } catch (error) {
+    fail(req, res, "/einstellungen#benutzer", error);
+  }
+});
+
+app.post("/einstellungen/benutzer/:userId/rolle", requireSystemAdmin, async (req, res) => {
+  try {
+    const nextRole = normalizeUserRole(req.body.role);
+    if (req.params.userId === req.user.id && nextRole !== "systemadmin") {
+      throw new Error("Du kannst deinem eigenen Konto nicht die Systemadmin-Rolle entziehen.");
+    }
+    updateUserRole(req.params.userId, nextRole);
+    okOrRedirect(req, res, "/einstellungen#benutzer", "Benutzerrolle wurde aktualisiert.");
+  } catch (error) {
+    fail(req, res, "/einstellungen#benutzer", error);
   }
 });
 

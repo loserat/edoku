@@ -3,120 +3,9 @@ const DEFAULT_THEME_SPACING = { global: 12, page: 16, card: 14, form: 10, tableR
 const DEFAULT_THEME_TYPOGRAPHY = { base: 14, heading: 24, label: 12, button: 13, lineHeight: 1.42 };
 
 const THEME_PRESETS = {
-  "apple-light": {
-    name: "Apple Light",
-    mode: "light",
-    colors: {
-      bgLight: "#f6f8fb",
-      bgDark: "#111827",
-      surface: "#ffffff",
-      surfaceMuted: "#edf3f9",
-      surfaceDark: "#1f2937",
-      surfaceMutedDark: "#273244",
-      text: "#172033",
-      textMuted: "#66738a",
-      textDark: "#f9fafb",
-      textMutedDark: "#a7b1c2",
-      accent: "#1473e6",
-      border: "#b8c6d8",
-      borderDark: "#56677f",
-      buttonPrimary: "#1473e6",
-      buttonSecondary: "#eef4fb",
-      warning: "#a65a00",
-      danger: "#dc2626",
-      success: "#0f7a35"
-    },
-    shape: DEFAULT_THEME_SHAPE,
-    shadow: { strength: 14, softness: 34 },
-    spacing: DEFAULT_THEME_SPACING,
-    typography: DEFAULT_THEME_TYPOGRAPHY
-  },
-  "apple-dark": {
-    name: "Apple Dark",
-    mode: "dark",
-    colors: {
-      bgLight: "#f5f7fb",
-      bgDark: "#0f1725",
-      surface: "#ffffff",
-      surfaceMuted: "#edf3f9",
-      surfaceDark: "#1f2937",
-      surfaceMutedDark: "#273244",
-      text: "#172033",
-      textMuted: "#66738a",
-      textDark: "#f9fafb",
-      textMutedDark: "#a7b1c2",
-      accent: "#64a8ff",
-      border: "#b8c6d8",
-      borderDark: "#56677f",
-      buttonPrimary: "#64a8ff",
-      buttonSecondary: "#243246",
-      warning: "#fbbf24",
-      danger: "#f87171",
-      success: "#4ade80"
-    },
-    shape: DEFAULT_THEME_SHAPE,
-    shadow: { strength: 22, softness: 42 },
-    spacing: DEFAULT_THEME_SPACING,
-    typography: DEFAULT_THEME_TYPOGRAPHY
-  },
-  graphite: {
-    name: "Graphite",
-    mode: "dark",
-    colors: {
-      bgLight: "#edf0f3",
-      bgDark: "#15191f",
-      surface: "#f7f8fa",
-      surfaceMuted: "#e8edf2",
-      surfaceDark: "#242a32",
-      surfaceMutedDark: "#313944",
-      text: "#18202a",
-      textMuted: "#687485",
-      textDark: "#f4f7fb",
-      textMutedDark: "#aeb7c3",
-      accent: "#8ea2b8",
-      border: "#aeb8c4",
-      borderDark: "#66717f",
-      buttonPrimary: "#8ea2b8",
-      buttonSecondary: "#303844",
-      warning: "#eab308",
-      danger: "#ff6b6b",
-      success: "#22c55e"
-    },
-    shape: DEFAULT_THEME_SHAPE,
-    shadow: { strength: 18, softness: 34 },
-    spacing: DEFAULT_THEME_SPACING,
-    typography: DEFAULT_THEME_TYPOGRAPHY
-  },
-  "blue-steel": {
-    name: "Blue Steel",
-    mode: "dark",
-    colors: {
-      bgLight: "#eef5fb",
-      bgDark: "#0d1b2a",
-      surface: "#f8fbff",
-      surfaceMuted: "#e6f0fa",
-      surfaceDark: "#182638",
-      surfaceMutedDark: "#1f3248",
-      text: "#142033",
-      textMuted: "#61738a",
-      textDark: "#eef6ff",
-      textMutedDark: "#9fb3c8",
-      accent: "#4ea5ff",
-      border: "#a9bfd7",
-      borderDark: "#53708f",
-      buttonPrimary: "#4ea5ff",
-      buttonSecondary: "#20364f",
-      warning: "#f59e0b",
-      danger: "#fb7185",
-      success: "#34d399"
-    },
-    shape: DEFAULT_THEME_SHAPE,
-    shadow: { strength: 20, softness: 40 },
-    spacing: DEFAULT_THEME_SPACING,
-    typography: DEFAULT_THEME_TYPOGRAPHY
-  },
   "github-light": {
     name: "GitHub Light",
+    preset: "github-light",
     mode: "light",
     colors: {
       bgLight: "#f6f8fa",
@@ -145,6 +34,7 @@ const THEME_PRESETS = {
   },
   "github-dark": {
     name: "GitHub Dark",
+    preset: "github-dark",
     mode: "dark",
     colors: {
       bgLight: "#f6f8fa",
@@ -160,7 +50,7 @@ const THEME_PRESETS = {
       accent: "#2f81f7",
       border: "#d0d7de",
       borderDark: "#30363d",
-      buttonPrimary: "#238636",
+      buttonPrimary: "#3fb950",
       buttonSecondary: "#21262d",
       warning: "#d29922",
       danger: "#f85149",
@@ -170,178 +60,23 @@ const THEME_PRESETS = {
     shadow: { strength: 16, softness: 34 },
     spacing: DEFAULT_THEME_SPACING,
     typography: DEFAULT_THEME_TYPOGRAPHY
-  },
-  "github-dimmed": {
-    name: "GitHub Dimmed",
-    mode: "dark",
-    colors: {
-      bgLight: "#f6f8fa",
-      bgDark: "#22272e",
-      surface: "#ffffff",
-      surfaceMuted: "#f6f8fa",
-      surfaceDark: "#2d333b",
-      surfaceMutedDark: "#373e47",
-      text: "#1f2328",
-      textMuted: "#656d76",
-      textDark: "#adbac7",
-      textMutedDark: "#768390",
-      accent: "#539bf5",
-      border: "#d0d7de",
-      borderDark: "#444c56",
-      buttonPrimary: "#347d39",
-      buttonSecondary: "#373e47",
-      warning: "#c69026",
-      danger: "#e5534b",
-      success: "#57ab5a"
-    },
-    shape: DEFAULT_THEME_SHAPE,
-    shadow: { strength: 16, softness: 34 },
-    spacing: DEFAULT_THEME_SPACING,
-    typography: DEFAULT_THEME_TYPOGRAPHY
-  },
-  "high-contrast": {
-    name: "High Contrast",
-    mode: "dark",
-    colors: {
-      bgLight: "#ffffff",
-      bgDark: "#050505",
-      surface: "#ffffff",
-      surfaceMuted: "#eeeeee",
-      surfaceDark: "#111111",
-      surfaceMutedDark: "#1f1f1f",
-      text: "#050505",
-      textMuted: "#3f3f46",
-      textDark: "#ffffff",
-      textMutedDark: "#d4d4d4",
-      accent: "#00a3ff",
-      border: "#111111",
-      borderDark: "#ffffff",
-      buttonPrimary: "#00a3ff",
-      buttonSecondary: "#2a2a2a",
-      warning: "#ffd400",
-      danger: "#ff4d4d",
-      success: "#00d084"
-    },
-    shape: DEFAULT_THEME_SHAPE,
-    shadow: { strength: 0, softness: 0 },
-    spacing: DEFAULT_THEME_SPACING,
-    typography: DEFAULT_THEME_TYPOGRAPHY
-  },
-  "sage-copper": {
-    name: "Sage Copper",
-    mode: "light",
-    colors: {
-      bgLight: "#f4f7f2",
-      bgDark: "#101a17",
-      surface: "#ffffff",
-      surfaceMuted: "#e9f0e6",
-      surfaceDark: "#1a2722",
-      surfaceMutedDark: "#23332d",
-      text: "#17231f",
-      textMuted: "#66746c",
-      textDark: "#f4fbf7",
-      textMutedDark: "#aab8af",
-      accent: "#237a59",
-      border: "#b9c9bf",
-      borderDark: "#4f665b",
-      buttonPrimary: "#2f8f6b",
-      buttonSecondary: "#edf4ee",
-      warning: "#9b5618",
-      danger: "#b91c1c",
-      success: "#157347"
-    },
-    shape: DEFAULT_THEME_SHAPE,
-    shadow: { strength: 12, softness: 32 },
-    spacing: DEFAULT_THEME_SPACING,
-    typography: DEFAULT_THEME_TYPOGRAPHY
-  },
-  "warm-graphite": {
-    name: "Warm Graphite",
-    mode: "dark",
-    colors: {
-      bgLight: "#f5f2ed",
-      bgDark: "#171614",
-      surface: "#fffaf2",
-      surfaceMuted: "#eee8de",
-      surfaceDark: "#272521",
-      surfaceMutedDark: "#332f29",
-      text: "#211d18",
-      textMuted: "#756d62",
-      textDark: "#fbf7ef",
-      textMutedDark: "#beb5a8",
-      accent: "#d28b35",
-      border: "#cbbfad",
-      borderDark: "#6c6255",
-      buttonPrimary: "#d28b35",
-      buttonSecondary: "#352f28",
-      warning: "#f5b041",
-      danger: "#ef6f6c",
-      success: "#62c184"
-    },
-    shape: DEFAULT_THEME_SHAPE,
-    shadow: { strength: 18, softness: 36 },
-    spacing: DEFAULT_THEME_SPACING,
-    typography: DEFAULT_THEME_TYPOGRAPHY
-  },
-  "nordic-light": {
-    name: "Nordic Light",
-    mode: "light",
-    colors: {
-      bgLight: "#f3f7fb",
-      bgDark: "#0f1b24",
-      surface: "#ffffff",
-      surfaceMuted: "#e7eff6",
-      surfaceDark: "#192733",
-      surfaceMutedDark: "#223542",
-      text: "#13202c",
-      textMuted: "#637487",
-      textDark: "#f3f8fc",
-      textMutedDark: "#a6b6c7",
-      accent: "#2b7bbb",
-      border: "#b4c8da",
-      borderDark: "#506b80",
-      buttonPrimary: "#2b7bbb",
-      buttonSecondary: "#eaf2f8",
-      warning: "#985c12",
-      danger: "#b42335",
-      success: "#1e7657"
-    },
-    shape: DEFAULT_THEME_SHAPE,
-    shadow: { strength: 10, softness: 28 },
-    spacing: DEFAULT_THEME_SPACING,
-    typography: DEFAULT_THEME_TYPOGRAPHY
-  },
-  "violet-amber": {
-    name: "Violet Amber",
-    mode: "dark",
-    colors: {
-      bgLight: "#f6f3fb",
-      bgDark: "#161322",
-      surface: "#fffaff",
-      surfaceMuted: "#eee8f7",
-      surfaceDark: "#242033",
-      surfaceMutedDark: "#302a43",
-      text: "#20172f",
-      textMuted: "#736783",
-      textDark: "#faf7ff",
-      textMutedDark: "#b8acc9",
-      accent: "#a78bfa",
-      border: "#c5b8df",
-      borderDark: "#6e5d8c",
-      buttonPrimary: "#8b5cf6",
-      buttonSecondary: "#332b48",
-      warning: "#f0a629",
-      danger: "#ef5b7a",
-      success: "#3fc38b"
-    },
-    shape: DEFAULT_THEME_SHAPE,
-    shadow: { strength: 20, softness: 46 },
-    spacing: DEFAULT_THEME_SPACING,
-    typography: DEFAULT_THEME_TYPOGRAPHY
   }
 };
 
-const DEFAULT_THEME_SETTINGS = THEME_PRESETS["apple-light"];
+const LEGACY_THEME_PRESET_MAP = {
+  "apple-light": "github-light",
+  "sage-copper": "github-light",
+  "nordic-light": "github-light",
+  "apple-dark": "github-dark",
+  graphite: "github-dark",
+  "blue-steel": "github-dark",
+  "github-dimmed": "github-dark",
+  "high-contrast": "github-dark",
+  "warm-graphite": "github-dark",
+  "violet-amber": "github-dark"
+};
+
+const DEFAULT_THEME_SETTINGS = THEME_PRESETS["github-light"];
 
 // Globale Systemeinstellungen. Projektbezogene Daten bleiben in den Projekt-JSON-Dateien.
 const DEFAULT_SYSTEM_SETTINGS = {
@@ -391,35 +126,42 @@ function textValue(value, fallback) {
 
 // Theme-Konfiguration robust mit Defaults mergen, damit gespeicherte Altstände gültig bleiben.
 function mergeThemeSettings(theme = {}) {
-  const preset = THEME_PRESETS[theme.preset] || DEFAULT_THEME_SETTINGS;
+  const requestedPreset = theme.preset || DEFAULT_THEME_SETTINGS.preset;
+  const presetKey = THEME_PRESETS[requestedPreset] ? requestedPreset : LEGACY_THEME_PRESET_MAP[requestedPreset] || DEFAULT_THEME_SETTINGS.preset;
+  const preset = THEME_PRESETS[presetKey] || DEFAULT_THEME_SETTINGS;
+  const isLegacyPreset = requestedPreset && !THEME_PRESETS[requestedPreset] && LEGACY_THEME_PRESET_MAP[requestedPreset];
+  const themeOverrides = isLegacyPreset
+    ? { ...(theme || {}), preset: presetKey, name: preset.name, colors: {}, shape: {}, shadow: {}, spacing: {}, typography: {} }
+    : (theme || {});
   return {
     ...DEFAULT_THEME_SETTINGS,
     ...preset,
-    ...(theme || {}),
+    ...themeOverrides,
+    mode: ["light", "dark"].includes(themeOverrides.mode) ? themeOverrides.mode : preset.mode,
     colors: {
       ...DEFAULT_THEME_SETTINGS.colors,
       ...(preset.colors || {}),
-      ...((theme || {}).colors || {})
+      ...(themeOverrides.colors || {})
     },
     shape: {
       ...DEFAULT_THEME_SETTINGS.shape,
       ...(preset.shape || {}),
-      ...((theme || {}).shape || {})
+      ...(themeOverrides.shape || {})
     },
     shadow: {
       ...DEFAULT_THEME_SETTINGS.shadow,
       ...(preset.shadow || {}),
-      ...((theme || {}).shadow || {})
+      ...(themeOverrides.shadow || {})
     },
     spacing: {
       ...DEFAULT_THEME_SETTINGS.spacing,
       ...(preset.spacing || {}),
-      ...((theme || {}).spacing || {})
+      ...(themeOverrides.spacing || {})
     },
     typography: {
       ...DEFAULT_THEME_SETTINGS.typography,
       ...(preset.typography || {}),
-      ...((theme || {}).typography || {})
+      ...(themeOverrides.typography || {})
     }
   };
 }
@@ -463,9 +205,9 @@ function normalizePostedSystemSettings(body = {}) {
 function normalizePostedThemeSettings(body = {}, current = {}) {
   const merged = mergeThemeSettings(current);
   return {
-    preset: textValue(body.preset, merged.preset || "apple-light"),
+    preset: textValue(body.preset, merged.preset || DEFAULT_THEME_SETTINGS.preset),
     name: textValue(body.name, merged.name || "Eigenes Theme"),
-    mode: ["light", "dark", "system"].includes(body.mode) ? body.mode : merged.mode,
+    mode: ["light", "dark"].includes(body.mode) ? body.mode : merged.mode,
     colors: {
       bgLight: textValue(body.bgLight, merged.colors.bgLight),
       bgDark: textValue(body.bgDark, merged.colors.bgDark),

@@ -91,24 +91,14 @@ Ein Preset sollte diese Gruppen enthalten:
 
 Nach dem Ergänzen erscheint das Preset automatisch im Theme-Editor, weil die View `themePresets` aus dem Server-Kontext liest.
 
-Damit Themewechsel keine Layoutsprünge erzeugen, verwenden die Default-Presets gemeinsame Werte für `shape`, `spacing` und `typography`. Presets unterscheiden sich aktuell hauptsächlich über Farben und Schatten. Anpassungen an Radien, Abständen oder Schriftgrößen sind weiterhin im Theme-Editor möglich, sollten aber bewusst erfolgen.
+Damit Themewechsel keine Layoutsprünge erzeugen, verwenden die Default-Presets gemeinsame Werte für `shape`, `spacing` und `typography`. Aktuell wird das System bewusst auf Light/Dark beschränkt und orientiert sich farblich an GitHub-/VS-Code-Themes. Anpassungen an Radien, Abständen oder Schriftgrößen sind weiterhin im Theme-Editor möglich, sollten aber bewusst erfolgen.
 
 Aktuelle Presets:
 
-- Apple Light
-- Apple Dark
-- Graphite
-- Blue Steel
 - GitHub Light
 - GitHub Dark
-- GitHub Dimmed
-- High Contrast
-- Sage Copper
-- Warm Graphite
-- Nordic Light
-- Violet Amber
 
-Die GitHub-Presets orientieren sich farblich an GitHub-/VS-Code-Themes und bleiben wie die anderen Presets bei denselben Größenwerten.
+Weitere Presets sollten erst wieder ergänzt werden, wenn sie dieselben Layoutwerte nutzen und in Light/Dark visuell geprüft sind.
 
 ## Neue Komponenten anbinden
 
