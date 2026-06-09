@@ -102,22 +102,11 @@ Danach im Browser öffnen:
 http://localhost:3000
 ```
 
-## Standard-Benutzer im lokalen Demo-Stand
+## Installation und lokale Defaults
 
-Für die lokale Entwicklung werden beim Start Demo-Benutzer vorbereitet:
+Die Installationsschritte, Hinweise zu lokalen Demo-Konten und erste Setup-Schritte stehen in [INSTALL.md](INSTALL.md).
 
-```text
-Benutzer: admin
-Passwort: admin
-
-Benutzer: marx
-Passwort: marx
-
-Benutzer: berg
-Passwort: berg
-```
-
-Die Zugangsdaten sind nur für lokale Entwicklung und Tests gedacht. Passwörter werden nicht im Klartext gespeichert, sondern beim Start gehasht in SQLite abgelegt.
+Die Demo-Zugänge sind nur für lokale Entwicklung und Tests gedacht. Passwörter werden nicht im Klartext gespeichert, sondern beim Start gehasht in SQLite abgelegt.
 
 ## Projektstruktur
 
@@ -175,22 +164,12 @@ Trennstreifen werden separat erzeugt und bewusst ohne GitHub-Branding gedruckt. 
 
 ## Theme-System
 
-Das Theme-System nutzt zentrale CSS-Variablen für Farben, Radien, Schatten, Abstände und Typografie. Die Default-Presets verwenden identische Radius-, Spacing- und Typografiewerte, damit beim Wechsel zwischen Themes keine sichtbaren Layoutsprünge entstehen.
+Das Theme-System nutzt zentrale CSS-Variablen für Farben, Radien, Schatten, Abstände und Typografie. Aktuell ist es bewusst auf Light/Dark reduziert und orientiert sich farblich an GitHub-/VS-Code-Themes. Beide Presets verwenden identische Radius-, Spacing- und Typografiewerte, damit beim Wechsel keine sichtbaren Layoutsprünge entstehen.
 
 Aktuelle Presets:
 
-- Apple Light
-- Apple Dark
-- Graphite
-- Blue Steel
 - GitHub Light
 - GitHub Dark
-- GitHub Dimmed
-- High Contrast
-- Sage Copper
-- Warm Graphite
-- Nordic Light
-- Violet Amber
 
 ## GitHub-Hinweise
 
@@ -216,13 +195,14 @@ Diese Inhalte sollen nicht ins Repository:
 Siehe auch:
 
 - [Technische Dokumentation](docs/TECHNIK.md)
+- [Installation](INSTALL.md)
 - [Projektupdate](docs/PROJEKTUPDATE.md)
 - [Release Notes](docs/RELEASE_NOTES.md)
 
 ## Aktuelle Grenzen
 
 - keine externe Datenbank
-- keine Rollen/Rechteverwaltung
+- Rollenverwaltung ist als Beta-Funktion vorhanden und muss für produktiven Serverbetrieb weiter gehärtet werden
 - PDF-Gesamtdatei und ZIP-Export sind als Beta-Funktion vorhanden und müssen weiter visuell geprüft werden
 - automatisierte Tests sind noch nicht aufgebaut
 

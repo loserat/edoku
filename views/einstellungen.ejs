@@ -32,6 +32,9 @@
         <button type="button" data-settings-tab="ersteller" aria-controls="ersteller"><%- include("partials/icon", { name: "project" }) %><span>Ersteller</span></button>
         <button type="button" data-settings-tab="leistungsbereiche" aria-controls="leistungsbereiche-admin"><%- include("partials/icon", { name: "list" }) %><span>Leistungsbereiche</span></button>
         <button type="button" data-settings-tab="ordnerstruktur" aria-controls="ordnerstruktur"><%- include("partials/icon", { name: "folder-tree" }) %><span>Ordnerstruktur</span></button>
+        <% if (isSystemAdmin) { %>
+          <button type="button" data-settings-tab="benutzer" aria-controls="benutzerverwaltung"><%- include("partials/icon", { name: "overview" }) %><span>Benutzer</span></button>
+        <% } %>
       </nav>
 
       <%# Übersicht und Einstellungsbereiche bleiben auf einer Seite, Auto-Save speichert je Formular. %>
@@ -101,8 +104,8 @@
             <% }) %>
           </section>
 
-          <input type="hidden" name="preset" data-theme-field="preset" value="<%= theme.preset || "apple-light" %>">
-          <input type="hidden" name="name" data-theme-field="name" value="<%= theme.name || "Apple Light" %>">
+          <input type="hidden" name="preset" data-theme-field="preset" value="<%= theme.preset || "github-light" %>">
+          <input type="hidden" name="name" data-theme-field="name" value="<%= theme.name || "GitHub Light" %>">
 
           <div class="theme-editor-layout">
             <section class="theme-editor-controls">
@@ -111,7 +114,6 @@
                 <div class="segmented-control">
                   <label><input type="radio" name="mode" value="light" <%= theme.mode === "light" ? "checked" : "" %>><span>Light</span></label>
                   <label><input type="radio" name="mode" value="dark" <%= theme.mode === "dark" ? "checked" : "" %>><span>Dark</span></label>
-                  <label><input type="radio" name="mode" value="system" <%= theme.mode === "system" ? "checked" : "" %>><span>System</span></label>
                 </div>
               </section>
 
@@ -276,6 +278,79 @@
             <textarea name="unterordner" rows="8"><%= (ordnerstruktur.unterordner || []).join("\n") %></textarea>
           </label>
         </form>
+
+        <% if (isSystemAdmin) { %>
+          <section id="benutzerverwaltung" class="settings-panel" data-settings-panel="benutzer" hidden>
+            <div class="panel-head">
+              <div>
+                <h2>Benutzerverwaltung</h2>
+                <p>Konten und Rollen für den Zugriff auf Projekte und Systembereiche verwalten.</p>
+              </div>
+            </div>
+
+            <form action="/einstellungen/benutzer" method="post" class="form-grid compact">
+              <label>
+                <span>Login</span>
+                <input type="text" name="email" placeholder="z. B. neuer_user">
+              </label>
+              <label>
+                <span>Name</span>
+                <input type="text" name="name" placeholder="Anzeigename">
+              </label>
+              <label>
+                <span>Passwort</span>
+                <input type="password" name="password" autocomplete="new-password">
+              </label>
+              <label>
+                <span>Rolle</span>
+                <select name="role">
+                  <% (userRoles || []).forEach((role) => { %>
+                    <option value="<%= role %>" <%= role === "user" ? "selected" : "" %>><%= role %></option>
+                  <% }) %>
+                </select>
+              </label>
+              <div class="form-actions-inline">
+                <button type="submit">Benutzer anlegen</button>
+              </div>
+            </form>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Login</th>
+                    <th>Name</th>
+                    <th>Rolle</th>
+                    <th>Aktuelles Projekt</th>
+                    <th>Aktualisiert</th>
+                    <th>Aktion</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% (users || []).forEach((account) => { %>
+                    <tr>
+                      <td><strong><%= account.email %></strong></td>
+                      <td><%= account.name %></td>
+                      <td><span class="badge <%= account.role === "systemadmin" ? "current" : account.role === "viewer" ? "off" : "on" %>"><%= account.role %></span></td>
+                      <td><%= account.currentProjectId || "-" %></td>
+                      <td><%= account.updatedAt || "-" %></td>
+                      <td>
+                        <form action="/einstellungen/benutzer/<%= account.id %>/rolle" method="post" class="inline-role-form">
+                          <select name="role" <%= account.id === user.id ? "disabled" : "" %>>
+                            <% (userRoles || []).forEach((role) => { %>
+                              <option value="<%= role %>" <%= role === account.role ? "selected" : "" %>><%= role %></option>
+                            <% }) %>
+                          </select>
+                          <button class="secondary compact-button" type="submit" <%= account.id === user.id ? "disabled" : "" %>>Speichern</button>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        <% } %>
       </section>
 
       <form id="leistungsbereiche-admin" action="/einstellungen/leistungsbereiche-formulare" method="post" data-autosave class="settings-panel" data-settings-panel="leistungsbereiche" hidden>

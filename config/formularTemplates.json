@@ -109,7 +109,82 @@
       }
     },
     "normenFallback": "siehe Vertragsunterlagen, Regelwerke und Herstellerangaben",
-    "signatureLabel": "Firmenstempel / Unterschrift:"
+    "signatureLabel": "Firmenstempel / Unterschrift:",
+    "leistungsbereichFormulare": {
+      "Elektroinstallation / DIN VDE 0100": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die elektrische Anlage nach DIN VDE 0100, den allgemein anerkannten Regeln der Technik sowie den projektspezifischen Vorgaben errichtet und dokumentiert wurde."
+      },
+      "Sicherheitsbeleuchtung": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die Sicherheitsbeleuchtungsanlage nach DIN EN 1838 sowie nach den einschlägigen technischen Regeln, Herstellerangaben und projektspezifischen Anforderungen ausgeführt und dokumentiert wurde."
+      },
+      "Beleuchtungsanlage": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die Beleuchtungsanlage unter Berücksichtigung der ASR A3.4 sowie der DIN EN 12464 ausgeführt und dokumentiert wurde."
+      },
+      "Kabeltragsysteme / Verlegesysteme": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die Kabeltragsysteme und Verlegesysteme nach DIN EN 61537, den Montagevorgaben der Hersteller und den projektspezifischen Anforderungen ausgeführt wurden."
+      },
+      "Kabeltragsysteme / Verlegesysteme mit Funktionserhalt": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die Kabeltragsysteme und Verlegesysteme mit Funktionserhalt nach DIN 4102-12 sowie den Systemzulassungen und Montagevorgaben ausgeführt und dokumentiert wurden."
+      },
+      "Niederspannungsschaltanlagen / Verteilungen": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die Niederspannungsschaltanlagen und Verteilungen nach DIN EN 61439, Herstellerangaben und projektspezifischen Vorgaben ausgeführt und gekennzeichnet wurden."
+      },
+      "Erdung / Potentialausgleich": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass Erdung und Potentialausgleich nach DIN VDE 0100-410, DIN VDE 0100-540 und DIN 18014 sowie den projektspezifischen Anforderungen hergestellt und dokumentiert wurden."
+      },
+      "Blitzschutzanlage": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die Blitzschutzanlage nach DIN EN 62305 bzw. DIN VDE 0185-305 sowie den projektspezifischen Anforderungen ausgeführt und dokumentiert wurde."
+      },
+      "Datentechnik / Kommunikationsverkabelung": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die Kommunikations- und Datentechnik nach DIN EN 50173, ISO/IEC 11801 und DIN EN 50174 sowie den vereinbarten Systemvorgaben ausgeführt und dokumentiert wurde."
+      },
+      "Telekommunikation": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die Kommunikations- und Datentechnik nach DIN EN 50173, ISO/IEC 11801 und DIN EN 50174 sowie den vereinbarten Systemvorgaben ausgeführt und dokumentiert wurde."
+      },
+      "Breitbandkommunikationsanlage": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die Kommunikations- und Datentechnik nach DIN EN 50173, ISO/IEC 11801 und DIN EN 50174 sowie den vereinbarten Systemvorgaben ausgeführt und dokumentiert wurde."
+      },
+      "Rauchwarnmelderanlage": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die Rauchwarnmelderanlage nach DIN 14676 sowie den projektspezifischen Anforderungen ausgeführt und dokumentiert wurde."
+      },
+      "Brandmeldeanlage": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die Brandmeldeanlage nach DIN 14675, DIN VDE 0833 Teil 1 und 2 sowie DIN EN 54 ausgeführt und dokumentiert wurde."
+      },
+      "Gefahrenmelde- / Alarmanlage": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die Gefahrenmelde- und Alarmanlage nach DIN VDE 0833 Teil 1 und 3 sowie den projektspezifischen Anforderungen ausgeführt und dokumentiert wurde."
+      },
+      "Präsenzmelder": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die Beleuchtungsanlage unter Berücksichtigung der ASR A3.4 sowie der DIN EN 12464 ausgeführt und dokumentiert wurde."
+      },
+      "Brandschutzabschottungen": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die ausgeführten Leistungen im oben genannten Leistungsbereich entsprechend den öffentlich-rechtlichen Anforderungen, den allgemein anerkannten Regeln der Technik sowie den einschlägigen technischen Bestimmungen ausgeführt wurden."
+      },
+      "Bestandspläne": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die ausgeführten Leistungen im oben genannten Leistungsbereich entsprechend den öffentlich-rechtlichen Anforderungen, den allgemein anerkannten Regeln der Technik sowie den einschlägigen technischen Bestimmungen ausgeführt wurden."
+      },
+      "Bilddokumentation": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die ausgeführten Leistungen im oben genannten Leistungsbereich entsprechend den öffentlich-rechtlichen Anforderungen, den allgemein anerkannten Regeln der Technik sowie den einschlägigen technischen Bestimmungen ausgeführt wurden."
+      }
+    },
+    "leistungsbereichTexte": {}
   },
   "ceBestaetigung": {
     "name": "CE-Bestätigung",
@@ -126,6 +201,81 @@
     "bodyText": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst.",
     "signatureLabel": "Firmenstempel / Unterschrift:",
     "normenFallback": "",
+    "leistungsbereichFormulare": {
+      "Elektroinstallation / DIN VDE 0100": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Sicherheitsbeleuchtung": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Beleuchtungsanlage": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Kabeltragsysteme / Verlegesysteme": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Kabeltragsysteme / Verlegesysteme mit Funktionserhalt": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Niederspannungsschaltanlagen / Verteilungen": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Erdung / Potentialausgleich": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Blitzschutzanlage": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Datentechnik / Kommunikationsverkabelung": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Telekommunikation": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Breitbandkommunikationsanlage": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Rauchwarnmelderanlage": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Brandmeldeanlage": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Gefahrenmelde- / Alarmanlage": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Präsenzmelder": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Brandschutzabschottungen": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Bestandspläne": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      },
+      "Bilddokumentation": {
+        "erzeugen": true,
+        "text": "Die erforderlichen CE-Kennzeichnungen befinden sich auf den Datenblättern der entsprechenden Unterlagen oder auf dem elektrischen Betriebsmittel selbst."
+      }
+    },
+    "leistungsbereichTexte": {},
     "textVarianten": {},
     "showLeistungsbereich": false,
     "showNormen": false
@@ -145,6 +295,81 @@
     "bodyText": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind.",
     "signatureLabel": "Firmenstempel / Unterschrift:",
     "normenFallback": "",
+    "leistungsbereichFormulare": {
+      "Elektroinstallation / DIN VDE 0100": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Sicherheitsbeleuchtung": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Beleuchtungsanlage": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Kabeltragsysteme / Verlegesysteme": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Kabeltragsysteme / Verlegesysteme mit Funktionserhalt": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Niederspannungsschaltanlagen / Verteilungen": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Erdung / Potentialausgleich": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Blitzschutzanlage": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Datentechnik / Kommunikationsverkabelung": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Telekommunikation": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Breitbandkommunikationsanlage": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Rauchwarnmelderanlage": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Brandmeldeanlage": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Gefahrenmelde- / Alarmanlage": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Präsenzmelder": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Brandschutzabschottungen": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Bestandspläne": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      },
+      "Bilddokumentation": {
+        "erzeugen": true,
+        "text": "Hiermit wird bestätigt, dass die erforderlichen Prüfungen und Nachweise gemäß DGUV Vorschrift 3 für die dokumentierten elektrischen Anlagen vorbereitet und in der finalen Dokumentation zu ergänzen sind."
+      }
+    },
+    "leistungsbereichTexte": {},
     "textVarianten": {},
     "showLeistungsbereich": false,
     "showNormen": false
@@ -164,6 +389,81 @@
     "bodyText": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden.",
     "signatureLabel": "Firmenstempel / Unterschrift:",
     "normenFallback": "",
+    "leistungsbereichFormulare": {
+      "Elektroinstallation / DIN VDE 0100": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Sicherheitsbeleuchtung": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Beleuchtungsanlage": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Kabeltragsysteme / Verlegesysteme": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Kabeltragsysteme / Verlegesysteme mit Funktionserhalt": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Niederspannungsschaltanlagen / Verteilungen": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Erdung / Potentialausgleich": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Blitzschutzanlage": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Datentechnik / Kommunikationsverkabelung": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Telekommunikation": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Breitbandkommunikationsanlage": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Rauchwarnmelderanlage": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Brandmeldeanlage": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Gefahrenmelde- / Alarmanlage": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Präsenzmelder": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Brandschutzabschottungen": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Bestandspläne": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      },
+      "Bilddokumentation": {
+        "erzeugen": true,
+        "text": "Hiermit erklären wir, dass die Anlagen nach DIN VDE 0100 elektrisch angeschlossen und in Betrieb genommen wurden."
+      }
+    },
+    "leistungsbereichTexte": {},
     "textVarianten": {},
     "showLeistungsbereich": false,
     "showNormen": false

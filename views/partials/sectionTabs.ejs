@@ -1,4 +1,4 @@
-<%# Zentrale Sidebar-/Bereichsnavigation. Die Tabs hängen vom aktiven Hauptmenü ab. %>
+<%# * INFO: Zentrale Sidebar-/Bereichsnavigation. Die Tabs hängen vom aktiven Hauptmenü ab. %>
 <% const projectTabs = ["projekte", "projekt", "leistungsbereiche", "systemauswahl", "projektarchiv"]; %>
 <% const documentationTabs = ["dokumente", "anhaenge"]; %>
 <% const outputTabs = ["export"]; %>
@@ -34,14 +34,12 @@
     <% }) %>
   </nav>
 <% } else if (projectTabs.includes(active)) { %>
-  <%# Projektbereich: Projektmanager, Stammdaten, Leistungsbereiche und Archiv. %>
+  <%# * INFO: Projektbereich: Haupttabs bleiben fachlich schlank, Archiv und Import liegen im Projektmanager. %>
   <% tabs = [
     ["projekte", "/projekte#projekt-auswahl", "Projektübersicht", "overview"],
     ["projekt", "/projekt", "Stammdaten", "edit"],
     ["leistungsbereiche", "/leistungsbereiche", "Leistungsbereiche", "list"],
-    ["systemauswahl", "/systemauswahl", "Systeme", "system"],
-    ["projekte", "/projekte#projekt-archiv", "Archiv", "archive"],
-    ["projektarchiv", "/projektarchiv", "Import / Pakete", "folder-tree"]
+    ["systemauswahl", "/systemauswahl", "Systeme", "system"]
   ]; %>
 <% } else if (documentationTabs.includes(active)) { %>
   <%# Dokumentationsbereich: Matrix und kategorisierte Anhänge/Nachweise. %>
@@ -97,6 +95,7 @@
     <% }) %>
     <% if (projectTabs.includes(active) && typeof projectSidebarProjects !== "undefined" && Array.isArray(projectSidebarProjects)) { %>
       <% const activeProjects = projectSidebarProjects.filter((project) => project.status === "aktiv"); %>
+      <% const archiveProjects = projectSidebarProjects.filter((project) => project.status !== "aktiv"); %>
       <div class="section-tabs-group">
         <div class="section-tabs-subhead">
           <span>Projektmanager</span>
@@ -116,6 +115,16 @@
             </button>
           </form>
         <% }) %>
+        <div class="section-tabs-divider"></div>
+        <a class="section-project-item section-project-link" href="/projekte#projekt-archiv">
+          <%- include("icon", { name: "archive" }) %>
+          <span>Archiv</span>
+          <strong><%= archiveProjects.length %></strong>
+        </a>
+        <a class="section-project-item section-project-link" href="/projektarchiv">
+          <%- include("icon", { name: "folder-tree" }) %>
+          <span>Import / Pakete</span>
+        </a>
       </div>
     <% } %>
   </nav>

@@ -46,7 +46,10 @@ storage/users/[userId]/projects/[projectId]/
 - Sessions werden als zufällige Tokens in SQLite gespeichert.
 - Fachseiten sind nur nach Login erreichbar.
 - Projektzugriff erfolgt über die angemeldete `userId`.
-- Für lokale Tests werden Seed-Benutzer vorbereitet: `admin`, `marx` und `berg`.
+- Für lokale Tests werden Seed-Benutzer vorbereitet; konkrete lokale Defaults stehen in `INSTALL.md`.
+- Rollen sind als Beta-Funktion vorhanden: `viewer`, `user`, `admin`, `systemadmin`.
+- `systemadmin` kann Benutzer anlegen und Rollen verwalten.
+- `viewer` darf Fachseiten lesen, aber keine Schreiboperationen ausführen.
 - Der bestehende Admin-Datensatz behält intern seine stabile ID, damit vorhandene Demo-Projekte nicht verloren gehen.
 
 ## Projektkonzept
@@ -85,7 +88,7 @@ Die Trennstreifen werden ohne GitHub-Branding erzeugt, damit sie als reine Regis
 - Statusmeldungen werden als schwebende Toasts dargestellt und verschieben keine Seiteninhalte.
 - Tag-/Nacht-Umschaltung und Theme-Presets greifen global auf Header, Navigation, Karten, Tabellen, Formulare und Buttons.
 - Default-Presets teilen sich identische Radius-, Spacing- und Typografiewerte, damit beim Themewechsel keine Layoutgrößen springen.
-- GitHub Light, GitHub Dark und GitHub Dimmed sind als GitHub-/VS-Code-orientierte Presets ergänzt.
+- GitHub Light und GitHub Dark sind als GitHub-/VS-Code-orientierte Presets vorgesehen.
 
 ## Anhänge und importierte PDFs
 
@@ -120,7 +123,7 @@ Nicht ins Repository gehören:
 
 ## Beta-Einschränkungen
 
-- keine Rollen- und Rechteverwaltung
+- Rollen- und Rechteverwaltung ist Beta und muss vor produktiver Nutzung weiter geprüft werden
 - keine produktive Webserver-Härtung
 - keine automatisierte Test-Suite
 - PDF-Gesamtdatei, ZIP-Export und Archivstruktur weiter im Praxistest prüfen

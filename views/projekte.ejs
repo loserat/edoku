@@ -19,19 +19,15 @@
       <%- include("partials/flash", { flash }) %>
       <%- include("partials/sectionTabs", { active }) %>
 
-      <%# Trennung zwischen aktivem Arbeitsbestand und archivierten/gelöschten Projekten. %>
+      <%# * INFO: Trennung zwischen aktivem Arbeitsbestand und archivierten/gelöschten Projekten. %>
       <% const aktiveProjekte = projects.filter((project) => project.status === "aktiv"); %>
       <% const archivProjekte = projects.filter((project) => project.status !== "aktiv"); %>
       <% const currentProject = projects.find((project) => project.id === currentProjectId) || aktiveProjekte[0] || projects[0]; %>
+      <% const currentUpdatedAt = currentProject && currentProject.geaendertAm ? currentProject.geaendertAm : "-"; %>
 
-      <div data-tabs="projekte" class="tab-shell project-manager-shell">
-        <div class="tabs" role="tablist" aria-label="Projektverwaltung">
-          <button class="tab-button" type="button" data-tab-target="uebersicht">Projekt auswählen</button>
-          <button class="tab-button" type="button" data-tab-target="archiv">Archiv / Gelöscht</button>
-        </div>
-
-        <%# Übersicht mit geöffnetem Projekt und aktiven Projektkarten. %>
-        <section class="project-manager-layout tab-panel" id="projekt-auswahl" data-tab-panel="uebersicht">
+      <div class="project-manager-shell">
+        <%# * INFO: Die Projektübersicht zeigt nur das aktuell geöffnete Projekt. Die Auswahl liegt links im Projektmanager. %>
+        <section class="project-manager-layout" id="projekt-auswahl">
           <div class="project-dashboard">
             <section class="current-project-panel">
               <div class="current-project-main">
@@ -63,77 +59,51 @@
               </div>
             </section>
 
-            <section class="project-dashboard-stats">
+            <section class="project-mini-status">
               <div>
-                <span>Aktiv</span>
+                <span>Aktive Projekte</span>
                 <strong><%= aktiveProjekte.length %></strong>
               </div>
               <div>
-                <span>Archiviert / gelöscht</span>
+                <span>Archiv</span>
                 <strong><%= archivProjekte.length %></strong>
               </div>
               <div>
                 <span>Gesamt</span>
                 <strong><%= projects.length %></strong>
               </div>
+              <div>
+                <span>Geändert</span>
+                <strong><%= currentUpdatedAt %></strong>
+              </div>
             </section>
 
-            <div class="panel-head">
-              <div>
-                <h2>Dashboard aktive Projekte</h2>
-                <p>Nur aktive, nicht archivierte Projekte werden hier als Arbeitsbestand angezeigt.</p>
-              </div>
-              <a class="button-link secondary" href="/projektarchiv">Projekt importieren</a>
-            </div>
-
-            <% if (!aktiveProjekte.length) { %>
-              <div class="empty-state">Noch keine aktiven Projekte vorhanden.</div>
+            <% if (currentProject) { %>
+              <section class="current-project-mini-dashboard">
+                <div>
+                  <span>Projekt-ID</span>
+                  <strong><%= currentProject.id %></strong>
+                </div>
+                <div>
+                  <span>Baumaßnahme</span>
+                  <strong><%= currentProject.baumassnahme || "-" %></strong>
+                </div>
+                <div>
+                  <span>Auftrag / Gewerk</span>
+                  <strong><%= currentProject.auftragGewerk || "-" %></strong>
+                </div>
+                <div>
+                  <span>Arbeitsstatus</span>
+                  <strong><%= currentProject.status || "-" %></strong>
+                </div>
+              </section>
+            <% } else { %>
+              <div class="empty-state">Noch kein Projekt ausgewählt.</div>
             <% } %>
-
-            <div class="project-grid">
-              <% aktiveProjekte.forEach((project) => { %>
-                <% const isCurrent = project.id === currentProjectId; %>
-                <article class="project-card <%= isCurrent ? "is-current" : "" %>">
-                  <div class="project-card-head">
-                    <div>
-                      <span class="project-label"><%= project.projektnummer || "ohne Projektnummer" %></span>
-                      <h3><%= project.projektname || project.id %></h3>
-                    </div>
-                    <span class="badge <%= isCurrent ? "current" : "on" %>"><%= isCurrent ? "aktuell" : project.status %></span>
-                  </div>
-                  <dl class="project-meta">
-                    <div>
-                      <dt>Auftraggeber</dt>
-                      <dd><%= project.auftraggeber || "-" %></dd>
-                    </div>
-                    <div>
-                      <dt>Liegenschaft</dt>
-                      <dd><%= project.liegenschaft || "-" %></dd>
-                    </div>
-                    <div>
-                      <dt>Geändert</dt>
-                      <dd><%= project.geaendertAm || "-" %></dd>
-                    </div>
-                    <div>
-                      <dt>Projekt-ID</dt>
-                      <dd><%= project.id %></dd>
-                    </div>
-                  </dl>
-                  <div class="project-actions">
-                    <form action="/projekte/<%= project.id %>/oeffnen" method="post">
-                      <button class="<%= isCurrent ? "secondary" : "" %>" type="submit"><%= isCurrent ? "Neu laden" : "Öffnen" %></button>
-                    </form>
-                    <form action="/projekte/<%= project.id %>/exportieren" method="post"><button class="secondary" type="submit">Export</button></form>
-                    <form action="/projekte/<%= project.id %>/archivieren" method="post"><button class="secondary" type="submit">Archiv</button></form>
-                    <form action="/projekte/<%= project.id %>/loeschen" method="post" data-confirm="Projekt wirklich löschen?"><button class="secondary danger icon-only-button" type="submit" aria-label="Projekt löschen"><%- include("partials/icon", { name: "trash" }) %></button></form>
-                  </div>
-                </article>
-              <% }) %>
-            </div>
           </div>
         </section>
 
-        <section class="tab-panel" id="projekt-archiv" data-tab-panel="archiv">
+        <section class="project-archive-panel" id="projekt-archiv">
           <div class="panel-head">
             <div>
               <h2>Archiv / Gelöscht</h2>

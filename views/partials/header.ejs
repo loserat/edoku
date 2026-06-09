@@ -11,7 +11,8 @@
     <% } %>
   </div>
   <nav class="nav" aria-label="Hauptnavigation">
-    <a class="<%= active === "dashboard" ? "active" : "" %>" href="/dashboard"><%- include("icon", { name: "overview" }) %><span>Übersicht</span></a>
+    <% const dashboardLabel = typeof currentProjectNumber !== "undefined" && currentProjectNumber ? currentProjectNumber : typeof currentProjectName !== "undefined" && currentProjectName ? currentProjectName : "Übersicht"; %>
+    <a class="<%= active === "dashboard" ? "active" : "" %>" href="/dashboard" title="Projektübersicht"><%- include("icon", { name: "overview" }) %><span><%= dashboardLabel %></span></a>
     <a class="<%= ["projekte", "projekt", "leistungsbereiche", "systemauswahl", "projektarchiv"].includes(active) ? "active" : "" %>" href="/projekte"><%- include("icon", { name: "project" }) %><span>Projekte</span></a>
     <a class="<%= ["dokumente", "anhaenge"].includes(active) ? "active" : "" %>" href="/dokumente"><%- include("icon", { name: "documentation" }) %><span>Dokumentation</span></a>
     <a class="<%= active === "brandschutz" ? "active" : "" %>" href="/brandschutz"><%- include("icon", { name: "shield" }) %><span>Brandschutz</span></a>
@@ -30,6 +31,5 @@
   <button class="theme-toggle" type="button" data-theme-toggle aria-label="Theme wechseln">
     <span class="theme-toggle-icon theme-toggle-sun"><%- include("icon", { name: "sun" }) %></span>
     <span class="theme-toggle-icon theme-toggle-moon"><%- include("icon", { name: "moon" }) %></span>
-    <span class="theme-toggle-label" data-theme-toggle-label>Theme</span>
   </button>
 </header>

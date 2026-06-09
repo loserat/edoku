@@ -6,7 +6,8 @@ const {
   deleteSession,
   getSession,
   getUserByEmail,
-  getUserById
+  getUserById,
+  normalizeUserRole
 } = require("./dbService");
 const { sanitizeId } = require("./pathService");
 
@@ -69,6 +70,7 @@ function registerUser({ email, name, password }) {
     id: createUserId(normalizedEmail),
     email: normalizedEmail,
     name: String(name || "").trim() || normalizedEmail,
+    role: "user",
     passwordHash: hash,
     passwordSalt: salt,
     currentProjectId: null,
@@ -131,6 +133,7 @@ function attachUser(req, res, next) {
       id: session.user_id,
       email: session.email,
       name: session.name,
+      role: normalizeUserRole(session.role),
       currentProjectId: session.current_project_id
     };
     res.locals.user = req.user;
@@ -149,12 +152,35 @@ function requireAuth(req, res, next) {
   next();
 }
 
+function requireSystemAdmin(req, res, next) {
+  if (!req.user) {
+    res.redirect(`/login?error=${encodeURIComponent("Bitte zuerst anmelden.")}`);
+    return;
+  }
+  if (req.user.role !== "systemadmin") {
+    res.status(403).send("Zugriff nur für Systemadmins.");
+    return;
+  }
+  next();
+}
+
+function blockViewerWrites(req, res, next) {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
+  if (req.user && req.user.role === "viewer") {
+    res.status(403).send("Viewer dürfen keine Änderungen speichern.");
+    return;
+  }
+  next();
+}
+
 module.exports = {
   attachUser,
+  blockViewerWrites,
   endSession,
   loginUser,
   parseCookies,
   registerUser,
   requireAuth,
+  requireSystemAdmin,
   startSession
 };

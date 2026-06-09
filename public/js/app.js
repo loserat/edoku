@@ -1,8 +1,5 @@
 // Theme wird vor DOMContentLoaded gesetzt, damit beim Laden kein hell/dunkel-Flackern entsteht.
 function resolveEdokuThemeMode(mode) {
-  if (mode === "system") {
-    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  }
   return mode === "dark" ? "dark" : "light";
 }
 
@@ -49,6 +46,20 @@ document.addEventListener("DOMContentLoaded", () => {
     form.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
+  // ! WICHTIG: Beim Abwählen eines Leistungsbereichs werden abhängige Listen/Dokumente deaktiviert.
+  // Die Bestätigung läuft vor Auto-Save, damit ein Abbruch nicht versehentlich gespeichert wird.
+  document.addEventListener("change", (event) => {
+    const checkbox = event.target.closest("[data-confirm-deactivate-leistungsbereich]");
+    if (!checkbox || checkbox.checked) return;
+
+    const message = checkbox.dataset.confirmMessage || "Leistungsbereich wirklich abwählen?";
+    if (window.confirm(message)) return;
+
+    checkbox.checked = true;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
+
   function trashIconMarkup() {
     return `
       <svg class="icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -63,11 +74,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Aktualisiert Beschriftung und Accessibility-Text des Theme-Schalters.
   function updateThemeButton(theme) {
     if (!themeToggle) return;
-    const label = themeToggle.querySelector("[data-theme-toggle-label]");
     themeToggle.dataset.themeCurrent = theme;
-    if (label) label.textContent = theme === "dark" ? "Nacht" : "Tag";
-    themeToggle.setAttribute("aria-label", `Theme wechseln, aktuell ${theme === "dark" ? "Nacht" : "Tag"}`);
-    themeToggle.setAttribute("title", `Theme wechseln, aktuell ${theme === "dark" ? "Nacht" : "Tag"}`);
+    const nextLabel = theme === "dark" ? "Light Mode aktivieren" : "Dark Mode aktivieren";
+    themeToggle.setAttribute("aria-label", nextLabel);
+    themeToggle.setAttribute("title", nextLabel);
   }
 
   updateThemeButton(resolveEdokuThemeMode(savedTheme));

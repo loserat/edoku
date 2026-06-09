@@ -12,7 +12,7 @@
       <div class="page-title">
         <p class="eyebrow">Projekt</p>
         <h1>Leistungsbereiche</h1>
-        <p class="page-subtitle">Projektbezogene Gewerke auswählen und Systembezug strukturiert vorbereiten.</p>
+        <p class="page-subtitle">Projektbezogene Gewerke auswählen und daraus Dokumentenmatrix, Gerätelisten und Export ableiten.</p>
       </div>
       <%- include("partials/flash", { flash }) %>
       <%- include("partials/sectionTabs", { active }) %>
@@ -24,13 +24,11 @@
         <section class="summary-cards compact-summary">
           <div class="summary-card"><span>Aktiv</span><strong><%= aktiv.length %></strong></div>
           <div class="summary-card"><span>Optionen</span><strong><%= optionen.length %></strong></div>
-          <div class="summary-card"><span>Mit Systemauswahl</span><strong><%= Object.keys(systemeNachLeistungsbereich).length %></strong></div>
         </section>
 
         <div class="tabs" role="tablist" aria-label="Leistungsbereichsansichten">
           <button class="tab-button" type="button" data-tab-target="alle">Alle Bereiche</button>
           <button class="tab-button" type="button" data-tab-target="aktive">Aktive Auswahl</button>
-          <button class="tab-button" type="button" data-tab-target="systeme">Systembezug</button>
         </div>
 
         <section class="tab-panel" data-tab-panel="alle">
@@ -43,7 +41,14 @@
           <div class="checkbox-grid dense">
             <% optionen.forEach((option) => { %>
               <label class="checkbox-card">
-                <input type="checkbox" name="leistungsbereiche" value="<%= option %>" <%= aktiv.includes(option) ? "checked" : "" %>>
+                <input
+                  type="checkbox"
+                  name="leistungsbereiche"
+                  value="<%= option %>"
+                  data-confirm-deactivate-leistungsbereich
+                  data-confirm-message="Leistungsbereich „<%= option %>“ wirklich abwählen? Zugehörige Gerätelisten und Dokumente werden deaktiviert und nicht exportiert. Vorhandene Positionen bleiben gespeichert."
+                  <%= aktiv.includes(option) ? "checked" : "" %>
+                >
                 <span><%= option %></span>
               </label>
             <% }) %>
@@ -65,42 +70,6 @@
               <div class="checkbox-card">
                 <span><%= option %></span>
               </div>
-            <% }) %>
-          </div>
-        </section>
-
-        <section class="tab-panel" data-tab-panel="systeme">
-          <div class="panel-head">
-            <div>
-              <h2>Systembezug</h2>
-              <p>Legacy-Auswahl bleibt erhalten; die detaillierte Auswahl liegt unter Systemauswahl.</p>
-            </div>
-            <a class="button-link" href="/systemauswahl">Systemauswahl öffnen</a>
-          </div>
-          <div class="checkbox-grid">
-            <% optionen.forEach((option) => { %>
-              <% const systeme = systemeNachLeistungsbereich[option] || []; %>
-              <% if (aktiv.includes(option) && systeme.length > 0) { %>
-                <div class="checkbox-card stack">
-                  <label>
-                    <span><%= option %></span>
-                    <select name="systemAuswahl[<%= option %>]">
-                      <option value="">Bitte auswählen</option>
-                      <% systeme.forEach((system) => { %>
-                        <option value="<%= system.id %>" <%= systemAuswahl[option] === system.id ? "selected" : "" %>>
-                          <%= system.hersteller %> - <%= system.system %>
-                        </option>
-                      <% }) %>
-                    </select>
-                  </label>
-                  <% systeme.forEach((system) => { %>
-                    <p class="meta-line">
-                      <strong><%= system.hersteller %>:</strong>
-                      <%= system.normen.join(", ") %>
-                    </p>
-                  <% }) %>
-                </div>
-              <% } %>
             <% }) %>
           </div>
         </section>

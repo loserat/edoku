@@ -9,8 +9,8 @@
   "datumFormat": "de-DE",
   "export": {
     "trennstreifen": {
-      "showInnenText": false,
-      "showRegisterTitel": false
+      "showInnenText": true,
+      "showRegisterTitel": true
     }
   },
   "ersteller": {
@@ -24,28 +24,28 @@
     "logoPfad": "creator/921bbd3c-d2ab-448e-ada2-106e6781f692.png"
   },
   "theme": {
-    "preset": "graphite",
-    "name": "Graphite",
-    "mode": "dark",
+    "preset": "github-light",
+    "name": "GitHub Light",
+    "mode": "light",
     "colors": {
-      "bgLight": "#edf0f3",
-      "bgDark": "#15191f",
-      "surface": "#f7f8fa",
-      "surfaceMuted": "#e8edf2",
-      "surfaceDark": "#242a32",
-      "surfaceMutedDark": "#313944",
-      "text": "#18202a",
-      "textMuted": "#687485",
-      "textDark": "#f4f7fb",
-      "textMutedDark": "#aeb7c3",
-      "accent": "#8ea2b8",
-      "border": "#aeb8c4",
-      "borderDark": "#66717f",
-      "buttonPrimary": "#8ea2b8",
-      "buttonSecondary": "#303844",
-      "warning": "#eab308",
-      "danger": "#ff6b6b",
-      "success": "#22c55e"
+      "bgLight": "#f6f8fa",
+      "bgDark": "#0d1117",
+      "surface": "#ffffff",
+      "surfaceMuted": "#f6f8fa",
+      "surfaceDark": "#161b22",
+      "surfaceMutedDark": "#21262d",
+      "text": "#1f2328",
+      "textMuted": "#656d76",
+      "textDark": "#e6edf3",
+      "textMutedDark": "#7d8590",
+      "accent": "#0969da",
+      "border": "#d0d7de",
+      "borderDark": "#30363d",
+      "buttonPrimary": "#1f883d",
+      "buttonSecondary": "#f6f8fa",
+      "warning": "#9a6700",
+      "danger": "#cf222e",
+      "success": "#1f883d"
     },
     "shape": {
       "globalRadius": 14,
@@ -55,8 +55,8 @@
       "borderWidth": 1
     },
     "shadow": {
-      "strength": 18,
-      "softness": 34
+      "strength": 10,
+      "softness": 26
     },
     "spacing": {
       "global": 12,
