@@ -50,6 +50,9 @@ storage/users/[userId]/projects/[projectId]/
 - Rollen sind als Beta-Funktion vorhanden: `viewer`, `user`, `admin`, `systemadmin`.
 - `systemadmin` kann Benutzer anlegen und Rollen verwalten.
 - `viewer` darf Fachseiten lesen, aber keine Schreiboperationen ausführen.
+- Benutzerkonten besitzen einen Status `active` oder `disabled`.
+- Gesperrte Konten können sich nicht anmelden; vorhandene Sessions werden beim Sperren entfernt.
+- Passwort-Reset durch Systemadmins schreibt neuen Hash/Salt und beendet vorhandene Sessions des Kontos.
 - Der bestehende Admin-Datensatz behält intern seine stabile ID, damit vorhandene Demo-Projekte nicht verloren gehen.
 
 ## Projektkonzept

@@ -96,3 +96,5 @@ Wichtige Ordner:
 ## Sicherheitshinweis
 
 Die aktuelle Version ist eine Beta. Für produktiven Serverbetrieb müssen unter anderem HTTPS, sichere Secrets, Härtung der Sessions, Benutzerrollen, Backups und Reverse-Proxy-Konfiguration geprüft werden.
+
+Systemadmins können Benutzer in der Anwendung sperren, wieder aktivieren, Rollen ändern und Passwörter zurücksetzen. Für öffentliche Installationen sollten die lokalen Demo-Konten direkt nach dem ersten Start angepasst oder ersetzt werden.

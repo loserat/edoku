@@ -27,6 +27,7 @@ function initDatabase(storageDir) {
       email TEXT NOT NULL UNIQUE,
       name TEXT NOT NULL,
       role TEXT NOT NULL DEFAULT 'user',
+      status TEXT NOT NULL DEFAULT 'active',
       password_hash TEXT NOT NULL,
       password_salt TEXT NOT NULL,
       current_project_id TEXT,
@@ -58,6 +59,9 @@ function initDatabase(storageDir) {
   if (!userColumns.includes("role")) {
     connection().prepare("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'").run();
   }
+  if (!userColumns.includes("status")) {
+    connection().prepare("ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'").run();
+  }
 
   return db;
 }
@@ -79,9 +83,9 @@ function getUserById(userId) {
 
 function createUser(user) {
   connection().prepare(`
-    INSERT INTO users (id, email, name, role, password_hash, password_salt, current_project_id, created_at, updated_at)
-    VALUES (@id, @email, @name, @role, @passwordHash, @passwordSalt, @currentProjectId, @createdAt, @updatedAt)
-  `).run({ ...user, role: normalizeUserRole(user.role) });
+    INSERT INTO users (id, email, name, role, status, password_hash, password_salt, current_project_id, created_at, updated_at)
+    VALUES (@id, @email, @name, @role, @status, @passwordHash, @passwordSalt, @currentProjectId, @createdAt, @updatedAt)
+  `).run({ ...user, role: normalizeUserRole(user.role), status: normalizeUserStatus(user.status) });
 }
 
 function createSession(token, userId, expiresAt) {
@@ -93,7 +97,7 @@ function createSession(token, userId, expiresAt) {
 
 function getSession(token) {
   return connection().prepare(`
-    SELECT sessions.token, sessions.user_id, sessions.expires_at, users.email, users.name, users.role, users.current_project_id
+    SELECT sessions.token, sessions.user_id, sessions.expires_at, users.email, users.name, users.role, users.status, users.current_project_id
     FROM sessions
     JOIN users ON users.id = sessions.user_id
     WHERE sessions.token = ?
@@ -104,11 +108,19 @@ function normalizeUserRole(role) {
   return USER_ROLES.includes(role) ? role : "user";
 }
 
+function normalizeUserStatus(status) {
+  return status === "disabled" ? "disabled" : "active";
+}
+
 function listUsers() {
   return connection().prepare(`
-    SELECT id, email, name, role, current_project_id AS currentProjectId, created_at AS createdAt, updated_at AS updatedAt
+    SELECT id, email, name, role, status, current_project_id AS currentProjectId, created_at AS createdAt, updated_at AS updatedAt
     FROM users
     ORDER BY
+      CASE status
+        WHEN 'active' THEN 1
+        ELSE 2
+      END,
       CASE role
         WHEN 'systemadmin' THEN 1
         WHEN 'admin' THEN 2
@@ -127,8 +139,28 @@ function updateUserRole(userId, role) {
   `).run(normalizeUserRole(role), nowIso(), userId);
 }
 
+function updateUserStatus(userId, status) {
+  connection().prepare(`
+    UPDATE users
+    SET status = ?, updated_at = ?
+    WHERE id = ?
+  `).run(normalizeUserStatus(status), nowIso(), userId);
+}
+
+function updateUserPassword(userId, passwordHash, passwordSalt) {
+  connection().prepare(`
+    UPDATE users
+    SET password_hash = ?, password_salt = ?, updated_at = ?
+    WHERE id = ?
+  `).run(passwordHash, passwordSalt, nowIso(), userId);
+}
+
 function deleteSession(token) {
   connection().prepare("DELETE FROM sessions WHERE token = ?").run(token);
+}
+
+function deleteSessionsForUser(userId) {
+  connection().prepare("DELETE FROM sessions WHERE user_id = ?").run(userId);
 }
 
 function deleteExpiredSessions() {
@@ -238,6 +270,7 @@ module.exports = {
   createUser,
   deleteExpiredSessions,
   deleteSession,
+  deleteSessionsForUser,
   getCurrentProjectId,
   getProject,
   getSession,
@@ -248,8 +281,11 @@ module.exports = {
   listProjectsForUser,
   migrateProjectsJson,
   normalizeUserRole,
+  normalizeUserStatus,
   setCurrentProjectId,
+  updateUserPassword,
   updateUserRole,
+  updateUserStatus,
   updateProjectStatus,
   upsertProject,
   USER_ROLES

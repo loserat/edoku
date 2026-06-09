@@ -44,6 +44,8 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 - Rollenmodell ergänzt: `viewer`, `user`, `admin`, `systemadmin`
 - Systemadmin-Benutzerverwaltung in den Einstellungen ergänzt
 - Viewer-Schreibzugriffe werden serverseitig blockiert
+- Benutzerkonten können gesperrt und wieder aktiviert werden
+- Passwort-Reset durch Systemadmins beendet vorhandene Sessions des betroffenen Kontos
 - Projektmanager links erweitert: aktive Projekte, Archiv und Import/Pakete sind dort gebündelt
 - Projektübersicht zeigt nur noch das aktuell geöffnete Projekt mit Mini-Status
 - Leistungsbereiche fragen beim Abwählen eine Bestätigung ab

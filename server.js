@@ -6,7 +6,20 @@ const express = require("express");
 
 const { bootstrapStorage, DEFAULT_LEISTUNGSBEREICHE } = require("./services/bootstrapService");
 const { readJson, writeJson } = require("./services/jsonService");
-const { initDatabase, connection, getUserByEmail, createUser, listUsers, migrateProjectsJson, normalizeUserRole, updateUserRole, USER_ROLES } = require("./services/dbService");
+const {
+  initDatabase,
+  connection,
+  getUserByEmail,
+  createUser,
+  deleteSessionsForUser,
+  listUsers,
+  migrateProjectsJson,
+  normalizeUserRole,
+  updateUserPassword,
+  updateUserRole,
+  updateUserStatus,
+  USER_ROLES
+} = require("./services/dbService");
 const { attachUser, blockViewerWrites, endSession, loginUser, parseCookies, registerUser, requireAuth, requireSystemAdmin, startSession } = require("./services/authService");
 const {
   createProject,
@@ -140,7 +153,7 @@ function hashSeedPassword(password) {
   return { passwordHash, salt };
 }
 
-function ensureSeedUser({ id, email, name, password, role = "user", currentProjectId = "projekt_demo" }) {
+function ensureSeedUser({ id, email, name, password, role = "user", status = "active", currentProjectId = "projekt_demo" }) {
   const { passwordHash, salt } = hashSeedPassword(password);
   const now = new Date().toISOString();
   const existingUser = getUserByEmail(email);
@@ -149,11 +162,12 @@ function ensureSeedUser({ id, email, name, password, role = "user", currentProje
       UPDATE users
       SET name = ?,
           role = ?,
+          status = ?,
           password_hash = ?,
           password_salt = ?,
           updated_at = ?
       WHERE lower(email) = lower(?)
-    `).run(name, normalizeUserRole(role), passwordHash, salt, now, email);
+    `).run(name, normalizeUserRole(role), status, passwordHash, salt, now, email);
     return;
   }
 
@@ -162,6 +176,7 @@ function ensureSeedUser({ id, email, name, password, role = "user", currentProje
     email,
     name,
     role: normalizeUserRole(role),
+    status,
     passwordHash,
     passwordSalt: salt,
     currentProjectId,
@@ -179,6 +194,7 @@ function ensureDefaultUser() {
       SET email = 'admin',
           name = 'admin',
           role = 'systemadmin',
+          status = 'active',
           password_hash = ?,
           password_salt = ?,
           updated_at = ?
@@ -1001,6 +1017,7 @@ app.post("/einstellungen/benutzer", requireSystemAdmin, async (req, res) => {
       email,
       name,
       role: normalizeUserRole(req.body.role),
+      status: "active",
       passwordHash,
       passwordSalt: salt,
       currentProjectId: "projekt_demo",
@@ -1021,6 +1038,35 @@ app.post("/einstellungen/benutzer/:userId/rolle", requireSystemAdmin, async (req
     }
     updateUserRole(req.params.userId, nextRole);
     okOrRedirect(req, res, "/einstellungen#benutzer", "Benutzerrolle wurde aktualisiert.");
+  } catch (error) {
+    fail(req, res, "/einstellungen#benutzer", error);
+  }
+});
+
+app.post("/einstellungen/benutzer/:userId/passwort", requireSystemAdmin, async (req, res) => {
+  try {
+    const password = String(req.body.password || "");
+    if (password.length < 4) {
+      throw new Error("Das neue Passwort muss mindestens 4 Zeichen lang sein.");
+    }
+    const { passwordHash, salt } = hashSeedPassword(password);
+    updateUserPassword(req.params.userId, passwordHash, salt);
+    deleteSessionsForUser(req.params.userId);
+    okOrRedirect(req, res, "/einstellungen#benutzer", "Benutzerpasswort wurde zurückgesetzt.");
+  } catch (error) {
+    fail(req, res, "/einstellungen#benutzer", error);
+  }
+});
+
+app.post("/einstellungen/benutzer/:userId/status", requireSystemAdmin, async (req, res) => {
+  try {
+    const nextStatus = req.body.status === "disabled" ? "disabled" : "active";
+    if (req.params.userId === req.user.id && nextStatus === "disabled") {
+      throw new Error("Du kannst dein eigenes Konto nicht sperren.");
+    }
+    updateUserStatus(req.params.userId, nextStatus);
+    if (nextStatus === "disabled") deleteSessionsForUser(req.params.userId);
+    okOrRedirect(req, res, "/einstellungen#benutzer", nextStatus === "disabled" ? "Benutzer wurde gesperrt." : "Benutzer wurde aktiviert.");
   } catch (error) {
     fail(req, res, "/einstellungen#benutzer", error);
   }
