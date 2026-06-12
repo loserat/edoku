@@ -288,7 +288,7 @@
               </div>
             </div>
 
-            <form action="/einstellungen/benutzer" method="post" class="form-grid compact">
+            <form action="/einstellungen/benutzer" method="post" class="form-grid compact user-create-form">
               <label>
                 <span>Login</span>
                 <input type="text" name="email" placeholder="z. B. neuer_user">
@@ -310,7 +310,7 @@
                 </select>
               </label>
               <div class="form-actions-inline">
-                <button type="submit">Benutzer anlegen</button>
+                <button class="compact-button" type="submit">Benutzer anlegen</button>
               </div>
             </form>
 
@@ -336,7 +336,7 @@
                       <td><span class="badge <%= account.role === "systemadmin" ? "current" : account.role === "viewer" ? "off" : "on" %>"><%= account.role %></span></td>
                       <td><%= account.currentProjectId || "-" %></td>
                       <td><%= account.updatedAt || "-" %></td>
-                      <td>
+                      <td class="user-actions-cell">
                         <div class="user-management-actions">
                           <form action="/einstellungen/benutzer/<%= account.id %>/rolle" method="post" class="inline-role-form">
                             <select name="role" <%= account.id === user.id ? "disabled" : "" %>>
@@ -344,11 +344,11 @@
                                 <option value="<%= role %>" <%= role === account.role ? "selected" : "" %>><%= role %></option>
                               <% }) %>
                             </select>
-                            <button class="secondary compact-button" type="submit" <%= account.id === user.id ? "disabled" : "" %>>Rolle</button>
+                            <button class="secondary compact-button" type="submit" <%= account.id === user.id ? "disabled" : "" %>>Speichern</button>
                           </form>
                           <form action="/einstellungen/benutzer/<%= account.id %>/passwort" method="post" class="inline-role-form" data-confirm="Passwort für <%= account.email %> wirklich zurücksetzen? Bestehende Sessions werden beendet.">
                             <input type="password" name="password" placeholder="neues Passwort" autocomplete="new-password">
-                            <button class="secondary compact-button" type="submit">Passwort</button>
+                            <button class="secondary compact-button" type="submit">Setzen</button>
                           </form>
                           <form action="/einstellungen/benutzer/<%= account.id %>/status" method="post" class="inline-role-form" data-confirm="<%= account.status === "disabled" ? "Benutzer wirklich aktivieren?" : "Benutzer wirklich sperren? Bestehende Sessions werden beendet." %>">
                             <input type="hidden" name="status" value="<%= account.status === "disabled" ? "active" : "disabled" %>">

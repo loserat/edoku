@@ -52,6 +52,23 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 - Login-Maske und Auth-Meldungen optisch zentriert
 - Installationshinweise und lokale Demo-Defaults nach `INSTALL.md` ausgelagert
 
+### Nachtrag 2026-06-12
+
+- Hauptnavigation und Header weiter bereinigt; links oben steht jetzt nur noch das aktuelle Projekt.
+- Menüpunkt `Dokumentation` wurde zu `Anhänge`; die Dokumentenmatrix liegt jetzt im Exportbereich.
+- Matrix-Tabellen sind horizontal scrollbar, ohne Zeilenumbrüche und mit lokal speicherbaren Spaltenbreiten.
+- Matrix-Auswahl fokussiert auf Erzeugen/Exportieren vorhandener Systemdokumente.
+- Anhangsverwaltung auf kategoriebezogene Kachelansicht umgestellt.
+- Upload erfolgt direkt in der gewählten Kategorie; Mehrfachupload ist vorbereitet.
+- Anhangsdetails werden in einem Popup bearbeitet, das nur über `Abbrechen` verlassen wird.
+- Bildanhänge zeigen eine kleine Vorschau im Popup; PDF-Anhänge erhalten einen eigenen Vorschau-Button.
+- Aktionen im Anhangs-Popup wurden unten gebündelt: Download, Vorschau, Löschen, Abbrechen, Speichern.
+- Brandschutz-Fotozuordnung wird beim Speichern des Anhangs übernommen; der separate Zuordnen-Button entfällt.
+- Kategorie `Bedienungsanleitungen` ergänzt.
+- Gerätelisten können optional Bedienungsanleitungen je Geräteposition verknüpfen; Brandschutzlisten sind ausgenommen.
+- PDF-/Exportlogik referenziert verknüpfte Bedienungsanleitungen mit Kapitelbezug.
+- Exportunterbereiche weiter geordnet: PDF-Dokumentation, PDF-Trennstreifen, ZIP-Export, Matrix und Exporteinstellungen.
+
 ### Bekannte Grenzen
 
 - Noch keine produktive Server-Härtung

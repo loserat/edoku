@@ -315,7 +315,7 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
     };
   });
 
-  const attachmentEntries = await Promise.all(buildDocumentationAttachmentEntries(matrix, anhaenge, projekt).map(async (entry) => ({
+  const attachmentEntries = await Promise.all(buildDocumentationAttachmentEntries(matrix, anhaenge, projekt, geraetelisten).map(async (entry) => ({
     reihenfolge: 0,
     kapitel: entry.displayKapitel || entry.kapitel,
     originalKapitel: entry.originalKapitel || "",

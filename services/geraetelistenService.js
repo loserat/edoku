@@ -225,6 +225,7 @@ function emptyPosition(pos = 1, _einheit = "Stk", defaults = {}) {
     kategorie: "",
     funktionserhalt: "",
     lvPosition: "",
+    bedienungsanleitungId: "",
     bemerkung: ""
   };
 }
@@ -265,6 +266,7 @@ function normalizeFlatPosition(item) {
     leistung: item.leistung || "",
     kategorie: item.kategorie || "",
     lvPosition: item.lvPosition || item.lvPositionNr || item.lvPositionnummer || "",
+    bedienungsanleitungId: item.bedienungsanleitungId || item.anleitungId || "",
     bemerkung: item.bemerkung || ""
   };
 }
@@ -365,6 +367,7 @@ function normalizePostedGeraetelisten(posted) {
           leistung: position.leistung || "",
           kategorie: position.kategorie || "",
           lvPosition: position.lvPosition || "",
+          bedienungsanleitungId: liste.leistungsbereich === "Brandschutzabschottungen" ? "" : position.bedienungsanleitungId || "",
           bemerkung: position.bemerkung || ""
         }));
 

@@ -36,18 +36,64 @@
         return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
       }; %>
 
-      <div data-tabs="export" class="export-tab-shell export-scroll">
+      <div data-tabs="export-v2" class="export-tab-shell export-scroll">
         <nav class="tabs export-tabs" aria-label="Exportbereiche">
+          <button class="tab-button" type="button" data-tab-target="matrix">Matrix</button>
           <button class="tab-button" type="button" data-tab-target="pdf-dokumentation">PDF-Dokumentation</button>
           <button class="tab-button" type="button" data-tab-target="pdf-trennstreifen">PDF-Trennstreifen</button>
           <button class="tab-button" type="button" data-tab-target="zip-export">ZIP-Export</button>
           <button class="tab-button" type="button" data-tab-target="export-einstellungen">Exporteinstellungen</button>
         </nav>
 
-        <section class="summary-cards compact-summary">
-          <div class="summary-card"><span>Einträge</span><strong><%= exportliste.length %></strong></div>
-          <div class="summary-card"><span>Vorhanden</span><strong><%= vorhanden %></strong></div>
-          <div class="summary-card"><span>Fehlt</span><strong><%= fehlt %></strong></div>
+        <section id="matrix" class="tab-panel export-panel" data-tab-panel="matrix">
+          <div class="panel-head">
+            <div>
+              <h2>Matrix</h2>
+              <p>Hier wird nur festgelegt, welche vorhandenen Systemdokumente erzeugt und exportiert werden.</p>
+            </div>
+          </div>
+
+          <form action="/export/matrix" method="post" data-autosave>
+            <div class="table-wrap matrix-nowrap-wrap">
+              <table class="matrix-table matrix-nowrap-table" data-resizable-table data-resize-key="export-matrix">
+                <thead>
+                  <tr>
+                    <th>Kapitel</th>
+                    <th>Original</th>
+                    <th>Titel</th>
+                    <th>Ausgabe</th>
+                    <th>Pflicht</th>
+                    <th>Leistungsbereich</th>
+                    <th>Dokumenttyp</th>
+                    <th>Formularart</th>
+                    <th>Quelle</th>
+                    <th>Bemerkung</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% dokumente.forEach((dokument) => { %>
+                    <tr class="<%= dokument.aktiv ? "row-active" : "" %> level-<%= dokument.ebene %>">
+                      <td><strong><%= dokument.displayKapitel || "-" %></strong></td>
+                      <td><small><%= dokument.originalKapitel || dokument.kapitel %></small></td>
+                      <td class="title-cell"><%= dokument.titel %></td>
+                      <td>
+                        <label class="cell-check">
+                          <input type="checkbox" name="export" value="<%= dokument.id %>" <%= dokument.export ? "checked" : "" %>>
+                          <span>Ausgabe</span>
+                        </label>
+                      </td>
+                      <td><span class="badge <%= dokument.pflicht ? "on" : "off" %>"><%= dokument.pflicht ? "Ja" : "Nein" %></span></td>
+                      <td><%= [dokument.leistungsbereich, ...(Array.isArray(dokument.leistungsbereiche) ? dokument.leistungsbereiche : [])].filter(Boolean).join(", ") %></td>
+                      <td><%= dokument.dokumenttyp %></td>
+                      <td><%= dokument.formularart %></td>
+                      <td><%= dokument.quelle %></td>
+                      <td><%= dokument.bemerkung %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </form>
         </section>
 
         <%# Browser-Vorschau vorhandener PDF-Dateien aus generiert/final/externer Ablage. %>

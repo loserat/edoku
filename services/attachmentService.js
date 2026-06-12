@@ -100,6 +100,7 @@ async function parseMultipartUpload(req) {
   const parts = splitBuffer(body, boundary);
   const fields = {};
   let file = null;
+  const files = [];
 
   for (const part of parts) {
     let payload = part;
@@ -120,18 +121,20 @@ async function parseMultipartUpload(req) {
     if (!name) continue;
 
     if (originalName !== undefined) {
+      if (!originalName) continue;
       file = {
         fieldName: name,
         originalName,
         mimeType: headers["content-type"] || "application/octet-stream",
         buffer: content
       };
+      files.push(file);
     } else {
       fields[name] = content.toString("utf8");
     }
   }
 
-  return { fields, file };
+  return { fields, file, files };
 }
 
 // Ermittelt den Projektwurzelordner aus dem data-Verzeichnis des aktuellen Projekts.
@@ -147,6 +150,7 @@ function logicalCategoryName(category) {
     "Installationspläne": "Installationsplan",
     "Schemata": "Schema",
     "Messprotokolle": "Messprotokoll",
+    "Bedienungsanleitungen": "Bedienungsanleitung",
     "Brandschutz": "Brandschutz",
     "Fotos": "Foto",
     "Pläne": "Plan",
@@ -167,6 +171,7 @@ function logicalAttachmentFileName(fields, originalBaseName, extension, id) {
     "Installationspläne": [logicalCategoryName(category), fields.stockwerk, fields.bereich, fields.plannummer, fields.revision ? `Rev_${fields.revision}` : "", title],
     "Schemata": [logicalCategoryName(category), fields.stockwerk, fields.anlage, fields.plannummer, fields.revision ? `Rev_${fields.revision}` : "", title],
     "Messprotokolle": [logicalCategoryName(category), fields.stockwerk, fields.messart, fields.normgrundlage, fields.anlage || fields.bereich, fields.datum, title],
+    "Bedienungsanleitungen": [logicalCategoryName(category), fields.anlage || fields.bereich, title],
     "Brandschutz": [logicalCategoryName(category), fields.stockwerk, title],
     "Fotos": [logicalCategoryName(category), fields.stockwerk, title]
   };

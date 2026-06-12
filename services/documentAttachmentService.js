@@ -33,6 +33,12 @@ const DOCUMENT_ATTACHMENT_CATEGORIES = [
     kapitel: "10",
     title: "Messprotokolle",
     sortierung: 10010
+  },
+  {
+    category: "Bedienungsanleitungen",
+    kapitel: "3.2",
+    title: "Bedienungsanleitungen",
+    sortierung: 3020
   }
 ];
 
@@ -98,8 +104,18 @@ function documentationAttachments(raw) {
 }
 
 // Baut einen sprechenden Titel aus Kategorie-spezifischen Metadaten.
-function attachmentDisplayTitle(entry, categoryMeta) {
+function attachmentDisplayTitle(entry, categoryMeta, manualContext = null) {
   const base = String(entry.title || entry.originalName || categoryMeta.title || "Dokument").trim();
+  if (entry.category === "Bedienungsanleitungen" && manualContext) {
+    const details = [
+      manualContext.hersteller,
+      manualContext.system,
+      manualContext.typ,
+      manualContext.liste ? `Geräteliste ${manualContext.liste}` : "",
+      manualContext.pos ? `Pos. ${manualContext.pos}` : ""
+    ].map((value) => String(value || "").trim()).filter(Boolean);
+    return details.length ? `${base} - ${details.join(" / ")}` : base;
+  }
   const detailsByCategory = {
     "Stromlaufpläne": [entry.stockwerk, entry.verteiler, entry.plannummer, entry.revision ? `Rev. ${entry.revision}` : ""],
     "Schaltpläne": [entry.anlage, entry.verteiler, entry.plannummer, entry.revision ? `Rev. ${entry.revision}` : ""],
@@ -113,12 +129,34 @@ function attachmentDisplayTitle(entry, categoryMeta) {
   return details.length ? `${base} - ${details.join(" / ")}` : base;
 }
 
+// Verknüpft Bedienungsanleitungs-Anhänge mit Gerätepositionen.
+// Brandschutzabschottungen werden bewusst ausgeschlossen, weil sie eigene Bild-/Nachweislogik haben.
+function manualContextByAttachmentId(geraetelisten = []) {
+  const contexts = new Map();
+  (geraetelisten || [])
+    .filter((liste) => liste && liste.leistungsbereich !== "Brandschutzabschottungen")
+    .forEach((liste) => {
+      (liste.positionen || []).forEach((position) => {
+        const attachmentId = String(position.bedienungsanleitungId || "").trim();
+        if (!attachmentId || contexts.has(attachmentId)) return;
+        contexts.set(attachmentId, {
+          liste: liste.leistungsbereich || liste.titel || "",
+          pos: position.pos,
+          hersteller: position.hersteller,
+          system: position.system,
+          typ: position.typ
+        });
+      });
+    });
+  return contexts;
+}
+
 /**
  * Erzeugt virtuelle Matrixeinträge für importierte Dokumentations-PDFs.
  * Die Einträge bekommen logische Kapitelnummern und werden nach Kategorie,
  * Kapitel und Stockwerk sortiert.
  */
-function buildDocumentationAttachmentEntries(matrix, rawAttachments, projekt = {}) {
+function buildDocumentationAttachmentEntries(matrix, rawAttachments, projekt = {}, geraetelisten = []) {
   const attachments = documentationAttachments(rawAttachments).filter((entry) => entry.export !== false);
   if (!attachments.length) return [];
 
@@ -128,6 +166,7 @@ function buildDocumentationAttachmentEntries(matrix, rawAttachments, projekt = {
   );
   const countersByKapitel = new Map();
   const orderMap = stockwerkOrderMap(projekt);
+  const manualContexts = manualContextByAttachmentId(geraetelisten);
   const orderedAttachments = attachments.sort((a, b) => {
     const metaA = defaultDocumentMetaForCategory(a.category);
     const metaB = defaultDocumentMetaForCategory(b.category);
@@ -165,7 +204,7 @@ function buildDocumentationAttachmentEntries(matrix, rawAttachments, projekt = {
         kapitel: displayKapitel,
         originalKapitel,
         displayKapitel,
-        titel: attachmentDisplayTitle(entry, categoryMeta),
+        titel: attachmentDisplayTitle(entry, categoryMeta, manualContexts.get(entry.id)),
         ebene: 3,
         aktiv: true,
         export: true,
@@ -206,7 +245,7 @@ function updateAttachmentDocumentMeta(rawAttachments, attachmentId, values) {
       normgrundlage: String(values.normgrundlage || "").trim(),
       datum: String(values.datum || "").trim(),
       sortierung: Number.isFinite(Number.parseFloat(values.sortierung)) ? Number.parseFloat(values.sortierung) : null,
-      export: Boolean(values.export)
+      export: values.export === undefined ? entry.export !== false : Boolean(values.export)
     };
   });
 

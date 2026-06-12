@@ -4,17 +4,14 @@
   <div class="brand-block">
     <a class="brand" href="/">
       <img class="brand-logo" src="/img/logo.svg" alt="" width="32" height="32">
-      <span class="brand-name">edoku</span>
+      <span class="brand-name"><%= typeof currentProjectName !== "undefined" && currentProjectName ? currentProjectName : "edoku" %></span>
     </a>
-    <% if (typeof currentProjectId !== "undefined" && currentProjectId) { %>
-      <span class="brand-project">Geöffnetes Projekt: <%= typeof currentProjectName !== "undefined" && currentProjectName ? currentProjectName : currentProjectId %></span>
-    <% } %>
   </div>
   <nav class="nav" aria-label="Hauptnavigation">
     <% const dashboardLabel = typeof currentProjectNumber !== "undefined" && currentProjectNumber ? currentProjectNumber : typeof currentProjectName !== "undefined" && currentProjectName ? currentProjectName : "Übersicht"; %>
-    <a class="<%= active === "dashboard" ? "active" : "" %>" href="/dashboard" title="Projektübersicht"><%- include("icon", { name: "overview" }) %><span><%= dashboardLabel %></span></a>
     <a class="<%= ["projekte", "projekt", "leistungsbereiche", "systemauswahl", "projektarchiv"].includes(active) ? "active" : "" %>" href="/projekte"><%- include("icon", { name: "project" }) %><span>Projekte</span></a>
-    <a class="<%= ["dokumente", "anhaenge"].includes(active) ? "active" : "" %>" href="/dokumente"><%- include("icon", { name: "documentation" }) %><span>Dokumentation</span></a>
+    <a class="<%= active === "dashboard" ? "active" : "" %>" href="/dashboard" title="Projektübersicht"><%- include("icon", { name: "overview" }) %><span><%= dashboardLabel %></span></a>
+    <a class="<%= ["dokumente", "anhaenge"].includes(active) ? "active" : "" %>" href="/anhaenge?kategorie=Brandschutz"><%- include("icon", { name: "documentation" }) %><span>Anhänge</span></a>
     <a class="<%= active === "brandschutz" ? "active" : "" %>" href="/brandschutz"><%- include("icon", { name: "shield" }) %><span>Brandschutz</span></a>
     <a class="<%= active === "geraetelisten" ? "active" : "" %>" href="/geraetelisten"><%- include("icon", { name: "list" }) %><span>Gerätelisten</span></a>
     <a class="<%= active === "export" ? "active" : "" %>" href="/export"><%- include("icon", { name: "export" }) %><span>Export</span></a>
