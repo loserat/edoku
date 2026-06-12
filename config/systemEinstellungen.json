@@ -24,8 +24,8 @@
     "logoPfad": "creator/921bbd3c-d2ab-448e-ada2-106e6781f692.png"
   },
   "theme": {
-    "preset": "github-light",
     "name": "GitHub Light",
+    "preset": "github-light",
     "mode": "light",
     "colors": {
       "bgLight": "#f6f8fa",

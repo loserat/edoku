@@ -288,8 +288,8 @@ async function fileExistsForAttachment(relativePath) {
  * Ergänzt Rohdaten um Dateistatus, Typ-Erkennung, Inhaltsverzeichnis-Zuordnung
  * und Brandschutz-Fotoverweise.
  */
-async function buildAttachmentViewModel(attachments, brandschutz, matrix, projekt = {}) {
-  const tocEntries = buildDocumentationAttachmentEntries(matrix, attachments, projekt);
+async function buildAttachmentViewModel(attachments, brandschutz, matrix, projekt = {}, geraetelisten = []) {
+  const tocEntries = buildDocumentationAttachmentEntries(matrix, attachments, projekt, geraetelisten);
   const tocByAttachmentId = new Map(tocEntries.map((entry) => [entry.attachmentId, entry]));
   const rows = await Promise.all(normalizeAttachments(attachments).map(async (entry) => {
     const assignedFoto1 = (brandschutz || []).filter((schottung) => schottung.foto_vorher === entry.relativePath);
@@ -475,6 +475,16 @@ function updatePostedMatrix(matrix, body) {
   return (matrix || []).map((entry) => ({
     ...entry,
     aktiv: Boolean(entry.pflicht || activeIds.has(entry.id)),
+    export: exportIds.has(entry.id)
+  }));
+}
+
+// * INFO: Die Export-Matrix steuert nur die Ausgabe. Systemeinträge bleiben erhalten.
+function updateMatrixOutputSelection(matrix, body) {
+  const exportIds = new Set(Array.isArray(body.export) ? body.export : body.export ? [body.export] : []);
+  return (matrix || []).map((entry) => ({
+    ...entry,
+    aktiv: Boolean(entry.aktiv || exportIds.has(entry.id)),
     export: exportIds.has(entry.id)
   }));
 }
@@ -734,6 +744,12 @@ app.get("/geraetelisten", requireAuth, async (req, res, next) => {
     const data = await loadCurrent(req);
     const nurAktive = req.query.aktiv === "1";
     const listen = nurAktive ? data.geraetelisten.filter((liste) => liste.aktiv) : data.geraetelisten;
+    const bedienungsanleitungen = normalizeAttachments(data.anhaenge)
+      .filter((entry) => entry.category === "Bedienungsanleitungen" && entry.mimeType === "application/pdf")
+      .sort((a, b) => String(a.title || a.originalName || "").localeCompare(String(b.title || b.originalName || ""), "de", {
+        numeric: true,
+        sensitivity: "base"
+      }));
     const fieldProfiles = Object.fromEntries(listen.map((liste) => [
       liste.leistungsbereich,
       deviceListFieldsForLeistungsbereich(liste.leistungsbereich)
@@ -746,6 +762,7 @@ app.get("/geraetelisten", requireAuth, async (req, res, next) => {
       nurAktive,
       suggestions: buildGeraetelistenSuggestions(data.systemConfig),
       fieldProfiles,
+      bedienungsanleitungen,
       previewByListId: buildGeraetelistenPreviewMap(listen, pdfPreviewFiles)
     });
   } catch (error) {
@@ -816,6 +833,7 @@ app.get("/export", requireAuth, async (req, res, next) => {
       active: "export",
       exportliste: data.exportliste,
       ordnerstruktur: data.ordnerstruktur,
+      dokumente: sortDocuments(applyLogicalChapterNumbers(data.matrix, { exportOnly: false })),
       preview: buildExportPreview({
         projekt: data.projekt,
         matrix: data.matrix,
@@ -827,6 +845,26 @@ app.get("/export", requireAuth, async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+});
+
+app.post("/export/matrix", requireAuth, async (req, res) => {
+  try {
+    const files = await currentFiles(req);
+    await writeJson(files.dokumentenmatrix, updateMatrixOutputSelection(await readJson(files.dokumentenmatrix, []), req.body));
+    okOrRedirect(req, res, "/export");
+  } catch (error) {
+    fail(req, res, "/export", error);
+  }
+});
+
+app.post("/export/matrix/aktualisieren", requireAuth, async (req, res) => {
+  try {
+    const files = await currentFiles(req);
+    await syncProjectDerivedData(files);
+    redirectWithFlash(res, "/export", "success", "Dokumentenmatrix wurde aktualisiert.");
+  } catch (error) {
+    fail(req, res, "/export", error);
   }
 });
 
@@ -878,7 +916,7 @@ async function generateCompleteDocumentation(rootDir, data) {
   generated.push(...await generateInhaltsverzeichnis(rootDir, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche));
   generated.push(...await generateFormularPdfs(rootDir, data.projekt, data.matrix, data.leistungsbereiche, data.systemConfig, data.projektSysteme, data.templates, data.systemSettings));
   generated.push(...await generateDeckblaetter(rootDir, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche));
-  generated.push(...await generateGeraetelisten(rootDir, data.projekt, data.geraetelisten, data.systemSettings, data.matrix, data.leistungsbereiche));
+  generated.push(...await generateGeraetelisten(rootDir, data.projekt, data.geraetelisten, data.systemSettings, data.matrix, data.leistungsbereiche, data.anhaenge));
   generated.push(...await generateBrandschutzPdf(rootDir, data.projekt, data.brandschutz, data.systemSettings, data.matrix, data.geraetelisten, data.leistungsbereiche));
   await buildExportliste(rootDir, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche);
   return generated;
@@ -925,7 +963,7 @@ app.post("/export/formulare", requireAuth, async (req, res) => {
 
 app.post("/export/geraetelisten", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
-  await generateGeraetelisten(ROOT_DIR, data.projekt, data.geraetelisten, data.systemSettings, data.matrix, data.leistungsbereiche);
+  await generateGeraetelisten(ROOT_DIR, data.projekt, data.geraetelisten, data.systemSettings, data.matrix, data.leistungsbereiche, data.anhaenge);
   redirectWithFlash(res, "/export", "success", "Gerätelisten wurden generiert.");
 });
 
@@ -1293,7 +1331,7 @@ app.get("/anhaenge", requireAuth, async (req, res, next) => {
     ];
     const selectedKategorie = attachmentCategories.includes(req.query.kategorie) ? req.query.kategorie : attachmentCategories[0];
     const categoryDefaults = defaultDocumentMetaForCategory(selectedKategorie);
-    const attachmentView = await buildAttachmentViewModel(data.anhaenge, data.brandschutz, data.matrix, data.projekt);
+    const attachmentView = await buildAttachmentViewModel(data.anhaenge, data.brandschutz, data.matrix, data.projekt, data.geraetelisten);
     const attachmentRows = attachmentView.rows
       .filter((entry) => entry.category === selectedKategorie)
       .sort((a, b) => {
@@ -1340,10 +1378,14 @@ app.post("/anhaenge/upload", requireAuth, async (req, res) => {
     upload.fields.category = allowedCategories.includes(req.query.kategorie) ? req.query.kategorie : "Brandschutz";
     const categoryDefaults = defaultDocumentMetaForCategory(upload.fields.category);
     if (!upload.fields.kapitel) upload.fields.kapitel = categoryDefaults.kapitel || "";
-    const nextAttachments = await saveAttachment(ROOT_DIR, files, await readJson(files.anhaenge, []), upload);
+    let nextAttachments = await readJson(files.anhaenge, []);
+    const uploadFiles = upload.files && upload.files.length ? upload.files : [upload.file].filter(Boolean);
+    for (const file of uploadFiles) {
+      nextAttachments = await saveAttachment(ROOT_DIR, files, nextAttachments, { ...upload, file });
+    }
     await writeJson(files.anhaenge, nextAttachments);
     const target = `/anhaenge?kategorie=${encodeURIComponent(upload.fields.category)}`;
-    redirectWithFlash(res, target, "success", "Anhang wurde hochgeladen.");
+    redirectWithFlash(res, target, "success", `${uploadFiles.length} Datei(en) wurden hochgeladen.`);
   } catch (error) {
     fail(req, res, "/anhaenge", error);
   }
@@ -1352,6 +1394,8 @@ app.post("/anhaenge/upload", requireAuth, async (req, res) => {
 app.post("/anhaenge/:id/aktualisieren", requireAuth, async (req, res) => {
   try {
     const files = await currentFiles(req);
+    // * INFO: Metadatenänderungen können den logischen Dateinamen verändern.
+    // Brandschutz-Verweise müssen deshalb nach dem Umbenennen mitgezogen werden.
     const nextAttachments = updateAttachmentDocumentMeta(await readJson(files.anhaenge, []), req.params.id, {
       title: req.body.title,
       category: req.body.category,
@@ -1366,17 +1410,38 @@ app.post("/anhaenge/:id/aktualisieren", requireAuth, async (req, res) => {
       normgrundlage: req.body.normgrundlage,
       datum: req.body.datum,
       sortierung: req.body.sortierung,
-      export: req.body.export === "on"
+      export: Object.prototype.hasOwnProperty.call(req.body, "export") ? req.body.export === "on" : undefined
     });
     const synced = await syncAttachmentFileName(ROOT_DIR, files, nextAttachments, req.params.id);
     await writeJson(files.anhaenge, synced.attachments);
-    if (synced.renamed) {
-      const brandschutz = normalizeBrandschutz(await readJson(files.brandschutz, []));
-      await writeJson(files.brandschutz, brandschutz.map((entry) => ({
-        ...entry,
-        foto_vorher: entry.foto_vorher === synced.renamed.oldRelativePath ? synced.renamed.newRelativePath : entry.foto_vorher,
-        foto_nachher: entry.foto_nachher === synced.renamed.oldRelativePath ? synced.renamed.newRelativePath : entry.foto_nachher
-      })));
+    const updatedTarget = normalizeAttachments(synced.attachments).find((entry) => entry.id === req.params.id);
+    const shouldAssignBrandschutzImage =
+      updatedTarget &&
+      updatedTarget.mimeType.startsWith("image/") &&
+      req.body.brandschutzId &&
+      req.body.slot;
+
+    // * INFO: Bildzuordnungen werden bewusst hier gespeichert, damit das Popup
+    // nur einen Speichern-Button braucht und keine separate Zuordnen-Aktion.
+    if (synced.renamed || shouldAssignBrandschutzImage) {
+      let brandschutz = normalizeBrandschutz(await readJson(files.brandschutz, []));
+      if (synced.renamed) {
+        brandschutz = brandschutz.map((entry) => ({
+          ...entry,
+          foto_vorher: entry.foto_vorher === synced.renamed.oldRelativePath ? synced.renamed.newRelativePath : entry.foto_vorher,
+          foto_nachher: entry.foto_nachher === synced.renamed.oldRelativePath ? synced.renamed.newRelativePath : entry.foto_nachher
+        }));
+      }
+      if (shouldAssignBrandschutzImage) {
+        brandschutz = clearAttachmentReferencesFromBrandschutz(brandschutz, updatedTarget.relativePath);
+        brandschutz = assignAttachmentToBrandschutz(
+          brandschutz,
+          updatedTarget.relativePath,
+          req.body.brandschutzId || "",
+          req.body.slot || ""
+        );
+      }
+      await writeJson(files.brandschutz, brandschutz);
     }
     const target = req.body.returnKategorie ? `/anhaenge?kategorie=${encodeURIComponent(req.body.returnKategorie)}` : "/anhaenge";
     okOrRedirect(req, res, target, "Anhang wurde aktualisiert.");
@@ -1444,6 +1509,27 @@ app.get("/anhaenge/download", requireAuth, async (req, res, next) => {
 
     const filePath = safeJoin(ROOT_DIR, target.relativePath);
     res.download(filePath, target.originalName);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/anhaenge/preview", requireAuth, async (req, res, next) => {
+  try {
+    const files = await currentFiles(req);
+    const attachments = normalizeAttachments(await readJson(files.anhaenge, []));
+    const target = attachments.find((entry) => entry.id === req.query.id);
+    if (!target) {
+      res.status(404).send("Anhang nicht gefunden.");
+      return;
+    }
+
+    // ! WICHTIG: Die Vorschau liefert nur Dateien aus der aktuellen Projektablage.
+    // safeJoin verhindert freie Serverpfade aus Benutzerinput.
+    const filePath = safeJoin(ROOT_DIR, target.relativePath);
+    res.type(target.mimeType || "application/octet-stream");
+    res.setHeader("Content-Disposition", `inline; filename="${target.originalName.replace(/"/g, "")}"`);
+    res.sendFile(filePath);
   } catch (error) {
     next(error);
   }

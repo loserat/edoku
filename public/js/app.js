@@ -93,6 +93,53 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // * INFO: Anhänge werden wie im Explorer über Kacheln geöffnet.
+  // Gespeichert wird in diesen Dialogen bewusst nur über den Speichern-Button.
+  const attachmentModals = Array.from(document.querySelectorAll("[data-attachment-modal]"));
+  if (attachmentModals.length) {
+    function openAttachmentModal(modal) {
+      if (!modal) return;
+      modal.hidden = false;
+      document.body.classList.add("modal-open");
+      const firstField = modal.querySelector("input:not([type='hidden']), select, textarea, button");
+      if (firstField) firstField.focus();
+    }
+
+    function closeAttachmentModal(modal) {
+      if (!modal) return;
+      modal.hidden = true;
+      if (!document.querySelector("[data-attachment-modal]:not([hidden]), [data-pdf-modal]:not([hidden])")) {
+        document.body.classList.remove("modal-open");
+      }
+    }
+
+    document.addEventListener("click", (event) => {
+      const openButton = event.target.closest("[data-attachment-modal-open]");
+      if (openButton) {
+        openAttachmentModal(document.querySelector(`[data-attachment-modal="${openButton.dataset.attachmentModalOpen}"]`));
+        return;
+      }
+
+      const uploadButton = event.target.closest("[data-attachment-upload-open]");
+      if (uploadButton) {
+        const form = uploadButton.closest("[data-attachment-upload-form]");
+        const fileInput = form ? form.querySelector('input[type="file"][name="anhang"]') : null;
+        if (fileInput && !fileInput.files.length) {
+          fileInput.reportValidity();
+          return;
+        }
+        openAttachmentModal(form ? form.querySelector('[data-attachment-modal="upload"]') : null);
+        return;
+      }
+
+      const closeButton = event.target.closest("[data-attachment-modal-close]");
+      if (closeButton) {
+        closeAttachmentModal(closeButton.closest("[data-attachment-modal]"));
+      }
+    });
+
+  }
+
   const settingsTabs = Array.from(document.querySelectorAll("[data-settings-tab]"));
   const settingsPanels = Array.from(document.querySelectorAll("[data-settings-panel]"));
   if (settingsTabs.length && settingsPanels.length) {
@@ -269,6 +316,65 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // * INFO: Matrix-Spalten können lokal verbreitert/verkleinert werden.
+  // Die Breiten bleiben im Browser gespeichert und beeinflussen keine Projektdaten.
+  document.querySelectorAll("[data-resizable-table]").forEach((table) => {
+    const storageKey = `edoku-column-widths-${table.dataset.resizeKey || window.location.pathname}`;
+    const headers = Array.from(table.querySelectorAll("thead th"));
+    let savedWidths = {};
+    try {
+      savedWidths = JSON.parse(localStorage.getItem(storageKey) || "{}");
+    } catch {
+      savedWidths = {};
+    }
+
+    function applyWidth(index, width) {
+      const px = `${Math.max(72, Math.round(width))}px`;
+      table.querySelectorAll(`tr > *:nth-child(${index + 1})`).forEach((cell) => {
+        cell.style.width = px;
+        cell.style.minWidth = px;
+        cell.style.maxWidth = px;
+      });
+    }
+
+    headers.forEach((header, index) => {
+      if (savedWidths[index]) applyWidth(index, savedWidths[index]);
+
+      const handle = document.createElement("span");
+      handle.className = "column-resize-handle";
+      handle.setAttribute("aria-hidden", "true");
+      header.appendChild(handle);
+
+      handle.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        const startX = event.clientX;
+        const startWidth = header.getBoundingClientRect().width;
+        table.classList.add("is-resizing");
+        handle.setPointerCapture(event.pointerId);
+
+        function onMove(moveEvent) {
+          const nextWidth = startWidth + moveEvent.clientX - startX;
+          applyWidth(index, nextWidth);
+        }
+
+        function onUp(upEvent) {
+          const nextWidth = header.getBoundingClientRect().width;
+          savedWidths[index] = Math.max(72, Math.round(nextWidth));
+          localStorage.setItem(storageKey, JSON.stringify(savedWidths));
+          table.classList.remove("is-resizing");
+          handle.releasePointerCapture(upEvent.pointerId);
+          handle.removeEventListener("pointermove", onMove);
+          handle.removeEventListener("pointerup", onUp);
+          handle.removeEventListener("pointercancel", onUp);
+        }
+
+        handle.addEventListener("pointermove", onMove);
+        handle.addEventListener("pointerup", onUp);
+        handle.addEventListener("pointercancel", onUp);
+      });
+    });
+  });
+
   const themeEditor = document.querySelector("[data-theme-editor]");
   const themePresetsNode = document.querySelector("#theme-presets-json");
   if (themeEditor) {
@@ -416,7 +522,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const attachmentCategoryDefaultsNode = document.querySelector("#attachment-category-defaults-json");
   if (attachmentCategoryDefaultsNode) {
     const attachmentCategoryDefaults = JSON.parse(attachmentCategoryDefaultsNode.textContent || "{}");
-    document.querySelectorAll(".attachment-upload select[name='category']").forEach((select) => {
+    document.querySelectorAll(".attachment-upload select[name='category'], .attachment-detail-form select[name='category']").forEach((select) => {
       select.addEventListener("change", () => {
         const form = select.closest("form");
         const chapterInput = form ? form.querySelector("input[name='kapitel']") : null;
@@ -544,6 +650,8 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-add-geraet-row]").forEach((button) => {
     const fieldProfilesNode = document.querySelector("#device-field-profiles-json");
     const fieldProfiles = fieldProfilesNode ? JSON.parse(fieldProfilesNode.textContent || "{}") : {};
+    const manualsNode = document.querySelector("#device-manuals-json");
+    const deviceManuals = manualsNode ? JSON.parse(manualsNode.textContent || "[]") : [];
 
     // Fügt clientseitig neue Positionszeilen hinzu; gespeichert wird anschließend per Auto-Save.
     button.addEventListener("click", () => {
@@ -564,6 +672,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
       function cell(field, value = "", extra = "") {
         return `<td data-col="${escapeAttribute(field)}"><input type="text" name="geraetelisten[${listIndex}][positionen][${nextIndex}][${field}]" value="${escapeAttribute(value)}" ${extra}></td>`;
+      }
+
+      function manualCell() {
+        if (button.dataset.leistungsbereich === "Brandschutzabschottungen") return "";
+        const options = deviceManuals.map((manual) => {
+          const label = manual.title || manual.originalName || "Bedienungsanleitung";
+          return `<option value="${escapeAttribute(manual.id)}">${escapeAttribute(label)}</option>`;
+        }).join("");
+        return `
+          <td data-col="bedienungsanleitungId">
+            <div class="manual-link-control">
+              <select name="geraetelisten[${listIndex}][positionen][${nextIndex}][bedienungsanleitungId]">
+                <option value="">Keine Anleitung</option>
+                ${options}
+              </select>
+              <a class="button-link compact-icon-link" href="/anhaenge?kategorie=Bedienungsanleitungen" title="Bedienungsanleitung hochladen">+</a>
+            </div>
+          </td>`;
       }
 
       function fieldCell(field) {
@@ -587,6 +713,7 @@ document.addEventListener("DOMContentLoaded", () => {
         row.innerHTML = [
           cell("pos", pos),
           ...fields.map(fieldCell),
+          manualCell(),
           `<td data-col="delete"><button class="row-delete-button danger icon-only-button" type="button" data-delete-row data-delete-label="Geräteposition ${pos}" aria-label="Geräteposition löschen">${trashIconMarkup()}</button></td>`
         ].join("");
         tbody.appendChild(row);
@@ -1003,7 +1130,9 @@ document.addEventListener("DOMContentLoaded", () => {
     function closePdfModal() {
       pdfModal.hidden = true;
       if (pdfFrame) pdfFrame.src = "about:blank";
-      document.body.classList.remove("modal-open");
+      if (!document.querySelector("[data-attachment-modal]:not([hidden])")) {
+        document.body.classList.remove("modal-open");
+      }
     }
 
     document.addEventListener("click", (event) => {

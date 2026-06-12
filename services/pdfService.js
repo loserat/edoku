@@ -149,7 +149,7 @@ function buildInhaltsverzeichnisEntries(matrix, geraetelisten = [], anhaenge = [
       };
     });
 
-  const attachmentEntries = buildDocumentationAttachmentEntries(matrix, anhaenge, projekt);
+  const attachmentEntries = buildDocumentationAttachmentEntries(matrix, anhaenge, projekt, activeLists);
 
   return [...docs, ...listEntries, ...attachmentEntries].sort((a, b) => {
     const sortA = Number.isFinite(a.sortierung) ? a.sortierung : 0;
@@ -165,6 +165,15 @@ function logicalDeviceListNumbers(matrix, geraetelisten = [], leistungsbereiche 
     buildInhaltsverzeichnisEntries(matrix, geraetelisten, [], leistungsbereiche)
       .filter((entry) => String(entry.id || "").startsWith("toc-"))
       .map((entry) => [String(entry.id).replace(/^toc-/, ""), entry.displayKapitel || entry.kapitel])
+  );
+}
+
+// Verweist Gerätepositionen auf Kapitel der optional hinterlegten Bedienungsanleitungen.
+function manualChapterNumbers(matrix, geraetelisten = [], anhaenge = [], leistungsbereiche = {}, projekt = {}) {
+  return new Map(
+    buildInhaltsverzeichnisEntries(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt)
+      .filter((entry) => entry.attachmentId)
+      .map((entry) => [entry.attachmentId, entry.displayKapitel || entry.kapitel])
   );
 }
 
@@ -1166,11 +1175,12 @@ function drawCompactInfoGrid(doc, x, y, width, rows, columns = 3) {
 }
 
 // Generiert pro aktiver Geräteliste ein Tabellen-PDF.
-async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSettings = {}, matrix = [], leistungsbereiche = {}) {
+async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSettings = {}, matrix = [], leistungsbereiche = {}, anhaenge = []) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generated = [];
   const listen = filterExportGeraetelisten(geraetelisten, leistungsbereiche);
   const logicalNumbers = logicalDeviceListNumbers(matrix, listen, leistungsbereiche);
+  const manualNumbers = manualChapterNumbers(matrix, listen, anhaenge, leistungsbereiche, projekt);
   const generatedDir = path.join(paths.generatedPath, "Geraetelisten");
   await clearGeneratedPdfs(generatedDir);
 
@@ -1192,6 +1202,7 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
       kategorie: "",
       funktionserhalt: "",
       lvPosition: "",
+      bedienungsanleitungId: "",
       bemerkung: ""
     }));
 
@@ -1199,13 +1210,16 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
       writeProjectHeader(doc, projekt, rootDir, systemSettings);
       writeDocumentTitle(doc, "Geräteliste", `Kapitel ${displayKapitel} - ${liste.titel} | ${liste.leistungsbereich}`);
       const fields = deviceListFieldsForLeistungsbereich(liste.leistungsbereich);
+      const showManualColumn = liste.leistungsbereich !== "Brandschutzabschottungen"
+        && printableRows.some((row) => row.bedienungsanleitungId && manualNumbers.has(row.bedienungsanleitungId));
       const rawColumns = [
         { name: "pos", label: "Pos.", width: 26 },
         ...fields.map((field) => ({
           name: field.name,
           label: field.pdfLabel || field.label.replace(" (optional)", ""),
           width: field.pdfWidth || 54
-        }))
+        })),
+        ...(showManualColumn ? [{ name: "bedienungsanleitungId", label: "Anleitung", width: 46 }] : [])
       ];
       const columns = buildFullWidthColumns(doc, rawColumns);
       const tableBottom = doc.page.height - 78;
@@ -1213,7 +1227,8 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
       printableRows.forEach((row) => {
         const values = [
           row.pos,
-          ...fields.map((field) => row[field.name])
+          ...fields.map((field) => row[field.name]),
+          ...(showManualColumn ? [row.bedienungsanleitungId ? `Kap. ${manualNumbers.get(row.bedienungsanleitungId) || "-"}` : ""] : [])
         ];
         const estimatedHeight = Math.max(20, Math.ceil(Math.max(...columns.map((column, index) => doc.heightOfString(String(values[index] || ""), {
           width: column.width - 6

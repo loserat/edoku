@@ -95,15 +95,24 @@ Die Trennstreifen werden ohne GitHub-Branding erzeugt, damit sie als reine Regis
 
 ## Anhänge und importierte PDFs
 
-Anhänge werden projektbezogen gespeichert. PDF-Anhänge können Kategorien erhalten, z. B.:
+Anhänge werden projektbezogen gespeichert und immer in der aktuell gewählten Kategorie importiert. Die Oberfläche zeigt Anhänge als Kacheln; Detaildaten werden bewusst in einem Bearbeiten-Popup gespeichert, damit keine versehentlichen Auto-Saves beim reinen Öffnen oder Vorschauen entstehen.
+
+PDF-Anhänge können Kategorien erhalten, z. B.:
 
 - Stromlaufpläne
 - Schaltpläne
 - Installationspläne
 - Schemata
 - Messprotokolle
+- Bedienungsanleitungen
 
 Diese PDF-Anhänge können in Inhaltsverzeichnis und Exportliste aufgenommen werden.
+
+Für Pläne und Messprotokolle wird die Stockwerksangabe zur Sortierung verwendet. Bedienungsanleitungen können in Gerätelisten mit einzelnen Gerätepositionen verknüpft werden. Brandschutzgerätelisten sind davon ausgenommen, weil dort die Bild- und Schottungsdokumentation separat geführt wird.
+
+Bildanhänge können Brandschutzabschottungen als `Foto 1` oder `Foto 2` zugeordnet werden. Die Zuordnung erfolgt im Anhangs-Popup und wird gemeinsam mit den Metadaten über den Speichern-Button übernommen. Das Bearbeiten-Popup zeigt für Bilder eine direkte Vorschau; PDFs werden über eine separate PDF-Vorschau geöffnet.
+
+Importierte Dateien werden serverseitig mit einem logischen Dateinamen aus Kategorie und Metadaten abgelegt. Dadurch bleiben Ablage, Export und Inhaltsverzeichnis nachvollziehbar.
 
 ## Docker
 

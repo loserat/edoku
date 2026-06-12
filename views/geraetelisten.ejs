@@ -99,6 +99,7 @@
               <% const listSuggestions = suggestions[liste.leistungsbereich] || { alleHersteller: [], alleSysteme: [], alleTypen: [] }; %>
               <% const listFields = fieldProfiles[liste.leistungsbereich] || []; %>
               <% const previewUrl = previewByListId && previewByListId[liste.id] ? previewByListId[liste.id] : ""; %>
+              <% const allowManualLinks = liste.leistungsbereich !== "Brandschutzabschottungen"; %>
               <section class="edit-section <%= liste.aktiv ? "" : "is-inactive" %>" data-device-list-panel="<%= liste.id %>" data-suggestion-leistungsbereich="<%= liste.leistungsbereich %>">
                 <div class="edit-section-head">
                   <div>
@@ -176,6 +177,9 @@
                         <% listFields.forEach((field) => { %>
                           <th data-col="<%= field.name %>" data-sortable-column><%= field.label %></th>
                         <% }) %>
+                        <% if (allowManualLinks) { %>
+                          <th data-col="bedienungsanleitungId" data-sortable-column>Bedienungsanleitung</th>
+                        <% } %>
                         <th data-col="delete">Entfernen</th>
                       </tr>
                     </thead>
@@ -187,6 +191,19 @@
                             <% const listAttr = field.suggest === "hersteller" ? `list="geraeteliste-hersteller-${listenIndex}" data-device-suggest="hersteller"` : field.suggest === "system" ? `list="geraeteliste-system-${listenIndex}" data-device-suggest="system"` : field.suggest === "typ" ? `list="geraeteliste-typ-${listenIndex}" data-device-suggest="typ"` : ""; %>
                             <td data-col="<%= field.name %>"><input type="text" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][<%= field.name %>]" value="<%= position[field.name] || "" %>" <%- listAttr %>></td>
                           <% }) %>
+                          <% if (allowManualLinks) { %>
+                            <td data-col="bedienungsanleitungId">
+                              <div class="manual-link-control">
+                                <select name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][bedienungsanleitungId]">
+                                  <option value="">Keine Anleitung</option>
+                                  <% (bedienungsanleitungen || []).forEach((manual) => { %>
+                                    <option value="<%= manual.id %>" <%= position.bedienungsanleitungId === manual.id ? "selected" : "" %>><%= manual.title || manual.originalName %></option>
+                                  <% }) %>
+                                </select>
+                                <a class="button-link compact-icon-link" href="/anhaenge?kategorie=Bedienungsanleitungen" title="Bedienungsanleitung hochladen">+</a>
+                              </div>
+                            </td>
+                          <% } %>
                           <td data-col="delete">
                             <button class="row-delete-button danger icon-only-button" type="button" data-delete-row data-delete-label="Geräteposition <%= position.pos || posIndex + 1 %>" aria-label="Geräteposition löschen"><%- include("partials/icon", { name: "trash" }) %></button>
                           </td>
@@ -204,6 +221,7 @@
     <%- include("partials/footer") %>
     <script type="application/json" id="device-suggestions-json"><%- JSON.stringify(suggestions || {}) %></script>
     <script type="application/json" id="device-field-profiles-json"><%- JSON.stringify(fieldProfiles || {}) %></script>
+    <script type="application/json" id="device-manuals-json"><%- JSON.stringify(bedienungsanleitungen || []) %></script>
     <datalist id="device-filtered-suggestions"></datalist>
     <script src="/js/app.js"></script>
   </body>

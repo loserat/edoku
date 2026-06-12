@@ -1,6 +1,6 @@
 # Projektupdate edoku
 
-Stand: 2026-06-09
+Stand: 2026-06-12
 
 ## Beta-Status
 
@@ -76,6 +76,28 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Dokumentation bereinigt: konkrete lokale Demo-Zugänge aus der Haupt-README entfernt und in `INSTALL.md` verschoben.
 - Toolbar-Branding nachgeschärft: `edoku` wird oben links größer dargestellt und bevorzugt eine Pixel-/Geist-Pixel-Schrift, falls diese lokal oder später als Webfont verfügbar ist.
 
+## Update 2026-06-12
+
+- Hauptnavigation weiter bereinigt: `Projekte` steht links in der Menüfolge, `Dokumentation` wurde zu `Anhänge`.
+- Die Dokumentenmatrix ist in den Exportbereich gewandert und wird dort als eigene Export-Untersektion geführt.
+- Matrix-Tabellen werden ohne Zeilenumbrüche dargestellt, horizontal scrollbar gehalten und können im Browser spaltenweise in der Breite angepasst werden.
+- Die Matrix steuert jetzt primär, welche vorhandenen Systemdokumente in der Ausgabe erzeugt beziehungsweise exportiert werden.
+- Der manuelle Button zum Aktualisieren der Matrix aus Leistungsbereichen wurde entfernt, weil die Synchronisierung im Hintergrund erfolgt.
+- Exportbereich wurde in die Unterbereiche `PDF-Dokumentation`, `PDF-Trennstreifen`, `ZIP-Export`, `Matrix` und `Exporteinstellungen` gegliedert.
+- Nicht benötigte Export-Kennzahlen wurden aus den Unterseiten entfernt, damit die Exportseiten ruhiger wirken.
+- Anhänge wurden neu als kategoriebezogene Dateiablage aufgebaut: Upload erfolgt direkt in der gewählten Kategorie.
+- Anhänge werden als Kacheln dargestellt; Bearbeitung erfolgt nur noch über den Button `Bearbeiten`.
+- Anhangs-Popups schließen nicht mehr per Klick auf den Hintergrund, sondern bewusst über `Abbrechen`.
+- Bildanhänge erhalten eine direkte Vorschau im Popup; PDF-Anhänge öffnen eine Vorschau über einen separaten Vorschau-Button.
+- Die Aktionen `Download`, `Vorschau`, `Löschen`, `Abbrechen` und `Speichern` sind unten im Anhangs-Popup gebündelt.
+- `Speichern` übernimmt auch die Brandschutz-Fotozuordnung; der separate Zuordnen-Button wurde aus dem Workflow entfernt.
+- Mehrfachupload für Anhänge wurde vorbereitet, damit mehrere Dateien in einer Kategorie importiert werden können.
+- Neue Kategorie `Bedienungsanleitungen` ergänzt.
+- Gerätelisten können optional Bedienungsanleitungen mit Gerätepositionen verknüpfen; Brandschutzgerätelisten bleiben davon ausgenommen.
+- Export und PDF-Logik berücksichtigen verknüpfte Bedienungsanleitungen mit passender Kapitelreferenz.
+- Der Header links zeigt jetzt nur noch den Namen des aktuell geöffneten Projekts und nicht mehr zusätzlich App-Name und Projekt-Hinweistext.
+- Docker wurde nach den Änderungen neu gebaut und geprüft.
+
 ## Wichtige Beta-Einschränkungen
 
 - Rollen- und Rechteverwaltung ist als Beta-Funktion vorhanden und muss weiter produktionsreif gehärtet werden
@@ -91,6 +113,8 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - PDF-Gesamtzusammenführung im Praxistest prüfen
 - ZIP-Export und Projektarchive im Praxistest prüfen
 - Anhänge/Pläne weiter fachlich ausbauen
+- Datei-Popup für Anhänge weiter visuell prüfen und bei Bedarf verfeinern
+- Bedienungsanleitungen in Inhaltsverzeichnis, Gerätelisten und PDF-Gesamtexport im Praxistest prüfen
 - BK 01 und BK 02 definieren
 - automatisierte Tests ergänzen
 - Lizenzentscheidung treffen

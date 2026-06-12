@@ -38,19 +38,18 @@
   <% tabs = [
     ["projekte", "/projekte#projekt-auswahl", "Projektübersicht", "overview"],
     ["projekt", "/projekt", "Stammdaten", "edit"],
-    ["leistungsbereiche", "/leistungsbereiche", "Leistungsbereiche", "list"],
-    ["systemauswahl", "/systemauswahl", "Systeme", "system"]
+    ["leistungsbereiche", "/leistungsbereiche", "Leistungsbereiche", "list"]
   ]; %>
 <% } else if (documentationTabs.includes(active)) { %>
-  <%# Dokumentationsbereich: Matrix und kategorisierte Anhänge/Nachweise. %>
+  <%# Dokumentationsbereich: kategorisierte Anhänge/Nachweise. Die Matrix liegt im Exportbereich. %>
   <% tabs = [
-    ["dokumente", "/dokumente", "Matrix", "grid"],
     ["anhaenge", "/anhaenge?kategorie=Brandschutz", "Brandschutz", "shield"],
     ["anhaenge", "/anhaenge?kategorie=Stromlaufpläne", "Stromlaufpläne", "file"],
     ["anhaenge", "/anhaenge?kategorie=Schaltpläne", "Schaltpläne", "file"],
     ["anhaenge", "/anhaenge?kategorie=Installationspläne", "Installationspläne", "file"],
     ["anhaenge", "/anhaenge?kategorie=Schemata", "Schemata", "file"],
     ["anhaenge", "/anhaenge?kategorie=Messprotokolle", "Messprotokolle", "file"],
+    ["anhaenge", "/anhaenge?kategorie=Bedienungsanleitungen", "Bedienungsanleitungen", "file"],
     ["anhaenge", "/anhaenge?kategorie=Fotos", "Fotos", "image"],
     ["anhaenge", "/anhaenge?kategorie=Pläne", "Weitere Pläne", "file"],
     ["anhaenge", "/anhaenge?kategorie=Nachweise", "Nachweise", "file"],
@@ -78,8 +77,8 @@
 
 <% if (!hasDeviceListTabs && tabs.length) { %>
   <%# Gemeinsames Rendering der Bereichsnavigation mit optionalem Projektmanager. %>
-  <% const navTitle = projectTabs.includes(active) ? "Projekte" : documentationTabs.includes(active) ? "Dokumentation" : outputTabs.includes(active) ? "Export" : "System"; %>
-  <% const navSubtitle = projectTabs.includes(active) ? "Auswahl, Stammdaten und Projektvorgaben" : documentationTabs.includes(active) ? "Matrix, Anhänge und Nachweise" : outputTabs.includes(active) ? "PDF, Archiv und Ausgabe" : "Vorgaben und Vorlagen"; %>
+  <% const navTitle = projectTabs.includes(active) ? "Projekte" : documentationTabs.includes(active) ? "Anhänge" : outputTabs.includes(active) ? "Export" : "System"; %>
+  <% const navSubtitle = projectTabs.includes(active) ? "Auswahl, Stammdaten und Projektvorgaben" : documentationTabs.includes(active) ? "Pläne, Bilder und Nachweise" : outputTabs.includes(active) ? "PDF, Archiv und Ausgabe" : "Vorgaben und Vorlagen"; %>
   <nav class="section-tabs" aria-label="Bereichsnavigation">
     <div class="section-tabs-head">
       <span><%= navTitle %></span>

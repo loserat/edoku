@@ -47,15 +47,15 @@ Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. 
 
 Die Hauptnavigation ist kompakt gehalten:
 
-- Übersicht
 - Projekte
-- Dokumentation
+- Übersicht / aktuelles Projekt
+- Anhänge
 - Brandschutz
 - Gerätelisten
 - Export
 - System
 
-Je Hauptbereich werden die Unterpunkte links in der Seitenleiste geführt. Das aktuell geöffnete Projekt wird im Header angezeigt.
+Je Hauptbereich werden die Unterpunkte links in der Seitenleiste oder als kompakte Bereichstabs geführt. Links oben im Header steht der Name des aktuell geöffneten Projekts.
 
 ## Start mit Docker
 
@@ -160,6 +160,8 @@ edoku erzeugt aktuell:
 
 Importierte PDF-Anhänge können über Kategorien wie Stromlaufpläne, Schaltpläne, Installationspläne, Schemata und Messprotokolle in Inhaltsverzeichnis und Exportliste aufgenommen werden.
 
+Anhänge werden kategoriebezogen als Kacheln verwaltet. Datei-Metadaten, Vorschau und Brandschutz-Fotozuordnung laufen über ein Bearbeiten-Popup. Bedienungsanleitungen können optional mit Gerätepositionen in Gerätelisten verknüpft werden.
+
 Trennstreifen werden separat erzeugt und bewusst ohne GitHub-Branding gedruckt. Der Standarddruck ist tintensparend: schwarze Kapitelnummer am Registerrand, keine blaue Fläche und kein zusätzlicher Projekttext.
 
 ## Theme-System
@@ -190,7 +192,7 @@ Diese Inhalte sollen nicht ins Repository:
 - `storage/` außer `storage/README.md`
 - `.env`
 - `.DS_Store`
-- interne Tagesupdates außer `intern/tagesupdates/README.md`
+- interne Tagesupdates und lokale Arbeitsnotizen
 
 Siehe auch:
 
