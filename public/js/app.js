@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function closeAttachmentModal(modal) {
       if (!modal) return;
       modal.hidden = true;
-      if (!document.querySelector("[data-attachment-modal]:not([hidden]), [data-pdf-modal]:not([hidden])")) {
+      if (!document.querySelector("[data-attachment-modal]:not([hidden]), [data-user-modal]:not([hidden]), [data-pdf-modal]:not([hidden])")) {
         document.body.classList.remove("modal-open");
       }
     }
@@ -138,6 +138,39 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+  }
+
+  // * INFO: Die Benutzerliste bleibt kompakt; Rollen, Passwort und Status werden in einem Dialog bearbeitet.
+  const userModals = Array.from(document.querySelectorAll("[data-user-modal]"));
+  if (userModals.length) {
+    function openUserModal(modal) {
+      if (!modal) return;
+      modal.hidden = false;
+      document.body.classList.add("modal-open");
+      const firstField = modal.querySelector("select, input:not([type='hidden']), button");
+      if (firstField) firstField.focus();
+    }
+
+    function closeUserModal(modal) {
+      if (!modal) return;
+      modal.hidden = true;
+      if (!document.querySelector("[data-attachment-modal]:not([hidden]), [data-user-modal]:not([hidden]), [data-pdf-modal]:not([hidden])")) {
+        document.body.classList.remove("modal-open");
+      }
+    }
+
+    document.addEventListener("click", (event) => {
+      const openButton = event.target.closest("[data-user-modal-open]");
+      if (openButton) {
+        openUserModal(document.querySelector(`[data-user-modal="${openButton.dataset.userModalOpen}"]`));
+        return;
+      }
+
+      const closeButton = event.target.closest("[data-user-modal-close]");
+      if (closeButton) {
+        closeUserModal(closeButton.closest("[data-user-modal]"));
+      }
+    });
   }
 
   const settingsTabs = Array.from(document.querySelectorAll("[data-settings-tab]"));
@@ -1130,7 +1163,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function closePdfModal() {
       pdfModal.hidden = true;
       if (pdfFrame) pdfFrame.src = "about:blank";
-      if (!document.querySelector("[data-attachment-modal]:not([hidden])")) {
+      if (!document.querySelector("[data-attachment-modal]:not([hidden]), [data-user-modal]:not([hidden])")) {
         document.body.classList.remove("modal-open");
       }
     }

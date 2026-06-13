@@ -11,11 +11,11 @@ const { formEnabledForLeistungsbereiche, mergeFormTemplates, templateTitle, text
 const { resolveCreatorLogo, resolveProjectLogo } = require("./logoService");
 const { buildDocumentationAttachmentEntries } = require("./documentAttachmentService");
 
-const GITHUB_PROFILE_URL = "https://github.com/loserat";
-const GITHUB_ICON_PATH = "M12 2C6.48 2 2 6.59 2 12.26c0 4.52 2.87 8.35 6.84 9.7.5.09.68-.22.68-.49v-1.9c-2.78.62-3.37-1.22-3.37-1.22-.46-1.19-1.11-1.51-1.11-1.51-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.35 9.35 0 0 1 12 6.92c.85 0 1.7.12 2.5.35 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.07.36.32.68.94.68 1.9v2.82c0 .27.18.58.69.48A10.26 10.26 0 0 0 22 12.26C22 6.59 17.52 2 12 2Z";
+const BRAND_LINK_URL = "https://nickgm.de";
+const BRAND_ICON_PATH = "M10 2h4M11 2v6.5l-5.2 9.2C4.6 19.8 6.1 22 8.5 22h7c2.4 0 3.9-2.2 2.7-4.3L13 8.5V2M8.2 15h7.6M9.2 19h5.6";
 const PAGE_MARGIN = 48;
 const FOOTER_Y_OFFSET = 60;
-const GITHUB_Y_OFFSET = 34;
+const BRAND_Y_OFFSET = 34;
 const SIGNATURE_HEIGHT = 54;
 const SIGNATURE_BOTTOM_OFFSET = 104;
 const CM_TO_PT = 28.3464567;
@@ -507,29 +507,29 @@ function writeFooter(doc, projekt) {
   doc.fillColor("#000");
 }
 
-// Kleines GitHub-Branding mit Link im PDF-Fußbereich.
-function writeGithubBranding(doc) {
-  if (!doc._githubBrandingPages) {
-    doc._githubBrandingPages = new WeakSet();
+// Kleines Branding mit Link im PDF-Fußbereich.
+function writeFooterBranding(doc) {
+  if (!doc._footerBrandingPages) {
+    doc._footerBrandingPages = new WeakSet();
   }
 
-  if (doc._githubBrandingPages.has(doc.page)) {
+  if (doc._footerBrandingPages.has(doc.page)) {
     return;
   }
 
-  doc._githubBrandingPages.add(doc.page);
+  doc._footerBrandingPages.add(doc.page);
 
   const previousX = doc.x;
   const previousY = doc.y;
   const x = doc.page.margins.left || PAGE_MARGIN;
   const iconSize = 18;
-  const y = doc.page.height - GITHUB_Y_OFFSET - iconSize / 2;
+  const y = doc.page.height - BRAND_Y_OFFSET - iconSize / 2;
 
   doc.save();
   doc.translate(x, y).scale(iconSize / 24);
-  doc.path(GITHUB_ICON_PATH).fill("#4b5563");
+  doc.path(BRAND_ICON_PATH).lineWidth(1.8).lineCap("round").lineJoin("round").stroke("#4b5563");
   doc.restore();
-  doc.link(x - 2, y - 2, iconSize + 4, iconSize + 4, GITHUB_PROFILE_URL);
+  doc.link(x - 2, y - 2, iconSize + 4, iconSize + 4, BRAND_LINK_URL);
 
   doc.x = previousX;
   doc.y = previousY;
@@ -575,11 +575,11 @@ async function writePdf(filePath, title, writer, options = {}) {
     stream.on("error", reject);
     writer(doc, { title });
     const pageRange = doc.bufferedPageRange();
-    // ! WICHTIG: Trennstreifen deaktivieren GitHub-Branding explizit, weil Registerdruck ohne Fußlogo erfolgen soll.
-    if (options.includeGithubBranding !== false) {
+    // ! WICHTIG: Trennstreifen deaktivieren Footer-Branding explizit, weil Registerdruck ohne Fußlogo erfolgen soll.
+    if (options.includeFooterBranding !== false) {
       for (let pageIndex = pageRange.start; pageIndex < pageRange.start + pageRange.count; pageIndex += 1) {
         doc.switchToPage(pageIndex);
-        writeGithubBranding(doc);
+        writeFooterBranding(doc);
       }
     }
     doc.end();
@@ -843,8 +843,8 @@ async function generateTrennstreifen(rootDir, projekt, matrix, systemSettings = 
   }, {
     size: [TRENNSTREIFEN_WIDTH, TRENNSTREIFEN_HEIGHT],
     margin: 0,
-    // ! WICHTIG: Auf Trennstreifen generell kein GitHub-Logo ausgeben.
-    includeGithubBranding: false
+    // ! WICHTIG: Auf Trennstreifen generell kein Footer-Branding ausgeben.
+    includeFooterBranding: false
   });
 
   return [filePath];

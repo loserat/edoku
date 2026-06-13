@@ -136,12 +136,12 @@
                   const assignedFoto2Id = entry.assignedFoto2 && entry.assignedFoto2[0] ? entry.assignedFoto2[0].id : "";
                   const assignedBrandschutzId = assignedFoto1Id || assignedFoto2Id;
                   const assignedSlot = assignedFoto1Id ? "foto_vorher" : assignedFoto2Id ? "foto_nachher" : "";
+                  const formatSource = String(entry.fileName || entry.originalName || entry.mimeType || "");
+                  const fileFormat = (formatSource.includes(".") ? formatSource.split(".").pop() : entry.isPdf ? "PDF" : entry.isImage ? "IMG" : "DATEI").toUpperCase();
                 %>
                 <article class="attachment-tile">
                   <div class="attachment-tile-button" aria-label="Anhang <%= entry.title || entry.originalName %>">
-                    <span class="attachment-file-icon <%= entry.isImage ? "is-image" : entry.isPdf ? "is-pdf" : "" %>">
-                      <%- include("partials/icon", { name: entry.isImage ? "image" : "file" }) %>
-                    </span>
+                    <span class="attachment-format-badge <%= entry.isImage ? "is-image" : entry.isPdf ? "is-pdf" : "" %>"><%= fileFormat %></span>
                     <strong><%= entry.title || entry.originalName %></strong>
                     <small><%= entry.isPdf ? "PDF" : entry.isImage ? "Bild" : entry.mimeType %> · <%= entry.sizeKb %> KB</small>
                     <span class="attachment-tile-meta"><%= entry.documentStatus %></span>
@@ -159,7 +159,7 @@
                       <header class="attachment-modal-head">
                         <div>
                           <strong><%= entry.title || entry.originalName %></strong>
-                          <span><%= entry.originalName %> · <%= entry.uploadedLabel %></span>
+                          <span><%= entry.isPdf ? "PDF" : entry.isImage ? "Bild" : entry.mimeType %> · <%= entry.sizeKb %> KB · <%= entry.uploadedLabel %></span>
                         </div>
                       </header>
 

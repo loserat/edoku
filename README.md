@@ -32,7 +32,7 @@ Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. 
 - Brandschutzabschottungen mit Foto-Zuordnung über Anhänge
 - Anhänge und importierte PDF-Dateien
 - Plan-/Messprotokoll-Kategorien für PDF-Importe
-- PDF-Erzeugung mit Projektkopf, Logo und GitHub-Branding
+- PDF-Erzeugung mit Projektkopf, Logo und optionalem nickgm.de-Branding
 - Inhaltsverzeichnis, Formular-PDFs, Gerätelisten und Brandschutz-PDFs
 - separate PDF-Trennstreifen im Maß 24 x 10,5 cm
 - Deckblätter für Hauptkategorien
@@ -162,7 +162,7 @@ Importierte PDF-Anhänge können über Kategorien wie Stromlaufpläne, Schaltpl�
 
 Anhänge werden kategoriebezogen als Kacheln verwaltet. Datei-Metadaten, Vorschau und Brandschutz-Fotozuordnung laufen über ein Bearbeiten-Popup. Bedienungsanleitungen können optional mit Gerätepositionen in Gerätelisten verknüpft werden.
 
-Trennstreifen werden separat erzeugt und bewusst ohne GitHub-Branding gedruckt. Der Standarddruck ist tintensparend: schwarze Kapitelnummer am Registerrand, keine blaue Fläche und kein zusätzlicher Projekttext.
+Trennstreifen werden separat erzeugt und bewusst ohne Footer-Branding gedruckt. Der Standarddruck ist tintensparend: schwarze Kapitelnummer am Registerrand, keine blaue Fläche und kein zusätzlicher Projekttext.
 
 ## Theme-System
 
