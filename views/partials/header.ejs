@@ -12,7 +12,9 @@
     <a class="<%= ["projekte", "projekt", "leistungsbereiche", "systemauswahl", "projektarchiv"].includes(active) ? "active" : "" %>" href="/projekte"><%- include("icon", { name: "project" }) %><span>Projekte</span></a>
     <a class="<%= active === "dashboard" ? "active" : "" %>" href="/dashboard" title="Projektübersicht"><%- include("icon", { name: "overview" }) %><span><%= dashboardLabel %></span></a>
     <a class="<%= ["dokumente", "anhaenge"].includes(active) ? "active" : "" %>" href="/anhaenge?kategorie=Brandschutz"><%- include("icon", { name: "documentation" }) %><span>Anhänge</span></a>
-    <a class="<%= active === "brandschutz" ? "active" : "" %>" href="/brandschutz"><%- include("icon", { name: "shield" }) %><span>Brandschutz</span></a>
+    <% if (typeof showBrandschutzNavigation !== "undefined" && showBrandschutzNavigation) { %>
+      <a class="<%= active === "brandschutz" ? "active" : "" %>" href="/brandschutz"><%- include("icon", { name: "shield" }) %><span>Brandschutz</span></a>
+    <% } %>
     <a class="<%= active === "geraetelisten" ? "active" : "" %>" href="/geraetelisten"><%- include("icon", { name: "list" }) %><span>Gerätelisten</span></a>
     <a class="<%= active === "export" ? "active" : "" %>" href="/export"><%- include("icon", { name: "export" }) %><span>Export</span></a>
     <a class="<%= active === "einstellungen" ? "active" : "" %>" href="/einstellungen"><%- include("icon", { name: "system" }) %><span>System</span></a>

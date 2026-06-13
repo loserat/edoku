@@ -118,6 +118,7 @@ app.use(async (req, res, next) => {
   res.locals.currentProjectName = "";
   res.locals.currentProjectNumber = "";
   res.locals.projectSidebarProjects = [];
+  res.locals.showBrandschutzNavigation = false;
   res.locals.deleteConfirmDialogs = true;
   res.locals.systemSettings = mergeSystemSettings(DEFAULT_SYSTEM_SETTINGS);
 
@@ -138,6 +139,9 @@ app.use(async (req, res, next) => {
     const currentProject = res.locals.projectSidebarProjects.find((project) => project.id === current.projectId);
     res.locals.currentProjectName = currentProject ? currentProject.projektname || currentProject.id : current.projectId;
     res.locals.currentProjectNumber = currentProject ? currentProject.projektnummer || "" : "";
+    const files = await getCurrentDataFiles(ROOT_DIR, DATA_DIR, req.user.id);
+    const leistungsbereiche = await readJson(files.leistungsbereiche, { aktiv: [] });
+    res.locals.showBrandschutzNavigation = Array.isArray(leistungsbereiche.aktiv) && leistungsbereiche.aktiv.includes("Brandschutzabschottungen");
   } catch (error) {
     console.error("Projektkontext konnte nicht vorbereitet werden:", error.message);
   }
@@ -1508,7 +1512,7 @@ app.get("/anhaenge/download", requireAuth, async (req, res, next) => {
     }
 
     const filePath = safeJoin(ROOT_DIR, target.relativePath);
-    res.download(filePath, target.originalName);
+    res.download(filePath, target.fileName || target.originalName);
   } catch (error) {
     next(error);
   }
@@ -1527,8 +1531,9 @@ app.get("/anhaenge/preview", requireAuth, async (req, res, next) => {
     // ! WICHTIG: Die Vorschau liefert nur Dateien aus der aktuellen Projektablage.
     // safeJoin verhindert freie Serverpfade aus Benutzerinput.
     const filePath = safeJoin(ROOT_DIR, target.relativePath);
+    const previewName = target.fileName || target.originalName || "anhang";
     res.type(target.mimeType || "application/octet-stream");
-    res.setHeader("Content-Disposition", `inline; filename="${target.originalName.replace(/"/g, "")}"`);
+    res.setHeader("Content-Disposition", `inline; filename="${previewName.replace(/"/g, "")}"`);
     res.sendFile(filePath);
   } catch (error) {
     next(error);

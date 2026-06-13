@@ -69,6 +69,17 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 - PDF-/Exportlogik referenziert verknüpfte Bedienungsanleitungen mit Kapitelbezug.
 - Exportunterbereiche weiter geordnet: PDF-Dokumentation, PDF-Trennstreifen, ZIP-Export, Matrix und Exporteinstellungen.
 
+### Nachtrag 2026-06-13
+
+- Footer-Branding von GitHub auf ein neutrales Labor-Icon mit Link zu `https://nickgm.de` umgestellt.
+- PDF-Footer verwenden das neue Branding; Trennstreifen bleiben ohne Footer-Branding.
+- Brandschutz-Hauptnavigation wird nur angezeigt, wenn der passende Leistungsbereich aktiv ist.
+- Anhangsdateien werden bei Titeländerung logisch umbenannt und Download/Vorschau nutzen den neuen Dateinamen.
+- Anhangskacheln zeigen das Dateiformat als Badge.
+- Brandschutz-Fotozuordnung ersetzt vorhandene Foto-1-/Foto-2-Slots eindeutig.
+- Anhangs-Popup wurde größer und mit dauerhaft sichtbarer Aktionsleiste verbessert.
+- Benutzerverwaltung wurde kompakter gestaltet und nutzt Bearbeiten-Popups für Rolle, Passwort und Status.
+
 ### Bekannte Grenzen
 
 - Noch keine produktive Server-Härtung

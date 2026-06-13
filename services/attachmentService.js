@@ -272,7 +272,12 @@ async function syncAttachmentFileName(rootDir, files, attachmentsRaw, attachment
 
   return {
     attachments: attachments.map((entry) => entry.id === attachmentId
-      ? { ...entry, fileName: nextFileName, relativePath: nextRelativePath }
+      ? {
+        ...entry,
+        originalName: nextFileName,
+        fileName: nextFileName,
+        relativePath: nextRelativePath
+      }
       : entry),
     renamed: {
       oldRelativePath: target.relativePath,
@@ -307,6 +312,7 @@ function clearAttachmentReferencesFromBrandschutz(brandschutz, relativePath) {
 }
 
 // Ordnet ein Bild einer Brandschottung als Foto 1 oder Foto 2 zu.
+// Vorhandene Belegung im selben Slot wird ersetzt, damit je Schottung nur ein Foto 1 und ein Foto 2 existieren.
 function assignAttachmentToBrandschutz(brandschutz, relativePath, brandschutzId, slot) {
   if (!["foto_vorher", "foto_nachher"].includes(slot)) {
     throw new Error("Ungueltige Foto-Zuordnung.");
@@ -314,11 +320,18 @@ function assignAttachmentToBrandschutz(brandschutz, relativePath, brandschutzId,
 
   let found = false;
   const nextBrandschutz = (Array.isArray(brandschutz) ? brandschutz : []).map((entry) => {
-    if (entry.id !== brandschutzId) return entry;
+    if (entry.id !== brandschutzId) {
+      return {
+        ...entry,
+        foto_vorher: entry.foto_vorher === relativePath ? "" : entry.foto_vorher,
+        foto_nachher: entry.foto_nachher === relativePath ? "" : entry.foto_nachher
+      };
+    }
     found = true;
     return {
       ...entry,
-      [slot]: relativePath
+      foto_vorher: slot === "foto_vorher" ? relativePath : entry.foto_vorher === relativePath ? "" : entry.foto_vorher,
+      foto_nachher: slot === "foto_nachher" ? relativePath : entry.foto_nachher === relativePath ? "" : entry.foto_nachher
     };
   });
 

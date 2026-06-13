@@ -98,6 +98,19 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Der Header links zeigt jetzt nur noch den Namen des aktuell geöffneten Projekts und nicht mehr zusätzlich App-Name und Projekt-Hinweistext.
 - Docker wurde nach den Änderungen neu gebaut und geprüft.
 
+## Update 2026-06-13
+
+- Schwebendes Footer-Icon von GitHub auf ein neutrales Labor-/Reagenzglas-Icon umgestellt.
+- UI- und PDF-Branding verlinken jetzt auf `https://nickgm.de`.
+- Normale PDFs erhalten das neue Footer-Branding; Trennstreifen bleiben weiterhin ohne Branding.
+- Brandschutz erscheint in der Hauptnavigation nur noch, wenn der Leistungsbereich `Brandschutzabschottungen` im Projekt aktiv ist.
+- Anhangsdateien werden beim Bearbeiten des Titels logisch umbenannt; Download und Vorschau verwenden den aktualisierten Dateinamen.
+- Anhangskacheln zeigen jetzt das Dateiformat wie `PDF`, `PNG` oder `JPG` statt eines generischen Icons/Punkts.
+- Brandschutz-Fotozuordnung wurde verschärft: je Brandschottung gibt es nur ein Foto 1 und ein Foto 2; neue Zuordnungen ersetzen alte Slot-Belegungen.
+- Anhangs-Popup wurde größer und die untere Aktionsleiste bleibt beim Scrollen sichtbar.
+- Benutzerverwaltung optisch verdichtet: lange Werte werden gekürzt, das Datum lesbar formatiert und Rollen-/Passwort-/Statusaktionen liegen in einem Bearbeiten-Popup.
+- Docker wurde nach den Änderungen neu gebaut und geprüft.
+
 ## Wichtige Beta-Einschränkungen
 
 - Rollen- und Rechteverwaltung ist als Beta-Funktion vorhanden und muss weiter produktionsreif gehärtet werden

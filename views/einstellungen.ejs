@@ -314,8 +314,8 @@
               </div>
             </form>
 
-            <div class="table-wrap">
-              <table>
+            <div class="table-wrap user-table-wrap">
+              <table class="user-admin-table">
                 <thead>
                   <tr>
                     <th>Login</th>
@@ -329,33 +329,61 @@
                 </thead>
                 <tbody>
                   <% (users || []).forEach((account) => { %>
+                    <%
+                      const updatedLabel = account.updatedAt ? new Date(account.updatedAt).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" }) : "-";
+                    %>
                     <tr>
-                      <td><strong><%= account.email %></strong></td>
-                      <td><%= account.name %></td>
+                      <td><strong class="user-text-clip"><%= account.email %></strong></td>
+                      <td><span class="user-text-clip"><%= account.name %></span></td>
                       <td><span class="badge <%= account.status === "disabled" ? "off" : "on" %>"><%= account.status === "disabled" ? "gesperrt" : "aktiv" %></span></td>
                       <td><span class="badge <%= account.role === "systemadmin" ? "current" : account.role === "viewer" ? "off" : "on" %>"><%= account.role %></span></td>
-                      <td><%= account.currentProjectId || "-" %></td>
-                      <td><%= account.updatedAt || "-" %></td>
+                      <td><span class="user-text-clip"><%= account.currentProjectId || "-" %></span></td>
+                      <td><%= updatedLabel %></td>
                       <td class="user-actions-cell">
-                        <div class="user-management-actions">
-                          <form action="/einstellungen/benutzer/<%= account.id %>/rolle" method="post" class="inline-role-form">
-                            <select name="role" <%= account.id === user.id ? "disabled" : "" %>>
-                              <% (userRoles || []).forEach((role) => { %>
-                                <option value="<%= role %>" <%= role === account.role ? "selected" : "" %>><%= role %></option>
-                              <% }) %>
-                            </select>
-                            <button class="secondary compact-button" type="submit" <%= account.id === user.id ? "disabled" : "" %>>Speichern</button>
-                          </form>
-                          <form action="/einstellungen/benutzer/<%= account.id %>/passwort" method="post" class="inline-role-form" data-confirm="Passwort für <%= account.email %> wirklich zurücksetzen? Bestehende Sessions werden beendet.">
-                            <input type="password" name="password" placeholder="neues Passwort" autocomplete="new-password">
-                            <button class="secondary compact-button" type="submit">Setzen</button>
-                          </form>
-                          <form action="/einstellungen/benutzer/<%= account.id %>/status" method="post" class="inline-role-form" data-confirm="<%= account.status === "disabled" ? "Benutzer wirklich aktivieren?" : "Benutzer wirklich sperren? Bestehende Sessions werden beendet." %>">
-                            <input type="hidden" name="status" value="<%= account.status === "disabled" ? "active" : "disabled" %>">
-                            <button class="secondary compact-button <%= account.status === "disabled" ? "" : "danger" %>" type="submit" <%= account.id === user.id ? "disabled" : "" %>>
-                              <%= account.status === "disabled" ? "Aktivieren" : "Sperren" %>
-                            </button>
-                          </form>
+                        <button class="secondary compact-button" type="button" data-user-modal-open="<%= account.id %>">Bearbeiten</button>
+                        <div class="user-modal" data-user-modal="<%= account.id %>" hidden>
+                          <div class="user-modal-backdrop"></div>
+                          <section class="user-modal-panel" role="dialog" aria-modal="true" aria-label="Benutzer bearbeiten">
+                            <header class="user-modal-head">
+                              <div>
+                                <strong><%= account.name || account.email %></strong>
+                                <span><%= account.email %> · <%= account.status === "disabled" ? "gesperrt" : "aktiv" %></span>
+                              </div>
+                              <button class="secondary icon-only-button" type="button" data-user-modal-close aria-label="Schließen">×</button>
+                            </header>
+                            <div class="user-modal-summary">
+                              <span>Rolle: <strong><%= account.role %></strong></span>
+                              <span>Projekt: <strong><%= account.currentProjectId || "-" %></strong></span>
+                              <span>Aktualisiert: <strong><%= updatedLabel %></strong></span>
+                            </div>
+                            <form action="/einstellungen/benutzer/<%= account.id %>/rolle" method="post" class="user-modal-form">
+                              <label>
+                                <span>Rolle</span>
+                                <select name="role" <%= account.id === user.id ? "disabled" : "" %>>
+                                  <% (userRoles || []).forEach((role) => { %>
+                                    <option value="<%= role %>" <%= role === account.role ? "selected" : "" %>><%= role %></option>
+                                  <% }) %>
+                                </select>
+                              </label>
+                              <button class="secondary compact-button" type="submit" <%= account.id === user.id ? "disabled" : "" %>>Rolle speichern</button>
+                            </form>
+                            <form action="/einstellungen/benutzer/<%= account.id %>/passwort" method="post" class="user-modal-form" data-confirm="Passwort für <%= account.email %> wirklich zurücksetzen? Bestehende Sessions werden beendet.">
+                              <label>
+                                <span>Neues Passwort</span>
+                                <input type="password" name="password" placeholder="neues Passwort" autocomplete="new-password">
+                              </label>
+                              <button class="secondary compact-button" type="submit">Passwort setzen</button>
+                            </form>
+                            <footer class="user-modal-actions">
+                              <form action="/einstellungen/benutzer/<%= account.id %>/status" method="post" data-confirm="<%= account.status === "disabled" ? "Benutzer wirklich aktivieren?" : "Benutzer wirklich sperren? Bestehende Sessions werden beendet." %>">
+                                <input type="hidden" name="status" value="<%= account.status === "disabled" ? "active" : "disabled" %>">
+                                <button class="secondary compact-button <%= account.status === "disabled" ? "" : "danger" %>" type="submit" <%= account.id === user.id ? "disabled" : "" %>>
+                                  <%= account.status === "disabled" ? "Aktivieren" : "Sperren" %>
+                                </button>
+                              </form>
+                              <button class="secondary compact-button" type="button" data-user-modal-close>Schließen</button>
+                            </footer>
+                          </section>
                         </div>
                       </td>
                     </tr>
