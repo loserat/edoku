@@ -1111,10 +1111,24 @@ app.post("/export/ordnerruecken", requireAuth, async (req, res) => {
   const currentSettings = mergeSystemSettings(await readJson(settingsPath, DEFAULT_SYSTEM_SETTINGS));
   const pdfPreviewFiles = await listPdfPreviewFiles(ROOT_DIR, data.projekt);
   const mode = req.body.anzahlModus === "auto" ? "auto" : "manuell";
+  const format = req.body.format === "schmal"
+    ? "38x192-r"
+    : req.body.format === "breit"
+      ? "61x192-r"
+      : ["38x192-r", "61x192-r"].includes(req.body.format)
+        ? req.body.format
+        : "61x192-r";
   const binderOptions = {
-    format: req.body.format === "schmal" ? "schmal" : "breit",
+    format,
     anzahlModus: mode,
-    ordnerAnzahl: mode === "auto" ? estimateBinderCount(data, pdfPreviewFiles) : Math.max(1, Math.min(20, Number(req.body.ordnerAnzahl) || 1))
+    ordnerAnzahl: mode === "auto" ? estimateBinderCount(data, pdfPreviewFiles) : Math.max(1, Math.min(20, Number(req.body.ordnerAnzahl) || 1)),
+    showProjektname: req.body.showProjektname === "1",
+    showProjektnummer: req.body.showProjektnummer === "1",
+    showAuftraggeber: req.body.showAuftraggeber === "1",
+    showLiegenschaft: req.body.showLiegenschaft === "1",
+    showBaumassnahme: req.body.showBaumassnahme === "1",
+    showOrdnernummer: req.body.showOrdnernummer === "1",
+    showFormatHint: req.body.showFormatHint === "1"
   };
   const updatedSettings = {
     ...currentSettings,

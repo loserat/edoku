@@ -19,12 +19,37 @@ const BRAND_Y_OFFSET = 34;
 const SIGNATURE_HEIGHT = 54;
 const SIGNATURE_BOTTOM_OFFSET = 104;
 const CM_TO_PT = 28.3464567;
+const MM_TO_PT = CM_TO_PT / 10;
 const TRENNSTREIFEN_WIDTH = 24 * CM_TO_PT;
 const TRENNSTREIFEN_HEIGHT = 10.5 * CM_TO_PT;
-const ORDNER_RUECKEN_HEIGHT = 192 / 10 * CM_TO_PT;
+const AVERY_ORDNER_RUECKEN_X = 9 * MM_TO_PT;
+const AVERY_ORDNER_RUECKEN_WIDTH = 192 * MM_TO_PT;
+
+// * INFO: Avery-Zweckform liefert A4-Bögen mit horizontal liegenden Ordnerrücken.
+// ? WARUM: Die Positionen entsprechen den Kalibrierungsbögen 61x192-R und 38x192-R.
+function buildAveryOrdnerRueckenRows(topMarginMm, labelHeightMm, rowsPerPage) {
+  return Array.from({ length: rowsPerPage }, (_, index) => ({
+    x: AVERY_ORDNER_RUECKEN_X,
+    y: (topMarginMm + index * labelHeightMm) * MM_TO_PT,
+    width: AVERY_ORDNER_RUECKEN_WIDTH,
+    height: labelHeightMm * MM_TO_PT
+  }));
+}
+
 const ORDNER_RUECKEN_FORMATS = {
-  schmal: { label: "Schmaler Ordner", width: 38 / 10 * CM_TO_PT },
-  breit: { label: "Breiter Ordner", width: 61 / 10 * CM_TO_PT }
+  "38x192-r": {
+    label: "Avery Zweckform 38x192-R",
+    rowsPerPage: 7,
+    positions: buildAveryOrdnerRueckenRows(15.5, 38, 7)
+  },
+  "61x192-r": {
+    label: "Avery Zweckform 61x192-R",
+    rowsPerPage: 4,
+    positions: buildAveryOrdnerRueckenRows(26.5, 61, 4)
+  },
+  // ? WARUM: Alte gespeicherte Werte bleiben gültig und werden intern auf die neuen Avery-Profile gemappt.
+  schmal: { alias: "38x192-r" },
+  breit: { alias: "61x192-r" }
 };
 
 // * INFO: Vollversionen koennen das sichtbare edoku/nickgm-Branding zentral deaktivieren.
@@ -865,53 +890,74 @@ async function generateTrennstreifen(rootDir, projekt, matrix, systemSettings = 
   return [filePath];
 }
 
-function drawOrdnerRueckenLabel(doc, projekt, index, count, x, y, width, height, formatLabel) {
+function normalizeOrdnerRueckenFormatKey(value) {
+  if (value === "schmal") return "38x192-r";
+  if (value === "breit") return "61x192-r";
+  return ORDNER_RUECKEN_FORMATS[value] ? value : "61x192-r";
+}
+
+function normalizeOrdnerRueckenPrintOptions(options = {}) {
+  return {
+    showProjektname: options.showProjektname !== false,
+    showProjektnummer: options.showProjektnummer !== false,
+    showAuftraggeber: options.showAuftraggeber === true,
+    showLiegenschaft: options.showLiegenschaft !== false,
+    showBaumassnahme: options.showBaumassnahme === true,
+    showOrdnernummer: options.showOrdnernummer !== false,
+    showFormatHint: options.showFormatHint === true
+  };
+}
+
+function drawOrdnerRueckenLabel(doc, projekt, index, count, x, y, width, height, formatLabel, options = {}) {
+  const print = normalizeOrdnerRueckenPrintOptions(options);
   const title = projekt.projektname || "Bestandsdokumentation Elektro";
   const number = projekt.projektnummer || "";
   const client = projekt.auftraggeber || "";
   const property = projekt.liegenschaft || "";
   const measure = projekt.baumassnahme || "";
   const label = count > 1 ? `Ordner ${index + 1} / ${count}` : "Dokumentationsordner";
+  const secondaryLines = [
+    print.showProjektnummer ? number : "",
+    print.showAuftraggeber ? client : "",
+    print.showLiegenschaft ? property : "",
+    print.showBaumassnahme ? measure : ""
+  ].filter(Boolean);
+  const mainTitle = print.showProjektname ? title : (number || client || property || "Dokumentation");
+  const leftPadding = 18;
+  const rightPadding = 18;
+  const textWidth = width - leftPadding - rightPadding;
+  const titleSize = height > 150 ? 18 : 13;
+  const secondarySize = height > 150 ? 9 : 7.2;
 
   doc.save();
   doc.strokeColor("#cbd5e1").lineWidth(0.7).rect(x, y, width, height).stroke();
-  doc.fillColor("#f8fafc").rect(x + 1, y + 1, width - 2, 28).fill();
-  doc.fillColor("#111827").font("Helvetica-Bold").fontSize(8).text(number || "Projekt", x + 8, y + 8, {
-    width: width - 16,
-    align: "center",
+  doc.fillColor("#111827").font("Helvetica-Bold").fontSize(titleSize).text(mainTitle, x + leftPadding, y + 12, {
+    width: textWidth,
+    align: "left",
     ellipsis: true
   });
+  if (secondaryLines.length) {
+    doc.fillColor("#374151").font("Helvetica").fontSize(secondarySize).text(secondaryLines.join(" | "), x + leftPadding, y + (height > 150 ? 38 : 30), {
+      width: textWidth,
+      align: "left",
+      ellipsis: true
+    });
+  }
 
-  doc.save();
-  doc.translate(x + width / 2, y + height / 2);
-  doc.rotate(-90);
-  doc.fillColor("#111827").font("Helvetica-Bold").fontSize(width > 140 ? 18 : 14).text(title, -height / 2 + 46, -width / 2 + 10, {
-    width: height - 92,
-    align: "center",
-    ellipsis: true
-  });
-  doc.fillColor("#374151").font("Helvetica").fontSize(width > 140 ? 10 : 8).text([client, property].filter(Boolean).join(" | "), -height / 2 + 46, -width / 2 + (width > 140 ? 36 : 30), {
-    width: height - 92,
-    align: "center",
-    ellipsis: true
-  });
-  doc.fillColor("#6b7280").font("Helvetica").fontSize(7).text(measure, -height / 2 + 46, width / 2 - 24, {
-    width: height - 92,
-    align: "center",
-    ellipsis: true
-  });
-  doc.restore();
-
-  doc.fillColor("#111827").font("Helvetica-Bold").fontSize(7).text(label, x + 8, y + height - 28, {
-    width: width - 16,
-    align: "center",
-    ellipsis: true
-  });
-  doc.fillColor("#6b7280").font("Helvetica").fontSize(5.5).text(formatLabel, x + 8, y + height - 15, {
-    width: width - 16,
-    align: "center",
-    ellipsis: true
-  });
+  if (print.showOrdnernummer) {
+    doc.fillColor("#111827").font("Helvetica-Bold").fontSize(7).text(label, x + leftPadding, y + height - 25, {
+      width: textWidth,
+      align: "left",
+      ellipsis: true
+    });
+  }
+  if (print.showFormatHint) {
+    doc.fillColor("#6b7280").font("Helvetica").fontSize(5.5).text(formatLabel, x + leftPadding, y + height - 13, {
+      width: textWidth,
+      align: "left",
+      ellipsis: true
+    });
+  }
   doc.restore();
 }
 
@@ -920,21 +966,19 @@ async function generateOrdnerruecken(rootDir, projekt, systemSettings = {}, opti
   const paths = await createProjectFolder(rootDir, projekt);
   const generatedDir = path.join(paths.generatedPath, "Ordnerruecken");
   await clearGeneratedPdfs(generatedDir);
-  const format = ORDNER_RUECKEN_FORMATS[options.format] || ORDNER_RUECKEN_FORMATS.breit;
+  const formatKey = normalizeOrdnerRueckenFormatKey(options.format);
+  const format = ORDNER_RUECKEN_FORMATS[formatKey] || ORDNER_RUECKEN_FORMATS["61x192-r"];
   const count = Math.max(1, Math.min(20, Number(options.ordnerAnzahl) || 1));
-  const filePath = path.join(generatedDir, `Ordnerruecken_${options.format === "schmal" ? "schmal" : "breit"}_${count}x.pdf`);
+  const filePath = path.join(generatedDir, `Ordnerruecken_Avery_Zweckform_${formatKey.toUpperCase()}_${count}x.pdf`);
 
   await writePdf(filePath, "Ordnerrücken", (doc) => {
-    const margin = 28;
-    const gap = 10;
-    const perPage = Math.max(1, Math.floor((doc.page.width - margin * 2 + gap) / (format.width + gap)));
+    const positions = format.positions || ORDNER_RUECKEN_FORMATS["61x192-r"].positions;
+    const perPage = positions.length;
 
     for (let index = 0; index < count; index += 1) {
       if (index > 0 && index % perPage === 0) doc.addPage();
-      const pageIndex = index % perPage;
-      const x = margin + pageIndex * (format.width + gap);
-      const y = margin;
-      drawOrdnerRueckenLabel(doc, projekt, index, count, x, y, format.width, ORDNER_RUECKEN_HEIGHT, format.label);
+      const position = positions[index % perPage];
+      drawOrdnerRueckenLabel(doc, projekt, index, count, position.x, position.y, position.width, position.height, format.label, options);
     }
   }, {
     size: "A4",

@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function closeAttachmentModal(modal) {
       if (!modal) return;
       modal.hidden = true;
-      if (!document.querySelector("[data-attachment-modal]:not([hidden]), [data-user-modal]:not([hidden]), [data-pdf-modal]:not([hidden])")) {
+      if (!document.querySelector("[data-attachment-modal]:not([hidden]), [data-user-modal]:not([hidden]), [data-template-modal]:not([hidden]), [data-pdf-modal]:not([hidden])")) {
         document.body.classList.remove("modal-open");
       }
     }
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function closeUserModal(modal) {
       if (!modal) return;
       modal.hidden = true;
-      if (!document.querySelector("[data-attachment-modal]:not([hidden]), [data-user-modal]:not([hidden]), [data-pdf-modal]:not([hidden])")) {
+      if (!document.querySelector("[data-attachment-modal]:not([hidden]), [data-user-modal]:not([hidden]), [data-template-modal]:not([hidden]), [data-pdf-modal]:not([hidden])")) {
         document.body.classList.remove("modal-open");
       }
     }
@@ -169,6 +169,39 @@ document.addEventListener("DOMContentLoaded", () => {
       const closeButton = event.target.closest("[data-user-modal-close]");
       if (closeButton) {
         closeUserModal(closeButton.closest("[data-user-modal]"));
+      }
+    });
+  }
+
+  // * INFO: Gerätelisten-Vorlagen werden kompakt gelistet und erst im Dialog bearbeitet.
+  const templateModals = Array.from(document.querySelectorAll("[data-template-modal]"));
+  if (templateModals.length) {
+    function openTemplateModal(modal) {
+      if (!modal) return;
+      modal.hidden = false;
+      document.body.classList.add("modal-open");
+      const firstField = modal.querySelector("input:not([type='hidden']), button");
+      if (firstField) firstField.focus();
+    }
+
+    function closeTemplateModal(modal) {
+      if (!modal) return;
+      modal.hidden = true;
+      if (!document.querySelector("[data-attachment-modal]:not([hidden]), [data-user-modal]:not([hidden]), [data-template-modal]:not([hidden]), [data-pdf-modal]:not([hidden])")) {
+        document.body.classList.remove("modal-open");
+      }
+    }
+
+    document.addEventListener("click", (event) => {
+      const openButton = event.target.closest("[data-template-modal-open]");
+      if (openButton) {
+        openTemplateModal(document.querySelector(`[data-template-modal="${openButton.dataset.templateModalOpen}"]`));
+        return;
+      }
+
+      const closeButton = event.target.closest("[data-template-modal-close]");
+      if (closeButton) {
+        closeTemplateModal(closeButton.closest("[data-template-modal]"));
       }
     });
   }
@@ -1227,7 +1260,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function closePdfModal() {
       pdfModal.hidden = true;
       if (pdfFrame) pdfFrame.src = "about:blank";
-      if (!document.querySelector("[data-attachment-modal]:not([hidden]), [data-user-modal]:not([hidden])")) {
+      if (!document.querySelector("[data-attachment-modal]:not([hidden]), [data-user-modal]:not([hidden]), [data-template-modal]:not([hidden])")) {
         document.body.classList.remove("modal-open");
       }
     }

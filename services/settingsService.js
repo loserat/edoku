@@ -93,6 +93,18 @@ const DEFAULT_SYSTEM_SETTINGS = {
     trennstreifen: {
       showInnenText: false,
       showRegisterTitel: false
+    },
+    ordnerruecken: {
+      format: "61x192-r",
+      anzahlModus: "manuell",
+      ordnerAnzahl: 1,
+      showProjektname: true,
+      showProjektnummer: true,
+      showAuftraggeber: false,
+      showLiegenschaft: true,
+      showBaumassnahme: false,
+      showOrdnernummer: true,
+      showFormatHint: false
     }
   },
   // * INFO: Lizenz-/Branding-Schalter. Standard bleibt sichtbar; Systemadmins koennen ihn fuer Vollversionen deaktivieren.
@@ -185,6 +197,10 @@ function mergeSystemSettings(settings = {}) {
       trennstreifen: {
         ...DEFAULT_SYSTEM_SETTINGS.export.trennstreifen,
         ...(((settings || {}).export || {}).trennstreifen || {})
+      },
+      ordnerruecken: {
+        ...DEFAULT_SYSTEM_SETTINGS.export.ordnerruecken,
+        ...(((settings || {}).export || {}).ordnerruecken || {})
       }
     },
     lizenz: {
