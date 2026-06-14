@@ -3,6 +3,7 @@ const fs = require("fs");
 const fsp = require("fs/promises");
 const path = require("path");
 const express = require("express");
+const packageInfo = require("./package.json");
 
 const { bootstrapStorage, DEFAULT_LEISTUNGSBEREICHE } = require("./services/bootstrapService");
 const { readJson, writeJson } = require("./services/jsonService");
@@ -38,10 +39,19 @@ const { buildDashboardStats } = require("./services/dashboardService");
 const { buildExportPreview } = require("./services/exportPreviewService");
 const { listPdfPreviewFiles, listFinalExportFiles, resolvePdfPreviewFile, resolveExportDownloadFile } = require("./services/pdfPreviewService");
 const { buildExportliste, prepareFinalExport } = require("./services/exportService");
-const { generateBrandschutzPdf, generateDeckblaetter, generateFormularPdfs, generateGeraetelisten, generateInhaltsverzeichnis, generateTrennstreifen } = require("./services/pdfService");
+const { generateBrandschutzPdf, generateDeckblaetter, generateFormularPdfs, generateGeraetelisten, generateInhaltsverzeichnis, generateOrdnerruecken, generateTrennstreifen } = require("./services/pdfService");
 const { applyLogicalChapterNumbers, sortDocuments } = require("./services/chapterNumberingService");
 const { BRANDSCHUTZ_REQUIRED_FIELDS, addBrandschutzEintrag, normalizeBrandschutz, normalizePostedBrandschutz } = require("./services/brandschutzService");
-const { deviceListFieldsForLeistungsbereich, normalizeGeraetelisten, normalizePostedGeraetelisten, syncGeraetelistenFromLeistungsbereiche } = require("./services/geraetelistenService");
+const {
+  addGeraetelistenVorlage,
+  applyGeraetelistenVorlage,
+  deviceListFieldsForLeistungsbereich,
+  normalizeGeraetelisten,
+  normalizeGeraetelistenVorlagen,
+  normalizePostedGeraetelisten,
+  normalizePostedGeraetelistenVorlagen,
+  syncGeraetelistenFromLeistungsbereiche
+} = require("./services/geraetelistenService");
 const { formEnabledForLeistungsbereiche, mergeFormTemplates, normalizePostedFormTemplates } = require("./services/formTemplateService");
 const {
   flattenSystemConfigForLegacy,
@@ -89,7 +99,11 @@ const CONFIG_DIR = path.join(ROOT_DIR, "config");
 const OUTPUT_DIR = path.join(ROOT_DIR, "output");
 const TEMPLATES_DIR = path.join(ROOT_DIR, "templates");
 const STORAGE_DIR = path.join(ROOT_DIR, "storage");
+const GERAETELISTEN_VORLAGEN_FILE = path.join(CONFIG_DIR, "geraetelistenVorlagen.json");
 const PORT = Number(process.env.PORT || 3000);
+const APP_VERSION = packageInfo.version || "0.0.0";
+const APP_NAME = packageInfo.name || "edoku";
+const GITHUB_RELEASE_API = "https://api.github.com/repos/loserat/edoku/releases/latest";
 const DEFAULT_STOCKWERKE = ["UG", "EG", "1. OG", "2. OG", "3. OG", "4. OG", "5. OG", "DG", "Dach"];
 
 // Startinitialisierung: Ordner und Default-Dateien vorbereiten, Datenbank
@@ -218,6 +232,46 @@ function flashFromQuery(req) {
     success: req.query.success || "",
     error: req.query.error || ""
   };
+}
+
+// * INFO: Liest die lokal gepflegten Release Notes fuer die Anzeige im Systembereich.
+async function readReleaseNotes() {
+  try {
+    return await fsp.readFile(path.join(ROOT_DIR, "docs", "RELEASE_NOTES.md"), "utf8");
+  } catch (error) {
+    console.error("Release Notes konnten nicht gelesen werden:", error.message);
+    return "Release Notes konnten nicht geladen werden.";
+  }
+}
+
+function normalizeVersionTag(value) {
+  return String(value || "").trim().replace(/^v/i, "");
+}
+
+function versionNumberParts(value) {
+  const numericPart = normalizeVersionTag(value).split("-")[0];
+  return numericPart.split(".").map((part) => Number.parseInt(part, 10) || 0);
+}
+
+function prereleaseRank(value) {
+  const normalized = normalizeVersionTag(value);
+  const betaMatch = normalized.match(/beta\.(\d+)/i);
+  if (betaMatch) return Number.parseInt(betaMatch[1], 10) || 0;
+  return Number.POSITIVE_INFINITY;
+}
+
+// * INFO: Vergleicht einfache semantische Versionsnummern inkl. beta.N.
+function compareVersions(a, b) {
+  const left = versionNumberParts(a);
+  const right = versionNumberParts(b);
+  const length = Math.max(left.length, right.length, 3);
+
+  for (let index = 0; index < length; index += 1) {
+    const diff = (left[index] || 0) - (right[index] || 0);
+    if (diff !== 0) return diff;
+  }
+
+  return prereleaseRank(a) - prereleaseRank(b);
 }
 
 // Fügt nach einem Redirect eine Erfolg- oder Fehlermeldung als Query-Parameter an.
@@ -759,6 +813,7 @@ app.get("/geraetelisten", requireAuth, async (req, res, next) => {
       deviceListFieldsForLeistungsbereich(liste.leistungsbereich)
     ]));
     const pdfPreviewFiles = await listPdfPreviewFiles(ROOT_DIR, data.projekt);
+    const geraetelistenVorlagen = normalizeGeraetelistenVorlagen(await readJson(GERAETELISTEN_VORLAGEN_FILE, []));
     res.render("geraetelisten", {
       active: "geraetelisten",
       geraetelisten: listen,
@@ -767,6 +822,7 @@ app.get("/geraetelisten", requireAuth, async (req, res, next) => {
       suggestions: buildGeraetelistenSuggestions(data.systemConfig),
       fieldProfiles,
       bedienungsanleitungen,
+      geraetelistenVorlagen,
       previewByListId: buildGeraetelistenPreviewMap(listen, pdfPreviewFiles)
     });
   } catch (error) {
@@ -788,6 +844,46 @@ app.post("/geraetelisten/aktualisieren", requireAuth, async (req, res) => {
   const files = await currentFiles(req);
   await syncProjectDerivedData(files);
   redirectWithFlash(res, "/geraetelisten", "success", "Gerätelisten wurden aktualisiert.");
+});
+
+app.post("/geraetelisten/:listId/vorlagen", requireAuth, async (req, res) => {
+  try {
+    const files = await currentFiles(req);
+    const listen = normalizeGeraetelisten(await readJson(files.geraetelisten, []));
+    const liste = listen.find((entry) => entry.id === req.params.listId);
+    if (!liste) throw new Error("Geräteliste wurde nicht gefunden.");
+    const currentTemplates = await readJson(GERAETELISTEN_VORLAGEN_FILE, []);
+    await writeJson(GERAETELISTEN_VORLAGEN_FILE, addGeraetelistenVorlage(currentTemplates, liste, req.body.name));
+    redirectWithFlash(res, "/geraetelisten", "success", "Geräteliste wurde als Systemvorlage gespeichert.");
+  } catch (error) {
+    fail(req, res, "/geraetelisten", error);
+  }
+});
+
+app.post("/geraetelisten/:listId/vorlagen/:templateId/laden", requireAuth, async (req, res) => {
+  try {
+    const files = await currentFiles(req);
+    const listen = normalizeGeraetelisten(await readJson(files.geraetelisten, []));
+    const templates = normalizeGeraetelistenVorlagen(await readJson(GERAETELISTEN_VORLAGEN_FILE, []));
+    const template = templates.find((entry) => entry.id === req.params.templateId);
+    if (!template) throw new Error("Gerätelisten-Vorlage wurde nicht gefunden.");
+
+    let foundList = false;
+    const updated = listen.map((liste) => {
+      if (liste.id !== req.params.listId) return liste;
+      foundList = true;
+      if (liste.leistungsbereich !== template.leistungsbereich) {
+        throw new Error("Diese Vorlage passt nicht zum ausgewählten Leistungsbereich.");
+      }
+      return applyGeraetelistenVorlage(liste, template);
+    });
+
+    if (!foundList) throw new Error("Geräteliste wurde nicht gefunden.");
+    await writeJson(files.geraetelisten, normalizeGeraetelisten(updated));
+    redirectWithFlash(res, "/geraetelisten", "success", "Gerätelisten-Vorlage wurde geladen.");
+  } catch (error) {
+    fail(req, res, "/geraetelisten", error);
+  }
 });
 
 // Brandschutz: Brandschottungen erfassen und Pflichtangaben prüfen.
@@ -832,6 +928,7 @@ app.get("/export", requireAuth, async (req, res, next) => {
     const data = await loadCurrent(req);
     const pdfPreviewFiles = await listPdfPreviewFiles(ROOT_DIR, data.projekt);
     const finalExportFiles = await listFinalExportFiles(ROOT_DIR, data.projekt);
+    const ordnerrueckenSettings = (((data.systemSettings || {}).export || {}).ordnerruecken || {});
 
     res.render("export", {
       active: "export",
@@ -845,7 +942,9 @@ app.get("/export", requireAuth, async (req, res, next) => {
         projektSysteme: data.projektSysteme
       }),
       pdfPreviewFiles,
-      finalExportFiles
+      finalExportFiles,
+      ordnerrueckenSettings,
+      estimatedBinderCount: estimateBinderCount(data, pdfPreviewFiles)
     });
   } catch (error) {
     next(error);
@@ -926,6 +1025,14 @@ async function generateCompleteDocumentation(rootDir, data) {
   return generated;
 }
 
+function estimateBinderCount(data, pdfPreviewFiles = []) {
+  const presentExports = (data.exportliste || []).filter((entry) => entry.status === "vorhanden").length;
+  const pdfCount = Array.isArray(pdfPreviewFiles) ? pdfPreviewFiles.length : 0;
+  const baseCount = Math.max(presentExports, pdfCount, 1);
+  // * INFO: Grobe Ablageschaetzung bis echte Seitenzahlen der Gesamt-PDF ausgewertet werden.
+  return Math.max(1, Math.min(20, Math.ceil(baseCount / 80)));
+}
+
 app.post("/export/projektordner", requireAuth, async (req, res) => {
   await createProjectFolder(ROOT_DIR, (await loadCurrent(req)).projekt);
   redirectWithFlash(res, "/export", "success", "Projektordner wurde erstellt.");
@@ -998,6 +1105,29 @@ app.post("/export/trennstreifen", requireAuth, async (req, res) => {
   redirectWithFlash(res, "/export", "success", `Trennstreifen wurden separat generiert (${generated.length} PDF).`);
 });
 
+app.post("/export/ordnerruecken", requireAuth, async (req, res) => {
+  const data = await loadCurrent(req);
+  const settingsPath = path.join(CONFIG_DIR, "systemEinstellungen.json");
+  const currentSettings = mergeSystemSettings(await readJson(settingsPath, DEFAULT_SYSTEM_SETTINGS));
+  const pdfPreviewFiles = await listPdfPreviewFiles(ROOT_DIR, data.projekt);
+  const mode = req.body.anzahlModus === "auto" ? "auto" : "manuell";
+  const binderOptions = {
+    format: req.body.format === "schmal" ? "schmal" : "breit",
+    anzahlModus: mode,
+    ordnerAnzahl: mode === "auto" ? estimateBinderCount(data, pdfPreviewFiles) : Math.max(1, Math.min(20, Number(req.body.ordnerAnzahl) || 1))
+  };
+  const updatedSettings = {
+    ...currentSettings,
+    export: {
+      ...currentSettings.export,
+      ordnerruecken: binderOptions
+    }
+  };
+  await writeJson(settingsPath, updatedSettings);
+  const generated = await generateOrdnerruecken(ROOT_DIR, data.projekt, updatedSettings, binderOptions);
+  redirectWithFlash(res, "/export", "success", `Ordnerrücken wurden generiert (${generated.length} PDF, ${binderOptions.ordnerAnzahl} Ordner).`);
+});
+
 app.post("/export/exportliste", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
   await buildExportliste(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche);
@@ -1025,19 +1155,85 @@ app.get("/einstellungen", requireAuth, async (req, res, next) => {
       leistungsbereiche: data.leistungsbereiche,
       systemConfig: data.systemConfig,
       templates: data.templates,
+      geraetelistenVorlagen: normalizeGeraetelistenVorlagen(await readJson(GERAETELISTEN_VORLAGEN_FILE, [])),
       isSystemAdmin,
       users: isSystemAdmin ? listUsers() : [],
-      userRoles: USER_ROLES
+      userRoles: USER_ROLES,
+      appVersion: APP_VERSION,
+      appName: APP_NAME,
+      releaseNotes: await readReleaseNotes()
     });
   } catch (error) {
     next(error);
   }
 });
 
+app.get("/einstellungen/update-check", requireAuth, async (req, res) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
+
+  try {
+    // * INFO: Es wird nur die neueste GitHub-Release gelesen. Es findet kein automatisches Update statt.
+    const response = await fetch(GITHUB_RELEASE_API, {
+      headers: {
+        Accept: "application/vnd.github+json",
+        "User-Agent": `${APP_NAME}/${APP_VERSION}`
+      },
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    if (response.status === 404) {
+      res.json({
+        ok: true,
+        currentVersion: APP_VERSION,
+        latestVersion: "",
+        hasUpdate: false,
+        releaseName: "Keine GitHub Releases gefunden",
+        releaseUrl: "https://github.com/loserat/edoku/releases",
+        message: "Noch kein GitHub Release veroeffentlicht. Die lokalen Release Notes sind der aktuelle Stand."
+      });
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(`GitHub antwortet mit Status ${response.status}`);
+    }
+
+    const release = await response.json();
+    const latestVersion = normalizeVersionTag(release.tag_name || release.name || "");
+
+    res.json({
+      ok: true,
+      currentVersion: APP_VERSION,
+      latestVersion,
+      hasUpdate: compareVersions(latestVersion, APP_VERSION) > 0,
+      releaseName: release.name || release.tag_name || latestVersion,
+      releaseUrl: release.html_url || "https://github.com/loserat/edoku/releases",
+      publishedAt: release.published_at || ""
+    });
+  } catch (error) {
+    clearTimeout(timeout);
+    res.json({
+      ok: false,
+      currentVersion: APP_VERSION,
+      message: `Update-Pruefung nicht moeglich: ${error.message}`
+    });
+  }
+});
+
 app.post("/einstellungen/system", requireAuth, async (req, res) => {
   try {
     const current = mergeSystemSettings(await readJson(path.join(CONFIG_DIR, "systemEinstellungen.json"), {}));
-    await writeJson(path.join(CONFIG_DIR, "systemEinstellungen.json"), { ...current, ...normalizePostedSystemSettings(req.body), ersteller: current.ersteller });
+    const next = { ...current, ...normalizePostedSystemSettings(req.body), ersteller: current.ersteller };
+    // ! WICHTIG: Branding-/Lizenzwerte duerfen nur Systemadmins veraendern.
+    if (req.user && req.user.role === "systemadmin") {
+      next.lizenz = {
+        ...current.lizenz,
+        brandingAktiv: req.body.brandingAktiv === "on"
+      };
+    }
+    await writeJson(path.join(CONFIG_DIR, "systemEinstellungen.json"), next);
     okOrRedirect(req, res, "/einstellungen#system");
   } catch (error) {
     fail(req, res, "/einstellungen#system", error);
@@ -1208,6 +1404,16 @@ app.post("/einstellungen/ordnerstruktur", requireAuth, async (req, res) => {
     okOrRedirect(req, res, "/einstellungen#ordnerstruktur");
   } catch (error) {
     fail(req, res, "/einstellungen#ordnerstruktur", error);
+  }
+});
+
+app.post("/einstellungen/geraetelisten-vorlagen", requireAuth, async (req, res) => {
+  try {
+    const currentTemplates = await readJson(GERAETELISTEN_VORLAGEN_FILE, []);
+    await writeJson(GERAETELISTEN_VORLAGEN_FILE, normalizePostedGeraetelistenVorlagen(req.body.vorlagen, currentTemplates));
+    okOrRedirect(req, res, "/einstellungen#geraetelisten-vorlagen");
+  } catch (error) {
+    fail(req, res, "/einstellungen#geraetelisten-vorlagen", error);
   }
 });
 

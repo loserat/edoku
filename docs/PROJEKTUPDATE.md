@@ -15,7 +15,7 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Dashboard mit Projektfortschritt
 - Projektstammdaten inklusive Objektstruktur und Stockwerken
 - Leistungsbereiche
-- System-/Herstellerauswahl
+- leistungsbereichsbezogene Formular- und Exportvorgaben
 - Dokumentenmatrix
 - logische Kapitelnummerierung
 - Gerätelisten mit sortierbaren Tabellen
@@ -81,7 +81,7 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Hauptnavigation weiter bereinigt: `Projekte` steht links in der Menüfolge, `Dokumentation` wurde zu `Anhänge`.
 - Die Dokumentenmatrix ist in den Exportbereich gewandert und wird dort als eigene Export-Untersektion geführt.
 - Matrix-Tabellen werden ohne Zeilenumbrüche dargestellt, horizontal scrollbar gehalten und können im Browser spaltenweise in der Breite angepasst werden.
-- Die Matrix steuert jetzt primär, welche vorhandenen Systemdokumente in der Ausgabe erzeugt beziehungsweise exportiert werden.
+- Die Matrix steuert jetzt primär, welche vorhandenen Dokumente in der Ausgabe erzeugt beziehungsweise exportiert werden.
 - Der manuelle Button zum Aktualisieren der Matrix aus Leistungsbereichen wurde entfernt, weil die Synchronisierung im Hintergrund erfolgt.
 - Exportbereich wurde in die Unterbereiche `PDF-Dokumentation`, `PDF-Trennstreifen`, `ZIP-Export`, `Matrix` und `Exporteinstellungen` gegliedert.
 - Nicht benötigte Export-Kennzahlen wurden aus den Unterseiten entfernt, damit die Exportseiten ruhiger wirken.
@@ -109,7 +109,26 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Brandschutz-Fotozuordnung wurde verschärft: je Brandschottung gibt es nur ein Foto 1 und ein Foto 2; neue Zuordnungen ersetzen alte Slot-Belegungen.
 - Anhangs-Popup wurde größer und die untere Aktionsleiste bleibt beim Scrollen sichtbar.
 - Benutzerverwaltung optisch verdichtet: lange Werte werden gekürzt, das Datum lesbar formatiert und Rollen-/Passwort-/Statusaktionen liegen in einem Bearbeiten-Popup.
+- Systembereich zeigt die installierte Version, lokale Release Notes und eine reine GitHub-Update-Prüfung.
+- Update-Prüfung liest nur die neuesten GitHub Releases und führt bewusst keine automatische Server-Aktualisierung aus.
+- Systemzugang sitzt in der Kopfzeile jetzt ganz rechts als reines Icon; Benutzername und Logout liegen im kompakten Benutzer-Icon-Menü.
+- Version und GitHub-Update-Prüfung sind als eigener Unterpunkt `Updates` im Systembereich angeordnet.
+- System-Untertabs wurden schmaler und zentrierter gestaltet, damit keine große leere Kapsel entsteht.
+- Systemadmins können das sichtbare edoku-/nickgm-Branding für Oberfläche und normale PDF-Exporte als Vollversionsoption deaktivieren.
+- Alte Systemauswahl-Verweise wurden aus Startseite, Dashboard-Workflow und sichtbarer Exportliste entfernt.
+- Dashboard verlinkt die Dokumentenmatrix jetzt in den Exportbereich.
 - Docker wurde nach den Änderungen neu gebaut und geprüft.
+
+## Update 2026-06-14
+
+- Gerätelisten können über das Drei-Punkte-Menü als systemweite Vorlage gespeichert werden.
+- Unter `System > Gerätelisten` können gespeicherte Gerätelisten-Vorlagen umbenannt und entfernt werden.
+- Gerätelisten-Vorlagen können aus dem Drei-Punkte-Menü wieder in passende Gerätelisten geladen werden; dabei wird vor dem Ersetzen der aktuellen Positionen bestätigt.
+- Exportbereich um `Ordnerrücken` erweitert.
+- Ordnerrücken werden als separate PDF erzeugt, aktuell mit den Formaten ca. `192 x 61 mm` für breite Ordner und `192 x 38 mm` für schmale Ordner.
+- Die Anzahl der Ordnerrücken kann manuell gesetzt oder zunächst grob anhand vorhandener Export-/PDF-Einträge geschätzt werden.
+- Für klickbare Inhaltsverzeichnisse ist der fachlich sinnvolle Ansatz festgehalten: Umsetzung im final zusammengeführten Gesamt-PDF, nicht in isolierten Einzel-PDFs.
+- Docker wurde nach den Änderungen neu gebaut und die neuen Export-/Vorlagen-Routen wurden per HTTP geprüft.
 
 ## Wichtige Beta-Einschränkungen
 
@@ -131,4 +150,7 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - BK 01 und BK 02 definieren
 - automatisierte Tests ergänzen
 - Lizenzentscheidung treffen
+- Better-Comments-Kommentierung für `server.js`, `public/js/app.js` und `public/css/style.css` nachziehen
+- Klickbare Kapitel-Sprungmarken im finalen Gesamt-PDF prüfen und umsetzen
+- Ordnerrücken-Auto-Berechnung später mit echten PDF-Seitenzahlen über `pdf-lib` präzisieren
 - Benutzerverwaltung weiter ausbauen: eigene Passwortänderung, optionale 2FA und Audit-Log prüfen

@@ -31,7 +31,9 @@
         <button type="button" data-settings-tab="theme" aria-controls="theme-editor"><%- include("partials/icon", { name: "system" }) %><span>Theme</span></button>
         <button type="button" data-settings-tab="ersteller" aria-controls="ersteller"><%- include("partials/icon", { name: "project" }) %><span>Ersteller</span></button>
         <button type="button" data-settings-tab="leistungsbereiche" aria-controls="leistungsbereiche-admin"><%- include("partials/icon", { name: "list" }) %><span>Leistungsbereiche</span></button>
+        <button type="button" data-settings-tab="geraetelisten-vorlagen" aria-controls="geraetelisten-vorlagen"><%- include("partials/icon", { name: "list" }) %><span>Gerätelisten</span></button>
         <button type="button" data-settings-tab="ordnerstruktur" aria-controls="ordnerstruktur"><%- include("partials/icon", { name: "folder-tree" }) %><span>Ordnerstruktur</span></button>
+        <button type="button" data-settings-tab="updates" aria-controls="updates"><%- include("partials/icon", { name: "download" }) %><span>Updates</span></button>
         <% if (isSystemAdmin) { %>
           <button type="button" data-settings-tab="benutzer" aria-controls="benutzerverwaltung"><%- include("partials/icon", { name: "overview" }) %><span>Benutzer</span></button>
         <% } %>
@@ -83,7 +85,39 @@
             <span class="switch-track" aria-hidden="true"></span>
             <span>Löschbestätigung anzeigen</span>
           </label>
+          <% if (isSystemAdmin) { %>
+            <label class="switch-control">
+              <input type="checkbox" name="brandingAktiv" <%= !systemSettings.lizenz || systemSettings.lizenz.brandingAktiv !== false ? "checked" : "" %>>
+              <span class="switch-track" aria-hidden="true"></span>
+              <span>edoku-Branding in Oberfläche und PDF anzeigen</span>
+            </label>
+            <p class="field-hint">Nur für Systemadmins: Für Vollversionen kann das sichtbare edoku/nickgm-Branding deaktiviert werden. Projekt- und Erstellerlogos bleiben davon unabhängig.</p>
+          <% } %>
         </form>
+
+        <%# Versionsbereich: zeigt lokale Version, Release Notes und eine reine GitHub-Prüfung ohne Auto-Update. %>
+        <section id="updates" class="settings-panel" data-settings-panel="updates" hidden>
+          <div class="panel-head">
+            <div>
+              <h2>Version und Updates</h2>
+              <p>Installierte Version prüfen und lokale Release Notes lesen.</p>
+            </div>
+          </div>
+          <section class="system-update-panel" aria-label="Version und Updates">
+            <div class="version-summary">
+              <div>
+                <span class="meta-label">Installierte Version</span>
+                <strong><%= appName %> <%= appVersion %></strong>
+              </div>
+              <button type="button" class="secondary compact-button" data-update-check>Updates prüfen</button>
+            </div>
+            <p class="update-status" data-update-status>Noch nicht geprüft.</p>
+            <details class="release-notes-panel" open>
+              <summary>Aktuelle Release Notes</summary>
+              <pre class="release-notes-body"><%= releaseNotes %></pre>
+            </details>
+          </section>
+        </section>
 
         <%# Theme-Editor: zentrale Designwerte werden in systemEinstellungen.json gespeichert. %>
         <form id="theme-editor" action="/einstellungen/theme" method="post" class="settings-panel theme-editor" data-theme-editor data-settings-panel="theme" hidden>
@@ -510,6 +544,51 @@
             </details>
           <% }) %>
         </div>
+      </form>
+
+      <form id="geraetelisten-vorlagen" action="/einstellungen/geraetelisten-vorlagen" method="post" data-autosave class="settings-panel" data-settings-panel="geraetelisten-vorlagen" hidden>
+        <div class="panel-head">
+          <div>
+            <h2>Gerätelisten-Vorlagen</h2>
+            <p>Systemweite Vorlagen verwalten, die im Drei-Punkte-Menü der Gerätelisten geladen werden können.</p>
+          </div>
+        </div>
+
+        <% if (!(geraetelistenVorlagen || []).length) { %>
+          <p class="notice subtle">Noch keine Vorlagen gespeichert. Speichere eine Geräteliste über Gerätelisten &gt; Werkzeuge &gt; Als Vorlage speichern.</p>
+        <% } else { %>
+          <div class="table-wrap template-admin-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Leistungsbereich</th>
+                  <th>Kapitel</th>
+                  <th>Positionen</th>
+                  <th>Aktualisiert</th>
+                  <th>Entfernen</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% (geraetelistenVorlagen || []).forEach((vorlage, index) => { %>
+                  <tr>
+                    <td>
+                      <input type="hidden" name="vorlagen[<%= index %>][id]" value="<%= vorlage.id %>">
+                      <input type="text" name="vorlagen[<%= index %>][name]" value="<%= vorlage.name %>">
+                    </td>
+                    <td><%= vorlage.leistungsbereich %></td>
+                    <td><%= vorlage.kapitel %></td>
+                    <td><%= vorlage.positionen.length %></td>
+                    <td><%= vorlage.aktualisiertAm ? new Date(vorlage.aktualisiertAm).toLocaleString("de-DE") : "-" %></td>
+                    <td>
+                      <button class="row-delete-button danger icon-only-button" type="button" data-delete-row data-delete-label="Vorlage <%= vorlage.name %>" aria-label="Gerätelisten-Vorlage löschen"><%- include("partials/icon", { name: "trash" }) %></button>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
       </form>
 
     </main>

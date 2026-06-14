@@ -9,7 +9,7 @@
   </div>
   <nav class="nav" aria-label="Hauptnavigation">
     <% const dashboardLabel = typeof currentProjectNumber !== "undefined" && currentProjectNumber ? currentProjectNumber : typeof currentProjectName !== "undefined" && currentProjectName ? currentProjectName : "Übersicht"; %>
-    <a class="<%= ["projekte", "projekt", "leistungsbereiche", "systemauswahl", "projektarchiv"].includes(active) ? "active" : "" %>" href="/projekte"><%- include("icon", { name: "project" }) %><span>Projekte</span></a>
+    <a class="<%= ["projekte", "projekt", "leistungsbereiche", "projektarchiv"].includes(active) ? "active" : "" %>" href="/projekte"><%- include("icon", { name: "project" }) %><span>Projekte</span></a>
     <a class="<%= active === "dashboard" ? "active" : "" %>" href="/dashboard" title="Projektübersicht"><%- include("icon", { name: "overview" }) %><span><%= dashboardLabel %></span></a>
     <a class="<%= ["dokumente", "anhaenge"].includes(active) ? "active" : "" %>" href="/anhaenge?kategorie=Brandschutz"><%- include("icon", { name: "documentation" }) %><span>Anhänge</span></a>
     <% if (typeof showBrandschutzNavigation !== "undefined" && showBrandschutzNavigation) { %>
@@ -17,18 +17,34 @@
     <% } %>
     <a class="<%= active === "geraetelisten" ? "active" : "" %>" href="/geraetelisten"><%- include("icon", { name: "list" }) %><span>Gerätelisten</span></a>
     <a class="<%= active === "export" ? "active" : "" %>" href="/export"><%- include("icon", { name: "export" }) %><span>Export</span></a>
-    <a class="<%= active === "einstellungen" ? "active" : "" %>" href="/einstellungen"><%- include("icon", { name: "system" }) %><span>System</span></a>
   </nav>
-  <% if (typeof user !== "undefined" && user) { %>
-    <div class="user-menu">
-      <span><%= user.name %></span>
-      <form action="/logout" method="post">
-        <button class="secondary" type="submit">Abmelden</button>
-      </form>
-    </div>
-  <% } %>
-  <button class="theme-toggle" type="button" data-theme-toggle aria-label="Theme wechseln">
-    <span class="theme-toggle-icon theme-toggle-sun"><%- include("icon", { name: "sun" }) %></span>
-    <span class="theme-toggle-icon theme-toggle-moon"><%- include("icon", { name: "moon" }) %></span>
-  </button>
+  <div class="header-actions">
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Theme wechseln">
+      <span class="theme-toggle-icon theme-toggle-sun"><%- include("icon", { name: "sun" }) %></span>
+      <span class="theme-toggle-icon theme-toggle-moon"><%- include("icon", { name: "moon" }) %></span>
+    </button>
+    <% if (typeof user !== "undefined" && user) { %>
+      <%# Benutzeraktionen bleiben im Header kompakt und werden erst bei Hover/Fokus angezeigt. %>
+      <div class="user-menu header-user-menu">
+        <button class="header-icon-button" type="button" aria-label="Benutzermenü" title="Benutzer">
+          <%- include("icon", { name: "user" }) %>
+        </button>
+        <div class="user-dropdown" role="menu">
+          <div class="user-dropdown-head">
+            <span>Angemeldet</span>
+            <strong><%= user.name %></strong>
+          </div>
+          <% if (user.role === "systemadmin") { %>
+            <a href="/einstellungen#benutzer" role="menuitem">Benutzerverwaltung</a>
+          <% } %>
+          <form action="/logout" method="post">
+            <button type="submit" role="menuitem">Abmelden</button>
+          </form>
+        </div>
+      </div>
+    <% } %>
+    <a class="header-icon-link <%= active === "einstellungen" ? "active" : "" %>" href="/einstellungen" aria-label="System" title="System">
+      <%- include("icon", { name: "system" }) %>
+    </a>
+  </div>
 </header>

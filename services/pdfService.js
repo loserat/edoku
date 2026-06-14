@@ -21,6 +21,16 @@ const SIGNATURE_BOTTOM_OFFSET = 104;
 const CM_TO_PT = 28.3464567;
 const TRENNSTREIFEN_WIDTH = 24 * CM_TO_PT;
 const TRENNSTREIFEN_HEIGHT = 10.5 * CM_TO_PT;
+const ORDNER_RUECKEN_HEIGHT = 192 / 10 * CM_TO_PT;
+const ORDNER_RUECKEN_FORMATS = {
+  schmal: { label: "Schmaler Ordner", width: 38 / 10 * CM_TO_PT },
+  breit: { label: "Breiter Ordner", width: 61 / 10 * CM_TO_PT }
+};
+
+// * INFO: Vollversionen koennen das sichtbare edoku/nickgm-Branding zentral deaktivieren.
+function isBrandingEnabled(systemSettings = {}) {
+  return !systemSettings.lizenz || systemSettings.lizenz.brandingAktiv !== false;
+}
 
 // Seitengeometrie-Helfer für einheitliche PDF-Abstände.
 function pageLeft(doc) {
@@ -508,7 +518,11 @@ function writeFooter(doc, projekt) {
 }
 
 // Kleines Branding mit Link im PDF-Fußbereich.
-function writeFooterBranding(doc) {
+function writeFooterBranding(doc, systemSettings = {}) {
+  if (!isBrandingEnabled(systemSettings)) {
+    return;
+  }
+
   if (!doc._footerBrandingPages) {
     doc._footerBrandingPages = new WeakSet();
   }
@@ -570,16 +584,17 @@ async function writePdf(filePath, title, writer, options = {}) {
       bufferPages: true
     });
     const stream = fs.createWriteStream(filePath);
+    doc._systemSettings = options.systemSettings || {};
     doc.pipe(stream);
     stream.on("finish", () => resolve(filePath));
     stream.on("error", reject);
     writer(doc, { title });
     const pageRange = doc.bufferedPageRange();
     // ! WICHTIG: Trennstreifen deaktivieren Footer-Branding explizit, weil Registerdruck ohne Fußlogo erfolgen soll.
-    if (options.includeFooterBranding !== false) {
+    if (options.includeFooterBranding !== false && isBrandingEnabled(options.systemSettings || {})) {
       for (let pageIndex = pageRange.start; pageIndex < pageRange.start + pageRange.count; pageIndex += 1) {
         doc.switchToPage(pageIndex);
-        writeFooterBranding(doc);
+        writeFooterBranding(doc, options.systemSettings || {});
       }
     }
     doc.end();
@@ -773,7 +788,7 @@ async function generateAnlagenbeschreibungPdf(rootDir, projekt, entry, leistungs
     writeDocumentTitle(doc, title, `Kapitel ${displayKapitel} - Übersicht der installierten Anlagenbereiche`);
     writeParagraphWithPageBreaks(doc, text, projekt, rootDir, systemSettings, title);
     writeFooter(doc, projekt);
-  });
+  }, { systemSettings });
 
   return filePath;
 }
@@ -800,7 +815,7 @@ async function generateInhaltsverzeichnis(rootDir, projekt, matrix, systemSettin
       doc.moveDown(0.25);
     });
     writeFooter(doc, projekt);
-  });
+  }, { systemSettings });
 
   return [filePath];
 }
@@ -818,7 +833,7 @@ async function generateDeckblaetter(rootDir, projekt, matrix, systemSettings = {
     const filePath = path.join(paths.generatedPath, `${String(displayKapitel).replaceAll(".", "_")}_${fileSafeName(entry.titel || "Deckblatt")}.pdf`);
     await writePdf(filePath, entry.titel || "Deckblatt", (doc) => {
       writeCoverPage(doc, projekt, rootDir, systemSettings, entry);
-    });
+    }, { systemSettings });
     generated.push(filePath);
   }
 
@@ -845,6 +860,87 @@ async function generateTrennstreifen(rootDir, projekt, matrix, systemSettings = 
     margin: 0,
     // ! WICHTIG: Auf Trennstreifen generell kein Footer-Branding ausgeben.
     includeFooterBranding: false
+  });
+
+  return [filePath];
+}
+
+function drawOrdnerRueckenLabel(doc, projekt, index, count, x, y, width, height, formatLabel) {
+  const title = projekt.projektname || "Bestandsdokumentation Elektro";
+  const number = projekt.projektnummer || "";
+  const client = projekt.auftraggeber || "";
+  const property = projekt.liegenschaft || "";
+  const measure = projekt.baumassnahme || "";
+  const label = count > 1 ? `Ordner ${index + 1} / ${count}` : "Dokumentationsordner";
+
+  doc.save();
+  doc.strokeColor("#cbd5e1").lineWidth(0.7).rect(x, y, width, height).stroke();
+  doc.fillColor("#f8fafc").rect(x + 1, y + 1, width - 2, 28).fill();
+  doc.fillColor("#111827").font("Helvetica-Bold").fontSize(8).text(number || "Projekt", x + 8, y + 8, {
+    width: width - 16,
+    align: "center",
+    ellipsis: true
+  });
+
+  doc.save();
+  doc.translate(x + width / 2, y + height / 2);
+  doc.rotate(-90);
+  doc.fillColor("#111827").font("Helvetica-Bold").fontSize(width > 140 ? 18 : 14).text(title, -height / 2 + 46, -width / 2 + 10, {
+    width: height - 92,
+    align: "center",
+    ellipsis: true
+  });
+  doc.fillColor("#374151").font("Helvetica").fontSize(width > 140 ? 10 : 8).text([client, property].filter(Boolean).join(" | "), -height / 2 + 46, -width / 2 + (width > 140 ? 36 : 30), {
+    width: height - 92,
+    align: "center",
+    ellipsis: true
+  });
+  doc.fillColor("#6b7280").font("Helvetica").fontSize(7).text(measure, -height / 2 + 46, width / 2 - 24, {
+    width: height - 92,
+    align: "center",
+    ellipsis: true
+  });
+  doc.restore();
+
+  doc.fillColor("#111827").font("Helvetica-Bold").fontSize(7).text(label, x + 8, y + height - 28, {
+    width: width - 16,
+    align: "center",
+    ellipsis: true
+  });
+  doc.fillColor("#6b7280").font("Helvetica").fontSize(5.5).text(formatLabel, x + 8, y + height - 15, {
+    width: width - 16,
+    align: "center",
+    ellipsis: true
+  });
+  doc.restore();
+}
+
+// Generiert separat druckbare Ordnerrücken für Dokumentationsordner.
+async function generateOrdnerruecken(rootDir, projekt, systemSettings = {}, options = {}) {
+  const paths = await createProjectFolder(rootDir, projekt);
+  const generatedDir = path.join(paths.generatedPath, "Ordnerruecken");
+  await clearGeneratedPdfs(generatedDir);
+  const format = ORDNER_RUECKEN_FORMATS[options.format] || ORDNER_RUECKEN_FORMATS.breit;
+  const count = Math.max(1, Math.min(20, Number(options.ordnerAnzahl) || 1));
+  const filePath = path.join(generatedDir, `Ordnerruecken_${options.format === "schmal" ? "schmal" : "breit"}_${count}x.pdf`);
+
+  await writePdf(filePath, "Ordnerrücken", (doc) => {
+    const margin = 28;
+    const gap = 10;
+    const perPage = Math.max(1, Math.floor((doc.page.width - margin * 2 + gap) / (format.width + gap)));
+
+    for (let index = 0; index < count; index += 1) {
+      if (index > 0 && index % perPage === 0) doc.addPage();
+      const pageIndex = index % perPage;
+      const x = margin + pageIndex * (format.width + gap);
+      const y = margin;
+      drawOrdnerRueckenLabel(doc, projekt, index, count, x, y, format.width, ORDNER_RUECKEN_HEIGHT, format.label);
+    }
+  }, {
+    size: "A4",
+    margin: 0,
+    includeFooterBranding: false,
+    systemSettings
   });
 
   return [filePath];
@@ -898,7 +994,7 @@ async function generateFormularPdfs(rootDir, projekt, matrix, leistungsbereiche,
       }
       if (template.showSignature) writeSignature(doc, template.signatureLabel);
       if (template.showFooter) writeFooter(doc, projekt);
-    }, template);
+    }, { ...template, systemSettings });
     generated.push(filePath);
   }
 
@@ -919,7 +1015,7 @@ async function generateFormularPdfs(rootDir, projekt, matrix, leistungsbereiche,
       writeConfirmationBody(doc, template.bodyText || "", { fontSize: template.fontSizeBody });
       if (template.showSignature) writeSignature(doc, template.signatureLabel);
       if (template.showFooter) writeFooter(doc, projekt);
-    }, template);
+    }, { ...template, systemSettings });
     generated.push(filePath);
   }
 
@@ -941,7 +1037,7 @@ async function generateFormularPdfs(rootDir, projekt, matrix, leistungsbereiche,
       }
       if (template.showSignature) writeSignature(doc, template.signatureLabel);
       if (template.showFooter) writeFooter(doc, projekt);
-    }, template);
+    }, { ...template, systemSettings });
     generated.push(filePath);
   }
 
@@ -963,7 +1059,7 @@ async function generateFormularPdfs(rootDir, projekt, matrix, leistungsbereiche,
       }
       if (template.showSignature) writeSignature(doc, template.signatureLabel);
       if (template.showFooter) writeFooter(doc, projekt);
-    }, template);
+    }, { ...template, systemSettings });
     generated.push(filePath);
   }
 
@@ -1244,7 +1340,7 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
       });
       doc.y = tableY + 8;
       writeFooter(doc, projekt);
-    }, { layout: "landscape", margin: 36 });
+    }, { layout: "landscape", margin: 36, systemSettings });
     generated.push(filePath);
   }
 
@@ -1302,7 +1398,7 @@ async function generateBrandschutzPdf(rootDir, projekt, brandschutz, systemSetti
       doc.y = imageY + imageHeight + 10;
     });
     writeFooter(doc, projekt);
-  }, { layout: "landscape", margin: 36 });
+  }, { layout: "landscape", margin: 36, systemSettings });
 
   return [filePath];
 }
@@ -1314,5 +1410,6 @@ module.exports = {
   generateFormularPdfs,
   generateGeraetelisten,
   generateInhaltsverzeichnis,
+  generateOrdnerruecken,
   generateTrennstreifen
 };

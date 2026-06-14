@@ -26,7 +26,7 @@ Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. 
 - aktuelles Projekt als Arbeitskontext
 - Dashboard mit Fortschritt und Kennzahlen
 - Projektstammdaten mit Objektstruktur und Stockwerken
-- Leistungsbereiche mit System- und Herstellerbezug
+- Leistungsbereiche mit Formularvorgaben und Projektzuordnung
 - Dokumentenmatrix mit logischer Kapitelnummerierung
 - Gerätelisten je Leistungsbereich
 - Brandschutzabschottungen mit Foto-Zuordnung über Anhänge
@@ -39,6 +39,7 @@ Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. 
 - Exportliste und finaler Exportordner
 - Tag-/Nacht-Theme
 - Theme-Editor mit Presets
+- Versionsanzeige und GitHub-Update-Prüfung im Systembereich
 - schwebende Statusmeldungen, die die Oberfläche nicht verschieben
 - Docker-Start
 - GitHub-/VS-Code-inspirierte Theme-Presets mit stabilen Layoutgrößen
@@ -53,7 +54,7 @@ Die Hauptnavigation ist kompakt gehalten:
 - Brandschutz
 - Gerätelisten
 - Export
-- System
+- System-Icon rechts im Header
 
 Je Hauptbereich werden die Unterpunkte links in der Seitenleiste oder als kompakte Bereichstabs geführt. Links oben im Header steht der Name des aktuell geöffneten Projekts.
 
@@ -150,6 +151,7 @@ edoku erzeugt aktuell:
 - Anlagenbeschreibung unter Kapitel `3.1`
 - Deckblätter für Hauptkategorien
 - separate Trennstreifen für Unterkategorien
+- separate Ordnerrücken für Dokumentationsordner
 - Konformitätserklärungen
 - CE-Bestätigungen
 - DGUV-/Errichterbestätigungen
@@ -163,6 +165,12 @@ Importierte PDF-Anhänge können über Kategorien wie Stromlaufpläne, Schaltpl�
 Anhänge werden kategoriebezogen als Kacheln verwaltet. Datei-Metadaten, Vorschau und Brandschutz-Fotozuordnung laufen über ein Bearbeiten-Popup. Bedienungsanleitungen können optional mit Gerätepositionen in Gerätelisten verknüpft werden.
 
 Trennstreifen werden separat erzeugt und bewusst ohne Footer-Branding gedruckt. Der Standarddruck ist tintensparend: schwarze Kapitelnummer am Registerrand, keine blaue Fläche und kein zusätzlicher Projekttext.
+
+Ordnerrücken werden unter `Export > Ordnerrücken` als separate PDF erzeugt. Unterstützt sind zunächst gängige breite und schmale Ordnerrückenformate; die Ordneranzahl kann manuell gesetzt oder grob aus den vorhandenen Export-/PDF-Einträgen geschätzt werden.
+
+Gerätelisten können über das Drei-Punkte-Menü als systemweite Vorlage gespeichert werden. Die Verwaltung erfolgt unter `System > Gerätelisten`; passende Vorlagen können später wieder in Gerätelisten geladen werden.
+
+Systemadmins können unter `System > System` das sichtbare edoku-/nickgm-Branding für Oberfläche und PDF-Exporte deaktivieren. Das ist als Vollversions-/Lizenzoption vorbereitet; projektbezogene Logos und Erstellerlogos bleiben davon unabhängig.
 
 ## Theme-System
 

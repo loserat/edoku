@@ -204,6 +204,51 @@ document.addEventListener("DOMContentLoaded", () => {
     activateSettingsTab(localStorage.getItem(storageKey));
   }
 
+  const updateCheckButton = document.querySelector("[data-update-check]");
+  if (updateCheckButton) {
+    const updateStatus = document.querySelector("[data-update-status]");
+
+    function setUpdateStatus(text, state = "") {
+      if (!updateStatus) return;
+      updateStatus.textContent = text;
+      updateStatus.dataset.state = state;
+    }
+
+    updateCheckButton.addEventListener("click", async () => {
+      updateCheckButton.disabled = true;
+      setUpdateStatus("GitHub Releases werden geprüft...", "loading");
+
+      try {
+        const response = await fetch("/einstellungen/update-check", {
+          headers: { Accept: "application/json" }
+        });
+        const result = await response.json();
+
+        if (!result.ok) {
+          setUpdateStatus(result.message || "Update-Prüfung konnte nicht ausgeführt werden.", "warning");
+          return;
+        }
+
+        if (result.hasUpdate) {
+          const releaseInfo = result.releaseName ? ` (${result.releaseName})` : "";
+          setUpdateStatus(`Neue Version verfügbar: ${result.latestVersion}${releaseInfo}.`, "success");
+          return;
+        }
+
+        if (result.message) {
+          setUpdateStatus(result.message, "warning");
+          return;
+        }
+
+        setUpdateStatus(`Aktuell: ${result.currentVersion}. Keine neuere Version gefunden.`, "success");
+      } catch (error) {
+        setUpdateStatus(`Update-Prüfung fehlgeschlagen: ${error.message}`, "warning");
+      } finally {
+        updateCheckButton.disabled = false;
+      }
+    });
+  }
+
   // Auto-Save für Formulare mit data-autosave. Änderungen werden verzögert
   // gesendet, parallele Speichervorgänge werden über pending nachgezogen.
   const autosaveForms = Array.from(document.querySelectorAll("form[data-autosave]"));
@@ -337,15 +382,23 @@ document.addEventListener("DOMContentLoaded", () => {
       panel.setAttribute("role", "tabpanel");
     });
 
-    activateTab(localStorage.getItem(storageKey));
+    const tabFromHash = window.location.hash ? window.location.hash.slice(1) : "";
+    activateTab(tabFromHash || localStorage.getItem(storageKey));
   });
 
-  // PDF-Vorschau-Iframe aus dem ausgewählten PDF-Pfad aktualisieren.
-  const pdfPreviewSelect = document.querySelector("[data-pdf-preview-select]");
+  // PDF-Vorschau-Iframe aus der ausgewählten Datei im Inhaltsbaum aktualisieren.
+  const pdfPreviewChoices = Array.from(document.querySelectorAll("[data-pdf-preview-select]"));
   const pdfPreviewFrame = document.querySelector("[data-pdf-preview-frame]");
-  if (pdfPreviewSelect && pdfPreviewFrame) {
-    pdfPreviewSelect.addEventListener("change", () => {
-      pdfPreviewFrame.src = `${pdfPreviewSelect.value}#toolbar=1`;
+  if (pdfPreviewChoices.length && pdfPreviewFrame) {
+    pdfPreviewChoices.forEach((choice) => {
+      const updatePreview = () => {
+        const source = choice.dataset.pdfSrc || choice.value;
+        if (!source) return;
+        pdfPreviewFrame.src = `${source}#toolbar=1`;
+        pdfPreviewChoices.forEach((entry) => entry.classList.toggle("active", entry === choice));
+      };
+
+      choice.addEventListener(choice.tagName === "SELECT" ? "change" : "click", updatePreview);
     });
   }
 
@@ -759,6 +812,17 @@ document.addEventListener("DOMContentLoaded", () => {
         firstNewInput.dispatchEvent(new Event("input", { bubbles: true }));
         firstNewInput.focus();
       }
+    });
+  });
+
+  // Gerätelisten-Vorlagen werden über separate Formulare geladen, damit das
+  // Auto-Save-Formular der aktuellen Geräteliste nicht verschachtelt wird.
+  document.querySelectorAll("[data-load-device-template]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const listId = button.dataset.loadDeviceTemplate;
+      const select = document.querySelector(`[data-device-template-select="${listId}"]`);
+      const form = select && select.value ? document.getElementById(select.value) : null;
+      if (form && typeof form.requestSubmit === "function") form.requestSubmit();
     });
   });
 

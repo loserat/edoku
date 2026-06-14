@@ -26,9 +26,24 @@
       <% const zipFile = finalFiles.find((file) => file.kind === "zip"); %>
       <% const orderFile = finalFiles.find((file) => file.kind === "reihenfolge"); %>
       <% const separatorPdf = pdfPreviewFiles.find((file) => /Trennstreifen/i.test(file.name)); %>
+      <% const binderSpinePdf = pdfPreviewFiles.find((file) => /Ordnerruecken|Ordnerrücken/i.test(file.relativePath || file.name)); %>
       <%# * INFO: Gespeicherte Trennstreifen-Optionen werden in den Switches wiederhergestellt. %>
       <% const separatorSettings = (((systemSettings || {}).export || {}).trennstreifen || {}); %>
-      <% const selectedPdf = (completePdf && pdfPreviewFiles.find((file) => file.id === completePdf.id)) || pdfPreviewFiles[0]; %>
+      <% const binderSettings = ordnerrueckenSettings || {}; %>
+      <% const findPdfByName = (pattern) => pdfPreviewFiles.find((file) => pattern.test(file.name || "")); %>
+      <% const tocPdf = findPdfByName(/^Inhaltsverzeichnis\.pdf$/i); %>
+      <% const selectedPdf = tocPdf || (completePdf && pdfPreviewFiles.find((file) => file.id === completePdf.id)) || pdfPreviewFiles[0]; %>
+      <% const chapterFileKey = (value) => String(value || "").replaceAll(".", "_"); %>
+      <% const findPdfForDocument = (entry) => {
+        const displayKey = chapterFileKey(entry.displayKapitel || entry.kapitel);
+        const originalKey = chapterFileKey(entry.originalKapitel || "");
+        return pdfPreviewFiles.find((file) => {
+          const name = String(file.name || "");
+          return (displayKey && name.startsWith(`${displayKey}_`)) || (originalKey && name.startsWith(`${originalKey}_`));
+        });
+      }; %>
+      <% const referencedPdfIds = new Set(); %>
+      <% if (tocPdf) referencedPdfIds.add(tocPdf.id); %>
       <% const formatSize = (bytes) => {
         if (!bytes) return "-";
         if (bytes < 1024) return `${bytes} B`;
@@ -41,6 +56,7 @@
           <button class="tab-button" type="button" data-tab-target="matrix">Matrix</button>
           <button class="tab-button" type="button" data-tab-target="pdf-dokumentation">PDF-Dokumentation</button>
           <button class="tab-button" type="button" data-tab-target="pdf-trennstreifen">PDF-Trennstreifen</button>
+          <button class="tab-button" type="button" data-tab-target="ordnerruecken">Ordnerrücken</button>
           <button class="tab-button" type="button" data-tab-target="zip-export">ZIP-Export</button>
           <button class="tab-button" type="button" data-tab-target="export-einstellungen">Exporteinstellungen</button>
         </nav>
@@ -49,7 +65,7 @@
           <div class="panel-head">
             <div>
               <h2>Matrix</h2>
-              <p>Hier wird nur festgelegt, welche vorhandenen Systemdokumente erzeugt und exportiert werden.</p>
+              <p>Hier wird festgelegt, welche vorhandenen Dokumente erzeugt und exportiert werden.</p>
             </div>
           </div>
 
@@ -103,24 +119,12 @@
               <h2>PDF-Dokumentation</h2>
               <p>Interne Dokumentations-PDFs erzeugen und direkt prüfen.</p>
             </div>
-            <% if (pdfPreviewFiles.length) { %>
-              <label class="compact-select">
-                <span>Datei</span>
-                <select data-pdf-preview-select>
-                  <% pdfPreviewFiles.forEach((file) => { %>
-                    <option value="/export/pdf-preview?file=<%= encodeURIComponent(file.id) %>" <%= selectedPdf && file.id === selectedPdf.id ? "selected" : "" %>>
-                      <%= file.source %> - <%= file.name %>
-                    </option>
-                  <% }) %>
-                </select>
-              </label>
-            <% } %>
           </div>
 
           <section class="export-actions export-actions-compact">
             <form class="export-action-primary" action="/export/dokumentation" method="post">
               <button type="submit">
-                <span>Dokumentation generieren</span>
+                <span>Alles generieren</span>
                 <small>Inhaltsverzeichnis, Deckblätter, Formulare, Listen und Brandschutz neu erzeugen</small>
               </button>
             </form>
@@ -151,13 +155,105 @@
           </section>
 
           <% if (selectedPdf) { %>
-            <div class="pdf-preview-shell">
-              <iframe
-                title="PDF-Vorschau"
-                src="/export/pdf-preview?file=<%= encodeURIComponent(selectedPdf.id) %>#toolbar=1"
-                data-pdf-preview-frame>
-              </iframe>
-            </div>
+            <%# PDF-Auswahl: links als baumartige Inhaltsübersicht, rechts die direkte Vorschau. %>
+            <section class="pdf-preview-layout" data-pdf-preview-layout>
+              <aside class="pdf-preview-sidebar" aria-label="PDF-Inhaltsbaum">
+                <div class="pdf-preview-sidebar-head">
+                  <span>Inhaltsbaum</span>
+                  <strong><%= pdfPreviewFiles.length %></strong>
+                </div>
+                <div class="pdf-preview-tree">
+                  <details class="pdf-tree-group" open>
+                    <summary>
+                      <span>0 Inhaltsverzeichnis</span>
+                      <small><%= tocPdf ? "PDF vorhanden" : "noch nicht erzeugt" %></small>
+                    </summary>
+                    <div class="pdf-tree-items">
+                      <% if (tocPdf) { %>
+                        <% const pdfUrl = `/export/pdf-preview?file=${encodeURIComponent(tocPdf.id)}`; %>
+                        <button
+                          class="pdf-tree-item <%= selectedPdf && tocPdf.id === selectedPdf.id ? "active" : "" %>"
+                          type="button"
+                          data-pdf-preview-select
+                          data-pdf-src="<%= pdfUrl %>"
+                          data-pdf-title="Inhaltsverzeichnis">
+                          <span>Inhaltsverzeichnis</span>
+                          <small><%= tocPdf.relativePath %></small>
+                        </button>
+                      <% } else { %>
+                        <button class="pdf-tree-item is-missing" type="button" disabled>
+                          <span>Inhaltsverzeichnis</span>
+                          <small>Noch nicht generiert</small>
+                        </button>
+                      <% } %>
+                    </div>
+                  </details>
+
+                  <% (preview.groups || []).filter((group) => String(group.kapitel || "") !== "0").forEach((group) => { %>
+                    <details class="pdf-tree-group">
+                      <summary>
+                        <span><%= group.kapitel %> <%= group.titel %></span>
+                        <small><%= group.dokumente.length %> Einträge</small>
+                      </summary>
+                      <div class="pdf-tree-items">
+                        <% group.dokumente.forEach((entry) => { %>
+                          <% const file = findPdfForDocument(entry); %>
+                          <% if (file) referencedPdfIds.add(file.id); %>
+                          <% if (file) { %>
+                            <% const pdfUrl = `/export/pdf-preview?file=${encodeURIComponent(file.id)}`; %>
+                            <button
+                              class="pdf-tree-item level-<%= entry.ebene || 2 %> <%= selectedPdf && file.id === selectedPdf.id ? "active" : "" %>"
+                              type="button"
+                              data-pdf-preview-select
+                              data-pdf-src="<%= pdfUrl %>"
+                              data-pdf-title="<%= entry.kapitel %> - <%= entry.titel %>">
+                              <span><%= entry.kapitel %> <%= entry.titel %></span>
+                              <small><%= file.relativePath %></small>
+                            </button>
+                          <% } else { %>
+                            <button class="pdf-tree-item level-<%= entry.ebene || 2 %> is-missing" type="button" disabled>
+                              <span><%= entry.kapitel %> <%= entry.titel %></span>
+                              <small>Noch keine PDF gefunden</small>
+                            </button>
+                          <% } %>
+                        <% }) %>
+                      </div>
+                    </details>
+                  <% }) %>
+
+                  <% const additionalPdfs = pdfPreviewFiles.filter((file) => !referencedPdfIds.has(file.id)); %>
+                  <% if (additionalPdfs.length) { %>
+                    <details class="pdf-tree-group">
+                      <summary>
+                        <span>Weitere PDFs</span>
+                        <small><%= additionalPdfs.length %> Dateien</small>
+                      </summary>
+                      <div class="pdf-tree-items">
+                        <% additionalPdfs.forEach((file) => { %>
+                          <% const pdfUrl = `/export/pdf-preview?file=${encodeURIComponent(file.id)}`; %>
+                          <button
+                            class="pdf-tree-item <%= selectedPdf && file.id === selectedPdf.id ? "active" : "" %>"
+                            type="button"
+                            data-pdf-preview-select
+                            data-pdf-src="<%= pdfUrl %>"
+                            data-pdf-title="<%= file.source %> - <%= file.name %>">
+                            <span><%= file.name.replace(/\.pdf$/i, "") %></span>
+                            <small><%= file.relativePath %></small>
+                          </button>
+                        <% }) %>
+                      </div>
+                    </details>
+                  <% } %>
+                </div>
+              </aside>
+              <div class="pdf-preview-shell">
+                <iframe
+                  title="PDF-Vorschau"
+                  src="/export/pdf-preview?file=<%= encodeURIComponent(selectedPdf.id) %>#toolbar=1"
+                  data-pdf-preview-frame>
+                </iframe>
+              </div>
+            </section>
           <% } else { %>
             <div class="pdf-empty">
               <strong>Noch keine PDF für die Vorschau vorhanden.</strong>
@@ -203,7 +299,69 @@
                   <button type="submit">Trennstreifen erzeugen</button>
                 </form>
                 <% if (separatorPdf) { %>
-                  <a class="button-link secondary" href="/export/pdf-preview?file=<%= encodeURIComponent(separatorPdf.id) %>#toolbar=1">Vorschau</a>
+                  <button
+                    class="secondary"
+                    type="button"
+                    data-pdf-modal-open
+                    data-pdf-title="Trennstreifen"
+                    data-pdf-src="/export/pdf-preview?file=<%= encodeURIComponent(separatorPdf.id) %>#toolbar=1">
+                    Vorschau
+                  </button>
+                <% } %>
+              </div>
+            </article>
+          </section>
+        </section>
+
+        <section id="ordnerruecken" class="tab-panel export-panel" data-tab-panel="ordnerruecken">
+          <div class="panel-head">
+            <div>
+              <h2>Ordnerrücken</h2>
+              <p>Separate Ordnerrücken für Dokumentationsordner erzeugen.</p>
+            </div>
+          </div>
+
+          <section class="export-artifacts export-artifacts-single" aria-label="Ordnerrücken">
+            <article class="export-artifact-card <%= binderSpinePdf ? "" : "is-missing" %>">
+              <div class="export-artifact-card-head">
+                <div>
+                  <span>Ordnerrücken</span>
+                  <strong><%= binderSpinePdf ? binderSpinePdf.name : "Noch nicht erzeugt" %></strong>
+                </div>
+                <span class="badge <%= binderSpinePdf ? "on" : "off" %>"><%= binderSpinePdf ? "bereit" : "fehlt" %></span>
+              </div>
+              <p>Formate: schmal ca. 192 x 38 mm oder breit ca. 192 x 61 mm auf A4.</p>
+              <div class="export-artifact-actions">
+                <form class="separator-options-form binder-spine-form" action="/export/ordnerruecken" method="post">
+                  <label>
+                    <span>Format</span>
+                    <select name="format">
+                      <option value="breit" <%= binderSettings.format !== "schmal" ? "selected" : "" %>>Breiter Ordner 192 x 61 mm</option>
+                      <option value="schmal" <%= binderSettings.format === "schmal" ? "selected" : "" %>>Schmaler Ordner 192 x 38 mm</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Anzahl</span>
+                    <input type="number" name="ordnerAnzahl" min="1" max="20" value="<%= binderSettings.ordnerAnzahl || estimatedBinderCount || 1 %>">
+                  </label>
+                  <label>
+                    <span>Berechnung</span>
+                    <select name="anzahlModus">
+                      <option value="manuell" <%= binderSettings.anzahlModus !== "auto" ? "selected" : "" %>>Manuell</option>
+                      <option value="auto" <%= binderSettings.anzahlModus === "auto" ? "selected" : "" %>>Auto-Schätzung (<%= estimatedBinderCount || 1 %>)</option>
+                    </select>
+                  </label>
+                  <button type="submit">Ordnerrücken erzeugen</button>
+                </form>
+                <% if (binderSpinePdf) { %>
+                  <button
+                    class="secondary"
+                    type="button"
+                    data-pdf-modal-open
+                    data-pdf-title="Ordnerrücken"
+                    data-pdf-src="/export/pdf-preview?file=<%= encodeURIComponent(binderSpinePdf.id) %>#toolbar=1">
+                    Vorschau
+                  </button>
                 <% } %>
               </div>
             </article>
@@ -387,7 +545,7 @@
           <div class="panel-head export-subsection-head">
             <div>
               <h2>Exportliste</h2>
-              <p>Reihenfolge, Quellenstatus und Hersteller-/Systembezug.</p>
+              <p>Reihenfolge, Quellenstatus und Dateizuordnung.</p>
             </div>
           </div>
           <div class="table-wrap">
@@ -402,13 +560,12 @@
                   <th>Quelle</th>
                   <th>Status</th>
                   <th>Pflicht</th>
-                  <th>Hersteller / Systemart</th>
                 </tr>
               </thead>
               <tbody>
                 <% if (!exportliste.length) { %>
                   <tr>
-                    <td colspan="9">Noch keine Exportliste erzeugt.</td>
+                    <td colspan="8">Noch keine Exportliste erzeugt.</td>
                   </tr>
                 <% } %>
                 <% exportliste.forEach((entry) => { %>
@@ -421,12 +578,6 @@
                     <td><%= entry.quelle %></td>
                     <td><span class="badge <%= entry.status === "vorhanden" ? "on" : "off" %>"><%= entry.status %></span></td>
                     <td><%= entry.pflicht ? "Ja" : "Nein" %></td>
-                    <td>
-                      <%= entry.hersteller || "-" %>
-                      <% if (entry.systemart) { %>
-                        <br><small><%= entry.systemart %></small>
-                      <% } %>
-                    </td>
                   </tr>
                 <% }) %>
               </tbody>

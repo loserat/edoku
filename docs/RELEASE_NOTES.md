@@ -57,7 +57,7 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 - Hauptnavigation und Header weiter bereinigt; links oben steht jetzt nur noch das aktuelle Projekt.
 - Menüpunkt `Dokumentation` wurde zu `Anhänge`; die Dokumentenmatrix liegt jetzt im Exportbereich.
 - Matrix-Tabellen sind horizontal scrollbar, ohne Zeilenumbrüche und mit lokal speicherbaren Spaltenbreiten.
-- Matrix-Auswahl fokussiert auf Erzeugen/Exportieren vorhandener Systemdokumente.
+- Matrix-Auswahl fokussiert auf Erzeugen/Exportieren vorhandener Dokumente.
 - Anhangsverwaltung auf kategoriebezogene Kachelansicht umgestellt.
 - Upload erfolgt direkt in der gewählten Kategorie; Mehrfachupload ist vorbereitet.
 - Anhangsdetails werden in einem Popup bearbeitet, das nur über `Abbrechen` verlassen wird.
@@ -68,11 +68,17 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 - Gerätelisten können optional Bedienungsanleitungen je Geräteposition verknüpfen; Brandschutzlisten sind ausgenommen.
 - PDF-/Exportlogik referenziert verknüpfte Bedienungsanleitungen mit Kapitelbezug.
 - Exportunterbereiche weiter geordnet: PDF-Dokumentation, PDF-Trennstreifen, ZIP-Export, Matrix und Exporteinstellungen.
+- Systembereich zeigt jetzt App-Version, lokale Release Notes und eine sichere GitHub-Update-Prüfung ohne automatische Installation.
+- Updates sind als eigener System-Unterpunkt erreichbar.
+- Systemzugang wurde aus der mittleren Hauptnavigation entfernt und ganz rechts als Icon platziert.
+- Benutzername und Abmeldung sind in ein kompaktes Benutzer-Icon-Menü gewandert.
+- Alte Systemauswahl-Verweise wurden aus Startseite, Dashboard-Workflow und sichtbarer Exportliste entfernt.
 
 ### Nachtrag 2026-06-13
 
 - Footer-Branding von GitHub auf ein neutrales Labor-Icon mit Link zu `https://nickgm.de` umgestellt.
 - PDF-Footer verwenden das neue Branding; Trennstreifen bleiben ohne Footer-Branding.
+- Systemadmins können das UI- und PDF-Branding als Vollversions-/Lizenzoption deaktivieren.
 - Brandschutz-Hauptnavigation wird nur angezeigt, wenn der passende Leistungsbereich aktiv ist.
 - Anhangsdateien werden bei Titeländerung logisch umbenannt und Download/Vorschau nutzen den neuen Dateinamen.
 - Anhangskacheln zeigen das Dateiformat als Badge.
@@ -80,10 +86,21 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 - Anhangs-Popup wurde größer und mit dauerhaft sichtbarer Aktionsleiste verbessert.
 - Benutzerverwaltung wurde kompakter gestaltet und nutzt Bearbeiten-Popups für Rolle, Passwort und Status.
 
+### Nachtrag 2026-06-14
+
+- Gerätelisten lassen sich als systemweite Vorlagen speichern.
+- Gespeicherte Gerätelisten-Vorlagen können unter `System > Gerätelisten` verwaltet werden.
+- Passende Vorlagen können über das Drei-Punkte-Menü einer Geräteliste geladen werden.
+- Export-Unterbereich `Ordnerrücken` ergänzt.
+- Ordnerrücken können als separate PDF für schmale und breite Dokumentationsordner generiert werden.
+- Ordnerrücken-Optionen werden gespeichert und nach dem Generieren wieder angezeigt.
+- Die spätere Umsetzung klickbarer Inhaltsverzeichnis-Einträge ist für die finale Gesamt-PDF vorgemerkt.
+
 ### Bekannte Grenzen
 
 - Noch keine produktive Server-Härtung
 - Rollen- und Rechteverwaltung ist Beta und muss vor produktiver Nutzung weiter geprüft werden
 - Noch keine automatisierte Test-Suite
 - Gesamt-PDF, ZIP-Export und Trennstreifen müssen im Praxiseinsatz weiter visuell geprüft werden
+- Ordnerrücken-Auto-Berechnung nutzt aktuell eine grobe Schätzung und noch keine echten PDF-Seitenzahlen
 - Normtexte und erzeugte Formulartexte müssen fachlich weiter geprüft werden

@@ -2,14 +2,17 @@
 <script>
   window.edokuDeleteConfirmDialogs = <%= typeof deleteConfirmDialogs !== "undefined" && deleteConfirmDialogs === false ? "false" : "true" %>;
 </script>
-<a class="lab-floating" href="https://nickgm.de" target="_blank" rel="noopener noreferrer" aria-label="nickgm.de öffnen">
-  <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
-    <path d="M10 2h4"></path>
-    <path d="M11 2v6.5l-5.2 9.2C4.6 19.8 6.1 22 8.5 22h7c2.4 0 3.9-2.2 2.7-4.3L13 8.5V2"></path>
-    <path d="M8.2 15h7.6"></path>
-    <path d="M9.2 19h5.6"></path>
-  </svg>
-</a>
+<% const brandingAktiv = !(typeof systemSettings !== "undefined" && systemSettings.lizenz && systemSettings.lizenz.brandingAktiv === false); %>
+<% if (brandingAktiv) { %>
+  <a class="lab-floating" href="https://nickgm.de" target="_blank" rel="noopener noreferrer" aria-label="nickgm.de öffnen">
+    <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+      <path d="M10 2h4"></path>
+      <path d="M11 2v6.5l-5.2 9.2C4.6 19.8 6.1 22 8.5 22h7c2.4 0 3.9-2.2 2.7-4.3L13 8.5V2"></path>
+      <path d="M8.2 15h7.6"></path>
+      <path d="M9.2 19h5.6"></path>
+    </svg>
+  </a>
+<% } %>
 
 <%# Wiederverwendbares PDF-Popup für Vorschau-Buttons in Listen und Exportansichten. %>
 <div class="pdf-modal" data-pdf-modal hidden>

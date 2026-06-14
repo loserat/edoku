@@ -21,9 +21,6 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
 
   const projectFields = ["projektname", "projektnummer", "auftraggeber", "liegenschaft", "baumassnahme"];
   const projectComplete = projectFields.filter((field) => String(projekt[field] || "").trim()).length;
-  const systemSelectionCount = Array.isArray(projektSysteme)
-    ? projektSysteme.filter((entry) => String(entry.hersteller || entry.systemart || entry.herstellerSystem || "").trim()).length
-    : 0;
   const activeLists = listen.filter((liste) => liste.aktiv);
   const filledLists = activeLists.filter(isGeraetelisteComplete);
   const exportReady = exportEintraege.length > 0;
@@ -47,12 +44,6 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
       total: 1,
       missing: aktiveLeistungsbereiche.length ? 0 : 1,
       hint: aktiveLeistungsbereiche.length ? `${aktiveLeistungsbereiche.length} aktiv` : "keine Auswahl"
-    },
-    {
-      label: "Systemauswahl",
-      total: aktiveLeistungsbereiche.length || 1,
-      missing: aktiveLeistungsbereiche.length ? Math.max(0, aktiveLeistungsbereiche.length - systemSelectionCount) : 1,
-      hint: `${systemSelectionCount}/${aktiveLeistungsbereiche.length || 1} zugeordnet`
     },
     {
       label: "Pflichtdokumente",
@@ -120,22 +111,14 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
     },
     {
       nr: 4,
-      titel: "Systeme zuordnen",
-      beschreibung: "Hersteller, Systemarten und Dokumentarten auswählen.",
-      href: "/systemauswahl",
-      status: systemSelectionCount ? "fertig" : aktiveLeistungsbereiche.length ? "in-arbeit" : "offen",
-      kennzahl: systemSelectionCount ? `${systemSelectionCount} Systeme` : "optional"
-    },
-    {
-      nr: 5,
       titel: "Dokumentenmatrix prüfen",
       beschreibung: "Aktive Kapitel und Exportreihenfolge kontrollieren.",
-      href: "/dokumente",
+      href: "/export#matrix",
       status: aktiveDokumente.length ? "fertig" : "offen",
       kennzahl: `${aktiveDokumente.length} aktiv`
     },
     {
-      nr: 6,
+      nr: 5,
       titel: "Gerätelisten füllen",
       beschreibung: "Gerätepositionen pro Leistungsbereich ergänzen.",
       href: "/geraetelisten",
@@ -143,7 +126,7 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
       kennzahl: `${filledLists.length}/${activeLists.length} Listen`
     },
     {
-      nr: 7,
+      nr: 6,
       titel: "Brandschutz prüfen",
       beschreibung: "Brandschottungen erfassen, falls erforderlich.",
       href: "/brandschutz",
@@ -151,7 +134,7 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
       kennzahl: `${brandschutzEintraege.length} Einträge`
     },
     {
-      nr: 8,
+      nr: 7,
       titel: "Export vorbereiten",
       beschreibung: "PDFs erzeugen, Exportliste prüfen und final vorbereiten.",
       href: "/export",

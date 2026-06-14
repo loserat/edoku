@@ -100,6 +100,7 @@
               <% const listFields = fieldProfiles[liste.leistungsbereich] || []; %>
               <% const previewUrl = previewByListId && previewByListId[liste.id] ? previewByListId[liste.id] : ""; %>
               <% const allowManualLinks = liste.leistungsbereich !== "Brandschutzabschottungen"; %>
+              <% const passendeVorlagen = (geraetelistenVorlagen || []).filter((vorlage) => vorlage.leistungsbereich === liste.leistungsbereich); %>
               <section class="edit-section <%= liste.aktiv ? "" : "is-inactive" %>" data-device-list-panel="<%= liste.id %>" data-suggestion-leistungsbereich="<%= liste.leistungsbereich %>">
                 <div class="edit-section-head">
                   <div>
@@ -109,45 +110,67 @@
                       <p>Vorauswahl: <%= liste.herstellerVorauswahl || "-" %> / <%= liste.systemartVorauswahl || "-" %></p>
                     <% } %>
                   </div>
+                  <input type="hidden" name="geraetelisten[<%= listenIndex %>][aktiv]" value="<%= liste.aktiv ? "true" : "false" %>">
+                  <input type="hidden" name="geraetelisten[<%= listenIndex %>][export]" value="<%= liste.export ? "true" : "false" %>">
                   <div class="list-tools">
-                    <div class="flag-row">
-                      <label class="switch-control">
-                        <input type="checkbox" name="geraetelisten[<%= listenIndex %>][aktiv]" <%= liste.aktiv ? "checked" : "" %>>
-                        <span class="switch-track" aria-hidden="true"></span>
-                        <span>Aktiv</span>
-                      </label>
-                      <label class="switch-control">
-                        <input type="checkbox" name="geraetelisten[<%= listenIndex %>][export]" <%= liste.export ? "checked" : "" %>>
-                        <span class="switch-track" aria-hidden="true"></span>
-                        <span>Export</span>
-                      </label>
-                    </div>
-                    <div class="add-position-control">
-                      <% if (previewUrl) { %>
-                        <button
-                          class="secondary preview-button"
-                          type="button"
-                          data-pdf-modal-open
-                          data-pdf-src="<%= previewUrl %>"
-                          data-pdf-title="Geräteliste: <%= liste.titel %>">
-                          Vorschau
-                        </button>
-                      <% } %>
-                      <input type="number" min="1" max="25" value="1" aria-label="Anzahl Geräte">
+                    <div class="device-tool-menu">
                       <button
                         type="button"
-                        class="secondary"
-                        data-add-geraet-row
-                        data-list-index="<%= listenIndex %>"
-                        data-next-index="<%= liste.positionen.length %>"
-                        data-default-hersteller="<%= liste.herstellerVorauswahl || "" %>"
-                        data-default-system="<%= liste.systemartVorauswahl || "" %>"
-                        data-hersteller-list="geraeteliste-hersteller-<%= listenIndex %>"
-                        data-system-list="geraeteliste-system-<%= listenIndex %>"
-                        data-typ-list="geraeteliste-typ-<%= listenIndex %>"
-                        data-leistungsbereich="<%= liste.leistungsbereich %>">
-                        Geräte hinzufügen
+                        class="secondary device-tool-trigger"
+                        aria-label="Werkzeuge für <%= liste.titel %>"
+                        title="Werkzeuge">
+                        <span aria-hidden="true">...</span>
                       </button>
+                      <div class="device-tool-dropdown">
+                        <div class="device-tool-head">
+                          <span>Werkzeuge</span>
+                          <strong><%= liste.positionen.length %> Positionen</strong>
+                        </div>
+                        <div class="add-position-control">
+                          <input type="number" min="1" max="25" value="1" aria-label="Anzahl Geräte">
+                          <button
+                            type="button"
+                            class="secondary"
+                            data-add-geraet-row
+                            data-list-index="<%= listenIndex %>"
+                            data-next-index="<%= liste.positionen.length %>"
+                            data-default-hersteller="<%= liste.herstellerVorauswahl || "" %>"
+                            data-default-system="<%= liste.systemartVorauswahl || "" %>"
+                            data-hersteller-list="geraeteliste-hersteller-<%= listenIndex %>"
+                            data-system-list="geraeteliste-system-<%= listenIndex %>"
+                            data-typ-list="geraeteliste-typ-<%= listenIndex %>"
+                            data-leistungsbereich="<%= liste.leistungsbereich %>">
+                            Geräte hinzufügen
+                          </button>
+                        </div>
+                        <% if (previewUrl) { %>
+                          <button
+                            class="secondary preview-button"
+                            type="button"
+                            data-pdf-modal-open
+                            data-pdf-src="<%= previewUrl %>"
+                            data-pdf-title="Geräteliste: <%= liste.titel %>">
+                            Vorschau
+                          </button>
+                        <% } %>
+                        <button class="secondary" type="button" disabled>Liste exportieren</button>
+                        <button class="secondary" type="submit" form="save-device-template-<%= liste.id %>">Als Vorlage speichern</button>
+                        <% if (passendeVorlagen.length) { %>
+                          <div class="device-template-import">
+                            <label>
+                              <span>Vorlage laden</span>
+                              <select data-device-template-select="<%= liste.id %>">
+                                <% passendeVorlagen.forEach((vorlage) => { %>
+                                  <option value="load-device-template-<%= liste.id %>-<%= vorlage.id %>"><%= vorlage.name %> (<%= vorlage.positionen.length %> Pos.)</option>
+                                <% }) %>
+                              </select>
+                            </label>
+                            <button class="secondary" type="button" data-load-device-template="<%= liste.id %>">Laden</button>
+                          </div>
+                        <% } else { %>
+                          <button class="secondary" type="button" disabled>Keine Vorlage verfügbar</button>
+                        <% } %>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -215,6 +238,23 @@
               </section>
             <% }) %>
           </form>
+
+          <div hidden>
+            <% geraetelisten.forEach((liste) => { %>
+              <% const passendeVorlagen = (geraetelistenVorlagen || []).filter((vorlage) => vorlage.leistungsbereich === liste.leistungsbereich); %>
+              <form id="save-device-template-<%= liste.id %>" action="/geraetelisten/<%= liste.id %>/vorlagen" method="post">
+                <input type="hidden" name="name" value="<%= `${liste.titel} - ${liste.leistungsbereich}` %>">
+              </form>
+              <% passendeVorlagen.forEach((vorlage) => { %>
+                <form
+                  id="load-device-template-<%= liste.id %>-<%= vorlage.id %>"
+                  action="/geraetelisten/<%= liste.id %>/vorlagen/<%= vorlage.id %>/laden"
+                  method="post"
+                  data-confirm="Vorlage '<%= vorlage.name %>' laden? Die aktuellen Positionen dieser Geräteliste werden ersetzt.">
+                </form>
+              <% }) %>
+            <% }) %>
+          </div>
         </section>
       </div>
     </main>

@@ -95,6 +95,10 @@ const DEFAULT_SYSTEM_SETTINGS = {
       showRegisterTitel: false
     }
   },
+  // * INFO: Lizenz-/Branding-Schalter. Standard bleibt sichtbar; Systemadmins koennen ihn fuer Vollversionen deaktivieren.
+  lizenz: {
+    brandingAktiv: true
+  },
   ersteller: {
     name: "",
     firma: "",
@@ -182,6 +186,10 @@ function mergeSystemSettings(settings = {}) {
         ...DEFAULT_SYSTEM_SETTINGS.export.trennstreifen,
         ...(((settings || {}).export || {}).trennstreifen || {})
       }
+    },
+    lizenz: {
+      ...DEFAULT_SYSTEM_SETTINGS.lizenz,
+      ...((settings || {}).lizenz || {})
     },
     theme: mergeThemeSettings((settings || {}).theme || DEFAULT_THEME_SETTINGS)
   };
