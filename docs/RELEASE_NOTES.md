@@ -92,9 +92,17 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 - Gespeicherte Gerätelisten-Vorlagen können unter `System > Gerätelisten` verwaltet werden.
 - Passende Vorlagen können über das Drei-Punkte-Menü einer Geräteliste geladen werden.
 - Export-Unterbereich `Ordnerrücken` ergänzt.
-- Ordnerrücken können als separate PDF für schmale und breite Dokumentationsordner generiert werden.
+- Ordnerrücken können als separate PDF für Avery-Zweckform-Formate `61x192-R` und `38x192-R` generiert werden.
 - Ordnerrücken-Optionen werden gespeichert und nach dem Generieren wieder angezeigt.
 - Die spätere Umsetzung klickbarer Inhaltsverzeichnis-Einträge ist für die finale Gesamt-PDF vorgemerkt.
+
+### Nachtrag 2026-06-15
+
+- Ordnerrücken nutzen jetzt die A4-Anordnung der Avery-Kalibrierungsbögen.
+- `61x192-R` erzeugt 4 Rücken je A4-Seite, `38x192-R` erzeugt 7 Rücken je A4-Seite.
+- Der Ordnerrücken-Text wird gedreht und zentriert angeordnet.
+- Projektkenndaten werden kompakt auf dem Rücken ausgegeben und bleiben über Optionen steuerbar.
+- Ordnerrücken bleiben ohne Footer-Branding.
 
 ### Bekannte Grenzen
 

@@ -916,48 +916,56 @@ function drawOrdnerRueckenLabel(doc, projekt, index, count, x, y, width, height,
   const property = projekt.liegenschaft || "";
   const measure = projekt.baumassnahme || "";
   const label = count > 1 ? `Ordner ${index + 1} / ${count}` : "Dokumentationsordner";
-  const secondaryLines = [
+  const projectDetails = [
     print.showProjektnummer ? number : "",
     print.showAuftraggeber ? client : "",
     print.showLiegenschaft ? property : "",
     print.showBaumassnahme ? measure : ""
   ].filter(Boolean);
   const mainTitle = print.showProjektname ? title : (number || client || property || "Dokumentation");
-  const leftPadding = 18;
-  const rightPadding = 18;
-  const textWidth = width - leftPadding - rightPadding;
-  const titleSize = height > 150 ? 18 : 13;
-  const secondarySize = height > 150 ? 9 : 7.2;
+  const centerX = x + width / 2;
+  const centerY = y + height / 2;
+  const readableWidth = Math.max(80, width - 54);
+  const titleSize = height > 150 ? 18 : 14;
+  const detailSize = height > 150 ? 9.5 : 7.5;
+  const labelSize = height > 150 ? 7.5 : 6.5;
 
   doc.save();
   doc.strokeColor("#cbd5e1").lineWidth(0.7).rect(x, y, width, height).stroke();
-  doc.fillColor("#111827").font("Helvetica-Bold").fontSize(titleSize).text(mainTitle, x + leftPadding, y + 12, {
-    width: textWidth,
-    align: "left",
+
+  // * INFO: Avery-Bögen liegen quer auf A4. Der Inhalt wird gedreht, damit er im Ordner lesbar sitzt.
+  doc.save();
+  doc.translate(centerX, centerY);
+  doc.rotate(180);
+  doc.fillColor("#111827").font("Helvetica-Bold").fontSize(titleSize).text(mainTitle, -readableWidth / 2, -height / 2 + 11, {
+    width: readableWidth,
+    align: "center",
     ellipsis: true
   });
-  if (secondaryLines.length) {
-    doc.fillColor("#374151").font("Helvetica").fontSize(secondarySize).text(secondaryLines.join(" | "), x + leftPadding, y + (height > 150 ? 38 : 30), {
-      width: textWidth,
-      align: "left",
+
+  if (projectDetails.length) {
+    doc.fillColor("#374151").font("Helvetica").fontSize(detailSize).text(projectDetails.join(" | "), -readableWidth / 2, -height / 2 + (height > 150 ? 38 : 31), {
+      width: readableWidth,
+      align: "center",
       ellipsis: true
     });
   }
 
   if (print.showOrdnernummer) {
-    doc.fillColor("#111827").font("Helvetica-Bold").fontSize(7).text(label, x + leftPadding, y + height - 25, {
-      width: textWidth,
-      align: "left",
+    doc.fillColor("#111827").font("Helvetica-Bold").fontSize(labelSize).text(label, -readableWidth / 2, height / 2 - 26, {
+      width: readableWidth,
+      align: "center",
       ellipsis: true
     });
   }
   if (print.showFormatHint) {
-    doc.fillColor("#6b7280").font("Helvetica").fontSize(5.5).text(formatLabel, x + leftPadding, y + height - 13, {
-      width: textWidth,
-      align: "left",
+    doc.fillColor("#6b7280").font("Helvetica").fontSize(5.5).text(formatLabel, -readableWidth / 2, height / 2 - 13, {
+      width: readableWidth,
+      align: "center",
       ellipsis: true
     });
   }
+  doc.restore();
   doc.restore();
 }
 

@@ -125,10 +125,20 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Unter `System > Gerätelisten` können gespeicherte Gerätelisten-Vorlagen umbenannt und entfernt werden.
 - Gerätelisten-Vorlagen können aus dem Drei-Punkte-Menü wieder in passende Gerätelisten geladen werden; dabei wird vor dem Ersetzen der aktuellen Positionen bestätigt.
 - Exportbereich um `Ordnerrücken` erweitert.
-- Ordnerrücken werden als separate PDF erzeugt, aktuell mit den Formaten ca. `192 x 61 mm` für breite Ordner und `192 x 38 mm` für schmale Ordner.
+- Ordnerrücken werden als separate PDF für Avery-Zweckform-Bögen erzeugt, aktuell mit `61x192-R` und `38x192-R`.
 - Die Anzahl der Ordnerrücken kann manuell gesetzt oder zunächst grob anhand vorhandener Export-/PDF-Einträge geschätzt werden.
 - Für klickbare Inhaltsverzeichnisse ist der fachlich sinnvolle Ansatz festgehalten: Umsetzung im final zusammengeführten Gesamt-PDF, nicht in isolierten Einzel-PDFs.
 - Docker wurde nach den Änderungen neu gebaut und die neuen Export-/Vorlagen-Routen wurden per HTTP geprüft.
+
+## Update 2026-06-15
+
+- Ordnerrücken-Layout anhand der Avery-Kalibrierungsbögen präzisiert.
+- `61x192-R` wird als A4-Bogen mit 4 horizontalen Rücken erzeugt.
+- `38x192-R` wird als A4-Bogen mit 7 horizontalen Rücken erzeugt.
+- Text auf Ordnerrücken wird gedreht und mittig im Rücken ausgerichtet.
+- Projektname, Projektnummer, Auftraggeber, Liegenschaft und Baumaßnahme können als kompakte Projektkenndaten auf den Rücken gedruckt werden.
+- Ordnerrücken bleiben weiterhin ohne Footer-/Branding-Icon, damit sie als reine Druckvorlage nutzbar sind.
+- Docker wurde nach der Layoutanpassung neu gebaut und die PDF-Erzeugung für beide Avery-Formate geprüft.
 
 ## Wichtige Beta-Einschränkungen
 

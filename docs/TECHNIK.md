@@ -80,9 +80,12 @@ Aktuell erzeugt werden:
 - Brandschutzdokumentation
 - Deckblätter für Hauptkategorien
 - separate Trennstreifen für Unterkategorien im Maß 24 x 10,5 cm
+- separate Ordnerrücken für Avery-Zweckform `61x192-R` und `38x192-R`
 - finale Gesamt-PDF und ZIP-Ausgabe als Beta-Funktion
 
 Die Trennstreifen werden ohne GitHub-Branding erzeugt, damit sie als reine Registerstreifen gedruckt werden können. Layoutoptionen für Trennstreifen werden in den Systemeinstellungen gespeichert.
+
+Ordnerrücken werden ebenfalls ohne Footer-Branding erzeugt. Die Ausgabe orientiert sich an A4-Kalibrierungsbögen: `61x192-R` nutzt 4 horizontale Rücken je Seite, `38x192-R` nutzt 7 horizontale Rücken je Seite. Die Druckoptionen für Projektkenndaten werden in `config/systemEinstellungen.json` unter `export.ordnerruecken` gespeichert.
 
 ## Oberfläche und Theme
 
