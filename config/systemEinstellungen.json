@@ -13,9 +13,9 @@
       "showRegisterTitel": true
     },
     "ordnerruecken": {
-      "format": "breit",
+      "format": "schmal",
       "anzahlModus": "manuell",
-      "ordnerAnzahl": 2
+      "ordnerAnzahl": 4
     }
   },
   "lizenz": {

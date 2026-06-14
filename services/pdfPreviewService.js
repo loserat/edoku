@@ -35,7 +35,7 @@ function sortFinalExportFiles(files) {
   });
 }
 
-// Sucht PDF-Dateien rekursiv und liefert relative Pfade für die Browser-Vorschau.
+// * INFO: Sucht PDF-Dateien rekursiv und liefert relative Pfade für die Browser-Vorschau.
 async function listPdfFiles(baseDir, rootDir, sourceLabel) {
   try {
     const entries = await fs.readdir(baseDir, { withFileTypes: true });
@@ -63,7 +63,7 @@ async function listPdfFiles(baseDir, rootDir, sourceLabel) {
   }
 }
 
-// Listet alle PDFs, die im Projekt für eine Vorschau freigegeben sind.
+// * INFO: Listet alle PDFs, die im Projekt für eine Vorschau freigegeben sind.
 async function listPdfPreviewFiles(rootDir, projekt) {
   const paths = getProjectPaths(rootDir, projekt);
   const files = [];
@@ -110,7 +110,7 @@ async function listFinalExportFiles(rootDir, projekt) {
   }
 }
 
-// Löst eine Vorschau-Datei sicher auf und begrenzt den Zugriff auf Projektordner.
+// * INFO: Löst eine Vorschau-Datei sicher auf und begrenzt den Zugriff auf Projektordner.
 async function resolvePdfPreviewFile(rootDir, projekt, relativePath) {
   if (!relativePath || String(relativePath).includes("..")) {
     throw new Error("Keine gueltige PDF-Datei angegeben.");

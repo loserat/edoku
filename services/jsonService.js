@@ -1,8 +1,8 @@
 const fs = require("fs/promises");
 const path = require("path");
 
-// Robustes JSON-Lesen mit Fallback. Fehler werden protokolliert, damit eine
-// fehlende oder defekte Projektdatei nicht sofort die ganze Anwendung stoppt.
+// * INFO: Robustes JSON-Lesen mit Fallback. Fehler werden protokolliert, damit eine
+// * INFO: fehlende oder defekte Projektdatei nicht sofort die ganze Anwendung stoppt.
 async function readJson(filePath, fallback) {
   try {
     const content = await fs.readFile(filePath, "utf8");
@@ -13,7 +13,7 @@ async function readJson(filePath, fallback) {
   }
 }
 
-// Schreibt JSON formatiert auf die Platte und legt den Zielordner bei Bedarf an.
+// * INFO: Schreibt JSON formatiert auf die Platte und legt den Zielordner bei Bedarf an.
 async function writeJson(filePath, data) {
   try {
     await fs.mkdir(path.dirname(filePath), { recursive: true });

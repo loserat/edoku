@@ -12,8 +12,8 @@ const ALLOWED_MIME_TYPES = new Set([
   "application/pdf"
 ]);
 
-// Vereinheitlicht gespeicherte Anhangsdaten aus JSON. Fehlende Felder bekommen
-// stabile Defaults, damit alte Projektstände weiter angezeigt werden können.
+// * INFO: Vereinheitlicht gespeicherte Anhangsdaten aus JSON. Fehlende Felder bekommen
+// * INFO: stabile Defaults, damit alte Projektstände weiter angezeigt werden können.
 function normalizeAttachments(raw) {
   if (!Array.isArray(raw)) return [];
   return raw
@@ -46,12 +46,12 @@ function normalizeAttachments(raw) {
     });
 }
 
-// Filter für Anhänge, die als Bilder einer Brandschottung zugeordnet werden können.
+// * INFO: Filter für Anhänge, die als Bilder einer Brandschottung zugeordnet werden können.
 function imageAttachments(raw) {
   return normalizeAttachments(raw).filter((entry) => entry.mimeType.startsWith("image/"));
 }
 
-// Trennt einen Buffer anhand eines Multipart-Boundary.
+// * INFO: Trennt einen Buffer anhand eines Multipart-Boundary.
 function splitBuffer(buffer, separator) {
   const parts = [];
   let start = 0;
@@ -67,7 +67,7 @@ function splitBuffer(buffer, separator) {
   return parts;
 }
 
-// Wandelt den Headerblock eines Multipart-Teils in ein kleines Header-Objekt um.
+// * INFO: Wandelt den Headerblock eines Multipart-Teils in ein kleines Header-Objekt um.
 function parseHeaderBlock(value) {
   return String(value || "")
     .split(/\r?\n/)
@@ -79,8 +79,8 @@ function parseHeaderBlock(value) {
     }, {});
 }
 
-// Minimaler Multipart-Parser für Uploads ohne zusätzliche Upload-Bibliothek.
-// Gibt Formularfelder und genau eine Datei zurück.
+// * INFO: Minimaler Multipart-Parser für Uploads ohne zusätzliche Upload-Bibliothek.
+// * INFO: Gibt Formularfelder und genau eine Datei zurück.
 async function parseMultipartUpload(req) {
   const contentType = req.headers["content-type"] || "";
   const boundaryMatch = contentType.match(/boundary=([^;]+)/);
@@ -137,12 +137,12 @@ async function parseMultipartUpload(req) {
   return { fields, file, files };
 }
 
-// Ermittelt den Projektwurzelordner aus dem data-Verzeichnis des aktuellen Projekts.
+// * INFO: Ermittelt den Projektwurzelordner aus dem data-Verzeichnis des aktuellen Projekts.
 function projectRootFromFiles(files) {
   return path.dirname(files.dataDir);
 }
 
-// Lesbarer Kategoriename als Bestandteil logisch erzeugter Dateinamen.
+// * INFO: Lesbarer Kategoriename als Bestandteil logisch erzeugter Dateinamen.
 function logicalCategoryName(category) {
   const names = {
     "Stromlaufpläne": "Stromlaufplan",
@@ -160,8 +160,8 @@ function logicalCategoryName(category) {
   return names[category] || category || "Anhang";
 }
 
-// Erzeugt nachvollziehbare Dateinamen aus Kategorie, Stockwerk und Metadaten.
-// Die ID bleibt enthalten, damit gleich benannte Uploads sich nicht überschreiben.
+// * INFO: Erzeugt nachvollziehbare Dateinamen aus Kategorie, Stockwerk und Metadaten.
+// * INFO: Die ID bleibt enthalten, damit gleich benannte Uploads sich nicht überschreiben.
 function logicalAttachmentFileName(fields, originalBaseName, extension, id) {
   const category = String(fields.category || "Allgemein").trim() || "Allgemein";
   const title = String(fields.title || originalBaseName || "Anhang").trim();
@@ -181,7 +181,7 @@ function logicalAttachmentFileName(fields, originalBaseName, extension, id) {
   return `${base}_${safeId}${extension || ".dat"}`;
 }
 
-// Speichert einen neuen Upload im Projektordner und ergänzt den JSON-Eintrag.
+// * INFO: Speichert einen neuen Upload im Projektordner und ergänzt den JSON-Eintrag.
 async function saveAttachment(rootDir, files, existingRaw, upload) {
   if (!upload.file || !upload.file.originalName || !upload.file.buffer.length) {
     throw new Error("Bitte eine Datei auswaehlen.");
@@ -245,8 +245,8 @@ async function saveAttachment(rootDir, files, existingRaw, upload) {
   ];
 }
 
-// Benennt eine vorhandene Datei nach geänderten Metadaten um.
-// Gibt zusätzlich alte/neue Pfade zurück, damit Referenzen aktualisiert werden können.
+// ! WICHTIG: Benennt eine vorhandene Datei nach geänderten Metadaten um.
+// ? WARUM: Alte/neue Pfade werden zurückgegeben, damit Brandschutz-Verweise mitgezogen werden können.
 async function syncAttachmentFileName(rootDir, files, attachmentsRaw, attachmentId) {
   const attachments = normalizeAttachments(attachmentsRaw);
   const projectRoot = projectRootFromFiles(files);
@@ -286,7 +286,7 @@ async function syncAttachmentFileName(rootDir, files, attachmentsRaw, attachment
   };
 }
 
-// Entfernt Datei und JSON-Eintrag eines Anhangs. Fehlende Dateien werden toleriert.
+// ! WICHTIG: Entfernt Datei und JSON-Eintrag eines Anhangs. Fehlende Dateien werden toleriert.
 async function deleteAttachment(rootDir, attachmentsRaw, attachmentId) {
   const attachments = normalizeAttachments(attachmentsRaw);
   const target = attachments.find((entry) => entry.id === attachmentId);
@@ -302,7 +302,7 @@ async function deleteAttachment(rootDir, attachmentsRaw, attachmentId) {
   return attachments.filter((entry) => entry.id !== attachmentId);
 }
 
-// Löscht Bildverweise aus Brandschottungen, wenn der zugehörige Anhang entfernt wurde.
+// * INFO: Löscht Bildverweise aus Brandschottungen, wenn der zugehörige Anhang entfernt wurde.
 function clearAttachmentReferencesFromBrandschutz(brandschutz, relativePath) {
   return (Array.isArray(brandschutz) ? brandschutz : []).map((entry) => ({
     ...entry,
@@ -311,8 +311,8 @@ function clearAttachmentReferencesFromBrandschutz(brandschutz, relativePath) {
   }));
 }
 
-// Ordnet ein Bild einer Brandschottung als Foto 1 oder Foto 2 zu.
-// Vorhandene Belegung im selben Slot wird ersetzt, damit je Schottung nur ein Foto 1 und ein Foto 2 existieren.
+// ! WICHTIG: Ordnet ein Bild einer Brandschottung als Foto 1 oder Foto 2 zu.
+// ? WARUM: Vorhandene Belegung im selben Slot wird ersetzt, damit je Schottung nur ein Foto 1 und ein Foto 2 existieren.
 function assignAttachmentToBrandschutz(brandschutz, relativePath, brandschutzId, slot) {
   if (!["foto_vorher", "foto_nachher"].includes(slot)) {
     throw new Error("Ungueltige Foto-Zuordnung.");

@@ -78,7 +78,7 @@ const LEGACY_THEME_PRESET_MAP = {
 
 const DEFAULT_THEME_SETTINGS = THEME_PRESETS["github-light"];
 
-// Globale Systemeinstellungen. Projektbezogene Daten bleiben in den Projekt-JSON-Dateien.
+// * INFO: Globale Systemeinstellungen. Projektbezogene Daten bleiben in den Projekt-JSON-Dateien.
 const DEFAULT_SYSTEM_SETTINGS = {
   appTitel: "edoku",
   standardGewerk: "Elektrotechnik",
@@ -112,7 +112,7 @@ const DEFAULT_SYSTEM_SETTINGS = {
   theme: DEFAULT_THEME_SETTINGS
 };
 
-// HTML-Checkboxen liefern verschiedene Werte je nach Quelle; diese Funktion vereinheitlicht sie.
+// * INFO: HTML-Checkboxen liefern verschiedene Werte je nach Quelle; diese Funktion vereinheitlicht sie.
 function checkbox(value) {
   return value === "on" || value === true || value === "true";
 }
@@ -128,7 +128,7 @@ function textValue(value, fallback) {
   return normalized || fallback;
 }
 
-// Theme-Konfiguration robust mit Defaults mergen, damit gespeicherte Altstände gültig bleiben.
+// * INFO: Theme-Konfiguration robust mit Defaults mergen, damit gespeicherte Altstände gültig bleiben.
 function mergeThemeSettings(theme = {}) {
   const requestedPreset = theme.preset || DEFAULT_THEME_SETTINGS.preset;
   const presetKey = THEME_PRESETS[requestedPreset] ? requestedPreset : LEGACY_THEME_PRESET_MAP[requestedPreset] || DEFAULT_THEME_SETTINGS.preset;
@@ -170,7 +170,7 @@ function mergeThemeSettings(theme = {}) {
   };
 }
 
-// Mischt gespeicherte Einstellungen mit Defaults, damit neue Felder alte Configs nicht brechen.
+// * INFO: Mischt gespeicherte Einstellungen mit Defaults, damit neue Felder alte Configs nicht brechen.
 function mergeSystemSettings(settings = {}) {
   return {
     ...DEFAULT_SYSTEM_SETTINGS,
@@ -195,7 +195,7 @@ function mergeSystemSettings(settings = {}) {
   };
 }
 
-// Normalisiert das Formular "System" aus den Einstellungen.
+// * INFO: Normalisiert das Formular "System" aus den Einstellungen.
 function normalizePostedSystemSettings(body = {}) {
   return {
     appTitel: String(body.appTitel || DEFAULT_SYSTEM_SETTINGS.appTitel).trim(),
@@ -209,7 +209,7 @@ function normalizePostedSystemSettings(body = {}) {
   };
 }
 
-// Normalisiert die Theme-Editor-Werte aus den Einstellungen.
+// * INFO: Normalisiert die Theme-Editor-Werte aus den Einstellungen.
 function normalizePostedThemeSettings(body = {}, current = {}) {
   const merged = mergeThemeSettings(current);
   return {
@@ -264,7 +264,7 @@ function normalizePostedThemeSettings(body = {}, current = {}) {
   };
 }
 
-// Normalisiert zentrale Erstellerdaten inklusive Logo-Pfad-Erhaltung.
+// * INFO: Normalisiert zentrale Erstellerdaten inklusive Logo-Pfad-Erhaltung.
 function normalizePostedErstellerStammdaten(body = {}, current = {}) {
   const merged = mergeSystemSettings(current);
   return {
@@ -282,7 +282,7 @@ function normalizePostedErstellerStammdaten(body = {}, current = {}) {
   };
 }
 
-// Entfernt leere und doppelte Textwerte aus Formularlisten.
+// * INFO: Entfernt leere und doppelte Textwerte aus Formularlisten.
 function uniqueTrimmed(values) {
   const seen = new Set();
   return values
@@ -296,8 +296,8 @@ function uniqueTrimmed(values) {
     });
 }
 
-// Bearbeitbare Leistungsbereiche aus den Einstellungen. Bestehende Systemauswahl
-// bleibt nur für weiterhin vorhandene Bereiche erhalten.
+// * INFO: Bearbeitbare Leistungsbereiche aus den Einstellungen. Bestehende Systemauswahl
+// * INFO: bleibt nur für weiterhin vorhandene Bereiche erhalten.
 function normalizePostedLeistungsbereiche(body = {}, current = {}) {
   const rows = Array.isArray(body.leistungsbereiche)
     ? body.leistungsbereiche
@@ -320,7 +320,7 @@ function normalizePostedLeistungsbereiche(body = {}, current = {}) {
   };
 }
 
-// Normalisiert die konfigurierbare Export-Ordnerstruktur.
+// * INFO: Normalisiert die konfigurierbare Export-Ordnerstruktur.
 function normalizePostedOrdnerstruktur(body = {}, current = {}) {
   const unterordner = uniqueTrimmed(String(body.unterordner || "").split(/\r?\n/));
   return {

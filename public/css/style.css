@@ -1,4 +1,4 @@
-/* Globale Design-Variablen für Farben, Radien, Schatten und Glas-Effekt. */
+/* * INFO: Globale Design-Variablen für Farben, Radien, Schatten und Glas-Effekt. */
 :root {
   --bg: #eef3f8;
   --surface: rgba(255, 255, 255, 0.76);
@@ -44,7 +44,7 @@
   --line-height-base: 1.42;
 }
 
-/* Dark Theme: überschreibt nur Variablen, damit Komponenten keine zweite Stildefinition brauchen. */
+/* * INFO: Dark Theme: überschreibt nur Variablen, damit Komponenten keine zweite Stildefinition brauchen. */
 [data-theme="dark"] {
   --bg: #111827;
   --surface: rgba(31, 41, 55, 0.78);
@@ -78,7 +78,7 @@ html {
   overflow-x: hidden;
 }
 
-/* Grundlayout der gesamten App mit fixer Header-/Content-/Footer-Struktur. */
+/* * INFO: Grundlayout der gesamten App mit fixer Header-/Content-/Footer-Struktur. */
 body {
   margin: 0;
   background:
@@ -116,7 +116,7 @@ a {
   white-space: nowrap;
 }
 
-/* Kopfbereich mit Branding, Hauptnavigation, Benutzerstatus und Theme-Schalter. */
+/* * INFO: Kopfbereich mit Branding, Hauptnavigation, Benutzerstatus und Theme-Schalter. */
 .site-header {
   align-items: center;
   background: var(--surface);
@@ -500,7 +500,7 @@ input[type="password"]:focus {
   outline: 3px solid var(--focus);
 }
 
-/* Hauptinhaltsbreite der meisten Seiten. .wide nutzt mehr Bildschirmfläche für Tabellen. */
+/* * INFO: Hauptinhaltsbreite der meisten Seiten. .wide nutzt mehr Bildschirmfläche für Tabellen. */
 .page {
   display: grid;
   gap: var(--spacing-md);
@@ -519,7 +519,7 @@ input[type="password"]:focus {
   max-width: 1280px;
 }
 
-/* Seiten ohne Sidebar können die komplette Arbeitsbreite nutzen. */
+/* * INFO: Seiten ohne Sidebar können die komplette Arbeitsbreite nutzen. */
 .page.full-width-page {
   margin-left: 0;
   margin-right: 0;
@@ -577,7 +577,7 @@ input[type="password"]:focus {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
-/* Dashboard-Kacheln und kompakte Statusanzeigen. */
+/* * INFO: Dashboard-Kacheln und kompakte Statusanzeigen. */
 .dashboard-grid {
   display: grid;
   gap: 12px;
@@ -858,7 +858,7 @@ input[type="password"]:focus {
   color: var(--warning);
 }
 
-/* Einheitlicher Seitentitelbereich oberhalb fachlicher Inhalte. */
+/* * INFO: Einheitlicher Seitentitelbereich oberhalb fachlicher Inhalte. */
 .page-title {
   background: transparent;
   border-bottom: 1px solid var(--line);
@@ -867,7 +867,7 @@ input[type="password"]:focus {
   order: 20;
 }
 
-/* Linke Untermenüs/Seitentabs innerhalb eines Hauptbereichs. */
+/* * INFO: Linke Untermenüs/Seitentabs innerhalb eines Hauptbereichs. */
 .section-tabs {
   align-items: stretch;
   background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, var(--accent)), var(--surface));
@@ -1008,7 +1008,7 @@ input[type="password"]:focus {
   color: var(--danger);
 }
 
-/* Klassische horizontale Tabs für ältere oder kompakte Komponenten. */
+/* * INFO: Klassische horizontale Tabs für ältere oder kompakte Komponenten. */
 .tabs {
   align-items: center;
   background: var(--surface);
@@ -1257,10 +1257,14 @@ input[type="password"]:focus {
 
 .section-plus-button {
   align-items: center;
-  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
-  border: 1px solid color-mix(in srgb, var(--accent) 36%, var(--line));
-  border-radius: 999px;
-  color: var(--accent-dark);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--success) 76%, #fff), color-mix(in srgb, var(--success) 92%, #000));
+  border: 1px solid color-mix(in srgb, var(--success) 58%, var(--line));
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 26%, transparent),
+    0 6px 14px color-mix(in srgb, var(--success) 14%, transparent);
+  color: var(--on-primary);
   display: inline-flex;
   font-size: 18px;
   font-weight: 800;
@@ -1273,7 +1277,8 @@ input[type="password"]:focus {
 }
 
 .section-plus-button:hover {
-  background: var(--accent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--success) 84%, #fff), var(--success));
   color: var(--on-primary);
 }
 
@@ -1693,7 +1698,7 @@ input[type="password"]:focus {
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
-/* PDF-/Exportvorschau mit gruppierten Dokumenten und Statuskennzeichen. */
+/* * INFO: PDF-/Exportvorschau mit gruppierten Dokumenten und Statuskennzeichen. */
 .export-preview {
   display: grid;
   gap: 10px;
@@ -1793,7 +1798,7 @@ input[type="password"]:focus {
   padding: 12px;
 }
 
-/* Formularraster für Stammdaten, Einstellungen und kleinere Eingabebereiche. */
+/* * INFO: Formularraster für Stammdaten, Einstellungen und kleinere Eingabebereiche. */
 .form-grid {
   display: grid;
   gap: 8px;
@@ -1905,7 +1910,7 @@ select:focus {
   margin-top: 8px;
 }
 
-/* Basisdesign für Buttons im HomeKit-/Glas-Stil. */
+/* * INFO: Basisdesign für Buttons im HomeKit-/Glas-Stil. */
 button {
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--color-button-primary, var(--accent)) 90%, #fff), var(--color-button-primary, var(--accent)));
@@ -1941,36 +1946,34 @@ button:active {
 
 button.secondary,
 .button-link {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--surface-solid) 76%, var(--color-button-secondary, var(--surface-muted))), color-mix(in srgb, var(--color-button-secondary, var(--surface-muted)) 82%, transparent));
-  border: var(--border-width) solid color-mix(in srgb, var(--border) 84%, transparent);
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, #fff 18%, transparent),
-    0 5px 12px color-mix(in srgb, var(--color-bg) 18%, transparent);
+  background: color-mix(in srgb, var(--surface-solid) 84%, var(--surface-muted));
+  border: var(--border-width) solid color-mix(in srgb, var(--border) 82%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 14%, transparent);
   color: var(--text);
 }
 
 button.secondary:hover,
 .button-link:hover {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--surface-solid) 88%, var(--accent)), color-mix(in srgb, var(--surface-muted) 88%, var(--accent)));
-  border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+  background: color-mix(in srgb, var(--surface-solid) 74%, var(--accent) 8%);
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-bg) 12%, transparent);
   color: var(--text);
 }
 
 button.danger {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--danger) 12%, var(--surface-solid)), color-mix(in srgb, var(--danger) 8%, var(--surface-muted)));
-  border-color: color-mix(in srgb, var(--danger) 30%, var(--border));
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 12%, transparent), 0 5px 12px color-mix(in srgb, var(--danger) 10%, transparent);
+    linear-gradient(180deg, color-mix(in srgb, var(--danger) 5%, var(--surface-solid)), color-mix(in srgb, var(--danger) 3%, var(--surface-muted)));
+  border-color: color-mix(in srgb, var(--danger) 20%, var(--border));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 10%, transparent);
   color: var(--danger);
 }
 
 button.danger:hover {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--danger) 84%, #fff), var(--danger));
-  border-color: color-mix(in srgb, var(--danger) 70%, var(--border));
-  color: var(--on-danger);
+    linear-gradient(180deg, color-mix(in srgb, var(--danger) 11%, var(--surface-solid)), color-mix(in srgb, var(--danger) 7%, var(--surface-muted)));
+  border-color: color-mix(in srgb, var(--danger) 38%, var(--border));
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
 }
 
 .row-delete-button {
@@ -1985,18 +1988,20 @@ button.danger:hover {
 
 .editable-table .row-delete-button,
 .settings-table .row-delete-button {
-  width: 100%;
+  max-width: 30px;
+  min-width: 30px;
+  width: 30px;
 }
 
 .icon-only-button {
   aspect-ratio: 1;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   box-shadow: none;
-  height: 28px;
-  min-height: 28px;
-  min-width: 28px;
+  height: 30px;
+  min-height: 30px;
+  min-width: 30px;
   padding: 0;
-  width: 28px;
+  width: 30px;
 }
 
 .icon-only-button .icon {
@@ -2005,7 +2010,7 @@ button.danger:hover {
 }
 
 button.icon-only-button:hover {
-  box-shadow: 0 6px 14px color-mix(in srgb, var(--danger) 12%, transparent);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--danger) 10%, transparent);
   transform: none;
 }
 
@@ -2207,7 +2212,7 @@ tr:last-child td {
 
 .badge.on {
   background: color-mix(in srgb, var(--success) 18%, var(--surface));
-  color: var(--accent-dark);
+  color: color-mix(in srgb, var(--success) 72%, var(--text));
 }
 
 .badge.current {
@@ -2265,7 +2270,7 @@ tr:last-child td {
   color: var(--danger);
 }
 
-/* Zentrale Exportaktionen; bewusst wenige primäre Buttons. */
+/* * INFO: Zentrale Exportaktionen; bewusst wenige primäre Buttons. */
 .export-actions {
   display: grid;
   gap: 10px;
@@ -3217,14 +3222,24 @@ body.modal-open {
 
 .device-tool-trigger {
   align-items: center;
+  background: color-mix(in srgb, var(--surface-solid) 86%, var(--surface-muted));
+  border-color: color-mix(in srgb, var(--border) 88%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 12%, transparent);
+  color: var(--muted);
   display: inline-flex;
-  font-size: 18px;
-  height: 32px;
+  font-size: 16px;
+  height: 30px;
   justify-content: center;
   line-height: 1;
-  min-height: 32px;
-  min-width: 38px;
-  padding: 0 10px;
+  min-height: 30px;
+  min-width: 36px;
+  padding: 0 9px 2px;
+}
+
+.device-tool-trigger:hover {
+  background: color-mix(in srgb, var(--surface-solid) 74%, var(--accent) 10%);
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+  color: var(--accent);
 }
 
 .device-tool-dropdown {
@@ -3332,17 +3347,35 @@ body.modal-open {
 }
 
 .add-position-control button {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--success) 84%, #fff), var(--success));
+  border-color: color-mix(in srgb, var(--success) 64%, var(--border));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 26%, transparent),
+    0 8px 18px color-mix(in srgb, var(--success) 16%, transparent);
+  color: var(--on-primary);
+  min-height: 32px;
+  min-width: 118px;
+  padding: 5px 12px;
   white-space: nowrap;
 }
 
-/* Bearbeitbare Tabellen mit breiten Eingabefeldern und horizontalem Scrollen. */
+.add-position-control button:hover {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--success) 72%, #fff), color-mix(in srgb, var(--success) 86%, #000));
+  border-color: color-mix(in srgb, var(--success) 74%, var(--border));
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--success) 18%, transparent);
+  color: var(--on-primary);
+}
+
+/* * INFO: Bearbeitbare Tabellen mit breiten Eingabefeldern und horizontalem Scrollen. */
 .editable-table {
   min-width: max-content;
   table-layout: auto;
   width: max-content;
 }
 
-/* Brandschutz-Tabellenbereich für breite Eingaben und Sortierung. */
+/* * INFO: Brandschutz-Tabellenbereich für breite Eingaben und Sortierung. */
 .brandschutz-table {
   min-width: 3000px;
 }
@@ -3403,7 +3436,7 @@ body.modal-open {
   max-height: calc(100vh - 178px);
 }
 
-/* Brandschutz-Arbeitsfläche mit Liste und Bearbeitung auf möglichst voller Breite. */
+/* * INFO: Brandschutz-Arbeitsfläche mit Liste und Bearbeitung auf möglichst voller Breite. */
 .brandschutz-workspace {
   align-items: start;
   display: grid;
@@ -3685,16 +3718,33 @@ body.modal-open {
   width: 100%;
 }
 
-.compact-icon-link {
+.button-link.compact-icon-link {
   align-items: center;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--success) 76%, #fff), color-mix(in srgb, var(--success) 92%, #000));
+  border-color: color-mix(in srgb, var(--success) 58%, var(--border));
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 24%, transparent),
+    0 5px 12px color-mix(in srgb, var(--success) 12%, transparent);
+  color: var(--on-primary);
   display: inline-flex;
   font-size: 18px;
-  font-weight: 800;
-  height: 34px;
+  font-weight: 900;
+  height: 30px;
   justify-content: center;
   line-height: 1;
-  min-width: 34px;
+  min-height: 30px;
+  min-width: 30px;
   padding: 0;
+  width: 30px;
+}
+
+.button-link.compact-icon-link:hover {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--success) 84%, #fff), var(--success));
+  border-color: color-mix(in srgb, var(--success) 68%, var(--border));
+  color: var(--on-primary);
 }
 
 .inline-form {
@@ -3780,7 +3830,7 @@ body.modal-open {
   min-height: 32px;
 }
 
-/* Anhangsverwaltung: Kategorieauswahl links, Upload/Bearbeitung rechts. */
+/* * INFO: Anhangsverwaltung: Kategorieauswahl links, Upload/Bearbeitung rechts. */
 .attachment-workspace {
   align-items: start;
   align-self: start;
@@ -4262,13 +4312,10 @@ body.modal-open {
 
 .button-link {
   align-items: center;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--surface-solid) 76%, var(--color-button-secondary, var(--surface-muted))), color-mix(in srgb, var(--color-button-secondary, var(--surface-muted)) 82%, transparent));
-  border: var(--border-width) solid color-mix(in srgb, var(--border) 84%, transparent);
+  background: color-mix(in srgb, var(--surface-solid) 84%, var(--surface-muted));
+  border: var(--border-width) solid color-mix(in srgb, var(--border) 82%, transparent);
   border-radius: 999px;
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, #fff 18%, transparent),
-    0 5px 12px color-mix(in srgb, var(--color-bg) 18%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 14%, transparent);
   color: var(--text);
   display: inline-flex;
   font-weight: 700;
@@ -4278,15 +4325,18 @@ body.modal-open {
 }
 
 .danger-button {
-  background: color-mix(in srgb, var(--danger) 12%, var(--surface-solid));
-  border-color: color-mix(in srgb, var(--danger) 30%, var(--border));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--danger) 5%, var(--surface-solid)), color-mix(in srgb, var(--danger) 3%, var(--surface-muted)));
+  border-color: color-mix(in srgb, var(--danger) 20%, var(--border));
   box-shadow: none;
   color: var(--danger);
 }
 
 .danger-button:hover {
-  background: color-mix(in srgb, var(--danger) 82%, #fff);
-  color: var(--on-danger);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--danger) 11%, var(--surface-solid)), color-mix(in srgb, var(--danger) 7%, var(--surface-muted)));
+  border-color: color-mix(in srgb, var(--danger) 38%, var(--border));
+  color: var(--danger);
 }
 
 .attachment-assign-form {
@@ -4731,7 +4781,7 @@ body.modal-open {
   white-space: pre-wrap;
 }
 
-/* Theme-Editor: zentrale Oberfläche für CSS-Variablen, Presets und Live-Vorschau. */
+/* * INFO: Theme-Editor: zentrale Oberfläche für CSS-Variablen, Presets und Live-Vorschau. */
 .theme-editor {
   grid-column: 1 / -1;
 }
@@ -5289,7 +5339,7 @@ body.modal-open {
   padding: 20px;
 }
 
-/* Scroll-Container für breite Tabellen, damit kleine Bildschirme nicht brechen. */
+/* * INFO: Scroll-Container für breite Tabellen, damit kleine Bildschirme nicht brechen. */
 .table-wrap {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
@@ -5403,7 +5453,7 @@ body.modal-open {
   padding-left: 20px;
 }
 
-/* Permanenter Labor-Link unten links, unabhängig von Seite und Scrollposition. */
+/* * INFO: Permanenter Labor-Link unten links, unabhängig von Seite und Scrollposition. */
 .lab-floating {
   align-items: center;
   background: color-mix(in srgb, var(--surface) 88%, transparent);
@@ -5442,7 +5492,7 @@ body.modal-open {
   width: 27px;
 }
 
-/* Responsive Anpassungen für mittlere Bildschirme und kleinere Laptopbreiten. */
+/* * INFO: Responsive Anpassungen für mittlere Bildschirme und kleinere Laptopbreiten. */
 @media (max-width: 1180px) {
   .attachment-topline {
     grid-template-columns: 1fr;
@@ -5494,7 +5544,7 @@ body.modal-open {
   }
 }
 
-/* Mobile/tablet-nahe Ansicht: Navigation und Inhaltsbereiche stapeln sich stärker. */
+/* * INFO: Mobile/tablet-nahe Ansicht: Navigation und Inhaltsbereiche stapeln sich stärker. */
 @media (max-width: 900px) {
   .site-header {
     align-items: center;
@@ -5732,7 +5782,7 @@ body.modal-open {
   }
 }
 
-/* Kleine Smartphone-Breiten: Buttons, Tabellen und Header weiter verdichten. */
+/* * INFO: Kleine Smartphone-Breiten: Buttons, Tabellen und Header weiter verdichten. */
 @media (max-width: 560px) {
   body {
     font-size: 13px;

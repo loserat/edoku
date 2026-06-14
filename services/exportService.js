@@ -1,13 +1,13 @@
 const fs = require("fs/promises");
 const path = require("path");
-const { PDFDocument } = require("pdf-lib");
+const { PDFDocument, PDFName } = require("pdf-lib");
 const { chapterFolderForKapitel, createProjectFolder, fileSafeName, getProjectPaths } = require("./projectService");
 const { writeJson } = require("./jsonService");
 const { applyLogicalChapterNumbers, sortDocuments } = require("./chapterNumberingService");
 const { buildDocumentationAttachmentEntries } = require("./documentAttachmentService");
 const { normalizeGeraetelisten } = require("./geraetelistenService");
 
-// Sucht rekursiv alle PDF-Dateien in einem Ordner. Fehlende Ordner liefern eine leere Liste.
+// * INFO: Sucht rekursiv alle PDF-Dateien in einem Ordner. Fehlende Ordner liefern eine leere Liste.
 async function listPdfFiles(dir) {
   try {
     const entries = await fs.readdir(dir, { withFileTypes: true });
@@ -26,12 +26,12 @@ async function listPdfFiles(dir) {
   }
 }
 
-// Speichert relative Pfade plattformunabhängig mit Slash, damit JSON portabel bleibt.
+// * INFO: Speichert relative Pfade plattformunabhängig mit Slash, damit JSON portabel bleibt.
 function relative(rootDir, filePath) {
   return path.relative(rootDir, filePath).replaceAll(path.sep, "/");
 }
 
-// Einheitlicher Dateiname für die finale Exportablage.
+// * INFO: Einheitlicher Dateiname für die finale Exportablage.
 function finalExportFileName(entry) {
   const order = String(entry.reihenfolge || 0).padStart(3, "0");
   const kapitel = String(entry.kapitel || entry.originalKapitel || "")
@@ -42,12 +42,12 @@ function finalExportFileName(entry) {
   return [order, kapitel, title].filter(Boolean).join("_") + sourceExtension;
 }
 
-// Gesamt-PDF-Dateiname fuer den finalen Export.
+// * INFO: Gesamt-PDF-Dateiname fuer den finalen Export.
 function completeDocumentationFileName(projekt) {
   return `${fileSafeName(projekt.projektnummer || "Projekt")}_${fileSafeName(projekt.projektname || "edoku")}_Gesamtdokumentation.pdf`;
 }
 
-// Grobe Kapitelordner für den ZIP-Export. Die Ordnerstruktur bleibt bewusst flach.
+// * INFO: Grobe Kapitelordner für den ZIP-Export. Die Ordnerstruktur bleibt bewusst flach.
 function topChapterFolderName(entry) {
   const top = String(entry.kapitel || entry.originalKapitel || "99").split(".")[0] || "99";
   const folderNames = {
@@ -69,8 +69,8 @@ function topChapterFolderName(entry) {
   return folderNames[top] || `${String(top).padStart(2, "0")}_Sonstiges`;
 }
 
-// CRC32 wird für das ZIP-Format benötigt. Die Implementierung vermeidet eine
-// zusätzliche Abhängigkeit und schreibt unkomprimierte ZIP-Einträge.
+// * INFO: CRC32 wird für das ZIP-Format benötigt. Die Implementierung vermeidet eine
+// * INFO: zusätzliche Abhängigkeit und schreibt unkomprimierte ZIP-Einträge.
 function crc32(buffer) {
   if (!crc32.table) {
     crc32.table = Array.from({ length: 256 }, (_, index) => {
@@ -89,7 +89,7 @@ function crc32(buffer) {
   return (crc ^ 0xffffffff) >>> 0;
 }
 
-// Wandelt JS-Datum in DOS-Zeit/Datum um, wie es ZIP-Header erwarten.
+// * INFO: Wandelt JS-Datum in DOS-Zeit/Datum um, wie es ZIP-Header erwarten.
 function dosDateTime(date = new Date()) {
   const year = Math.max(1980, date.getFullYear());
   const time = (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2);
@@ -97,8 +97,8 @@ function dosDateTime(date = new Date()) {
   return { time, day };
 }
 
-// Schreibt ein einfaches ZIP-Archiv aus vorhandenen Dateien.
-// Seiteneffekt: legt/überschreibt die ZIP-Datei am angegebenen Pfad.
+// * INFO: Schreibt ein einfaches ZIP-Archiv aus vorhandenen Dateien.
+// * INFO: Seiteneffekt: legt/überschreibt die ZIP-Datei am angegebenen Pfad.
 async function writeZipFile(zipPath, files) {
   const chunks = [];
   const central = [];
@@ -161,12 +161,13 @@ async function writeZipFile(zipPath, files) {
 }
 
 /**
- * Fuehrt vorhandene PDFs in Exportlisten-Reihenfolge zu einer Gesamt-PDF zusammen.
- * Fehlerhafte oder nicht lesbare Quelldateien werden uebersprungen und protokolliert.
+ * * INFO: Fuehrt vorhandene PDFs in Exportlisten-Reihenfolge zu einer Gesamt-PDF zusammen.
+ * ! WICHTIG: Fehlerhafte oder nicht lesbare Quelldateien werden uebersprungen und protokolliert.
  */
-async function mergePdfFiles(targetPath, orderedPdfFiles) {
+async function mergePdfFiles(targetPath, orderedPdfFiles, tocEntries = []) {
   const mergedPdf = await PDFDocument.create();
   const skipped = [];
+  const mergedEntries = [];
   let pages = 0;
 
   for (const file of orderedPdfFiles) {
@@ -174,8 +175,14 @@ async function mergePdfFiles(targetPath, orderedPdfFiles) {
       const sourceBytes = await fs.readFile(file.sourcePath);
       const sourcePdf = await PDFDocument.load(sourceBytes, { ignoreEncryption: true });
       const copiedPages = await mergedPdf.copyPages(sourcePdf, sourcePdf.getPageIndices());
+      const startPageIndex = pages;
       copiedPages.forEach((page) => mergedPdf.addPage(page));
       pages += copiedPages.length;
+      mergedEntries.push({
+        ...file,
+        startPageIndex,
+        pageCount: copiedPages.length
+      });
     } catch (error) {
       skipped.push({
         file: file.sourcePath,
@@ -193,6 +200,8 @@ async function mergePdfFiles(targetPath, orderedPdfFiles) {
     };
   }
 
+  addInhaltsverzeichnisLinks(mergedPdf, mergedEntries, tocEntries);
+
   await fs.writeFile(targetPath, await mergedPdf.save());
   return {
     targetPath,
@@ -201,7 +210,103 @@ async function mergePdfFiles(targetPath, orderedPdfFiles) {
   };
 }
 
-// Sucht eine generierte Datei anhand der Kapitelnummer im Dateinamen.
+// ! WICHTIG: Vergleichsschluessel verbindet Exportliste, kopierte PDF und Inhaltsverzeichnis-Link.
+function exportEntryKey(entry = {}) {
+  return [
+    String(entry.kapitel || ""),
+    String(entry.titel || ""),
+    String(entry.dateipfad || "")
+  ].join("|");
+}
+
+// ? WARUM: Das Inhaltsverzeichnis selbst wird nicht als Sprungziel verlinkt.
+function isInhaltsverzeichnisEntry(entry = {}, file = {}) {
+  const title = String(entry.titel || "").toLowerCase();
+  const sourceName = path.basename(file.sourcePath || entry.dateipfad || "").toLowerCase();
+  return title === "inhaltsverzeichnis" || sourceName === "inhaltsverzeichnis.pdf";
+}
+
+// ! WICHTIG: Ohne Annots-Array können keine klickbaren PDF-Linkflächen gespeichert werden.
+function ensurePageAnnotations(pdfDoc, page) {
+  const existing = page.node.Annots();
+  if (existing) return existing;
+  const annots = pdfDoc.context.obj([]);
+  page.node.set(PDFName.of("Annots"), annots);
+  return annots;
+}
+
+// ! WICHTIG: Fügt eine interne GoTo-Linkfläche ein; Ziel ist eine echte Seite im Gesamt-PDF.
+function addInternalPageLink(pdfDoc, sourcePage, targetPage, rect) {
+  const destination = pdfDoc.context.obj([targetPage.ref, PDFName.of("Fit")]);
+  const action = pdfDoc.context.obj({
+    S: PDFName.of("GoTo"),
+    D: destination
+  });
+  const annotation = pdfDoc.context.obj({
+    Type: PDFName.of("Annot"),
+    Subtype: PDFName.of("Link"),
+    Rect: rect,
+    Border: [0, 0, 0],
+    H: PDFName.of("I"),
+    A: action
+  });
+  ensurePageAnnotations(pdfDoc, sourcePage).push(pdfDoc.context.register(annotation));
+}
+
+/**
+ * ! WICHTIG:
+ * ! WICHTIG: Verlinkt die Zeilen im kopierten Inhaltsverzeichnis mit den Seiten im Gesamt-PDF.
+ * ? WARUM:
+ * ? WARUM: Fehlende Dokumente behalten ihren Platz im Layout, bekommen aber keinen Link.
+ * ? WARUM: Dadurch bleiben spaetere Seitenzaehlungen fuer Anhaenge und Bedienungsanleitungen stabil.
+ */
+function addInhaltsverzeichnisLinks(pdfDoc, mergedEntries, tocEntries) {
+  const tocFile = mergedEntries.find((file) => isInhaltsverzeichnisEntry(file.entry, file));
+  if (!tocFile || !tocEntries.length) return;
+
+  const targetByKey = new Map();
+  mergedEntries
+    .filter((file) => !isInhaltsverzeichnisEntry(file.entry, file))
+    .forEach((file) => targetByKey.set(exportEntryKey(file.entry), file.startPageIndex));
+
+  const printableRows = tocEntries.filter((entry) => !isInhaltsverzeichnisEntry(entry));
+  const linkedPageCount = Math.max(1, tocFile.pageCount || 1);
+  const firstTocPageIndex = tocFile.startPageIndex;
+  const rowStartY = 142;
+  const rowBottomLimitY = 745;
+  const rowBaseHeight = 15;
+  let tocPageOffset = 0;
+  let yFromTop = rowStartY;
+
+  printableRows.forEach((entry) => {
+    const level = Math.max(1, Math.min(3, Number(entry.ebene) || String(entry.kapitel || "").split(".").length || 1));
+    const rowHeight = level === 1 ? 18 : 15;
+
+    if (yFromTop > rowBottomLimitY) {
+      tocPageOffset += 1;
+      yFromTop = rowStartY;
+    }
+
+    const targetPageIndex = targetByKey.get(exportEntryKey(entry));
+    const sourcePageIndex = firstTocPageIndex + tocPageOffset;
+    if (targetPageIndex !== undefined && tocPageOffset < linkedPageCount) {
+      const sourcePage = pdfDoc.getPage(sourcePageIndex);
+      const targetPage = pdfDoc.getPage(targetPageIndex);
+      const pageWidth = sourcePage.getWidth();
+      const pageHeight = sourcePage.getHeight();
+      const indent = (level - 1) * 14;
+      const x1 = 48 + indent;
+      const y1 = pageHeight - yFromTop - rowBaseHeight;
+      const x2 = pageWidth - 48;
+      const y2 = pageHeight - yFromTop + 5;
+      addInternalPageLink(pdfDoc, sourcePage, targetPage, [x1, y1, x2, y2]);
+    }
+
+    yFromTop += rowHeight;
+  });
+}
+
+// * INFO: Sucht eine generierte Datei anhand der Kapitelnummer im Dateinamen.
 function matchByKapitel(files, kapitel) {
   const normalized = String(kapitel).replaceAll(".", "_");
   const padded = String(kapitel)
@@ -215,8 +320,8 @@ function matchByKapitel(files, kapitel) {
   });
 }
 
-// Bei gleicher Kapitelnummer entscheidet zusaetzlich der Dateititel, damit
-// mehrere Dokumente in einem Kapitel nicht dieselbe PDF referenzieren.
+// * INFO: Bei gleicher Kapitelnummer entscheidet zusaetzlich der Dateititel, damit
+// * INFO: mehrere Dokumente in einem Kapitel nicht dieselbe PDF referenzieren.
 function matchGeneratedFile(files, entry, usedFiles) {
   const candidates = matchByKapitel(files, entry.displayKapitel || entry.kapitel).filter((file) => !usedFiles.has(file));
   if (!candidates.length) return "";
@@ -224,7 +329,7 @@ function matchGeneratedFile(files, entry, usedFiles) {
   return candidates.find((file) => path.basename(file, ".pdf").toLowerCase().includes(safeTitle)) || candidates[0];
 }
 
-// Ergänzt Exporteinträge um System- und Herstellerinformationen aus der Projektauswahl.
+// * INFO: Ergänzt Exporteinträge um System- und Herstellerinformationen aus der Projektauswahl.
 function metadataForEntry(entry, projektSysteme) {
   const exact = (projektSysteme || []).find((selection) => selection.leistungsbereich === entry.leistungsbereich);
   const byKapitel = (projektSysteme || []).find((selection) => (selection.kapitel || []).includes(entry.originalKapitel || entry.kapitel));
@@ -237,19 +342,19 @@ function metadataForEntry(entry, projektSysteme) {
   };
 }
 
-// Platzhalter für später importierte Plandateien werden nicht als fehlende Dokumente gezählt.
+// * INFO: Platzhalter für später importierte Plandateien werden nicht als fehlende Dokumente gezählt.
 function isImportedDocumentPlaceholder(entry) {
   return String(entry.dokumenttyp || "") === "Plan"
     && String(entry.formularart || "") === "Dateiliste"
     && Number(entry.ebene || 1) >= 2;
 }
 
-// Ermittelt aktive Leistungsbereiche als Set für schnelle Listenprüfungen.
+// * INFO: Ermittelt aktive Leistungsbereiche als Set für schnelle Listenprüfungen.
 function activeLeistungsbereicheSet(leistungsbereiche = {}) {
   return new Set(Array.isArray(leistungsbereiche.aktiv) ? leistungsbereiche.aktiv : []);
 }
 
-// Gerätelisten-Dokumente gelten nur als verfügbar, wenn die passende Liste aktiv/exportierbar ist.
+// * INFO: Gerätelisten-Dokumente gelten nur als verfügbar, wenn die passende Liste aktiv/exportierbar ist.
 function isGeraetelistenDocumentAvailable(entry, geraetelisten = [], leistungsbereiche = {}) {
   if (!String(entry.quelle || "").includes("geraetelisten.json")) return true;
   const activeSet = activeLeistungsbereicheSet(leistungsbereiche);
@@ -261,13 +366,13 @@ function isGeraetelistenDocumentAvailable(entry, geraetelisten = [], leistungsbe
   });
 }
 
-// Prüft, ob ein in JSON referenzierter Exportpfad auf der Platte existiert.
+// * INFO: Prüft, ob ein in JSON referenzierter Exportpfad auf der Platte existiert.
 async function sourceExists(rootDir, relativePath) {
   if (!relativePath) return false;
   return fs.access(path.join(rootDir, relativePath)).then(() => true).catch(() => false);
 }
 
-// Räumt erzeugte Exportdateien im finalen Ordner auf, ohne Unterordner anzufassen.
+// * INFO: Räumt erzeugte Exportdateien im finalen Ordner auf, ohne Unterordner anzufassen.
 async function clearFinalExportFolder(finalPath) {
   try {
     const entries = await fs.readdir(finalPath, { withFileTypes: true });
@@ -280,9 +385,9 @@ async function clearFinalExportFolder(finalPath) {
 }
 
 /**
- * Baut die Exportliste aus aktiver Dokumentenmatrix, generierten PDFs,
- * importierten Anhängen und extern abgelegten PDFs.
- * Seiteneffekt: schreibt die Exportliste als JSON.
+ * * INFO: Baut die Exportliste aus aktiver Dokumentenmatrix, generierten PDFs,
+ * * INFO: importierten Anhängen und extern abgelegten PDFs.
+ * ! WICHTIG: Seiteneffekt: schreibt die Exportliste als JSON.
  */
 async function buildExportliste(rootDir, projekt, matrix, exportlistePath, projektSysteme = [], anhaenge = [], geraetelisten = [], leistungsbereiche = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
@@ -373,9 +478,9 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
 }
 
 /**
- * Bereitet den finalen Export vor.
- * Kopiert vorhandene PDFs in den finalen Ordner, schreibt eine Reihenfolge-Datei
- * und erzeugt zusätzlich ein ZIP mit flacher Kapitelstruktur.
+ * * INFO: Bereitet den finalen Export vor.
+ * * INFO: Kopiert vorhandene PDFs in den finalen Ordner, schreibt eine Reihenfolge-Datei
+ * * INFO: und erzeugt zusätzlich ein ZIP mit flacher Kapitelstruktur.
  */
 async function prepareFinalExport(rootDir, projekt, matrix, exportlistePath) {
   const paths = getProjectPaths(rootDir, projekt);
@@ -413,7 +518,8 @@ async function prepareFinalExport(rootDir, projekt, matrix, exportlistePath) {
           orderedPdfFiles.push({
             sourcePath: target,
             finalName,
-            zipPath
+            zipPath,
+            entry
           });
         }
         zipFiles.push({
@@ -438,7 +544,7 @@ async function prepareFinalExport(rootDir, projekt, matrix, exportlistePath) {
   });
 
   const completePdfPath = path.join(paths.finalPath, completeDocumentationFileName(projekt));
-  const mergeResult = await mergePdfFiles(completePdfPath, orderedPdfFiles);
+  const mergeResult = await mergePdfFiles(completePdfPath, orderedPdfFiles, orderedExportliste);
   if (mergeResult.targetPath) {
     zipFiles.unshift({
       sourcePath: mergeResult.targetPath,
