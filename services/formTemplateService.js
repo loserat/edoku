@@ -1,5 +1,5 @@
-// Default-Layouts und Textbausteine für generierte Formulare.
-// Gespeicherte Konfigurationen können diese Werte überschreiben.
+// * INFO: Default-Layouts und Textbausteine für generierte Formulare.
+// * INFO: Gespeicherte Konfigurationen können diese Werte überschreiben.
 const DEFAULT_FORM_TEMPLATES = {
   konformitaet: {
     name: "Konformitätserklärung",
@@ -136,20 +136,20 @@ const DEFAULT_FORM_TEMPLATES = {
   }
 };
 
-// Begrenzung numerischer Formularwerte, damit PDF-Layouts nicht ausbrechen.
+// * INFO: Begrenzung numerischer Formularwerte, damit PDF-Layouts nicht ausbrechen.
 function numberInRange(value, fallback, min, max) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.min(max, Math.max(min, parsed));
 }
 
-// HTML-Checkboxen in echte Boolean-Werte umwandeln.
+// * INFO: HTML-Checkboxen in echte Boolean-Werte umwandeln.
 function checkbox(value) {
   if (Array.isArray(value)) return value.some((entry) => checkbox(entry));
   return value === "on" || value === true || value === "true";
 }
 
-// Mischt Default-Textvarianten mit gespeicherten Anpassungen.
+// * INFO: Mischt Default-Textvarianten mit gespeicherten Anpassungen.
 function mergeTextVarianten(defaults = {}, existing = {}) {
   const keys = new Set([...Object.keys(defaults), ...Object.keys(existing)]);
   return Object.fromEntries(
@@ -168,7 +168,7 @@ function mergeTextVarianten(defaults = {}, existing = {}) {
   );
 }
 
-// Projekt-/Leistungsbereichstexte als Objekt normalisieren.
+// * INFO: Projekt-/Leistungsbereichstexte als Objekt normalisieren.
 function normalizeLeistungsbereichTexte(value = {}) {
   if (Array.isArray(value)) {
     return Object.fromEntries(value
@@ -198,8 +198,8 @@ function normalizeLeistungsbereichTexte(value = {}) {
   );
 }
 
-// Steuerung je Leistungsbereich und Formular normalisieren.
-// In den Leistungsbereichen wird nur definiert, ob ein Formular grundsätzlich erzeugt wird.
+// * INFO: Steuerung je Leistungsbereich und Formular normalisieren.
+// * INFO: In den Leistungsbereichen wird nur definiert, ob ein Formular grundsätzlich erzeugt wird.
 function normalizeLeistungsbereichFormulare(value = {}, fallbackTexte = {}) {
   const entries = Array.isArray(value)
     ? value
@@ -228,7 +228,7 @@ function normalizeLeistungsbereichFormulare(value = {}, fallbackTexte = {}) {
   );
 }
 
-// Ergänzt fehlende Formular-Templates aus den Defaults.
+// * INFO: Ergänzt fehlende Formular-Templates aus den Defaults.
 function mergeFormTemplates(templates = {}) {
   return Object.fromEntries(
     Object.entries(DEFAULT_FORM_TEMPLATES).map(([key, defaults]) => {
@@ -247,7 +247,7 @@ function mergeFormTemplates(templates = {}) {
   );
 }
 
-// Normalisiert die Formular-Generator-Eingaben aus den Einstellungen.
+// * INFO: Normalisiert die Formular-Generator-Eingaben aus den Einstellungen.
 function normalizePostedFormTemplates(body = {}) {
   const posted = body.templates || {};
   const merged = mergeFormTemplates(posted);
@@ -298,7 +298,7 @@ function normalizePostedFormTemplates(body = {}) {
   );
 }
 
-// Wählt den passenden Konformitätstext anhand des Leistungsbereichs.
+// * INFO: Wählt den passenden Konformitätstext anhand des Leistungsbereichs.
 function textForKonformitaet(template, leistungsbereich) {
   const leistungsbereiche = Array.isArray(leistungsbereich) ? leistungsbereich : [leistungsbereich];
   const leistungsbereichFormulare = normalizeLeistungsbereichFormulare(template.leistungsbereichFormulare || {}, template.leistungsbereichTexte || {});
@@ -320,7 +320,7 @@ function textForKonformitaet(template, leistungsbereich) {
   return (match && match.text) || (variants.default && variants.default.text) || template.bodyText || "";
 }
 
-// Prüft, ob ein Formular für die angegebenen Leistungsbereiche erzeugt werden soll.
+// * INFO: Prüft, ob ein Formular für die angegebenen Leistungsbereiche erzeugt werden soll.
 function formEnabledForLeistungsbereiche(template, leistungsbereich) {
   const leistungsbereiche = Array.isArray(leistungsbereich) ? leistungsbereich : [leistungsbereich];
   const leistungsbereichFormulare = normalizeLeistungsbereichFormulare(template.leistungsbereichFormulare || {}, template.leistungsbereichTexte || {});
@@ -331,7 +331,7 @@ function formEnabledForLeistungsbereiche(template, leistungsbereich) {
   return configured.some((entry) => entry.erzeugen !== false);
 }
 
-// Baut den sichtbaren Formulartitel aus Präfix und Fallback.
+// * INFO: Baut den sichtbaren Formulartitel aus Präfix und Fallback.
 function templateTitle(template, fallbackTitle) {
   const title = fallbackTitle || template.titelFallback || template.name || "Formular";
   return `${template.titelPraefix || ""}${title}`;

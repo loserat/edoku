@@ -1,4 +1,4 @@
-// Sortiert Dokumente zuerst nach fachlicher Sortierung, danach nach Kapitelnummer.
+// * INFO: Sortiert Dokumente zuerst nach fachlicher Sortierung, danach nach Kapitelnummer.
 function sortDocuments(documents) {
   return [...(documents || [])].sort((a, b) => {
     const sortA = Number.isFinite(a.sortierung) ? a.sortierung : 0;
@@ -8,15 +8,15 @@ function sortDocuments(documents) {
   });
 }
 
-// Entscheidet, ob ein Dokument bei der logischen Nummerierung berücksichtigt wird.
+// * INFO: Entscheidet, ob ein Dokument bei der logischen Nummerierung berücksichtigt wird.
 function shouldNumber(document, options) {
   if (!document.aktiv) return false;
   if (options.exportOnly && !document.export) return false;
   return true;
 }
 
-// Berechnet fortlaufende Kapitelnummern aus der vorhandenen Matrix.
-// Originalkapitel bleiben erhalten, die Anzeige nutzt später displayKapitel.
+// * INFO: Berechnet fortlaufende Kapitelnummern aus der vorhandenen Matrix.
+// * INFO: Originalkapitel bleiben erhalten, die Anzeige nutzt später displayKapitel.
 function logicalChapterNumber(documents, options = {}) {
   const sorted = sortDocuments(documents).filter((document) => shouldNumber(document, options));
   const countersByParent = new Map();
@@ -40,7 +40,7 @@ function logicalChapterNumber(documents, options = {}) {
   return logicalByOriginal;
 }
 
-// Ergänzt jedes Dokument um originalKapitel und displayKapitel.
+// * INFO: Ergänzt jedes Dokument um originalKapitel und displayKapitel.
 function applyLogicalChapterNumbers(documents, options = {}) {
   const logicalByOriginal = logicalChapterNumber(documents, options);
 

@@ -91,8 +91,8 @@ const {
   updateAttachmentDocumentMeta
 } = require("./services/documentAttachmentService");
 
-// Zentrale Pfade der Anwendung. Alle Dateioperationen werden relativ zu
-// diesen Ordnern aufgebaut, damit lokaler Start und Docker-Start gleich laufen.
+// ! WICHTIG: Zentrale Pfade der Anwendung. Alle Dateioperationen werden relativ zu
+// ! WICHTIG: diesen Ordnern aufgebaut, damit lokaler Start und Docker-Start gleich laufen.
 const ROOT_DIR = __dirname;
 const DATA_DIR = path.join(ROOT_DIR, "data");
 const CONFIG_DIR = path.join(ROOT_DIR, "config");
@@ -106,8 +106,8 @@ const APP_NAME = packageInfo.name || "edoku";
 const GITHUB_RELEASE_API = "https://api.github.com/repos/loserat/edoku/releases/latest";
 const DEFAULT_STOCKWERKE = ["UG", "EG", "1. OG", "2. OG", "3. OG", "4. OG", "5. OG", "DG", "Dach"];
 
-// Startinitialisierung: Ordner und Default-Dateien vorbereiten, Datenbank
-// öffnen, Demo-Benutzer bereitstellen und ältere Projektregister migrieren.
+// ! WICHTIG: Startinitialisierung: Ordner und Default-Dateien vorbereiten, Datenbank
+// ! WICHTIG: öffnen, Demo-Benutzer bereitstellen und ältere Projektregister migrieren.
 bootstrapStorage({ ROOT_DIR, DATA_DIR, CONFIG_DIR, OUTPUT_DIR, TEMPLATES_DIR, STORAGE_DIR });
 initDatabase(STORAGE_DIR);
 ensureDefaultUser();
@@ -124,8 +124,8 @@ app.use(express.json({ limit: "25mb" }));
 app.use(parseCookies);
 app.use(attachUser);
 
-// Gemeinsamer Template-Kontext für eingeloggte Benutzer. Die Views nutzen diese
-// Werte für Flash-Meldungen, Projektanzeige und die Projektliste in der Sidebar.
+// * INFO: Gemeinsamer Template-Kontext für eingeloggte Benutzer. Die Views nutzen diese
+// * INFO: Werte für Flash-Meldungen, Projektanzeige und die Projektliste in der Sidebar.
 app.use(async (req, res, next) => {
   res.locals.flash = flashFromQuery(req);
   res.locals.currentProjectId = "";
@@ -163,8 +163,8 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Lokale Demo-Benutzer für Version 1. Passwörter werden nicht im Klartext
-// gespeichert, sondern bei jedem Start als Hash/Salt-Kombination gesetzt.
+// * INFO: Lokale Demo-Benutzer für Version 1. Passwörter werden nicht im Klartext
+// * INFO: gespeichert, sondern bei jedem Start als Hash/Salt-Kombination gesetzt.
 function hashSeedPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
   const passwordHash = crypto.scryptSync(password, salt, 64).toString("hex");
@@ -274,7 +274,7 @@ function compareVersions(a, b) {
   return prereleaseRank(a) - prereleaseRank(b);
 }
 
-// Fügt nach einem Redirect eine Erfolg- oder Fehlermeldung als Query-Parameter an.
+// * INFO: Fügt nach einem Redirect eine Erfolg- oder Fehlermeldung als Query-Parameter an.
 function redirectWithFlash(res, target, type, message) {
   const [baseTarget, hash = ""] = target.split("#");
   const joiner = baseTarget.includes("?") ? "&" : "?";
@@ -282,7 +282,7 @@ function redirectWithFlash(res, target, type, message) {
   res.redirect(`${baseTarget}${joiner}${type}=${encodeURIComponent(message)}${hashSuffix}`);
 }
 
-// Einheitlicher Erfolgsweg für normale Formular-POSTs und Auto-Save-Requests.
+// * INFO: Einheitlicher Erfolgsweg für normale Formular-POSTs und Auto-Save-Requests.
 function okOrRedirect(req, res, target, message = "Gespeichert.") {
   if ((req.headers.accept || "").includes("application/json")) {
     res.json({ ok: true, message });
@@ -291,7 +291,7 @@ function okOrRedirect(req, res, target, message = "Gespeichert.") {
   redirectWithFlash(res, target, "success", message);
 }
 
-// Einheitliche Fehlerantwort für HTML-Formulare und JSON-basierte Auto-Saves.
+// * INFO: Einheitliche Fehlerantwort für HTML-Formulare und JSON-basierte Auto-Saves.
 function fail(req, res, target, error) {
   const message = error && error.message ? error.message : String(error || "Fehler");
   if ((req.headers.accept || "").includes("application/json")) {
@@ -301,7 +301,7 @@ function fail(req, res, target, error) {
   redirectWithFlash(res, target, "error", message);
 }
 
-// Normalisiert frei eingegebene Stockwerke zu einer eindeutigen Liste.
+// * INFO: Normalisiert frei eingegebene Stockwerke zu einer eindeutigen Liste.
 function normalizeStockwerke(value) {
   const raw = Array.isArray(value) ? value : String(value || "").split(/[\n,;]/);
   return [...new Set(raw
@@ -309,7 +309,7 @@ function normalizeStockwerke(value) {
     .filter(Boolean))];
 }
 
-// Kombiniert Preset-Auswahl und freie Stockwerksangaben aus dem Projektformular.
+// * INFO: Kombiniert Preset-Auswahl und freie Stockwerksangaben aus dem Projektformular.
 function normalizePostedStockwerke(body) {
   return normalizeStockwerke([
     ...(Array.isArray(body.stockwerkePreset) ? body.stockwerkePreset : body.stockwerkePreset ? [body.stockwerkePreset] : []),
@@ -317,12 +317,12 @@ function normalizePostedStockwerke(body) {
   ]);
 }
 
-// Bereitet Stockwerke für Textarea-Ausgaben als mehrzeiligen Text vor.
+// * INFO: Bereitet Stockwerke für Textarea-Ausgaben als mehrzeiligen Text vor.
 function stockwerkeText(projekt) {
   return normalizeStockwerke(projekt.stockwerke || []).join("\n");
 }
 
-// Erweitert Dropdown-Optionen um bereits gespeicherte Werte aus vorhandenen Daten.
+// * INFO: Erweitert Dropdown-Optionen um bereits gespeicherte Werte aus vorhandenen Daten.
 function mergeStockwerkOptions(stockwerke, values = []) {
   return [...new Set([
     ...normalizeStockwerke(stockwerke),
@@ -330,7 +330,7 @@ function mergeStockwerkOptions(stockwerke, values = []) {
   ])];
 }
 
-// Prüft projektbezogene Anhangspfade innerhalb des erlaubten Root-Verzeichnisses.
+// ! WICHTIG: Prüft projektbezogene Anhangspfade innerhalb des erlaubten Root-Verzeichnisses.
 async function fileExistsForAttachment(relativePath) {
   if (!relativePath) return false;
   try {
@@ -342,9 +342,9 @@ async function fileExistsForAttachment(relativePath) {
 }
 
 /**
- * Baut die View-Daten für die Anhangsverwaltung.
- * Ergänzt Rohdaten um Dateistatus, Typ-Erkennung, Inhaltsverzeichnis-Zuordnung
- * und Brandschutz-Fotoverweise.
+ * * INFO: Baut die View-Daten für die Anhangsverwaltung.
+ * * INFO: Ergänzt Rohdaten um Dateistatus, Typ-Erkennung, Inhaltsverzeichnis-Zuordnung
+ * * INFO: und Brandschutz-Fotoverweise.
  */
 async function buildAttachmentViewModel(attachments, brandschutz, matrix, projekt = {}, geraetelisten = []) {
   const tocEntries = buildDocumentationAttachmentEntries(matrix, attachments, projekt, geraetelisten);
@@ -392,14 +392,14 @@ async function buildAttachmentViewModel(attachments, brandschutz, matrix, projek
   return { rows, stats, countsByCategory };
 }
 
-// Baut eine Browser-URL für vorhandene PDF-Vorschauen innerhalb des Projektordners.
+// * INFO: Baut eine Browser-URL für vorhandene PDF-Vorschauen innerhalb des Projektordners.
 function pdfPreviewUrl(file) {
   return file ? `/export/pdf-preview?file=${encodeURIComponent(file.id)}#toolbar=1` : "";
 }
 
-// Sucht in den generierten PDFs nach einem Dateinamen-Muster, ohne Kapitelnummern
-// doppelt berechnen zu müssen. Die Kapitelnummer steht im Dateipräfix und darf
-// sich durch aktive Leistungsbereiche logisch ändern.
+// * INFO: Sucht in den generierten PDFs nach einem Dateinamen-Muster, ohne Kapitelnummern
+// * INFO: doppelt berechnen zu müssen. Die Kapitelnummer steht im Dateipräfix und darf
+// * INFO: sich durch aktive Leistungsbereiche logisch ändern.
 function findGeneratedPdf(pdfPreviewFiles, folderName, suffix) {
   const normalizedSuffix = String(suffix || "").toLowerCase();
   return (pdfPreviewFiles || []).find((file) => {
@@ -408,8 +408,8 @@ function findGeneratedPdf(pdfPreviewFiles, folderName, suffix) {
   });
 }
 
-// Ordnet jeder Geräteliste die vorhandene generierte PDF zu, falls diese bereits
-// erzeugt wurde. Fehlt die Datei, bleibt die Liste ohne Vorschau-Button.
+// * INFO: Ordnet jeder Geräteliste die vorhandene generierte PDF zu, falls diese bereits
+// * INFO: erzeugt wurde. Fehlt die Datei, bleibt die Liste ohne Vorschau-Button.
 function buildGeraetelistenPreviewMap(geraetelisten, pdfPreviewFiles) {
   return (geraetelisten || []).reduce((previewMap, liste) => {
     const suffix = `_${fileSafeName(liste.leistungsbereich)}_${fileSafeName(liste.titel)}.pdf`;
@@ -419,8 +419,8 @@ function buildGeraetelistenPreviewMap(geraetelisten, pdfPreviewFiles) {
   }, {});
 }
 
-// Brandschutz wird aktuell als ein zusammenhängendes Dokument generiert; die
-// Tabellenzeilen verweisen deshalb alle auf dieselbe vorhandene PDF-Vorschau.
+// * INFO: Brandschutz wird aktuell als ein zusammenhängendes Dokument generiert; die
+// * INFO: Tabellenzeilen verweisen deshalb alle auf dieselbe vorhandene PDF-Vorschau.
 function buildBrandschutzPreviewUrl(pdfPreviewFiles) {
   const previewFile = findGeneratedPdf(pdfPreviewFiles, "Brandschutz", "_Bilddokumentation_Brandschottungen.pdf");
   return pdfPreviewUrl(previewFile);
@@ -430,8 +430,8 @@ async function currentFiles(req) {
   return getCurrentDataFiles(ROOT_DIR, DATA_DIR, req.user.id);
 }
 
-// Lädt den vollständigen Projektzustand aus JSON/Config-Dateien und normalisiert
-// die Daten für Views, Services und PDF-Ausgabe.
+// * INFO: Lädt den vollständigen Projektzustand aus JSON/Config-Dateien und normalisiert
+// * INFO: die Daten für Views, Services und PDF-Ausgabe.
 async function loadCurrent(req) {
   const files = await currentFiles(req);
   const [
@@ -483,8 +483,8 @@ async function loadCurrent(req) {
   };
 }
 
-// Leitet aus aktiven Leistungsbereichen und Systemzuordnungen ab,
-// welche Matrixeinträge aktiv und exportierbar sind.
+// * INFO: Leitet aus aktiven Leistungsbereichen und Systemzuordnungen ab,
+// * INFO: welche Matrixeinträge aktiv und exportierbar sind.
 function templateKeyForMatrixEntry(entry) {
   if (entry.dokumenttyp === "Konformitätserklärung") return "konformitaet";
   if (entry.dokumenttyp === "CE-Bestätigung") return "ceBestaetigung";
@@ -526,7 +526,7 @@ function updateMatrixFromLeistungsbereiche(matrix, leistungsbereiche, projektSys
   });
 }
 
-// Übernimmt manuelle Checkbox-Änderungen aus der Dokumentenmatrix.
+// * INFO: Übernimmt manuelle Checkbox-Änderungen aus der Dokumentenmatrix.
 function updatePostedMatrix(matrix, body) {
   const activeIds = new Set(Array.isArray(body.aktiv) ? body.aktiv : body.aktiv ? [body.aktiv] : []);
   const exportIds = new Set(Array.isArray(body.export) ? body.export : body.export ? [body.export] : []);
@@ -547,8 +547,8 @@ function updateMatrixOutputSelection(matrix, body) {
   }));
 }
 
-// Synchronisiert Folge-Daten nach Änderungen an Leistungsbereichen.
-// Dadurch bleiben Systemauswahl, Matrix und Gerätelisten im gleichen Stand.
+// * INFO: Synchronisiert Folge-Daten nach Änderungen an Leistungsbereichen.
+// * INFO: Dadurch bleiben Systemauswahl, Matrix und Gerätelisten im gleichen Stand.
 async function syncProjectDerivedData(files) {
   const leistungsbereiche = await readJson(files.leistungsbereiche, { aktiv: [] });
   const systemConfig = normalizeSystemConfig(await readJson(path.join(DATA_DIR, "systeme.json"), { leistungsbereiche: [] }));
@@ -565,10 +565,10 @@ async function syncProjectDerivedData(files) {
   ]);
 }
 
-// Startseite: angemeldete Benutzer landen immer im Dashboard.
+// * INFO: Startseite: angemeldete Benutzer landen immer im Dashboard.
 app.get("/", requireAuth, (req, res) => res.redirect("/dashboard"));
 
-// Login, Registrierung und Logout.
+// * INFO: Login, Registrierung und Logout.
 app.get("/login", (req, res) => {
   if (req.user) return res.redirect("/dashboard");
   res.render("login", { flash: flashFromQuery(req) });
@@ -606,7 +606,7 @@ app.post("/logout", (req, res) => {
 
 app.use(blockViewerWrites);
 
-// Dashboard: fasst Projektfortschritt, fehlende Angaben und nächste Schritte zusammen.
+// * INFO: Dashboard: fasst Projektfortschritt, fehlende Angaben und nächste Schritte zusammen.
 app.get("/dashboard", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -625,7 +625,7 @@ app.get("/dashboard", requireAuth, async (req, res, next) => {
   }
 });
 
-// Projektverwaltung: Projekte anzeigen, öffnen, archivieren, löschen und exportieren.
+// * INFO: Projektverwaltung: Projekte anzeigen, öffnen, archivieren, löschen und exportieren.
 app.get("/projekte", requireAuth, async (req, res, next) => {
   try {
     res.render("projekte", {
@@ -675,7 +675,7 @@ app.post("/projekte/:projectId/exportieren", requireAuth, async (req, res) => {
   }
 });
 
-// Projektstammdaten inklusive Objektstruktur und Stockwerksauswahl.
+// * INFO: Projektstammdaten inklusive Objektstruktur und Stockwerksauswahl.
 app.get("/projekt", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -706,7 +706,7 @@ app.post("/projekt", requireAuth, async (req, res) => {
   }
 });
 
-// Leistungsbereiche steuern, welche Dokumente und Gerätelisten projektbezogen aktiv werden.
+// * INFO: Leistungsbereiche steuern, welche Dokumente und Gerätelisten projektbezogen aktiv werden.
 app.get("/leistungsbereiche", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -739,7 +739,7 @@ app.post("/leistungsbereiche", requireAuth, async (req, res) => {
   }
 });
 
-// Projektspezifische Systemauswahl je Leistungsbereich.
+// * INFO: Projektspezifische Systemauswahl je Leistungsbereich.
 app.get("/systemauswahl", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -767,7 +767,7 @@ app.post("/systemauswahl", requireAuth, async (req, res) => {
   }
 });
 
-// Dokumentenmatrix: fachliche Dokumente prüfen und Exportstatus verwalten.
+// * INFO: Dokumentenmatrix: fachliche Dokumente prüfen und Exportstatus verwalten.
 app.get("/dokumente", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -796,7 +796,7 @@ app.post("/dokumente/aktualisieren", requireAuth, async (req, res) => {
   redirectWithFlash(res, "/dokumente", "success", "Dokumentenmatrix wurde aktualisiert.");
 });
 
-// Gerätelisten: Positionen pro aktivem Leistungsbereich tabellarisch bearbeiten.
+// * INFO: Gerätelisten: Positionen pro aktivem Leistungsbereich tabellarisch bearbeiten.
 app.get("/geraetelisten", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -886,7 +886,7 @@ app.post("/geraetelisten/:listId/vorlagen/:templateId/laden", requireAuth, async
   }
 });
 
-// Brandschutz: Brandschottungen erfassen und Pflichtangaben prüfen.
+// * INFO: Brandschutz: Brandschottungen erfassen und Pflichtangaben prüfen.
 app.get("/brandschutz", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -922,7 +922,7 @@ app.post("/brandschutz/hinzufuegen", requireAuth, async (req, res) => {
   redirectWithFlash(res, "/brandschutz", "success", "Brandschutz-Eintrag wurde hinzugefügt.");
 });
 
-// Export: Vorschau, PDF-Erzeugung, Exportliste und finaler Projekt-Export.
+// * INFO: Export: Vorschau, PDF-Erzeugung, Exportliste und finaler Projekt-Export.
 app.get("/export", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -1142,7 +1142,7 @@ app.post("/export/final", requireAuth, async (req, res) => {
   redirectWithFlash(res, "/export", "success", `Finaler Export wurde vorbereitet (${zipName}${pdfInfo}).`);
 });
 
-// Einstellungen: Systemvorgaben, Erstellerstammdaten, Ordnerstruktur und Formulare.
+// * INFO: Einstellungen: Systemvorgaben, Erstellerstammdaten, Ordnerstruktur und Formulare.
 app.get("/einstellungen", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -1467,7 +1467,7 @@ app.post("/einstellungen/formulare", requireAuth, async (req, res) => {
   }
 });
 
-// Projektarchiv: Projektpakete exportieren, prüfen und wieder importieren.
+// * INFO: Projektarchiv: Projektpakete exportieren, prüfen und wieder importieren.
 app.get("/projektarchiv", requireAuth, async (req, res, next) => {
   try {
     res.render("projektarchiv", {
@@ -1527,7 +1527,7 @@ app.get("/projektarchiv/download", requireAuth, async (req, res, next) => {
   }
 });
 
-// Anhänge: importierte PDFs und Bilder verwalten, kategorisieren und zuordnen.
+// * INFO: Anhänge: importierte PDFs und Bilder verwalten, kategorisieren und zuordnen.
 app.get("/anhaenge", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
@@ -1605,7 +1605,7 @@ app.post("/anhaenge/:id/aktualisieren", requireAuth, async (req, res) => {
   try {
     const files = await currentFiles(req);
     // * INFO: Metadatenänderungen können den logischen Dateinamen verändern.
-    // Brandschutz-Verweise müssen deshalb nach dem Umbenennen mitgezogen werden.
+    // * INFO: Brandschutz-Verweise müssen deshalb nach dem Umbenennen mitgezogen werden.
     const nextAttachments = updateAttachmentDocumentMeta(await readJson(files.anhaenge, []), req.params.id, {
       title: req.body.title,
       category: req.body.category,
@@ -1632,7 +1632,7 @@ app.post("/anhaenge/:id/aktualisieren", requireAuth, async (req, res) => {
       req.body.slot;
 
     // * INFO: Bildzuordnungen werden bewusst hier gespeichert, damit das Popup
-    // nur einen Speichern-Button braucht und keine separate Zuordnen-Aktion.
+    // * INFO: nur einen Speichern-Button braucht und keine separate Zuordnen-Aktion.
     if (synced.renamed || shouldAssignBrandschutzImage) {
       let brandschutz = normalizeBrandschutz(await readJson(files.brandschutz, []));
       if (synced.renamed) {
@@ -1735,7 +1735,7 @@ app.get("/anhaenge/preview", requireAuth, async (req, res, next) => {
     }
 
     // ! WICHTIG: Die Vorschau liefert nur Dateien aus der aktuellen Projektablage.
-    // safeJoin verhindert freie Serverpfade aus Benutzerinput.
+    // * INFO: safeJoin verhindert freie Serverpfade aus Benutzerinput.
     const filePath = safeJoin(ROOT_DIR, target.relativePath);
     const previewName = target.fileName || target.originalName || "anhang";
     res.type(target.mimeType || "application/octet-stream");

@@ -1,4 +1,4 @@
-// Theme wird vor DOMContentLoaded gesetzt, damit beim Laden kein hell/dunkel-Flackern entsteht.
+// * INFO: Theme wird vor DOMContentLoaded gesetzt, damit beim Laden kein hell/dunkel-Flackern entsteht.
 function resolveEdokuThemeMode(mode) {
   return mode === "dark" ? "dark" : "light";
 }
@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const notices = document.querySelectorAll(".notice");
   const themeToggle = document.querySelector("[data-theme-toggle]");
 
-  // Statusmeldungen für Screenreader als dynamische Hinweise markieren.
+  // * INFO: Statusmeldungen für Screenreader als dynamische Hinweise markieren.
   notices.forEach((notice) => {
     notice.setAttribute("role", "status");
     // * INFO: Toasts verschwinden automatisch, damit sie Arbeitsbereiche nicht verdecken.
@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 4200);
   });
 
-  // Sicherheitsabfrage für Formulare, die eine Bestätigung verlangen.
+  // * INFO: Sicherheitsabfrage für Formulare, die eine Bestätigung verlangen.
   document.querySelectorAll("form[data-confirm]").forEach((form) => {
     form.addEventListener("submit", (event) => {
       if (window.edokuDeleteConfirmDialogs === false) return;
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ! WICHTIG: Beim Abwählen eines Leistungsbereichs werden abhängige Listen/Dokumente deaktiviert.
-  // Die Bestätigung läuft vor Auto-Save, damit ein Abbruch nicht versehentlich gespeichert wird.
+  // * INFO: Die Bestätigung läuft vor Auto-Save, damit ein Abbruch nicht versehentlich gespeichert wird.
   document.addEventListener("change", (event) => {
     const checkbox = event.target.closest("[data-confirm-deactivate-leistungsbereich]");
     if (!checkbox || checkbox.checked) return;
@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
       </svg>`;
   }
 
-  // Aktualisiert Beschriftung und Accessibility-Text des Theme-Schalters.
+  // * INFO: Aktualisiert Beschriftung und Accessibility-Text des Theme-Schalters.
   function updateThemeButton(theme) {
     if (!themeToggle) return;
     themeToggle.dataset.themeCurrent = theme;
@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   updateThemeButton(resolveEdokuThemeMode(savedTheme));
 
-  // Tag-/Nacht-Theme lokal im Browser speichern.
+  // * INFO: Tag-/Nacht-Theme lokal im Browser speichern.
   if (themeToggle) {
     themeToggle.addEventListener("click", () => {
       const current = document.documentElement.getAttribute("data-theme") || "light";
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // * INFO: Anhänge werden wie im Explorer über Kacheln geöffnet.
-  // Gespeichert wird in diesen Dialogen bewusst nur über den Speichern-Button.
+  // * INFO: Gespeichert wird in diesen Dialogen bewusst nur über den Speichern-Button.
   const attachmentModals = Array.from(document.querySelectorAll("[data-attachment-modal]"));
   if (attachmentModals.length) {
     function openAttachmentModal(modal) {
@@ -179,8 +179,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const storageKey = "edoku-settings-tab";
     const validTabIds = new Set(settingsTabs.map((tab) => tab.dataset.settingsTab));
 
-    // Schaltet Einstellungsbereiche intern um. Es wird kein URL-Hash gesetzt,
-    // damit der Browser nicht scrollt und kein Verlaufseintrag entsteht.
+    // * INFO: Schaltet Einstellungsbereiche intern um. Es wird kein URL-Hash gesetzt,
+    // * INFO: damit der Browser nicht scrollt und kein Verlaufseintrag entsteht.
     function activateSettingsTab(tabId) {
       const nextTabId = validTabIds.has(tabId) ? tabId : settingsTabs[0].dataset.settingsTab;
 
@@ -249,8 +249,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Auto-Save für Formulare mit data-autosave. Änderungen werden verzögert
-  // gesendet, parallele Speichervorgänge werden über pending nachgezogen.
+  // ! WICHTIG: Auto-Save für Formulare mit data-autosave. Änderungen werden verzögert
+  // ? WARUM: Parallele Speichervorgänge werden über pending nachgezogen, damit keine Eingabe verloren geht.
   const autosaveForms = Array.from(document.querySelectorAll("form[data-autosave]"));
   if (autosaveForms.length) {
     const autosaveStatus = document.createElement("div");
@@ -323,8 +323,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Einheitlicher Löschbutton für wiederholbare Formularbereiche. Der passende
-  // Container wird entfernt; dadurch bleiben die bestehenden Backend-Normalisierungen unverändert.
+  // * INFO: Einheitlicher Löschbutton für wiederholbare Formularbereiche. Der passende
+  // * INFO: Container wird entfernt; dadurch bleiben die bestehenden Backend-Normalisierungen unverändert.
   document.addEventListener("click", (event) => {
     const button = event.target.closest("[data-delete-row]");
     if (!button) return;
@@ -339,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
     submitAutosaveForm(form);
   });
 
-  // Generisches Tab-System. tab-shell ist eine Layout-Sonderform, bei der Panels sichtbar bleiben.
+  // * INFO: Generisches Tab-System. tab-shell ist eine Layout-Sonderform, bei der Panels sichtbar bleiben.
   document.querySelectorAll("[data-tabs]").forEach((tabRoot) => {
     const tabs = Array.from(tabRoot.querySelectorAll("[data-tab-target]"));
     const panels = Array.from(tabRoot.querySelectorAll("[data-tab-panel]"));
@@ -386,7 +386,7 @@ document.addEventListener("DOMContentLoaded", () => {
     activateTab(tabFromHash || localStorage.getItem(storageKey));
   });
 
-  // PDF-Vorschau-Iframe aus der ausgewählten Datei im Inhaltsbaum aktualisieren.
+  // * INFO: PDF-Vorschau-Iframe aus der ausgewählten Datei im Inhaltsbaum aktualisieren.
   const pdfPreviewChoices = Array.from(document.querySelectorAll("[data-pdf-preview-select]"));
   const pdfPreviewFrame = document.querySelector("[data-pdf-preview-frame]");
   if (pdfPreviewChoices.length && pdfPreviewFrame) {
@@ -403,7 +403,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // * INFO: Matrix-Spalten können lokal verbreitert/verkleinert werden.
-  // Die Breiten bleiben im Browser gespeichert und beeinflussen keine Projektdaten.
+  // ? WARUM: Die Breiten bleiben im Browser gespeichert und beeinflussen keine Projektdaten.
   document.querySelectorAll("[data-resizable-table]").forEach((table) => {
     const storageKey = `edoku-column-widths-${table.dataset.resizeKey || window.location.pathname}`;
     const headers = Array.from(table.querySelectorAll("thead th"));
@@ -503,8 +503,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return input ? input.value : fallback;
     }
 
-    // Hält die alten CSS-Aliase synchron, damit bestehende Komponenten sofort
-    // auf geänderte Light-/Dark-Farben reagieren.
+    // ! WICHTIG: Hält die alten CSS-Aliase synchron, damit bestehende Komponenten sofort
+    // ! WICHTIG: auf geänderte Light-/Dark-Farben reagieren.
     function syncResolvedThemeAliases() {
       const isDark = document.documentElement.dataset.theme === "dark";
       const bg = isDark ? fieldValue("bgDark") : fieldValue("bgLight");
@@ -604,7 +604,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Standardkapitel beim Upload anhand der gewählten Anhangskategorie setzen.
+  // * INFO: Standardkapitel beim Upload anhand der gewählten Anhangskategorie setzen.
   const attachmentCategoryDefaultsNode = document.querySelector("#attachment-category-defaults-json");
   if (attachmentCategoryDefaultsNode) {
     const attachmentCategoryDefaults = JSON.parse(attachmentCategoryDefaultsNode.textContent || "{}");
@@ -618,7 +618,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Markiert aktive Hash-Tabs in älteren Abschnittsnavigationen.
+  // * INFO: Markiert aktive Hash-Tabs in älteren Abschnittsnavigationen.
   const hashSectionLinks = Array.from(document.querySelectorAll(".section-tabs a[href*='#']"));
   if (hashSectionLinks.length) {
     function updateHashTabs() {
@@ -638,7 +638,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateHashTabs();
   }
 
-  // Sortierbare Tabellen für Brandschutz, Gerätelisten und ähnliche Übersichten.
+  // * INFO: Sortierbare Tabellen für Brandschutz, Gerätelisten und ähnliche Übersichten.
   document.querySelectorAll("[data-sortable-table]").forEach((table) => {
     const tbody = table.querySelector("tbody");
     if (!tbody) return;
@@ -693,7 +693,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Hauptnavigation innerhalb der Gerätelisten: Dashboard oder konkrete Liste anzeigen.
+  // * INFO: Hauptnavigation innerhalb der Gerätelisten: Dashboard oder konkrete Liste anzeigen.
   const deviceMainTabs = document.querySelector("[data-device-main-tabs]");
   if (deviceMainTabs) {
     const buttons = Array.from(deviceMainTabs.querySelectorAll("[data-device-main-target]"));
@@ -739,7 +739,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const manualsNode = document.querySelector("#device-manuals-json");
     const deviceManuals = manualsNode ? JSON.parse(manualsNode.textContent || "[]") : [];
 
-    // Fügt clientseitig neue Positionszeilen hinzu; gespeichert wird anschließend per Auto-Save.
+    // * INFO: Fügt clientseitig neue Positionszeilen hinzu; gespeichert wird anschließend per Auto-Save.
     button.addEventListener("click", () => {
       const listIndex = button.dataset.listIndex;
       const tbody = document.querySelector(`[data-position-body="${listIndex}"]`);
@@ -815,8 +815,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Gerätelisten-Vorlagen werden über separate Formulare geladen, damit das
-  // Auto-Save-Formular der aktuellen Geräteliste nicht verschachtelt wird.
+  // * INFO: Gerätelisten-Vorlagen werden über separate Formulare geladen, damit das
+  // * INFO: Auto-Save-Formular der aktuellen Geräteliste nicht verschachtelt wird.
   document.querySelectorAll("[data-load-device-template]").forEach((button) => {
     button.addEventListener("click", () => {
       const listId = button.dataset.loadDeviceTemplate;
@@ -831,7 +831,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (deviceSuggestionsNode && filteredSuggestionsList) {
     const suggestions = JSON.parse(deviceSuggestionsNode.textContent || "{}");
 
-    // Hersteller-/System-/Typvorschläge werden aus den Systemdefaults gefiltert.
+    // * INFO: Hersteller-/System-/Typvorschläge werden aus den Systemdefaults gefiltert.
     function normalized(value) {
       return String(value || "").trim().toLowerCase();
     }
@@ -964,7 +964,7 @@ document.addEventListener("DOMContentLoaded", () => {
       syncLeistungsbereichCardName(event.target.closest("[data-leistungsbereich-card]"));
     });
 
-    // Ergänzt einen neuen klappbaren Leistungsbereich inklusive leerer Formulartexte.
+    // * INFO: Ergänzt einen neuen klappbaren Leistungsbereich inklusive leerer Formulartexte.
     addLeistungsbereichButton.addEventListener("click", () => {
       const index = leistungsbereicheBody.querySelectorAll("[data-leistungsbereich-card]").length;
       const templateSource = document.getElementById("form-template-names-json");
@@ -1041,7 +1041,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.querySelectorAll("[data-add-system-default]").forEach((button) => {
-    // Fügt einen neuen Herstellerblock in den Systemdefaults hinzu.
+    // * INFO: Fügt einen neuen Herstellerblock in den Systemdefaults hinzu.
     button.addEventListener("click", () => {
       const bereichIndex = button.dataset.addSystemDefault;
       const container = document.querySelector(`[data-system-defaults-body="${bereichIndex}"]`);
@@ -1109,7 +1109,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const previewKey = templatePreview.dataset.templatePreview;
     const fields = document.querySelectorAll(`[data-template-key="${previewKey}"]`);
 
-    // Live-Vorschau für den Formulargenerator in den Einstellungen.
+    // * INFO: Live-Vorschau für den Formulargenerator in den Einstellungen.
     function templateField(name) {
       return document.querySelector(`[data-template-key="${previewKey}"][data-template-field="${name}"]`);
     }
@@ -1163,7 +1163,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const systemConfig = JSON.parse(systemConfigNode.textContent);
     const byName = new Map((systemConfig.leistungsbereiche || []).map((entry) => [entry.name, entry]));
 
-    // Aktualisiert abhängige System-/Dokumentart-Auswahlen nach Herstellerwechsel.
+    // * INFO: Aktualisiert abhängige System-/Dokumentart-Auswahlen nach Herstellerwechsel.
     document.querySelectorAll("[data-system-hersteller]").forEach((select) => {
       select.addEventListener("change", () => {
         const section = select.closest("[data-system-section]");
@@ -1214,7 +1214,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const pdfFrame = pdfModal.querySelector("[data-pdf-modal-frame]");
     const pdfTitle = pdfModal.querySelector("[data-pdf-modal-title]");
 
-    // Öffnet vorhandene Projekt-PDFs in einem Overlay, ohne die aktuelle Seite zu verlassen.
+    // * INFO: Öffnet vorhandene Projekt-PDFs in einem Overlay, ohne die aktuelle Seite zu verlassen.
     function openPdfModal(button) {
       const source = button.dataset.pdfSrc;
       if (!source || !pdfFrame) return;

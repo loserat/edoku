@@ -1,8 +1,8 @@
 const { applyLogicalChapterNumbers } = require("./chapterNumberingService");
 const { normalizeAttachments } = require("./attachmentService");
 
-// Kategorien, die als importierte Dokumentations-PDFs im Inhaltsverzeichnis
-// erscheinen. Andere Anhänge bleiben reine Dateien oder Bildzuordnungen.
+// * INFO: Kategorien, die als importierte Dokumentations-PDFs im Inhaltsverzeichnis
+// * INFO: erscheinen. Andere Anhänge bleiben reine Dateien oder Bildzuordnungen.
 const DOCUMENT_ATTACHMENT_CATEGORIES = [
   {
     category: "Stromlaufpläne",
@@ -46,8 +46,8 @@ const DOCUMENT_ATTACHMENT_CATEGORIES_BY_NAME = new Map(
   DOCUMENT_ATTACHMENT_CATEGORIES.map((entry) => [entry.category, entry])
 );
 
-// Stockwerke werden für die Sortierung vereinheitlicht, damit "1. OG" und
-// ähnliche Schreibweisen zuverlässig vergleichbar sind.
+// * INFO: Stockwerke werden für die Sortierung vereinheitlicht, damit "1. OG" und
+// * INFO: ähnliche Schreibweisen zuverlässig vergleichbar sind.
 const DEFAULT_STOCKWERK_ORDER = ["UG", "EG", "1. OG", "2. OG", "3. OG", "4. OG", "DG"];
 
 function normalizeStockwerk(value) {
@@ -58,14 +58,14 @@ function normalizeStockwerk(value) {
     .replace(/\./g, "");
 }
 
-// Nutzt projektbezogene Stockwerke, wenn sie gepflegt sind; sonst Default-Reihenfolge.
+// * INFO: Nutzt projektbezogene Stockwerke, wenn sie gepflegt sind; sonst Default-Reihenfolge.
 function stockwerkOrderMap(projekt = {}) {
   const configured = Array.isArray(projekt.stockwerke) ? projekt.stockwerke : [];
   const values = configured.length ? configured : DEFAULT_STOCKWERK_ORDER;
   return new Map(values.map((stockwerk, index) => [normalizeStockwerk(stockwerk), index]));
 }
 
-// Fallback-Sortierung für Stockwerke, die nicht in der Projektstruktur enthalten sind.
+// * INFO: Fallback-Sortierung für Stockwerke, die nicht in der Projektstruktur enthalten sind.
 function fallbackStockwerkRank(value) {
   const normalized = normalizeStockwerk(value);
   if (!normalized) return 900;
@@ -78,7 +78,7 @@ function fallbackStockwerkRank(value) {
   return 500;
 }
 
-// Gesamtrang für Stockwerks-Sortierung in Anhängen und später im Inhaltsverzeichnis.
+// * INFO: Gesamtrang für Stockwerks-Sortierung in Anhängen und später im Inhaltsverzeichnis.
 function stockwerkRank(value, orderMap) {
   const normalized = normalizeStockwerk(value);
   if (orderMap.has(normalized)) return orderMap.get(normalized);
@@ -94,7 +94,7 @@ function defaultDocumentMetaForCategory(category) {
   };
 }
 
-// Nur PDFs aus bekannten Dokumentationskategorien werden in den PDF-Export einsortiert.
+// * INFO: Nur PDFs aus bekannten Dokumentationskategorien werden in den PDF-Export einsortiert.
 function isDocumentationAttachment(entry) {
   return entry && entry.mimeType === "application/pdf" && DOCUMENT_ATTACHMENT_CATEGORIES_BY_NAME.has(entry.category);
 }
@@ -103,7 +103,7 @@ function documentationAttachments(raw) {
   return normalizeAttachments(raw).filter(isDocumentationAttachment);
 }
 
-// Baut einen sprechenden Titel aus Kategorie-spezifischen Metadaten.
+// * INFO: Baut einen sprechenden Titel aus Kategorie-spezifischen Metadaten.
 function attachmentDisplayTitle(entry, categoryMeta, manualContext = null) {
   const base = String(entry.title || entry.originalName || categoryMeta.title || "Dokument").trim();
   if (entry.category === "Bedienungsanleitungen" && manualContext) {
@@ -129,8 +129,8 @@ function attachmentDisplayTitle(entry, categoryMeta, manualContext = null) {
   return details.length ? `${base} - ${details.join(" / ")}` : base;
 }
 
-// Verknüpft Bedienungsanleitungs-Anhänge mit Gerätepositionen.
-// Brandschutzabschottungen werden bewusst ausgeschlossen, weil sie eigene Bild-/Nachweislogik haben.
+// * INFO: Verknüpft Bedienungsanleitungs-Anhänge mit Gerätepositionen.
+// * INFO: Brandschutzabschottungen werden bewusst ausgeschlossen, weil sie eigene Bild-/Nachweislogik haben.
 function manualContextByAttachmentId(geraetelisten = []) {
   const contexts = new Map();
   (geraetelisten || [])
@@ -152,9 +152,9 @@ function manualContextByAttachmentId(geraetelisten = []) {
 }
 
 /**
- * Erzeugt virtuelle Matrixeinträge für importierte Dokumentations-PDFs.
- * Die Einträge bekommen logische Kapitelnummern und werden nach Kategorie,
- * Kapitel und Stockwerk sortiert.
+ * * INFO: Erzeugt virtuelle Matrixeinträge für importierte Dokumentations-PDFs.
+ * * INFO: Die Einträge bekommen logische Kapitelnummern und werden nach Kategorie,
+ * * INFO: Kapitel und Stockwerk sortiert.
  */
 function buildDocumentationAttachmentEntries(matrix, rawAttachments, projekt = {}, geraetelisten = []) {
   const attachments = documentationAttachments(rawAttachments).filter((entry) => entry.export !== false);
@@ -223,7 +223,7 @@ function buildDocumentationAttachmentEntries(matrix, rawAttachments, projekt = {
     });
 }
 
-// Aktualisiert die Dokumentations-Metadaten eines vorhandenen Anhangs.
+// * INFO: Aktualisiert die Dokumentations-Metadaten eines vorhandenen Anhangs.
 function updateAttachmentDocumentMeta(rawAttachments, attachmentId, values) {
   let found = false;
   const attachments = normalizeAttachments(rawAttachments).map((entry) => {

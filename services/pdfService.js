@@ -32,7 +32,7 @@ function isBrandingEnabled(systemSettings = {}) {
   return !systemSettings.lizenz || systemSettings.lizenz.brandingAktiv !== false;
 }
 
-// Seitengeometrie-Helfer für einheitliche PDF-Abstände.
+// * INFO: Seitengeometrie-Helfer für einheitliche PDF-Abstände.
 function pageLeft(doc) {
   return doc.page.margins.left || PAGE_MARGIN;
 }
@@ -45,21 +45,21 @@ function pageContentWidth(doc) {
   return doc.page.width - pageLeft(doc) - pageRight(doc);
 }
 
-// Filtert die aktivierten und exportierbaren Matrixeinträge.
+// * INFO: Filtert die aktivierten und exportierbaren Matrixeinträge.
 function activeExportDocs(matrix) {
   return matrix
     .filter((doc) => doc.aktiv && doc.export)
     .sort((a, b) => a.sortierung - b.sortierung);
 }
 
-// Import-Platzhalter werden im Inhaltsverzeichnis durch echte Anhänge ersetzt.
+// * INFO: Import-Platzhalter werden im Inhaltsverzeichnis durch echte Anhänge ersetzt.
 function isImportedDocumentPlaceholder(entry) {
   const dokumenttyp = String(entry.dokumenttyp || "");
   const formularart = String(entry.formularart || "");
   return dokumenttyp === "Plan" && formularart === "Dateiliste" && Number(entry.ebene || 1) >= 2;
 }
 
-// Numerischer Sortierwert aus Kapitelnummern für künstlich ergänzte Einträge.
+// * INFO: Numerischer Sortierwert aus Kapitelnummern für künstlich ergänzte Einträge.
 function chapterSortValue(kapitel, fallback = 999000) {
   const parts = String(kapitel || "")
     .split(".")
@@ -74,12 +74,12 @@ function chapterSortValue(kapitel, fallback = 999000) {
   }, 0);
 }
 
-// Aktive Leistungsbereiche als Set für Gerätelisten- und Exportfilter.
+// * INFO: Aktive Leistungsbereiche als Set für Gerätelisten- und Exportfilter.
 function activeLeistungsbereicheSet(leistungsbereiche = {}) {
   return new Set(Array.isArray(leistungsbereiche.aktiv) ? leistungsbereiche.aktiv : []);
 }
 
-// Gerätelisten erscheinen nur im Export, wenn sie aktiv und exportierbar sind.
+// * INFO: Gerätelisten erscheinen nur im Export, wenn sie aktiv und exportierbar sind.
 function filterExportGeraetelisten(geraetelisten = [], leistungsbereiche = {}) {
   const activeSet = activeLeistungsbereicheSet(leistungsbereiche);
   return normalizeGeraetelisten(geraetelisten).filter((liste) => {
@@ -89,8 +89,8 @@ function filterExportGeraetelisten(geraetelisten = [], leistungsbereiche = {}) {
 }
 
 /**
- * Baut das Inhaltsverzeichnis aus Matrix, aktiven Gerätelisten und importierten PDFs.
- * Ergänzt fehlende Elternkapitel, damit Gerätelisten logisch einsortiert werden.
+ * * INFO: Baut das Inhaltsverzeichnis aus Matrix, aktiven Gerätelisten und importierten PDFs.
+ * ? WARUM: Ergänzt fehlende Elternkapitel, damit Gerätelisten logisch einsortiert werden.
  */
 function buildInhaltsverzeichnisEntries(matrix, geraetelisten = [], anhaenge = [], leistungsbereiche = {}, projekt = {}) {
   const activeLists = filterExportGeraetelisten(geraetelisten, leistungsbereiche);
@@ -169,7 +169,7 @@ function buildInhaltsverzeichnisEntries(matrix, geraetelisten = [], anhaenge = [
   });
 }
 
-// Map Gerätelisten-ID -> logische Kapitelnummer für PDF-Dateinamen und Überschriften.
+// * INFO: Map Gerätelisten-ID -> logische Kapitelnummer für PDF-Dateinamen und Überschriften.
 function logicalDeviceListNumbers(matrix, geraetelisten = [], leistungsbereiche = {}) {
   return new Map(
     buildInhaltsverzeichnisEntries(matrix, geraetelisten, [], leistungsbereiche)
@@ -178,7 +178,7 @@ function logicalDeviceListNumbers(matrix, geraetelisten = [], leistungsbereiche 
   );
 }
 
-// Verweist Gerätepositionen auf Kapitel der optional hinterlegten Bedienungsanleitungen.
+// * INFO: Verweist Gerätepositionen auf Kapitel der optional hinterlegten Bedienungsanleitungen.
 function manualChapterNumbers(matrix, geraetelisten = [], anhaenge = [], leistungsbereiche = {}, projekt = {}) {
   return new Map(
     buildInhaltsverzeichnisEntries(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt)
@@ -187,7 +187,7 @@ function manualChapterNumbers(matrix, geraetelisten = [], anhaenge = [], leistun
   );
 }
 
-// Map Originalkapitel -> logische Anzeige-Kapitelnummer für Formular-PDFs.
+// * INFO: Map Originalkapitel -> logische Anzeige-Kapitelnummer für Formular-PDFs.
 function logicalDocumentNumbers(matrix, geraetelisten = [], leistungsbereiche = {}) {
   return new Map(
     buildInhaltsverzeichnisEntries(matrix, geraetelisten, [], leistungsbereiche)
@@ -196,7 +196,7 @@ function logicalDocumentNumbers(matrix, geraetelisten = [], leistungsbereiche = 
   );
 }
 
-// Löscht alte generierte PDFs eines Bereichs, bevor neue PDFs erzeugt werden.
+// * INFO: Löscht alte generierte PDFs eines Bereichs, bevor neue PDFs erzeugt werden.
 async function clearGeneratedPdfs(folderPath) {
   try {
     const entries = await fsp.readdir(folderPath, { withFileTypes: true });
@@ -208,7 +208,7 @@ async function clearGeneratedPdfs(folderPath) {
   }
 }
 
-// Löscht Formular-PDFs im Generiert-Root, lässt das Inhaltsverzeichnis aber stehen.
+// * INFO: Löscht Formular-PDFs im Generiert-Root, lässt das Inhaltsverzeichnis aber stehen.
 async function clearGeneratedRootFormPdfs(folderPath) {
   try {
     const entries = await fsp.readdir(folderPath, { withFileTypes: true });
@@ -222,7 +222,7 @@ async function clearGeneratedRootFormPdfs(folderPath) {
   }
 }
 
-// Zeichnet bevorzugt das zentrale Erstellerlogo, alternativ ein Projektlogo.
+// * INFO: Zeichnet bevorzugt das zentrale Erstellerlogo, alternativ ein Projektlogo.
 function writeProjectLogo(doc, projekt, rootDir, systemSettings = {}, options = {}) {
   if (!rootDir) return;
 
@@ -281,7 +281,7 @@ function writeProjectLogo(doc, projekt, rootDir, systemSettings = {}, options = 
   }
 }
 
-// Einzelzelle des kompakten Projektkopfs im PDF.
+// * INFO: Einzelzelle des kompakten Projektkopfs im PDF.
 function drawCompactHeaderCell(doc, x, y, width, height, label, value) {
   doc.save();
   doc.strokeColor("#cbd5e1").lineWidth(0.45).rect(x, y, width, height).stroke();
@@ -298,7 +298,7 @@ function drawCompactHeaderCell(doc, x, y, width, height, label, value) {
   doc.restore();
 }
 
-// Einheitlicher PDF-Kopf mit Projektstammdaten und Logo.
+// * INFO: Einheitlicher PDF-Kopf mit Projektstammdaten und Logo.
 function writeProjectHeader(doc, projekt, rootDir, systemSettings = {}) {
   const startX = pageLeft(doc);
   const startY = doc.y;
@@ -350,7 +350,7 @@ function writeProjectHeader(doc, projekt, rootDir, systemSettings = {}) {
   doc.y = startY + rows.length * rowHeight + 12;
 }
 
-// Dokumenttitel unterhalb des Projektkopfs.
+// * INFO: Dokumenttitel unterhalb des Projektkopfs.
 function writeDocumentTitle(doc, title, subtitle = "") {
   doc.font("Helvetica-Bold").fontSize(15).fillColor("#111827").text(title, pageLeft(doc), doc.y, {
     width: pageContentWidth(doc)
@@ -483,7 +483,7 @@ function writeConfirmationBody(doc, text, options = {}) {
   doc.moveDown(1);
 }
 
-// Grundlayout für formularartige Bestätigungen und Konformitätserklärungen.
+// * INFO: Grundlayout für formularartige Bestätigungen und Konformitätserklärungen.
 function writeConfirmationDocument(doc, projekt, rootDir, systemSettings, template, title, options = {}) {
   if (template.showProjectHeader) writeProjectHeader(doc, projekt, rootDir, systemSettings);
   writeConfirmationSubject(doc, title, options.subject || "Bestätigung / Erklärung");
@@ -499,7 +499,7 @@ function writeConfirmationDocument(doc, projekt, rootDir, systemSettings, templa
   ]);
 }
 
-// Fußzeile der PDFs. Projektbezogene Orts-/Datumsangaben bleiben optional.
+// * INFO: Fußzeile der PDFs. Projektbezogene Orts-/Datumsangaben bleiben optional.
 function writeFooter(doc, projekt) {
   const bottom = doc.page.height - FOOTER_Y_OFFSET;
   const footerParts = [
@@ -517,7 +517,7 @@ function writeFooter(doc, projekt) {
   doc.fillColor("#000");
 }
 
-// Kleines Branding mit Link im PDF-Fußbereich.
+// * INFO: Kleines Branding mit Link im PDF-Fußbereich.
 function writeFooterBranding(doc, systemSettings = {}) {
   if (!isBrandingEnabled(systemSettings)) {
     return;
@@ -549,7 +549,7 @@ function writeFooterBranding(doc, systemSettings = {}) {
   doc.y = previousY;
 }
 
-// Signaturbereich für Bestätigungsformulare.
+// * INFO: Signaturbereich für Bestätigungsformulare.
 function writeSignature(doc, label = "Firmenstempel / Unterschrift:") {
   const x = pageLeft(doc);
   const width = pageContentWidth(doc);
@@ -573,7 +573,7 @@ function writeSignature(doc, label = "Firmenstempel / Unterschrift:") {
   doc.y = top + SIGNATURE_HEIGHT;
 }
 
-// Gemeinsamer PDF-Wrapper: Datei anlegen, Writer ausführen und Stream abschließen.
+// * INFO: Gemeinsamer PDF-Wrapper: Datei anlegen, Writer ausführen und Stream abschließen.
 async function writePdf(filePath, title, writer, options = {}) {
   await fsp.mkdir(path.dirname(filePath), { recursive: true });
   return new Promise((resolve, reject) => {
@@ -601,7 +601,7 @@ async function writePdf(filePath, title, writer, options = {}) {
   });
 }
 
-// Ermittelt Normen aus Projekt-Systemauswahl oder Systemdefaults.
+// * INFO: Ermittelt Normen aus Projekt-Systemauswahl oder Systemdefaults.
 function selectedSystemNormen(leistungsbereich, leistungsbereiche, systeme, projektSysteme = []) {
   const entries = Array.isArray(leistungsbereich) ? leistungsbereich : [leistungsbereich];
   const normen = entries.flatMap((entryLeistungsbereich) => {
@@ -705,13 +705,13 @@ const ANLAGENBESCHREIBUNG_TEXTE = {
   }
 };
 
-// Aktive Leistungsbereiche als sortierte Liste für Textgeneratoren.
+// * INFO: Aktive Leistungsbereiche als sortierte Liste für Textgeneratoren.
 function activeLeistungsbereiche(leistungsbereiche) {
   if (Array.isArray(leistungsbereiche)) return leistungsbereiche;
   return Array.isArray(leistungsbereiche && leistungsbereiche.aktiv) ? leistungsbereiche.aktiv : [];
 }
 
-// Schreibt längere Fließtexte mit automatischen Seitenumbrüchen.
+// * INFO: Schreibt längere Fließtexte mit automatischen Seitenumbrüchen.
 function writeParagraphWithPageBreaks(doc, text, projekt, rootDir, systemSettings, title) {
   const paragraphs = String(text || "").split(/\n{2,}/).filter(Boolean);
   paragraphs.forEach((paragraph) => {
@@ -736,7 +736,7 @@ function writeParagraphWithPageBreaks(doc, text, projekt, rootDir, systemSetting
   });
 }
 
-// Baut den vordefinierten Beschreibungstext der dokumentierten Elektroanlage.
+// * INFO: Baut den vordefinierten Beschreibungstext der dokumentierten Elektroanlage.
 function anlagenbeschreibungText(projekt, leistungsbereiche) {
   const aktive = activeLeistungsbereiche(leistungsbereiche);
   const intro = [
@@ -775,7 +775,7 @@ function anlagenbeschreibungText(projekt, leistungsbereiche) {
   return [...intro, scope, ...sections, ...fallback, ...closing].join("\n\n");
 }
 
-// Generiert die zentrale Anlagenbeschreibung als eigenes PDF.
+// * INFO: Generiert die zentrale Anlagenbeschreibung als eigenes PDF.
 async function generateAnlagenbeschreibungPdf(rootDir, projekt, entry, leistungsbereiche, systemSettings = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const displayKapitel = entry.displayKapitel || entry.kapitel;
@@ -793,7 +793,7 @@ async function generateAnlagenbeschreibungPdf(rootDir, projekt, entry, leistungs
   return filePath;
 }
 
-// Generiert das Inhaltsverzeichnis aus Matrix, Gerätelisten und importierten PDFs.
+// * INFO: Generiert das Inhaltsverzeichnis aus Matrix, Gerätelisten und importierten PDFs.
 async function generateInhaltsverzeichnis(rootDir, projekt, matrix, systemSettings = {}, geraetelisten = [], anhaenge = [], leistungsbereiche = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const filePath = path.join(paths.generatedPath, "Inhaltsverzeichnis.pdf");
@@ -820,7 +820,7 @@ async function generateInhaltsverzeichnis(rootDir, projekt, matrix, systemSettin
   return [filePath];
 }
 
-// Generiert Deckblätter für Hauptkapitel. Diese PDFs laufen im normalen Export mit.
+// * INFO: Generiert Deckblätter für Hauptkapitel. Diese PDFs laufen im normalen Export mit.
 async function generateDeckblaetter(rootDir, projekt, matrix, systemSettings = {}, geraetelisten = [], anhaenge = [], leistungsbereiche = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const docs = buildInhaltsverzeichnisEntries(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt)
@@ -840,7 +840,7 @@ async function generateDeckblaetter(rootDir, projekt, matrix, systemSettings = {
   return generated;
 }
 
-// Generiert separat druckbare Register-/Trennstreifen für Unterkategorien.
+// * INFO: Generiert separat druckbare Register-/Trennstreifen für Unterkategorien.
 async function generateTrennstreifen(rootDir, projekt, matrix, systemSettings = {}, geraetelisten = [], anhaenge = [], leistungsbereiche = {}, options = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generatedDir = path.join(paths.generatedPath, "Trennstreifen");
@@ -915,7 +915,7 @@ function drawOrdnerRueckenLabel(doc, projekt, index, count, x, y, width, height,
   doc.restore();
 }
 
-// Generiert separat druckbare Ordnerrücken für Dokumentationsordner.
+// * INFO: Generiert separat druckbare Ordnerrücken für Dokumentationsordner.
 async function generateOrdnerruecken(rootDir, projekt, systemSettings = {}, options = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generatedDir = path.join(paths.generatedPath, "Ordnerruecken");
@@ -946,7 +946,7 @@ async function generateOrdnerruecken(rootDir, projekt, systemSettings = {}, opti
   return [filePath];
 }
 
-// Generiert Formular-PDFs wie Konformitäts- und Errichterbestätigungen.
+// * INFO: Generiert Formular-PDFs wie Konformitäts- und Errichterbestätigungen.
 async function generateFormularPdfs(rootDir, projekt, matrix, leistungsbereiche, systeme, projektSysteme = [], formTemplates = {}, systemSettings = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generated = [];
@@ -1066,7 +1066,7 @@ async function generateFormularPdfs(rootDir, projekt, matrix, leistungsbereiche,
   return generated;
 }
 
-// Tabellenkopf für Gerätelisten und ähnliche Listen-PDFs.
+// * INFO: Tabellenkopf für Gerätelisten und ähnliche Listen-PDFs.
 function drawTableHeader(doc, columns, y) {
   const height = 18;
   const tableX = columns[0].x;
@@ -1090,7 +1090,7 @@ function drawTableHeader(doc, columns, y) {
   return y + height;
 }
 
-// Tabellenzeile mit automatischer Höhe für mehrzeilige Inhalte.
+// * INFO: Tabellenzeile mit automatischer Höhe für mehrzeilige Inhalte.
 function drawTableRow(doc, columns, values, y) {
   doc.font("Helvetica").fontSize(7);
   const padding = 3;
@@ -1122,7 +1122,7 @@ function drawTableRow(doc, columns, values, y) {
   return y + height;
 }
 
-// Skaliert Spaltenbreiten auf die verfügbare Seitenbreite.
+// * INFO: Skaliert Spaltenbreiten auf die verfügbare Seitenbreite.
 function buildFullWidthColumns(doc, rawColumns) {
   const maxTableWidth = pageContentWidth(doc);
   const totalWidth = rawColumns.reduce((sum, column) => sum + column.width, 0);
@@ -1142,7 +1142,7 @@ function buildFullWidthColumns(doc, rawColumns) {
   });
 }
 
-// Löst Bildpfade für Brandschutzseiten sicher innerhalb des Projektordners auf.
+// * INFO: Löst Bildpfade für Brandschutzseiten sicher innerhalb des Projektordners auf.
 function resolvePdfImagePath(rootDir, candidatePath) {
   const value = String(candidatePath || "").trim();
   if (!value) return "";
@@ -1167,7 +1167,7 @@ function resolvePdfImagePath(rootDir, candidatePath) {
   }) || "";
 }
 
-// Zeichnet Foto-Platzhalter oder vorhandene Bilder auf Brandschutzseiten.
+// * INFO: Zeichnet Foto-Platzhalter oder vorhandene Bilder auf Brandschutzseiten.
 function drawImageSlot(doc, x, y, width, height, label, candidatePath, rootDir) {
   doc.save();
   doc.strokeColor("#cbd5e1").lineWidth(0.65).rect(x, y, width, height).stroke();
@@ -1198,7 +1198,7 @@ function drawImageSlot(doc, x, y, width, height, label, candidatePath, rootDir) 
   doc.restore();
 }
 
-// Mehrspaltige Infofläche für strukturierte PDF-Angaben.
+// * INFO: Mehrspaltige Infofläche für strukturierte PDF-Angaben.
 function drawInfoGrid(doc, x, y, width, rows) {
   const labelWidth = 94;
   const valueWidth = width - labelWidth;
@@ -1222,7 +1222,7 @@ function drawInfoGrid(doc, x, y, width, rows) {
   return y + rows.length * rowHeight;
 }
 
-// Kompaktere Infofläche für Brandschottungen mit mehr Platz für Fotos.
+// * INFO: Kompaktere Infofläche für Brandschottungen mit mehr Platz für Fotos.
 function drawCompactInfoGrid(doc, x, y, width, rows, columns = 3) {
   const gap = 0;
   const rowGap = 0;
@@ -1270,7 +1270,7 @@ function drawCompactInfoGrid(doc, x, y, width, rows, columns = 3) {
   return columnIndex > 0 ? cursorY + rowHeight : cursorY;
 }
 
-// Generiert pro aktiver Geräteliste ein Tabellen-PDF.
+// * INFO: Generiert pro aktiver Geräteliste ein Tabellen-PDF.
 async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSettings = {}, matrix = [], leistungsbereiche = {}, anhaenge = []) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generated = [];
@@ -1347,7 +1347,7 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
   return generated;
 }
 
-// Generiert Brandschutzseiten: eine Seite pro aktiver Brandschottung mit Foto 1/2.
+// * INFO: Generiert Brandschutzseiten: eine Seite pro aktiver Brandschottung mit Foto 1/2.
 async function generateBrandschutzPdf(rootDir, projekt, brandschutz, systemSettings = {}, matrix = [], geraetelisten = [], leistungsbereiche = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generatedDir = path.join(paths.generatedPath, "Brandschutz");

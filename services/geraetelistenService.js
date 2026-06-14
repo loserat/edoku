@@ -1,5 +1,5 @@
-// Kapitel- und Titelzuordnung der Gerätelisten pro Leistungsbereich.
-// Diese Zuordnung beeinflusst Inhaltsverzeichnis, PDF-Dateinamen und Exportreihenfolge.
+// * INFO: Kapitel- und Titelzuordnung der Gerätelisten pro Leistungsbereich.
+// * INFO: Diese Zuordnung beeinflusst Inhaltsverzeichnis, PDF-Dateinamen und Exportreihenfolge.
 const GERAETELISTEN_KAPITEL = {
   "Elektroinstallation / DIN VDE 0100": {
     kapitel: "6.4",
@@ -83,8 +83,8 @@ const GERAETELISTEN_KAPITEL = {
   }
 };
 
-// Gemeinsame Basisfelder jeder Geräteliste. Optionale Felder werden je
-// Leistungsbereich durch DEVICE_FIELD_PROFILES ergänzt.
+// * INFO: Gemeinsame Basisfelder jeder Geräteliste. Optionale Felder werden je
+// * INFO: Leistungsbereich durch DEVICE_FIELD_PROFILES ergänzt.
 const BASE_DEVICE_FIELDS = [
   { name: "lvPosition", label: "LV-Position (optional)", pdfLabel: "LV-Pos.", required: false, pdfWidth: 50 },
   { name: "hersteller", label: "Hersteller", required: true, suggest: "hersteller", pdfWidth: 56 },
@@ -97,8 +97,8 @@ const OPTIONAL_END_FIELDS = [
   { name: "bemerkung", label: "Bemerkung", required: false, pdfWidth: 78 }
 ];
 
-// Leistungsbereichsspezifische Zusatzfelder. Nur Felder mit required=true zählen
-// später für Vollständigkeits- und Fortschrittsberechnungen.
+// * INFO: Leistungsbereichsspezifische Zusatzfelder. Nur Felder mit required=true zählen
+// * INFO: später für Vollständigkeits- und Fortschrittsberechnungen.
 const DEVICE_FIELD_PROFILES = {
   "Elektroinstallation / DIN VDE 0100": [
     { name: "spannung", label: "Spannung (optional)", required: false, pdfWidth: 50 },
@@ -159,7 +159,7 @@ const DEVICE_FIELD_PROFILES = {
   ]
 };
 
-// Liefert die komplette Feldliste für GUI und PDF-Ausgabe eines Leistungsbereichs.
+// * INFO: Liefert die komplette Feldliste für GUI und PDF-Ausgabe eines Leistungsbereichs.
 function deviceListFieldsForLeistungsbereich(leistungsbereich) {
   return [
     ...BASE_DEVICE_FIELDS,
@@ -168,20 +168,20 @@ function deviceListFieldsForLeistungsbereich(leistungsbereich) {
   ];
 }
 
-// Pflichtfelder einer Geräteposition; optionale Angaben werden nicht als Fehler gewertet.
+// * INFO: Pflichtfelder einer Geräteposition; optionale Angaben werden nicht als Fehler gewertet.
 function requiredDeviceFieldsForLeistungsbereich(leistungsbereich) {
   return deviceListFieldsForLeistungsbereich(leistungsbereich)
     .filter((field) => field.required)
     .map((field) => field.name);
 }
 
-// Prüft, ob eine einzelne Geräteposition fachlich ausreichend ausgefüllt ist.
+// * INFO: Prüft, ob eine einzelne Geräteposition fachlich ausreichend ausgefüllt ist.
 function isDevicePositionComplete(position, leistungsbereich) {
   return requiredDeviceFieldsForLeistungsbereich(leistungsbereich)
     .every((fieldName) => String(position[fieldName] || "").trim());
 }
 
-// Eine Geräteliste gilt als vollständig, sobald mindestens eine vollständige Position vorhanden ist.
+// * INFO: Eine Geräteliste gilt als vollständig, sobald mindestens eine vollständige Position vorhanden ist.
 function isGeraetelisteComplete(liste) {
   return (liste.positionen || []).some((position) => isDevicePositionComplete(position, liste.leistungsbereich));
 }
@@ -210,7 +210,7 @@ function slugForTemplate(value) {
     .slice(0, 60) || "geraeteliste";
 }
 
-// Technische ID aus Leistungsbereichsnamen für stabile Formular- und JSON-Zuordnung.
+// * INFO: Technische ID aus Leistungsbereichsnamen für stabile Formular- und JSON-Zuordnung.
 function idForLeistungsbereich(leistungsbereich) {
   return `gl_${leistungsbereich
     .normalize("NFKD")
@@ -224,7 +224,7 @@ function idForLeistungsbereich(leistungsbereich) {
     .replace(/^_+|_+$/g, "")}`;
 }
 
-// Standardposition für neu angelegte Gerätelisten oder zusätzliche Zeilen.
+// * INFO: Standardposition für neu angelegte Gerätelisten oder zusätzliche Zeilen.
 function emptyPosition(pos = 1, _einheit = "Stk", defaults = {}) {
   return {
     pos,
@@ -244,12 +244,12 @@ function emptyPosition(pos = 1, _einheit = "Stk", defaults = {}) {
   };
 }
 
-// Holt die projektspezifische Systemvorauswahl für einen Leistungsbereich.
+// * INFO: Holt die projektspezifische Systemvorauswahl für einen Leistungsbereich.
 function selectionFor(leistungsbereich, projektSysteme = []) {
   return (projektSysteme || []).find((entry) => entry.leistungsbereich === leistungsbereich) || {};
 }
 
-// Erstellt eine Geräteliste aus Leistungsbereich, Kapitelmapping und Systemvorauswahl.
+// * INFO: Erstellt eine Geräteliste aus Leistungsbereich, Kapitelmapping und Systemvorauswahl.
 function createGeraeteliste(leistungsbereich, aktiv = false, projektSysteme = []) {
   const mapping = GERAETELISTEN_KAPITEL[leistungsbereich];
   const selection = selectionFor(leistungsbereich, projektSysteme);
@@ -266,7 +266,7 @@ function createGeraeteliste(leistungsbereich, aktiv = false, projektSysteme = []
   };
 }
 
-// Überführt ältere flache Positionsdaten in die aktuelle Positionsstruktur.
+// * INFO: Überführt ältere flache Positionsdaten in die aktuelle Positionsstruktur.
 function normalizeFlatPosition(item) {
   return {
     pos: Number(item.pos || item.position || 1),
@@ -285,7 +285,7 @@ function normalizeFlatPosition(item) {
   };
 }
 
-// Normalisiert alte und neue JSON-Formate und sortiert die Listen nach Kapitel.
+// * INFO: Normalisiert alte und neue JSON-Formate und sortiert die Listen nach Kapitel.
 function normalizeGeraetelisten(raw) {
   if (!Array.isArray(raw)) return [];
   const looksLikeNewShape = raw.some((entry) => Array.isArray(entry.positionen));
@@ -328,8 +328,8 @@ function normalizeGeraetelisten(raw) {
   })));
 }
 
-// Synchronisiert Gerätelisten mit den aktiven Leistungsbereichen, ohne vorhandene
-// Positionen beim Deaktivieren eines Bereichs zu löschen.
+// * INFO: Synchronisiert Gerätelisten mit den aktiven Leistungsbereichen, ohne vorhandene
+// * INFO: Positionen beim Deaktivieren eines Bereichs zu löschen.
 function syncGeraetelistenFromLeistungsbereiche(rawGeraetelisten, aktiveLeistungsbereiche, projektSysteme = []) {
   const activeSet = new Set(aktiveLeistungsbereiche || []);
   const listen = normalizeGeraetelisten(rawGeraetelisten);
@@ -360,7 +360,7 @@ function syncGeraetelistenFromLeistungsbereiche(rawGeraetelisten, aktiveLeistung
   return sortGeraetelistenByKapitel([...byLeistungsbereich.values()]);
 }
 
-// Wandelt Formularwerte aus der Geräte-Tabelle zurück in die gespeicherte JSON-Struktur.
+// * INFO: Wandelt Formularwerte aus der Geräte-Tabelle zurück in die gespeicherte JSON-Struktur.
 function normalizePostedGeraetelisten(posted) {
   const listen = Array.isArray(posted) ? posted : Object.values(posted || {});
   return sortGeraetelistenByKapitel(listen
@@ -399,7 +399,7 @@ function normalizePostedGeraetelisten(posted) {
     }));
 }
 
-// Ergänzt in einer bestimmten Geräteliste eine zusätzliche leere Position.
+// * INFO: Ergänzt in einer bestimmten Geräteliste eine zusätzliche leere Position.
 function addPosition(rawGeraetelisten, listId) {
   return normalizeGeraetelisten(rawGeraetelisten).map((liste) => {
     if (liste.id !== listId) return liste;
@@ -418,8 +418,8 @@ function addPosition(rawGeraetelisten, listId) {
   });
 }
 
-// Normalisiert systemweite Gerätelisten-Vorlagen aus der Konfiguration.
-// Vorlagen sind absichtlich unabhängig vom Projekt und können wieder geladen werden.
+// * INFO: Normalisiert systemweite Gerätelisten-Vorlagen aus der Konfiguration.
+// * INFO: Vorlagen sind absichtlich unabhängig vom Projekt und können wieder geladen werden.
 function normalizeGeraetelistenVorlagen(raw) {
   if (!Array.isArray(raw)) return [];
   return raw
@@ -454,7 +454,7 @@ function normalizeGeraetelistenVorlagen(raw) {
       || String(a.name).localeCompare(String(b.name), "de", { numeric: true, sensitivity: "base" }));
 }
 
-// Erstellt aus einer aktuellen Projekt-Geräteliste eine systemweite Vorlage.
+// * INFO: Erstellt aus einer aktuellen Projekt-Geräteliste eine systemweite Vorlage.
 function createGeraetelistenVorlage(liste, name = "") {
   const normalized = normalizeGeraetelisten([liste])[0];
   if (!normalized) return null;
@@ -480,8 +480,8 @@ function addGeraetelistenVorlage(rawTemplates, liste, name = "") {
   return normalizeGeraetelistenVorlagen([...normalizeGeraetelistenVorlagen(rawTemplates), template]);
 }
 
-// Wendet eine Vorlage auf eine bestehende Geräteliste an. Stammdaten der Liste
-// bleiben erhalten; ersetzt werden die Positionszeilen und Vorauswahlwerte.
+// * INFO: Wendet eine Vorlage auf eine bestehende Geräteliste an. Stammdaten der Liste
+// * INFO: bleiben erhalten; ersetzt werden die Positionszeilen und Vorauswahlwerte.
 function applyGeraetelistenVorlage(liste, template) {
   const current = normalizeGeraetelisten([liste])[0];
   const normalizedTemplate = normalizeGeraetelistenVorlagen([template])[0];
@@ -494,7 +494,7 @@ function applyGeraetelistenVorlage(liste, template) {
   }])[0];
 }
 
-// Übernimmt bearbeitete Vorlagen aus dem Einstellungsformular.
+// * INFO: Übernimmt bearbeitete Vorlagen aus dem Einstellungsformular.
 function normalizePostedGeraetelistenVorlagen(posted, currentTemplates = []) {
   const currentById = new Map(normalizeGeraetelistenVorlagen(currentTemplates).map((template) => [template.id, template]));
   const rows = Array.isArray(posted) ? posted : Object.values(posted || {});
