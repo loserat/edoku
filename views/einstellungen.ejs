@@ -32,7 +32,6 @@
         <button type="button" data-settings-tab="ersteller" aria-controls="ersteller"><%- include("partials/icon", { name: "project" }) %><span>Ersteller</span></button>
         <button type="button" data-settings-tab="leistungsbereiche" aria-controls="leistungsbereiche-admin"><%- include("partials/icon", { name: "list" }) %><span>Leistungsbereiche</span></button>
         <button type="button" data-settings-tab="geraetelisten-vorlagen" aria-controls="geraetelisten-vorlagen"><%- include("partials/icon", { name: "list" }) %><span>Gerätelisten</span></button>
-        <button type="button" data-settings-tab="ordnerstruktur" aria-controls="ordnerstruktur"><%- include("partials/icon", { name: "folder-tree" }) %><span>Ordnerstruktur</span></button>
         <button type="button" data-settings-tab="updates" aria-controls="updates"><%- include("partials/icon", { name: "download" }) %><span>Updates</span></button>
         <% if (isSystemAdmin) { %>
           <button type="button" data-settings-tab="benutzer" aria-controls="benutzerverwaltung"><%- include("partials/icon", { name: "overview" }) %><span>Benutzer</span></button>
@@ -566,22 +565,61 @@
                   <th>Kapitel</th>
                   <th>Positionen</th>
                   <th>Aktualisiert</th>
-                  <th>Entfernen</th>
+                  <th>Aktionen</th>
                 </tr>
               </thead>
               <tbody>
                 <% (geraetelistenVorlagen || []).forEach((vorlage, index) => { %>
                   <tr>
                     <td>
-                      <input type="hidden" name="vorlagen[<%= index %>][id]" value="<%= vorlage.id %>">
-                      <input type="text" name="vorlagen[<%= index %>][name]" value="<%= vorlage.name %>">
+                      <strong><%= vorlage.name %></strong>
                     </td>
                     <td><%= vorlage.leistungsbereich %></td>
                     <td><%= vorlage.kapitel %></td>
                     <td><%= vorlage.positionen.length %></td>
                     <td><%= vorlage.aktualisiertAm ? new Date(vorlage.aktualisiertAm).toLocaleString("de-DE") : "-" %></td>
-                    <td>
+                    <td class="template-admin-actions">
+                      <button class="secondary compact-button" type="button" data-template-modal-open="<%= vorlage.id %>">Bearbeiten</button>
                       <button class="row-delete-button danger icon-only-button" type="button" data-delete-row data-delete-label="Vorlage <%= vorlage.name %>" aria-label="Gerätelisten-Vorlage löschen"><%- include("partials/icon", { name: "trash" }) %></button>
+                      <div class="template-modal" data-template-modal="<%= vorlage.id %>" hidden>
+                        <div class="template-modal-backdrop"></div>
+                        <section class="template-modal-panel" role="dialog" aria-modal="true" aria-label="Gerätelisten-Vorlage bearbeiten">
+                          <header class="template-modal-head">
+                            <div>
+                              <strong>Gerätelisten-Vorlage bearbeiten</strong>
+                              <span><%= vorlage.leistungsbereich %> · Kapitel <%= vorlage.kapitel || "-" %> · <%= vorlage.positionen.length %> Positionen</span>
+                            </div>
+                            <button class="secondary icon-only-button" type="button" data-template-modal-close aria-label="Schließen">×</button>
+                          </header>
+                          <input type="hidden" name="vorlagen[<%= index %>][id]" value="<%= vorlage.id %>">
+                          <label class="template-modal-field">
+                            <span>Name</span>
+                            <input type="text" name="vorlagen[<%= index %>][name]" value="<%= vorlage.name %>">
+                          </label>
+                          <div class="template-modal-summary">
+                            <div><span>Leistungsbereich</span><strong><%= vorlage.leistungsbereich %></strong></div>
+                            <div><span>Kapitel</span><strong><%= vorlage.kapitel || "-" %></strong></div>
+                            <div><span>Positionen</span><strong><%= vorlage.positionen.length %></strong></div>
+                          </div>
+                          <% if ((vorlage.positionen || []).length) { %>
+                            <div class="template-modal-position-list">
+                              <% vorlage.positionen.slice(0, 8).forEach((position) => { %>
+                                <article>
+                                  <strong><%= position.pos || "-" %>. <%= position.typ || position.system || position.hersteller || "Gerät" %></strong>
+                                  <span><%= [position.hersteller, position.system, position.beschreibung].filter(Boolean).join(" · ") || "Keine Zusatzangaben" %></span>
+                                </article>
+                              <% }) %>
+                              <% if (vorlage.positionen.length > 8) { %>
+                                <p><%= vorlage.positionen.length - 8 %> weitere Positionen in der Vorlage.</p>
+                              <% } %>
+                            </div>
+                          <% } %>
+                          <footer class="template-modal-actions">
+                            <button class="secondary compact-button" type="button" data-template-modal-close>Schließen</button>
+                            <button class="success-button compact-button" type="submit">Speichern</button>
+                          </footer>
+                        </section>
+                      </div>
                     </td>
                   </tr>
                 <% }) %>

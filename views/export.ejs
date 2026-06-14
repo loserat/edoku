@@ -30,6 +30,7 @@
       <%# * INFO: Gespeicherte Trennstreifen-Optionen werden in den Switches wiederhergestellt. %>
       <% const separatorSettings = (((systemSettings || {}).export || {}).trennstreifen || {}); %>
       <% const binderSettings = ordnerrueckenSettings || {}; %>
+      <% const binderFormat = binderSettings.format === "schmal" ? "38x192-r" : binderSettings.format === "breit" ? "61x192-r" : (binderSettings.format || "61x192-r"); %>
       <% const findPdfByName = (pattern) => pdfPreviewFiles.find((file) => pattern.test(file.name || "")); %>
       <% const tocPdf = findPdfByName(/^Inhaltsverzeichnis\.pdf$/i); %>
       <% const selectedPdf = tocPdf || (completePdf && pdfPreviewFiles.find((file) => file.id === completePdf.id)) || pdfPreviewFiles[0]; %>
@@ -330,14 +331,14 @@
                 </div>
                 <span class="badge <%= binderSpinePdf ? "on" : "off" %>"><%= binderSpinePdf ? "bereit" : "fehlt" %></span>
               </div>
-              <p>Formate: schmal ca. 192 x 38 mm oder breit ca. 192 x 61 mm auf A4.</p>
+              <p>Formate: Avery Zweckform 38x192-R und 61x192-R auf A4. Die bedruckten Bereiche können separat gewählt werden.</p>
               <div class="export-artifact-actions">
                 <form class="separator-options-form binder-spine-form" action="/export/ordnerruecken" method="post">
                   <label>
                     <span>Format</span>
                     <select name="format">
-                      <option value="breit" <%= binderSettings.format !== "schmal" ? "selected" : "" %>>Breiter Ordner 192 x 61 mm</option>
-                      <option value="schmal" <%= binderSettings.format === "schmal" ? "selected" : "" %>>Schmaler Ordner 192 x 38 mm</option>
+                      <option value="61x192-r" <%= binderFormat !== "38x192-r" ? "selected" : "" %>>Avery Zweckform 61x192-R</option>
+                      <option value="38x192-r" <%= binderFormat === "38x192-r" ? "selected" : "" %>>Avery Zweckform 38x192-R</option>
                     </select>
                   </label>
                   <label>
@@ -351,6 +352,36 @@
                       <option value="auto" <%= binderSettings.anzahlModus === "auto" ? "selected" : "" %>>Auto-Schätzung (<%= estimatedBinderCount || 1 %>)</option>
                     </select>
                   </label>
+                  <div class="binder-print-options" aria-label="Bedruckte Bereiche">
+                    <label class="compact-toggle">
+                      <input type="checkbox" name="showProjektname" value="1" <%= binderSettings.showProjektname !== false ? "checked" : "" %>>
+                      <span>Projektname</span>
+                    </label>
+                    <label class="compact-toggle">
+                      <input type="checkbox" name="showProjektnummer" value="1" <%= binderSettings.showProjektnummer !== false ? "checked" : "" %>>
+                      <span>Projektnummer</span>
+                    </label>
+                    <label class="compact-toggle">
+                      <input type="checkbox" name="showLiegenschaft" value="1" <%= binderSettings.showLiegenschaft !== false ? "checked" : "" %>>
+                      <span>Liegenschaft</span>
+                    </label>
+                    <label class="compact-toggle">
+                      <input type="checkbox" name="showAuftraggeber" value="1" <%= binderSettings.showAuftraggeber === true ? "checked" : "" %>>
+                      <span>Auftraggeber</span>
+                    </label>
+                    <label class="compact-toggle">
+                      <input type="checkbox" name="showBaumassnahme" value="1" <%= binderSettings.showBaumassnahme === true ? "checked" : "" %>>
+                      <span>Baumaßnahme</span>
+                    </label>
+                    <label class="compact-toggle">
+                      <input type="checkbox" name="showOrdnernummer" value="1" <%= binderSettings.showOrdnernummer !== false ? "checked" : "" %>>
+                      <span>Ordnernummer</span>
+                    </label>
+                    <label class="compact-toggle">
+                      <input type="checkbox" name="showFormatHint" value="1" <%= binderSettings.showFormatHint === true ? "checked" : "" %>>
+                      <span>Format-Hinweis</span>
+                    </label>
+                  </div>
                   <button type="submit">Ordnerrücken erzeugen</button>
                 </form>
                 <% if (binderSpinePdf) { %>
