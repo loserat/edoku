@@ -196,6 +196,20 @@ function sortGeraetelistenByKapitel(listen) {
   return [...(listen || [])].sort(compareKapitel);
 }
 
+function slugForTemplate(value) {
+  return String(value || "geraeteliste")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/ä/g, "ae")
+    .replace(/ö/g, "oe")
+    .replace(/ü/g, "ue")
+    .replace(/ß/g, "ss")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 60) || "geraeteliste";
+}
+
 // Technische ID aus Leistungsbereichsnamen für stabile Formular- und JSON-Zuordnung.
 function idForLeistungsbereich(leistungsbereich) {
   return `gl_${leistungsbereich
@@ -404,16 +418,113 @@ function addPosition(rawGeraetelisten, listId) {
   });
 }
 
+// Normalisiert systemweite Gerätelisten-Vorlagen aus der Konfiguration.
+// Vorlagen sind absichtlich unabhängig vom Projekt und können wieder geladen werden.
+function normalizeGeraetelistenVorlagen(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((template) => template && template.id && template.leistungsbereich)
+    .map((template) => {
+      const normalizedList = normalizeGeraetelisten([{
+        id: template.listId || idForLeistungsbereich(template.leistungsbereich),
+        leistungsbereich: template.leistungsbereich,
+        kapitel: template.kapitel,
+        titel: template.titel,
+        herstellerVorauswahl: template.herstellerVorauswahl,
+        systemartVorauswahl: template.systemartVorauswahl,
+        aktiv: true,
+        export: true,
+        positionen: template.positionen || []
+      }])[0] || {};
+
+      return {
+        id: String(template.id),
+        name: String(template.name || template.titel || template.leistungsbereich),
+        leistungsbereich: String(template.leistungsbereich),
+        kapitel: String(template.kapitel || normalizedList.kapitel || ""),
+        titel: String(template.titel || normalizedList.titel || `Geräteliste ${template.leistungsbereich}`),
+        herstellerVorauswahl: String(template.herstellerVorauswahl || ""),
+        systemartVorauswahl: String(template.systemartVorauswahl || ""),
+        positionen: normalizedList.positionen || [],
+        erstelltAm: template.erstelltAm || new Date().toISOString(),
+        aktualisiertAm: template.aktualisiertAm || template.erstelltAm || new Date().toISOString()
+      };
+    })
+    .sort((a, b) => String(a.leistungsbereich).localeCompare(String(b.leistungsbereich), "de", { sensitivity: "base" })
+      || String(a.name).localeCompare(String(b.name), "de", { numeric: true, sensitivity: "base" }));
+}
+
+// Erstellt aus einer aktuellen Projekt-Geräteliste eine systemweite Vorlage.
+function createGeraetelistenVorlage(liste, name = "") {
+  const normalized = normalizeGeraetelisten([liste])[0];
+  if (!normalized) return null;
+  const now = new Date().toISOString();
+  const templateName = String(name || `${normalized.titel} - ${normalized.leistungsbereich}`).trim();
+  return {
+    id: `glv_${Date.now()}_${slugForTemplate(templateName)}`,
+    name: templateName,
+    leistungsbereich: normalized.leistungsbereich,
+    kapitel: normalized.kapitel,
+    titel: normalized.titel,
+    herstellerVorauswahl: normalized.herstellerVorauswahl || "",
+    systemartVorauswahl: normalized.systemartVorauswahl || "",
+    positionen: normalized.positionen.map((position, index) => ({ ...position, pos: index + 1 })),
+    erstelltAm: now,
+    aktualisiertAm: now
+  };
+}
+
+function addGeraetelistenVorlage(rawTemplates, liste, name = "") {
+  const template = createGeraetelistenVorlage(liste, name);
+  if (!template) return normalizeGeraetelistenVorlagen(rawTemplates);
+  return normalizeGeraetelistenVorlagen([...normalizeGeraetelistenVorlagen(rawTemplates), template]);
+}
+
+// Wendet eine Vorlage auf eine bestehende Geräteliste an. Stammdaten der Liste
+// bleiben erhalten; ersetzt werden die Positionszeilen und Vorauswahlwerte.
+function applyGeraetelistenVorlage(liste, template) {
+  const current = normalizeGeraetelisten([liste])[0];
+  const normalizedTemplate = normalizeGeraetelistenVorlagen([template])[0];
+  if (!current || !normalizedTemplate) return current || liste;
+  return normalizeGeraetelisten([{
+    ...current,
+    herstellerVorauswahl: normalizedTemplate.herstellerVorauswahl || current.herstellerVorauswahl || "",
+    systemartVorauswahl: normalizedTemplate.systemartVorauswahl || current.systemartVorauswahl || "",
+    positionen: normalizedTemplate.positionen.map((position, index) => ({ ...position, pos: index + 1 }))
+  }])[0];
+}
+
+// Übernimmt bearbeitete Vorlagen aus dem Einstellungsformular.
+function normalizePostedGeraetelistenVorlagen(posted, currentTemplates = []) {
+  const currentById = new Map(normalizeGeraetelistenVorlagen(currentTemplates).map((template) => [template.id, template]));
+  const rows = Array.isArray(posted) ? posted : Object.values(posted || {});
+  return normalizeGeraetelistenVorlagen(rows
+    .map((row) => {
+      const existing = currentById.get(String(row.id || ""));
+      if (!existing) return null;
+      return {
+        ...existing,
+        name: String(row.name || existing.name).trim() || existing.name,
+        aktualisiertAm: new Date().toISOString()
+      };
+    })
+    .filter(Boolean));
+}
+
 module.exports = {
   DEVICE_FIELD_PROFILES,
   GERAETELISTEN_KAPITEL,
   addPosition,
+  addGeraetelistenVorlage,
+  applyGeraetelistenVorlage,
   createGeraeteliste,
   deviceListFieldsForLeistungsbereich,
   isDevicePositionComplete,
   isGeraetelisteComplete,
   normalizeGeraetelisten,
   normalizePostedGeraetelisten,
+  normalizeGeraetelistenVorlagen,
+  normalizePostedGeraetelistenVorlagen,
   sortGeraetelistenByKapitel,
   syncGeraetelistenFromLeistungsbereiche
 };

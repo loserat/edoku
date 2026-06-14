@@ -11,7 +11,15 @@
     "trennstreifen": {
       "showInnenText": true,
       "showRegisterTitel": true
+    },
+    "ordnerruecken": {
+      "format": "breit",
+      "anzahlModus": "manuell",
+      "ordnerAnzahl": 2
     }
+  },
+  "lizenz": {
+    "brandingAktiv": true
   },
   "ersteller": {
     "name": "",
@@ -24,9 +32,9 @@
     "logoPfad": "creator/921bbd3c-d2ab-448e-ada2-106e6781f692.png"
   },
   "theme": {
-    "name": "GitHub Light",
-    "preset": "github-light",
-    "mode": "light",
+    "name": "GitHub Dark",
+    "preset": "github-dark",
+    "mode": "dark",
     "colors": {
       "bgLight": "#f6f8fa",
       "bgDark": "#0d1117",
@@ -38,14 +46,14 @@
       "textMuted": "#656d76",
       "textDark": "#e6edf3",
       "textMutedDark": "#7d8590",
-      "accent": "#0969da",
+      "accent": "#2f81f7",
       "border": "#d0d7de",
       "borderDark": "#30363d",
-      "buttonPrimary": "#1f883d",
-      "buttonSecondary": "#f6f8fa",
-      "warning": "#9a6700",
-      "danger": "#cf222e",
-      "success": "#1f883d"
+      "buttonPrimary": "#74a7fe",
+      "buttonSecondary": "#21262d",
+      "warning": "#d29922",
+      "danger": "#f85149",
+      "success": "#3fb950"
     },
     "shape": {
       "globalRadius": 14,
@@ -55,8 +63,8 @@
       "borderWidth": 1
     },
     "shadow": {
-      "strength": 10,
-      "softness": 26
+      "strength": 16,
+      "softness": 34
     },
     "spacing": {
       "global": 12,
