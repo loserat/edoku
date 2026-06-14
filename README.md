@@ -35,6 +35,7 @@ Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. 
 - PDF-Erzeugung mit Projektkopf, Logo und optionalem nickgm.de-Branding
 - Inhaltsverzeichnis, Formular-PDFs, Gerätelisten und Brandschutz-PDFs
 - separate PDF-Trennstreifen im Maß 24 x 10,5 cm
+- separate Ordnerrücken für Avery-Zweckform-Formate `61x192-R` und `38x192-R`
 - Deckblätter für Hauptkategorien
 - Exportliste und finaler Exportordner
 - Tag-/Nacht-Theme
@@ -166,7 +167,7 @@ Anhänge werden kategoriebezogen als Kacheln verwaltet. Datei-Metadaten, Vorscha
 
 Trennstreifen werden separat erzeugt und bewusst ohne Footer-Branding gedruckt. Der Standarddruck ist tintensparend: schwarze Kapitelnummer am Registerrand, keine blaue Fläche und kein zusätzlicher Projekttext.
 
-Ordnerrücken werden unter `Export > Ordnerrücken` als separate PDF erzeugt. Unterstützt sind zunächst gängige breite und schmale Ordnerrückenformate; die Ordneranzahl kann manuell gesetzt oder grob aus den vorhandenen Export-/PDF-Einträgen geschätzt werden.
+Ordnerrücken werden unter `Export > Ordnerrücken` als separate PDF erzeugt. Unterstützt sind Avery-Zweckform-Bögen `61x192-R` mit 4 Rücken je A4-Seite und `38x192-R` mit 7 Rücken je A4-Seite. Der Text wird gedreht, zentriert im Rücken angeordnet und kann Projektname, Projektnummer, Auftraggeber, Liegenschaft, Baumaßnahme und Ordnernummer enthalten. Die Ordneranzahl kann manuell gesetzt oder grob aus den vorhandenen Export-/PDF-Einträgen geschätzt werden.
 
 Gerätelisten können über das Drei-Punkte-Menü als systemweite Vorlage gespeichert werden. Die Verwaltung erfolgt unter `System > Gerätelisten`; passende Vorlagen können später wieder in Gerätelisten geladen werden.
 
