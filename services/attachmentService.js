@@ -328,6 +328,9 @@ function assignAttachmentToBrandschutz(brandschutz, relativePath, brandschutzId,
       };
     }
     found = true;
+    if (entry[slot] && entry[slot] !== relativePath) {
+      throw new Error("Der gewaehlte Foto-Slot ist bereits belegt.");
+    }
     return {
       ...entry,
       foto_vorher: slot === "foto_vorher" ? relativePath : entry.foto_vorher === relativePath ? "" : entry.foto_vorher,

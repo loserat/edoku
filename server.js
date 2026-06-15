@@ -1639,11 +1639,12 @@ app.post("/anhaenge/:id/aktualisieren", requireAuth, async (req, res) => {
     const synced = await syncAttachmentFileName(ROOT_DIR, files, nextAttachments, req.params.id);
     await writeJson(files.anhaenge, synced.attachments);
     const updatedTarget = normalizeAttachments(synced.attachments).find((entry) => entry.id === req.params.id);
+    const [selectedBrandschutzId, selectedBrandschutzSlot] = String(req.body.brandschutzSlot || "").split("|");
     const shouldAssignBrandschutzImage =
       updatedTarget &&
       updatedTarget.mimeType.startsWith("image/") &&
-      req.body.brandschutzId &&
-      req.body.slot;
+      selectedBrandschutzId &&
+      selectedBrandschutzSlot;
 
     // * INFO: Bildzuordnungen werden bewusst hier gespeichert, damit das Popup
     // * INFO: nur einen Speichern-Button braucht und keine separate Zuordnen-Aktion.
@@ -1661,8 +1662,8 @@ app.post("/anhaenge/:id/aktualisieren", requireAuth, async (req, res) => {
         brandschutz = assignAttachmentToBrandschutz(
           brandschutz,
           updatedTarget.relativePath,
-          req.body.brandschutzId || "",
-          req.body.slot || ""
+          selectedBrandschutzId || "",
+          selectedBrandschutzSlot || ""
         );
       }
       await writeJson(files.brandschutz, brandschutz);
