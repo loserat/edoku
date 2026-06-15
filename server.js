@@ -90,6 +90,7 @@ const {
   defaultDocumentMetaForCategory,
   updateAttachmentDocumentMeta
 } = require("./services/documentAttachmentService");
+const apiRoutes = require("./src/routes/api.routes");
 
 // ! WICHTIG: Zentrale Pfade der Anwendung. Alle Dateioperationen werden relativ zu
 // ! WICHTIG: diesen Ordnern aufgebaut, damit lokaler Start und Docker-Start gleich laufen.
@@ -123,6 +124,7 @@ app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 app.use(express.json({ limit: "25mb" }));
 app.use(parseCookies);
 app.use(attachUser);
+app.use("/api", apiRoutes);
 
 // * INFO: Gemeinsamer Template-Kontext für eingeloggte Benutzer. Die Views nutzen diese
 // * INFO: Werte für Flash-Meldungen, Projektanzeige und die Projektliste in der Sidebar.
