@@ -1912,13 +1912,12 @@ select:focus {
 
 /* * INFO: Basisdesign für Buttons im HomeKit-/Glas-Stil. */
 button {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--color-button-primary, var(--accent)) 90%, #fff), var(--color-button-primary, var(--accent)));
+  background: var(--color-button-primary, var(--accent));
   border: var(--border-width) solid color-mix(in srgb, var(--color-button-primary, var(--accent)) 58%, var(--line));
   border-radius: var(--radius-button);
   box-shadow:
-    inset 0 1px 0 color-mix(in srgb, #fff 26%, transparent),
-    0 8px 18px color-mix(in srgb, var(--color-button-primary, var(--accent)) 16%, transparent);
+    inset 0 1px 0 color-mix(in srgb, #fff 18%, transparent),
+    0 5px 14px color-mix(in srgb, var(--color-button-primary, var(--accent)) 12%, transparent);
   color: var(--on-primary);
   cursor: pointer;
   font: inherit;
@@ -1931,12 +1930,11 @@ button {
 }
 
 button:hover {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--primary-strong) 88%, #fff), var(--primary-strong));
+  background: var(--primary-strong);
   border-color: color-mix(in srgb, var(--primary-strong) 70%, var(--line));
   box-shadow:
-    inset 0 1px 0 color-mix(in srgb, #fff 32%, transparent),
-    0 10px 20px color-mix(in srgb, var(--accent) 18%, transparent);
+    inset 0 1px 0 color-mix(in srgb, #fff 22%, transparent),
+    0 7px 16px color-mix(in srgb, var(--accent) 14%, transparent);
   transform: translateY(-0.5px);
 }
 
@@ -1961,16 +1959,14 @@ button.secondary:hover,
 }
 
 button.danger {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--danger) 5%, var(--surface-solid)), color-mix(in srgb, var(--danger) 3%, var(--surface-muted)));
+  background: color-mix(in srgb, var(--danger) 6%, var(--surface-solid));
   border-color: color-mix(in srgb, var(--danger) 20%, var(--border));
   box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 10%, transparent);
   color: var(--danger);
 }
 
 button.danger:hover {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--danger) 11%, var(--surface-solid)), color-mix(in srgb, var(--danger) 7%, var(--surface-muted)));
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface-solid));
   border-color: color-mix(in srgb, var(--danger) 38%, var(--border));
   box-shadow: 0 6px 14px color-mix(in srgb, var(--danger) 10%, transparent);
   color: var(--danger);
@@ -2292,20 +2288,20 @@ tr:last-child td {
   display: grid;
   gap: 3px;
   justify-items: start;
-  min-height: 48px;
-  padding: 10px 12px;
+  min-height: 42px;
+  padding: 8px 11px;
   text-align: left;
   width: 100%;
 }
 
 .export-actions button span {
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.15;
 }
 
 .export-actions button small {
   color: color-mix(in srgb, currentColor 68%, transparent);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   line-height: 1.25;
 }
@@ -2383,7 +2379,7 @@ tr:last-child td {
 
 .export-actions-compact {
   grid-template-columns: minmax(220px, 1.25fr) repeat(auto-fit, minmax(150px, 0.75fr));
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .export-actions-compact .export-action-primary {
@@ -2391,8 +2387,8 @@ tr:last-child td {
 }
 
 .export-actions-compact button {
-  min-height: 46px;
-  padding: 8px 14px;
+  min-height: 40px;
+  padding: 7px 12px;
 }
 
 .export-actions-compact button span {
@@ -2516,7 +2512,7 @@ tr:last-child td {
   display: grid;
   gap: 12px;
   grid-template-columns: minmax(270px, 340px) minmax(0, 1fr);
-  height: calc(100dvh - 220px);
+  height: calc(100dvh - 190px);
   min-height: 460px;
 }
 
@@ -4385,13 +4381,13 @@ body.modal-open {
 }
 
 .success-button {
-  background: color-mix(in srgb, var(--success) 88%, #fff);
+  background: var(--success);
   border-color: color-mix(in srgb, var(--success) 74%, var(--border));
   color: var(--on-success, #ffffff);
 }
 
 .success-button:hover {
-  background: color-mix(in srgb, var(--success) 78%, #fff);
+  background: color-mix(in srgb, var(--success) 86%, var(--surface-solid));
   color: var(--on-success, #ffffff);
 }
 
@@ -4472,16 +4468,14 @@ body.modal-open {
 }
 
 .danger-button {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--danger) 5%, var(--surface-solid)), color-mix(in srgb, var(--danger) 3%, var(--surface-muted)));
+  background: color-mix(in srgb, var(--danger) 6%, var(--surface-solid));
   border-color: color-mix(in srgb, var(--danger) 20%, var(--border));
   box-shadow: none;
   color: var(--danger);
 }
 
 .danger-button:hover {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--danger) 11%, var(--surface-solid)), color-mix(in srgb, var(--danger) 7%, var(--surface-muted)));
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface-solid));
   border-color: color-mix(in srgb, var(--danger) 38%, var(--border));
   color: var(--danger);
 }
