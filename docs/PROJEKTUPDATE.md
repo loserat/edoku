@@ -139,6 +139,13 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Projektname, Projektnummer, Auftraggeber, Liegenschaft und Baumaßnahme können als kompakte Projektkenndaten auf den Rücken gedruckt werden.
 - Ordnerrücken bleiben weiterhin ohne Footer-/Branding-Icon, damit sie als reine Druckvorlage nutzbar sind.
 - Docker wurde nach der Layoutanpassung neu gebaut und die PDF-Erzeugung für beide Avery-Formate geprüft.
+- Zentrale Datei `docs/OFFENE_PUNKTE.md` ergänzt, damit offene Aufgaben, Beta-Einschränkungen und nächste Arbeitspakete sauber nachvollziehbar bleiben.
+- README verlinkt jetzt direkt auf die offene-Punkte-Liste.
+- Brandschutzbilder können nur noch freien Foto-1-/Foto-2-Slots zugeordnet werden; belegte Slots werden in der Auswahl ausgeblendet und serverseitig geschützt.
+- Button-Styles wurden zentral beruhigt und Export-Aktionsbuttons kompakter gestaltet.
+- PDF-Dokumentationsbaum im Exportbereich nutzt mehr Bildschirmhöhe.
+- GitHub-orientierte Theme-Presets ergänzt: Light/Dark Default, High Contrast, Colorblind und Dark Dimmed.
+- Theme-Editor auf die wichtigsten Werte reduziert, damit die Systemeinstellungen nicht überladen wirken.
 
 ## Wichtige Beta-Einschränkungen
 

@@ -123,7 +123,7 @@
           <div class="panel-head">
             <div>
               <h2>Theme-Editor</h2>
-              <p>Farben, Radien, Schatten, Abstände und Typografie zentral steuern.</p>
+              <p>GitHub-orientierte Presets und wenige zentrale Designwerte steuern.</p>
             </div>
             <div class="panel-actions">
               <button type="submit">Theme speichern</button>
@@ -154,26 +154,15 @@
                 <h3>Basisfarben</h3>
                 <div class="theme-control-grid">
                   <label><span>Hintergrund hell</span><input type="color" name="bgLight" data-theme-var="--color-bg-light" value="<%= themeColors.bgLight %>"></label>
+                  <label><span>Hintergrund dunkel</span><input type="color" name="bgDark" data-theme-var="--color-bg-dark" value="<%= themeColors.bgDark %>"></label>
                   <label><span>Karten / Panels</span><input type="color" name="surface" data-theme-var="--color-surface" value="<%= themeColors.surface %>"></label>
-                  <label><span>Panel gedämpft</span><input type="color" name="surfaceMuted" data-theme-var="--color-surface-muted" value="<%= themeColors.surfaceMuted %>"></label>
+                  <label><span>Karten dunkel</span><input type="color" name="surfaceDark" data-theme-var="--color-surface-dark" value="<%= themeColors.surfaceDark %>"></label>
                   <label><span>Primärtext</span><input type="color" name="text" data-theme-var="--color-text" value="<%= themeColors.text %>"></label>
+                  <label><span>Primärtext dunkel</span><input type="color" name="textDark" data-theme-var="--color-text-dark" value="<%= themeColors.textDark %>"></label>
                   <label><span>Sekundärtext</span><input type="color" name="textMuted" data-theme-var="--color-text-muted" value="<%= themeColors.textMuted %>"></label>
                   <label><span>Akzentfarbe</span><input type="color" name="accent" data-theme-var="--color-primary" value="<%= themeColors.accent %>"></label>
                   <label><span>Rahmenfarbe</span><input type="color" name="border" data-theme-var="--color-border" value="<%= themeColors.border %>"></label>
                   <label><span>Button primär</span><input type="color" name="buttonPrimary" data-theme-var="--color-button-primary" value="<%= themeColors.buttonPrimary %>"></label>
-                  <label><span>Button sekundär</span><input type="color" name="buttonSecondary" data-theme-var="--color-button-secondary" value="<%= themeColors.buttonSecondary %>"></label>
-                </div>
-              </section>
-
-              <section class="theme-editor-group">
-                <h3>Nachtmodus</h3>
-                <div class="theme-control-grid">
-                  <label><span>Hintergrund dunkel</span><input type="color" name="bgDark" data-theme-var="--color-bg-dark" value="<%= themeColors.bgDark %>"></label>
-                  <label><span>Karten dunkel</span><input type="color" name="surfaceDark" data-theme-var="--color-surface-dark" value="<%= themeColors.surfaceDark %>"></label>
-                  <label><span>Panel gedämpft dunkel</span><input type="color" name="surfaceMutedDark" data-theme-var="--color-surface-muted-dark" value="<%= themeColors.surfaceMutedDark %>"></label>
-                  <label><span>Primärtext dunkel</span><input type="color" name="textDark" data-theme-var="--color-text-dark" value="<%= themeColors.textDark %>"></label>
-                  <label><span>Sekundärtext dunkel</span><input type="color" name="textMutedDark" data-theme-var="--color-text-muted-dark" value="<%= themeColors.textMutedDark %>"></label>
-                  <label><span>Rahmen dunkel</span><input type="color" name="borderDark" data-theme-var="--color-border-dark" value="<%= themeColors.borderDark %>"></label>
                 </div>
               </section>
 
@@ -187,32 +176,12 @@
               </section>
 
               <section class="theme-editor-group">
-                <h3>Radien und Linien</h3>
+                <h3>Form</h3>
                 <div class="theme-control-grid">
-                  <label><span>Border-Radius global</span><input type="number" min="0" max="40" name="globalRadius" data-theme-var="--radius-sm" data-theme-unit="px" value="<%= themeShape.globalRadius %>"></label>
                   <label><span>Karten-Radius</span><input type="number" min="0" max="48" name="cardRadius" data-theme-var="--radius-lg" data-theme-unit="px" value="<%= themeShape.cardRadius %>"></label>
                   <label><span>Button-Radius</span><input type="number" min="0" max="999" name="buttonRadius" data-theme-var="--radius-button" data-theme-unit="px" value="<%= themeShape.buttonRadius %>"></label>
                   <label><span>Input-Radius</span><input type="number" min="0" max="40" name="inputRadius" data-theme-var="--radius-md" data-theme-unit="px" value="<%= themeShape.inputRadius %>"></label>
-                  <label><span>Border-Stärke</span><input type="number" min="0" max="4" step="0.5" name="borderWidth" data-theme-var="--border-width" data-theme-unit="px" value="<%= themeShape.borderWidth %>"></label>
-                </div>
-              </section>
-
-              <section class="theme-editor-group">
-                <h3>Schatten</h3>
-                <div class="theme-control-grid">
-                  <label><span>Schattenstärke</span><input type="range" min="0" max="60" name="shadowStrength" data-theme-var="--shadow-strength" value="<%= themeShadow.strength %>"></label>
-                  <label><span>Schatten-Weichheit</span><input type="range" min="0" max="80" name="shadowSoftness" data-theme-var="--shadow-softness" data-theme-unit="px" value="<%= themeShadow.softness %>"></label>
-                </div>
-              </section>
-
-              <section class="theme-editor-group">
-                <h3>Abstände</h3>
-                <div class="theme-control-grid">
-                  <label><span>Globales Spacing</span><input type="number" min="4" max="32" name="globalSpacing" data-theme-var="--spacing-md" data-theme-unit="px" value="<%= themeSpacing.global %>"></label>
-                  <label><span>Seitenabstand</span><input type="number" min="0" max="48" name="pageSpacing" data-theme-var="--page-spacing" data-theme-unit="px" value="<%= themeSpacing.page %>"></label>
-                  <label><span>Kartenabstand</span><input type="number" min="4" max="36" name="cardSpacing" data-theme-var="--card-spacing" data-theme-unit="px" value="<%= themeSpacing.card %>"></label>
-                  <label><span>Formularabstand</span><input type="number" min="4" max="32" name="formSpacing" data-theme-var="--form-spacing" data-theme-unit="px" value="<%= themeSpacing.form %>"></label>
-                  <label><span>Tabellen-Zeilenhöhe</span><input type="number" min="28" max="72" name="tableRowHeight" data-theme-var="--table-row-height" data-theme-unit="px" value="<%= themeSpacing.tableRowHeight %>"></label>
+                  <label><span>Tabellen-Zeilenhöhe</span><input type="number" min="32" max="60" name="tableRowHeight" data-theme-var="--table-row-height" data-theme-unit="px" value="<%= themeSpacing.tableRowHeight %>"></label>
                 </div>
               </section>
 
@@ -221,11 +190,25 @@
                 <div class="theme-control-grid">
                   <label><span>Basis-Schriftgröße</span><input type="number" min="11" max="20" name="fontSizeBase" data-theme-var="--font-size-base" data-theme-unit="px" value="<%= themeTypography.base %>"></label>
                   <label><span>Überschriften-Größe</span><input type="number" min="18" max="42" name="fontSizeHeading" data-theme-var="--font-size-heading" data-theme-unit="px" value="<%= themeTypography.heading %>"></label>
-                  <label><span>Label-Größe</span><input type="number" min="10" max="18" name="fontSizeLabel" data-theme-var="--font-size-label" data-theme-unit="px" value="<%= themeTypography.label %>"></label>
-                  <label><span>Button-Schriftgröße</span><input type="number" min="11" max="20" name="fontSizeButton" data-theme-var="--font-size-button" data-theme-unit="px" value="<%= themeTypography.button %>"></label>
-                  <label><span>Zeilenhöhe</span><input type="number" min="1.1" max="1.9" step="0.01" name="lineHeightBase" data-theme-var="--line-height-base" value="<%= themeTypography.lineHeight %>"></label>
                 </div>
               </section>
+
+              <input type="hidden" name="surfaceMuted" data-theme-var="--color-surface-muted" value="<%= themeColors.surfaceMuted %>">
+              <input type="hidden" name="surfaceMutedDark" data-theme-var="--color-surface-muted-dark" value="<%= themeColors.surfaceMutedDark %>">
+              <input type="hidden" name="textMutedDark" data-theme-var="--color-text-muted-dark" value="<%= themeColors.textMutedDark %>">
+              <input type="hidden" name="borderDark" data-theme-var="--color-border-dark" value="<%= themeColors.borderDark %>">
+              <input type="hidden" name="buttonSecondary" data-theme-var="--color-button-secondary" value="<%= themeColors.buttonSecondary %>">
+              <input type="hidden" name="globalRadius" data-theme-var="--radius-sm" data-theme-unit="px" value="<%= themeShape.globalRadius %>">
+              <input type="hidden" name="borderWidth" data-theme-var="--border-width" data-theme-unit="px" value="<%= themeShape.borderWidth %>">
+              <input type="hidden" name="shadowStrength" data-theme-var="--shadow-strength" value="<%= themeShadow.strength %>">
+              <input type="hidden" name="shadowSoftness" data-theme-var="--shadow-softness" data-theme-unit="px" value="<%= themeShadow.softness %>">
+              <input type="hidden" name="globalSpacing" data-theme-var="--spacing-md" data-theme-unit="px" value="<%= themeSpacing.global %>">
+              <input type="hidden" name="pageSpacing" data-theme-var="--page-spacing" data-theme-unit="px" value="<%= themeSpacing.page %>">
+              <input type="hidden" name="cardSpacing" data-theme-var="--card-spacing" data-theme-unit="px" value="<%= themeSpacing.card %>">
+              <input type="hidden" name="formSpacing" data-theme-var="--form-spacing" data-theme-unit="px" value="<%= themeSpacing.form %>">
+              <input type="hidden" name="fontSizeLabel" data-theme-var="--font-size-label" data-theme-unit="px" value="<%= themeTypography.label %>">
+              <input type="hidden" name="fontSizeButton" data-theme-var="--font-size-button" data-theme-unit="px" value="<%= themeTypography.button %>">
+              <input type="hidden" name="lineHeightBase" data-theme-var="--line-height-base" value="<%= themeTypography.lineHeight %>">
             </section>
 
           </div>

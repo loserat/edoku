@@ -20,6 +20,8 @@ edoku ist aktuell als **Beta-Version** vorgesehen. Die Anwendung ist lokal und p
 
 Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. Es gibt bewusst noch Einschränkungen bei Rollen/Rechten, automatisierten Tests, PDF-Merge und Archivfunktionen.
 
+Die aktuelle Arbeitsliste mit offenen Punkten steht in [docs/OFFENE_PUNKTE.md](docs/OFFENE_PUNKTE.md).
+
 ## Funktionen
 
 - Registrierung, Login und Logout
@@ -177,12 +179,17 @@ Systemadmins können unter `System > System` das sichtbare edoku-/nickgm-Brandin
 
 ## Theme-System
 
-Das Theme-System nutzt zentrale CSS-Variablen für Farben, Radien, Schatten, Abstände und Typografie. Aktuell ist es bewusst auf Light/Dark reduziert und orientiert sich farblich an GitHub-/VS-Code-Themes. Beide Presets verwenden identische Radius-, Spacing- und Typografiewerte, damit beim Wechsel keine sichtbaren Layoutsprünge entstehen.
+Das Theme-System nutzt zentrale CSS-Variablen für Farben, Radien, Schatten, Abstände und Typografie. Der Editor ist bewusst auf die wichtigsten Werte begrenzt und orientiert sich farblich an GitHub-/VS-Code-Themes. Die Presets verwenden identische Radius-, Spacing- und Typografiewerte, damit beim Wechsel keine sichtbaren Layoutsprünge entstehen.
 
 Aktuelle Presets:
 
-- GitHub Light
-- GitHub Dark
+- GitHub Light Default
+- GitHub Light High Contrast
+- GitHub Light Colorblind
+- GitHub Dark Default
+- GitHub Dark High Contrast
+- GitHub Dark Colorblind
+- GitHub Dark Dimmed
 
 ## GitHub-Hinweise
 

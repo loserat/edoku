@@ -94,7 +94,8 @@ Ordnerrücken werden ebenfalls ohne Footer-Branding erzeugt. Die Ausgabe orienti
 - Statusmeldungen werden als schwebende Toasts dargestellt und verschieben keine Seiteninhalte.
 - Tag-/Nacht-Umschaltung und Theme-Presets greifen global auf Header, Navigation, Karten, Tabellen, Formulare und Buttons.
 - Default-Presets teilen sich identische Radius-, Spacing- und Typografiewerte, damit beim Themewechsel keine Layoutgrößen springen.
-- GitHub Light und GitHub Dark sind als GitHub-/VS-Code-orientierte Presets vorgesehen.
+- GitHub-orientierte Presets sind vorgesehen: Light Default, Light High Contrast, Light Colorblind, Dark Default, Dark High Contrast, Dark Colorblind und Dark Dimmed.
+- Der Theme-Editor zeigt bewusst nur die wichtigsten Werte, damit die Einstellungen wartbar bleiben.
 
 ## Anhänge und importierte PDFs
 

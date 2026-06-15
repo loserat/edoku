@@ -103,6 +103,13 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 - Der Ordnerrücken-Text wird gedreht und zentriert angeordnet.
 - Projektkenndaten werden kompakt auf dem Rücken ausgegeben und bleiben über Optionen steuerbar.
 - Ordnerrücken bleiben ohne Footer-Branding.
+- Neue zentrale Arbeitsliste `docs/OFFENE_PUNKTE.md` ergänzt und in der README verlinkt.
+- Anhangszuordnung für Brandschutzbilder zeigt nur noch freie Foto-Slots an.
+- Belegte Brandschutz-Foto-Slots werden zusätzlich serverseitig geschützt.
+- Zentrale Button-Styles wurden beruhigt, damit Light/Dark-Mode weniger metallisch wirkt.
+- PDF-Exportaktionen wurden kompakter gestaltet und der PDF-Inhaltsbaum nutzt mehr Bildschirmhöhe.
+- Theme-Presets um GitHub Light/Dark Default, High Contrast, Colorblind und Dark Dimmed erweitert.
+- Theme-Editor auf die wichtigsten Stellschrauben reduziert, damit die Einstellungen übersichtlicher bleiben.
 
 ### Bekannte Grenzen
 
