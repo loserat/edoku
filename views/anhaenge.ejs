@@ -238,28 +238,44 @@
                         <section class="attachment-assign-form attachment-modal-assign">
                           <div class="attachment-assign-head">
                             <strong>Brandschottung zuweisen</strong>
-                            <span>Wähle zuerst die Brandschottung und danach Foto 1 oder Foto 2.</span>
+                            <span>Es werden nur freie Foto-Slots angezeigt. Bereits belegte Slots bleiben geschützt.</span>
                           </div>
                           <div class="attachment-brandschutz-grid">
-                            <% (brandschutz || []).forEach((schottung) => { %>
-                              <label class="attachment-brandschutz-card">
-                                <input type="radio" name="brandschutzId" value="<%= schottung.id %>" <%= assignedBrandschutzId === schottung.id ? "checked" : "" %>>
+                            <%
+                              const visibleBrandschutzSlots = [];
+                              (brandschutz || []).forEach((schottung) => {
+                                const foto1TakenByOther = Boolean(schottung.foto_vorher && schottung.foto_vorher !== entry.relativePath);
+                                const foto2TakenByOther = Boolean(schottung.foto_nachher && schottung.foto_nachher !== entry.relativePath);
+                                const availableSlots = [];
+                                if (!foto1TakenByOther) availableSlots.push({ key: "foto_vorher", label: "Foto 1" });
+                                if (!foto2TakenByOther) availableSlots.push({ key: "foto_nachher", label: "Foto 2" });
+                                if (availableSlots.length) visibleBrandschutzSlots.push({ schottung, availableSlots });
+                              });
+                            %>
+                            <% if (!visibleBrandschutzSlots.length) { %>
+                              <div class="attachment-empty">Alle Brandschottungen haben bereits zwei Bilder.</div>
+                            <% } %>
+                            <% visibleBrandschutzSlots.forEach(({ schottung, availableSlots }) => { %>
+                              <div class="attachment-brandschutz-card attachment-brandschutz-slot-card">
                                 <span>
                                   <strong><%= schottung.geschoss || "-" %> / <%= schottung.raum || "-" %></strong>
                                   <small><%= schottung.bauteil || schottung.abschottungssystem || schottung.id %></small>
                                 </span>
-                              </label>
+                                <div class="attachment-slot-options inline">
+                                  <% availableSlots.forEach((slotOption) => { %>
+                                    <label>
+                                      <input
+                                        type="radio"
+                                        name="brandschutzSlot"
+                                        value="<%= schottung.id %>|<%= slotOption.key %>"
+                                        <%= assignedBrandschutzId === schottung.id && assignedSlot === slotOption.key ? "checked" : "" %>
+                                      >
+                                      <span><%= slotOption.label %></span>
+                                    </label>
+                                  <% }) %>
+                                </div>
+                              </div>
                             <% }) %>
-                          </div>
-                          <div class="attachment-slot-options">
-                            <label>
-                              <input type="radio" name="slot" value="foto_vorher" <%= assignedSlot === "foto_vorher" ? "checked" : "" %>>
-                              <span>Foto 1</span>
-                            </label>
-                            <label>
-                              <input type="radio" name="slot" value="foto_nachher" <%= assignedSlot === "foto_nachher" ? "checked" : "" %>>
-                              <span>Foto 2</span>
-                            </label>
                           </div>
                           <% if (entry.assignedCount) { %>
                             <div class="attachment-assignment-list">

@@ -4527,6 +4527,11 @@ body.modal-open {
   padding: 9px;
 }
 
+.attachment-brandschutz-slot-card {
+  cursor: default;
+  grid-template-columns: 1fr;
+}
+
 .attachment-brandschutz-card input {
   accent-color: var(--primary);
 }
@@ -4551,6 +4556,10 @@ body.modal-open {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.attachment-slot-options.inline {
+  gap: 6px;
 }
 
 .attachment-slot-options label {

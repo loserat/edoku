@@ -1,5 +1,7 @@
 # edoku
 
+<p><strong><span style="color:red;">Mitentwickler gesucht: Ich suche Menschen, die edoku kostenlos testen möchten. Feedback, Fehlerberichte und Ideen sind willkommen. Für Tester gibt es Support innerhalb von 48 Stunden.</span></strong></p>
+
 edoku ist eine lokale Web-Anwendung zur strukturierten Erstellung von Elektro-Bestandsdokumentationen. Die Anwendung verwaltet Projektstammdaten, Leistungsbereiche, Dokumentenmatrix, Gerätelisten, Brandschutzdokumentation, Anhänge, PDF-Erzeugung und Exportvorbereitung.
 
 Version 1 ist bewusst leichtgewichtig aufgebaut:
