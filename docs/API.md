@@ -11,6 +11,7 @@ Die API ist ein vorsichtiges Backend-Grundgeruest fuer spaetere Integrationen, F
 - Die API nutzt noch nicht die produktiven Projekt-JSON-Dateien.
 - Bestehende Formularrouten, Autosave-Funktionen, Uploads und PDF-Exporte bleiben unveraendert.
 - Authentifizierung fuer die API ist in diesem Grundgeruest noch nicht aktiv.
+- Es ist keine neue Datenbank, keine Upload-Funktion und keine neue PDF-Engine fuer die API aktiv.
 
 ## Antwortformat
 
@@ -68,6 +69,56 @@ Fehler:
 }
 ```
 
+## Beispielantwort Listenabfrage
+
+`GET /api/projects`
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "musterprojekt",
+      "name": "Musterprojekt",
+      "projectNumber": "MP-2026-001",
+      "customer": "Demo GmbH",
+      "site": "Baustelle Musterstrasse",
+      "building": "Verwaltungsgebaeude",
+      "status": "active"
+    }
+  ],
+  "message": "Projekte geladen"
+}
+```
+
+## Beispielantwort fuer unbekannte ID
+
+`GET /api/projects/unbekannt`
+
+```json
+{
+  "success": false,
+  "error": {
+    "message": "Projekt nicht gefunden",
+    "code": "PROJECT_NOT_FOUND"
+  }
+}
+```
+
+## Beispielantwort fuer unbekannte API-Route
+
+`GET /api/does-not-exist`
+
+```json
+{
+  "success": false,
+  "error": {
+    "message": "API-Endpunkt nicht gefunden",
+    "code": "API_NOT_FOUND"
+  }
+}
+```
+
 ## Lokaler Test
 
 App starten:
@@ -87,10 +138,35 @@ API pruefen:
 ```bash
 curl http://localhost:3000/api/health
 curl http://localhost:3000/api/projects
+curl http://localhost:3000/api/projects/musterprojekt
+curl http://localhost:3000/api/projects/unbekannt
 curl http://localhost:3000/api/service-areas
 curl http://localhost:3000/api/device-lists
 curl http://localhost:3000/api/documents
 curl http://localhost:3000/api/exports/status
+curl http://localhost:3000/api/does-not-exist
+```
+
+Wenn die App lokal auf einem anderen Port laeuft, kann die URL entsprechend angepasst werden, zum Beispiel:
+
+```bash
+curl http://localhost:3100/api/health
+curl http://localhost:3100/api/projects
+curl http://localhost:3100/api/projects/musterprojekt
+curl http://localhost:3100/api/projects/unbekannt
+curl http://localhost:3100/api/does-not-exist
+```
+
+Automatischer Smoke-Test:
+
+```bash
+npm run smoke:api
+```
+
+Bei abweichender Basis-URL:
+
+```bash
+API_BASE_URL=http://localhost:3100 npm run smoke:api
 ```
 
 ## Spaetere Erweiterung
