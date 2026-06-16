@@ -115,6 +115,9 @@ ensureDefaultUser();
 migrateProjectsJson(ROOT_DIR);
 
 const app = express();
+if (["1", "true", "yes", "on"].includes(String(process.env.TRUST_PROXY || "").trim().toLowerCase())) {
+  app.set("trust proxy", 1);
+}
 app.set("view engine", "ejs");
 app.set("views", path.join(ROOT_DIR, "views"));
 app.set("query parser", "extended");

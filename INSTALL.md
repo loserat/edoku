@@ -98,3 +98,23 @@ Wichtige Ordner:
 Die aktuelle Version ist eine Beta. Für produktiven Serverbetrieb müssen unter anderem HTTPS, sichere Secrets, Härtung der Sessions, Benutzerrollen, Backups und Reverse-Proxy-Konfiguration geprüft werden.
 
 Systemadmins können Benutzer in der Anwendung sperren, wieder aktivieren, Rollen ändern und Passwörter zurücksetzen. Für öffentliche Installationen sollten die lokalen Demo-Konten direkt nach dem ersten Start angepasst oder ersetzt werden.
+
+## Serverbetrieb: Cookie-Optionen
+
+Für HTTPS-Betrieb hinter einem Reverse Proxy sollten mindestens folgende Umgebungsvariablen gesetzt werden:
+
+```text
+NODE_ENV=production
+COOKIE_SECURE=true
+COOKIE_SAME_SITE=lax
+TRUST_PROXY=true
+```
+
+Optional:
+
+```text
+SESSION_COOKIE_NAME=edoku_session
+COOKIE_DOMAIN=deine-domain.example
+```
+
+Lokal bleiben diese Werte normalerweise leer, damit die Anmeldung unter `http://localhost:3000` weiterhin funktioniert.
