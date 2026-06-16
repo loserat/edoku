@@ -44,6 +44,7 @@ storage/users/[userId]/projects/[projectId]/
 - Registrierung und Login sind vorhanden.
 - Passwörter werden mit `crypto.scrypt` und Salt gehasht.
 - Sessions werden als zufällige Tokens in SQLite gespeichert.
+- Session-Cookies sind `httpOnly`, nutzen standardmäßig `SameSite=Lax` und können für HTTPS-Betrieb per ENV auf `Secure` gehärtet werden.
 - Fachseiten sind nur nach Login erreichbar.
 - Projektzugriff erfolgt über die angemeldete `userId`.
 - Für lokale Tests werden Seed-Benutzer vorbereitet; konkrete lokale Defaults stehen in `INSTALL.md`.
@@ -54,6 +55,26 @@ storage/users/[userId]/projects/[projectId]/
 - Gesperrte Konten können sich nicht anmelden; vorhandene Sessions werden beim Sperren entfernt.
 - Passwort-Reset durch Systemadmins schreibt neuen Hash/Salt und beendet vorhandene Sessions des Kontos.
 - Der bestehende Admin-Datensatz behält intern seine stabile ID, damit vorhandene Demo-Projekte nicht verloren gehen.
+
+## Session-Cookies und Reverse Proxy
+
+Für lokale Entwicklung bleiben Session-Cookies ohne `Secure`-Attribut, damit `http://localhost:3000` funktioniert. Im Serverbetrieb hinter HTTPS sollten folgende Umgebungsvariablen gesetzt werden:
+
+```text
+NODE_ENV=production
+COOKIE_SECURE=true
+COOKIE_SAME_SITE=lax
+TRUST_PROXY=true
+```
+
+Optional:
+
+```text
+SESSION_COOKIE_NAME=edoku_session
+COOKIE_DOMAIN=example.org
+```
+
+`TRUST_PROXY=true` setzt Express auf einen vertrauenswürdigen Reverse Proxy. Das ist bei Deployments hinter Nginx, Traefik oder Coolify sinnvoll, wenn HTTPS am Proxy terminiert wird.
 
 ## Projektkonzept
 

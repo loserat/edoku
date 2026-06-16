@@ -12,7 +12,7 @@ const {
 } = require("./dbService");
 const { sanitizeId } = require("./pathService");
 
-const SESSION_COOKIE = "dm_session";
+const SESSION_COOKIE = process.env.SESSION_COOKIE_NAME || "dm_session";
 const SESSION_DAYS = 14;
 
 // * INFO: Erzeugt kryptografisch zufällige Tokens für Sessions und User-IDs.
@@ -38,11 +38,42 @@ function verifyPassword(password, salt, expectedHash) {
   return left.length === right.length && crypto.timingSafeEqual(left, right);
 }
 
-// ! WICHTIG: Cookie-Einstellungen für die lokale Session. httpOnly verhindert Zugriff per Frontend-JS.
+// * INFO: Boolean-Umgebungswerte eindeutig auswerten, damit Production-Flags nicht
+// * INFO: versehentlich durch beliebige Strings aktiviert werden.
+function envFlag(name) {
+  return ["1", "true", "yes", "on"].includes(String(process.env[name] || "").trim().toLowerCase());
+}
+
+function sameSiteValue() {
+  const value = String(process.env.COOKIE_SAME_SITE || "lax").trim().toLowerCase();
+  return ["lax", "strict", "none"].includes(value) ? value : "lax";
+}
+
+function secureCookieEnabled() {
+  return envFlag("COOKIE_SECURE") || process.env.NODE_ENV === "production";
+}
+
+// ! WICHTIG: Gemeinsame Cookie-Basisoptionen. httpOnly verhindert Zugriff per Frontend-JS.
+// ? WARUM: Secure/Domain werden per ENV gesteuert, damit lokale Entwicklung ohne HTTPS
+// ? WARUM: weiter funktioniert und Production hinter HTTPS bewusst gehaertet werden kann.
+function baseCookieOptions() {
+  const options = {
+    httpOnly: true,
+    sameSite: sameSiteValue(),
+    path: "/",
+    secure: secureCookieEnabled()
+  };
+
+  if (process.env.COOKIE_DOMAIN) {
+    options.domain = process.env.COOKIE_DOMAIN;
+  }
+
+  return options;
+}
+
 function cookieOptions() {
   return {
-    httpOnly: true,
-    sameSite: "lax",
+    ...baseCookieOptions(),
     maxAge: SESSION_DAYS * 24 * 60 * 60 * 1000
   };
 }
@@ -109,7 +140,7 @@ function endSession(req, res) {
   if (req.cookies && req.cookies[SESSION_COOKIE]) {
     deleteSession(req.cookies[SESSION_COOKIE]);
   }
-  res.clearCookie(SESSION_COOKIE);
+  res.clearCookie(SESSION_COOKIE, baseCookieOptions());
 }
 
 // * INFO: Minimaler Cookie-Parser ohne zusätzliche Middleware-Abhängigkeit.
