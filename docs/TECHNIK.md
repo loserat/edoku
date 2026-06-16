@@ -58,11 +58,12 @@ storage/users/[userId]/projects/[projectId]/
 
 ## Session-Cookies und Reverse Proxy
 
-Für lokale Entwicklung bleiben Session-Cookies ohne `Secure`-Attribut, damit `http://localhost:3000` funktioniert. Im Serverbetrieb hinter HTTPS sollten folgende Umgebungsvariablen gesetzt werden:
+Für lokale Entwicklung bleiben Session-Cookies ohne `Secure`-Attribut, damit `http://localhost:3000` funktioniert. Bei HTTPS-Anfragen wird `Secure` automatisch gesetzt. Hinter einem Reverse Proxy sollte `TRUST_PROXY=true` gesetzt werden, damit Express Proxy-Header korrekt auswertet.
+
+Empfohlene Serverwerte:
 
 ```text
 NODE_ENV=production
-COOKIE_SECURE=true
 COOKIE_SAME_SITE=lax
 TRUST_PROXY=true
 ```
@@ -72,9 +73,10 @@ Optional:
 ```text
 SESSION_COOKIE_NAME=edoku_session
 COOKIE_DOMAIN=example.org
+COOKIE_SECURE=true
 ```
 
-`TRUST_PROXY=true` setzt Express auf einen vertrauenswürdigen Reverse Proxy. Das ist bei Deployments hinter Nginx, Traefik oder Coolify sinnvoll, wenn HTTPS am Proxy terminiert wird.
+`COOKIE_SECURE=true` erzwingt sichere Cookies immer. Das sollte nur gesetzt werden, wenn der Browser die Anwendung tatsächlich über HTTPS erreicht. Bei HTTP-only-Testinstallationen würde ein erzwungenes Secure-Cookie den Login verhindern.
 
 ## Projektkonzept
 
