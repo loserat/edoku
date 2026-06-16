@@ -4,7 +4,8 @@
   "description": "Lokale Web-Anwendung fuer einen Elektro-Dokumentationsmanager.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "smoke:api": "node scripts/smoke-api.js"
   },
   "dependencies": {
     "better-sqlite3": "^11.9.1",

@@ -1,0 +1,41 @@
+{
+  "appTitel": "edoku",
+  "standardGewerk": "Elektrotechnik",
+  "standardEinheit": "Stk",
+  "autosaveHinweis": true,
+  "deleteConfirmDialogs": true,
+  "pdfFooterText": "Bearbeiter | Ort / Datum",
+  "exportOrdnerPrefix": "ProjektExport",
+  "datumFormat": "de-DE",
+  "export": {
+    "trennstreifen": {
+      "showInnenText": false,
+      "showRegisterTitel": false
+    },
+    "ordnerruecken": {
+      "format": "61x192-r",
+      "anzahlModus": "manuell",
+      "ordnerAnzahl": 1,
+      "showProjektname": true,
+      "showProjektnummer": true,
+      "showAuftraggeber": false,
+      "showLiegenschaft": true,
+      "showBaumassnahme": false,
+      "showOrdnernummer": true,
+      "showFormatHint": false
+    }
+  },
+  "lizenz": {
+    "brandingAktiv": true
+  },
+  "ersteller": {
+    "name": "",
+    "firma": "Demo GmbH",
+    "anschrift": "Musterstrasse 1, 12345 Musterstadt",
+    "telefon": "",
+    "email": "",
+    "webseite": "",
+    "bearbeiter": "",
+    "logoPfad": ""
+  }
+}

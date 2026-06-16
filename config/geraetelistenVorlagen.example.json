@@ -1,0 +1,40 @@
+[
+  {
+    "id": "demo-vorlage-hv-technik",
+    "name": "Demo Vorlage HV Technik",
+    "leistungsbereich": "Niederspannungsschaltanlagen / Verteilungen",
+    "beschreibung": "Neutrale Beispielvorlage fuer eine Hauptverteilung.",
+    "positionen": [
+      {
+        "position": 1,
+        "lvPosition": "01.01.0010",
+        "hersteller": "Demo Hersteller",
+        "system": "HV Technik",
+        "typ": "Hauptverteilung",
+        "beschreibung": "Beispielposition fuer eine technische Verteilung.",
+        "spannung": "400 V",
+        "leistung": "optional",
+        "bemerkung": "Neutrale Demo-Angabe"
+      }
+    ]
+  },
+  {
+    "id": "demo-vorlage-uv-buero-eg",
+    "name": "Demo Vorlage UV Buero EG",
+    "leistungsbereich": "Elektroinstallation / DIN VDE 0100",
+    "beschreibung": "Neutrale Beispielvorlage fuer eine Unterverteilung.",
+    "positionen": [
+      {
+        "position": 1,
+        "lvPosition": "01.01.0020",
+        "hersteller": "Muster Hersteller",
+        "system": "UV Buero EG",
+        "typ": "Unterverteilung",
+        "beschreibung": "Beispielposition fuer einen Etagenbereich.",
+        "spannung": "230/400 V",
+        "leistung": "optional",
+        "bemerkung": "Neutrale Demo-Angabe"
+      }
+    ]
+  }
+]
