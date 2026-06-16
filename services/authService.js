@@ -49,19 +49,26 @@ function sameSiteValue() {
   return ["lax", "strict", "none"].includes(value) ? value : "lax";
 }
 
-function secureCookieEnabled() {
-  return envFlag("COOKIE_SECURE") || process.env.NODE_ENV === "production";
+function requestUsesHttps(req) {
+  const forwardedProto = String((req && req.headers && req.headers["x-forwarded-proto"]) || "").toLowerCase();
+  return Boolean(req && req.secure) || forwardedProto.split(",").map((part) => part.trim()).includes("https");
+}
+
+function secureCookieEnabled(req) {
+  if (envFlag("COOKIE_SECURE")) return true;
+  if (String(process.env.COOKIE_SECURE || "").trim().toLowerCase() === "false") return false;
+  return requestUsesHttps(req);
 }
 
 // ! WICHTIG: Gemeinsame Cookie-Basisoptionen. httpOnly verhindert Zugriff per Frontend-JS.
 // ? WARUM: Secure/Domain werden per ENV gesteuert, damit lokale Entwicklung ohne HTTPS
 // ? WARUM: weiter funktioniert und Production hinter HTTPS bewusst gehaertet werden kann.
-function baseCookieOptions() {
+function baseCookieOptions(req) {
   const options = {
     httpOnly: true,
     sameSite: sameSiteValue(),
     path: "/",
-    secure: secureCookieEnabled()
+    secure: secureCookieEnabled(req)
   };
 
   if (process.env.COOKIE_DOMAIN) {
@@ -71,9 +78,9 @@ function baseCookieOptions() {
   return options;
 }
 
-function cookieOptions() {
+function cookieOptions(req) {
   return {
-    ...baseCookieOptions(),
+    ...baseCookieOptions(req),
     maxAge: SESSION_DAYS * 24 * 60 * 60 * 1000
   };
 }
@@ -132,7 +139,7 @@ function startSession(res, userId) {
   const token = randomToken();
   const expiresAt = new Date(Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000).toISOString();
   createSession(token, userId, expiresAt);
-  res.cookie(SESSION_COOKIE, token, cookieOptions());
+  res.cookie(SESSION_COOKIE, token, cookieOptions(res.req));
 }
 
 // * INFO: Beendet die Session serverseitig und entfernt das Cookie.
@@ -140,7 +147,7 @@ function endSession(req, res) {
   if (req.cookies && req.cookies[SESSION_COOKIE]) {
     deleteSession(req.cookies[SESSION_COOKIE]);
   }
-  res.clearCookie(SESSION_COOKIE, baseCookieOptions());
+  res.clearCookie(SESSION_COOKIE, baseCookieOptions(req));
 }
 
 // * INFO: Minimaler Cookie-Parser ohne zusätzliche Middleware-Abhängigkeit.

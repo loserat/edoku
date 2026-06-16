@@ -105,7 +105,6 @@ Für HTTPS-Betrieb hinter einem Reverse Proxy sollten mindestens folgende Umgebu
 
 ```text
 NODE_ENV=production
-COOKIE_SECURE=true
 COOKIE_SAME_SITE=lax
 TRUST_PROXY=true
 ```
@@ -115,6 +114,9 @@ Optional:
 ```text
 SESSION_COOKIE_NAME=edoku_session
 COOKIE_DOMAIN=deine-domain.example
+COOKIE_SECURE=true
 ```
+
+`COOKIE_SECURE=true` erzwingt HTTPS-Cookies. Wenn eine Testinstallation noch per HTTP erreichbar ist, darf dieser Wert nicht gesetzt werden, sonst kann der Browser die Login-Session nicht speichern.
 
 Lokal bleiben diese Werte normalerweise leer, damit die Anmeldung unter `http://localhost:3000` weiterhin funktioniert.
