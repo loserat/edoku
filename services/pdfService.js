@@ -9,7 +9,7 @@ const { getLeistungsbereichConfig, selectedHerstellerConfig } = require("./syste
 const { applyLogicalChapterNumbers } = require("./chapterNumberingService");
 const { formEnabledForLeistungsbereiche, mergeFormTemplates, templateTitle, textForKonformitaet } = require("./formTemplateService");
 const { resolveCreatorLogo, resolveProjectLogo } = require("./logoService");
-const { buildDocumentationAttachmentEntries } = require("./documentAttachmentService");
+const { buildDocumentationAttachmentEntries, defaultDocumentMetaForCategory, documentationAttachments } = require("./documentAttachmentService");
 
 const BRAND_LINK_URL = "https://nickgm.de";
 const BRAND_ICON_PATH = "M10 2h4M11 2v6.5l-5.2 9.2C4.6 19.8 6.1 22 8.5 22h7c2.4 0 3.9-2.2 2.7-4.3L13 8.5V2M8.2 15h7.6M9.2 19h5.6";
@@ -160,6 +160,22 @@ function buildInhaltsverzeichnisEntries(matrix, geraetelisten = [], anhaenge = [
     });
   });
 
+  // * INFO: Importierte PDFs brauchen ihr Kategorie-Elternkapitel im Inhaltsverzeichnis.
+  // ? WARUM: Sonst kann z. B. ein Stromlaufplan als 12.1.1 erscheinen, waehrend 12.1 fehlt.
+  documentationAttachments(anhaenge)
+    .filter((entry) => entry.export !== false)
+    .forEach((entry) => {
+      const meta = defaultDocumentMetaForCategory(entry.category);
+      const kapitel = String(entry.kapitel || meta.kapitel || "");
+      const parts = kapitel.split(".").filter(Boolean);
+      parts.forEach((_, index) => {
+        ensureTocParent(parts.slice(0, index + 1).join("."), {
+          titel: meta.title || entry.category || "Dokumentation",
+          leistungsbereich: "Dokumentation"
+        });
+      });
+    });
+
   const docs = activeExportDocs(applyLogicalChapterNumbers([...tocBaseById.values()], { exportOnly: true }));
   const docsByOriginalKapitel = new Map(
     docs.map((entry) => [String(entry.originalKapitel || entry.kapitel), entry])
@@ -184,7 +200,7 @@ function buildInhaltsverzeichnisEntries(matrix, geraetelisten = [], anhaenge = [
       };
     });
 
-  const attachmentEntries = buildDocumentationAttachmentEntries(matrix, anhaenge, projekt, activeLists);
+  const attachmentEntries = buildDocumentationAttachmentEntries([...tocBaseById.values()], anhaenge, projekt, activeLists);
 
   return [...docs, ...listEntries, ...attachmentEntries].sort((a, b) => {
     const sortA = Number.isFinite(a.sortierung) ? a.sortierung : 0;

@@ -1,6 +1,6 @@
 # Offene Punkte edoku
 
-Stand: 2026-06-15
+Stand: 2026-07-25
 
 Diese Datei sammelt offene Aufgaben, bekannte Beta-Einschränkungen und sinnvolle nächste Schritte. Sie dient als gemeinsame Arbeitsliste, damit Punkte aus Tests, GUI-Feedback und Exportprüfungen nicht im Chat verloren gehen.
 
@@ -8,9 +8,14 @@ Diese Datei sammelt offene Aufgaben, bekannte Beta-Einschränkungen und sinnvoll
 
 ### PDF-Gesamtdokumentation final prüfen
 
-Status: offen
+Status: teilweise erledigt
 
 Die Einzel-PDFs werden erzeugt, die finale Gesamtlogik muss aber im Praxistest weiter geprüft werden. Wichtig sind insbesondere Reihenfolge, Kapitelnummerierung, Deckblätter, Inhaltsverzeichnis, importierte PDF-Anhänge und verknüpfte Bedienungsanleitungen.
+
+Erledigt:
+
+- Doppelte Original-Kapitelnummern erzeugen keine doppelten Anzeige-Kapitel mehr.
+- Importierte PDF-Anhänge erhalten ihre Elternkapitel im Inhaltsverzeichnisbaum.
 
 Prüfen:
 
@@ -74,6 +79,20 @@ Prüfen:
 - Passwortänderungen beenden alte Sessions.
 
 ## Priorität B: Fachliche Funktionen weiter ausbauen
+
+### Liegenschaften und Gebäude
+
+Status: offen
+
+Für größere Objekte reicht die reine Stockwerksliste langfristig nicht aus. Es soll ein eigener Bereich `Liegenschaften` mit Unterpunkt `Gebäude` vorbereitet werden. Darüber können später Gebäude, Gebäudeteile und Zuordnungen für Pläne und Brandschutz sauberer gepflegt werden.
+
+Geplant:
+
+- Navigation und Route für `Liegenschaften > Gebäude` additiv ergänzen.
+- Zunächst eine einfache Verwaltungsansicht ohne bestehende Projektlogik umzubauen.
+- Spätere Datenstruktur für Gebäude neutral vorbereiten.
+- Gebäude später für Pläne und Brandschutz nutzbar machen.
+- Keine vorhandenen Projekt-, Anhangs- oder Exportdaten automatisch migrieren.
 
 ### Anhänge-Verwaltung finalisieren
 
@@ -282,6 +301,40 @@ Offen:
 
 ## Priorität E: Dokumentation, Tests und Release
 
+### API-Grundgerüst härten
+
+Status: teilweise erledigt
+
+Das API-Grundgerüst unter `/api/*` ist vorhanden und nutzt neutrale Demo-Daten. Es ersetzt die bestehende App nicht, sondern liegt additiv daneben.
+
+Erledigt:
+
+- Healthcheck, Projekte, Leistungsbereiche, Gerätelisten, Dokumente und Exportstatus als GET-Endpunkte vorhanden.
+- Einheitliches Erfolgs- und Fehlerformat.
+- JSON-404 fuer unbekannte API-Routen und unbekannte IDs.
+- API-Dokumentation in `docs/API.md`.
+
+Offen:
+
+- Spätere echte Projektdaten nur kontrolliert anbinden.
+- Rechte-/Session-Prüfung für produktive API-Nutzung planen.
+- Keine Schreibendpunkte freischalten, bevor Zugriffskonzept und Validierung sauber definiert sind.
+
+### Produktive Sicherheit
+
+Status: offen
+
+Die Anwendung ist als Beta vorbereitet, aber noch nicht als bezahltes produktives SaaS-Angebot gehärtet.
+
+Offen:
+
+- Rechteprüfung systematisch automatisiert testen.
+- CSRF-Schutz für schreibende Formular- und API-Aktionen prüfen.
+- Rate-Limits für Login und API ergänzen.
+- Sichere Produktions-ENV dokumentieren.
+- Backup-/Restore-Konzept für SQLite und projektbezogene Dateien definieren.
+- Audit-Log für kritische Systemadmin-Aktionen prüfen.
+
 ### Better Comments
 
 Status: offen
@@ -324,6 +377,11 @@ Manuelle Tests:
 Status: teilweise vorhanden
 
 README, technische Doku, Release Notes und Projektupdate sind vorhanden. Der GitHub-Auftritt soll für Beta-Tester verständlich bleiben.
+
+Erledigt:
+
+- `CHANGELOG.md` angelegt.
+- `docs/REPO_SICHERHEITSCHECK.md` ergänzt.
 
 Offen:
 

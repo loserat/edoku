@@ -21,6 +21,8 @@ edoku ist aktuell als **Beta-Version** vorgesehen. Die Anwendung ist lokal und p
 Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. Es gibt bewusst noch Einschränkungen bei Rollen/Rechten, automatisierten Tests, PDF-Merge und Archivfunktionen.
 
 Die aktuelle Arbeitsliste mit offenen Punkten steht in [docs/OFFENE_PUNKTE.md](docs/OFFENE_PUNKTE.md).
+Der kompakte aktuelle Projektstand steht in [docs/AKTUELLER_STAND.md](docs/AKTUELLER_STAND.md).
+Änderungen werden zusätzlich im [CHANGELOG.md](CHANGELOG.md) gepflegt.
 
 ## Funktionen
 
@@ -216,6 +218,9 @@ Siehe auch:
 
 - [Technische Dokumentation](docs/TECHNIK.md)
 - [Installation](INSTALL.md)
+- [Aktueller Stand](docs/AKTUELLER_STAND.md)
+- [Changelog](CHANGELOG.md)
+- [Repo-Sicherheitscheck](docs/REPO_SICHERHEITSCHECK.md)
 - [Projektupdate](docs/PROJEKTUPDATE.md)
 - [Release Notes](docs/RELEASE_NOTES.md)
 

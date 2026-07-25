@@ -1,6 +1,6 @@
 # Projektupdate edoku
 
-Stand: 2026-06-12
+Stand: 2026-07-25
 
 ## Beta-Status
 
@@ -147,6 +147,22 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - GitHub-orientierte Theme-Presets ergänzt: Light/Dark Default, High Contrast, Colorblind und Dark Dimmed.
 - Theme-Editor auf die wichtigsten Werte reduziert, damit die Systemeinstellungen nicht überladen wirken.
 
+## Update 2026-07-25
+
+- API-/Backend-Grundgerüst wurde in den Hauptstand übernommen.
+- Neue API-Struktur liegt unter `src/` mit Routen, Controllern, Services, Demo-Store, Middleware und Response-Utilities.
+- Verfügbare API-Endpunkte sind in `docs/API.md` dokumentiert.
+- API-Fehlerantworten für unbekannte IDs und unbekannte API-Routen wurden auf ein einheitliches JSON-Format gehärtet.
+- Neutrale Demo-Daten im API-Demo-Store wurden geprüft.
+- Beispiel-Konfigurationsdateien für lokale Runtime-Konfigurationen sind vorhanden, ohne echte lokale Daten zu veröffentlichen.
+- Session-Cookie-Erkennung wurde für lokalen HTTP-Betrieb und HTTPS hinter Reverse Proxy verbessert.
+- `COOKIE_SECURE=true` kann sichere Cookies erzwingen; ohne diese Option entscheidet die App anhand der tatsächlichen HTTPS-/Proxy-Anfrage.
+- Der aktuelle Projektstand ist zusätzlich kompakt in `docs/AKTUELLER_STAND.md` dokumentiert.
+- Nächster fachlicher Schritt: Bereich `Liegenschaften` mit Unterpunkt `Gebäude` additiv vorbereiten.
+- Export-Kapitelnummerierung wurde korrigiert, damit mehrere Matrixeinträge mit gleicher Original-Kapitelnummer keine doppelten Anzeige-Kapitel mehr erzeugen.
+- Importierte PDF-Anhänge erzwingen jetzt ihre Elternkapitel im Inhaltsverzeichnis.
+- `CHANGELOG.md` und `docs/REPO_SICHERHEITSCHECK.md` wurden ergänzt.
+
 ## Wichtige Beta-Einschränkungen
 
 - Rollen- und Rechteverwaltung ist als Beta-Funktion vorhanden und muss weiter produktionsreif gehärtet werden
@@ -171,3 +187,4 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Klickbare Kapitel-Sprungmarken im finalen Gesamt-PDF prüfen und umsetzen
 - Ordnerrücken-Auto-Berechnung später mit echten PDF-Seitenzahlen über `pdf-lib` präzisieren
 - Benutzerverwaltung weiter ausbauen: eigene Passwortänderung, optionale 2FA und Audit-Log prüfen
+- `Liegenschaften > Gebäude` als neuen Strukturpunkt vorbereiten
