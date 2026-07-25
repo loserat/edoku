@@ -15,12 +15,21 @@ function shouldNumber(document, options) {
   return true;
 }
 
+// * INFO: Stabiler interner Schluessel fuer Dokumente ohne eindeutige Objektidentitaet.
+// ? WARUM: In der Matrix duerfen mehrere Eintraege dieselbe Original-Kapitelnummer haben.
+function documentKey(document, index) {
+  return document && document.id ? `id:${document.id}` : `index:${index}`;
+}
+
 // * INFO: Berechnet fortlaufende Kapitelnummern aus der vorhandenen Matrix.
 // * INFO: Originalkapitel bleiben erhalten, die Anzeige nutzt später displayKapitel.
-function logicalChapterNumber(documents, options = {}) {
+function logicalChapterNumberRecords(documents, options = {}) {
   const sorted = sortDocuments(documents).filter((document) => shouldNumber(document, options));
   const countersByParent = new Map();
   const logicalByOriginal = new Map();
+  const logicalByDocument = new Map();
+  const logicalByKey = new Map();
+  const sourceIndexes = new Map((documents || []).map((document, index) => [document, index]));
 
   sorted.forEach((document) => {
     const original = String(document.kapitel || "").trim();
@@ -34,19 +43,36 @@ function logicalChapterNumber(documents, options = {}) {
     countersByParent.set(parentKey, next);
 
     const logical = parentLogical ? `${parentLogical}.${next}` : String(next);
-    logicalByOriginal.set(original, logical);
+    logicalByDocument.set(document, logical);
+    logicalByKey.set(documentKey(document, sourceIndexes.get(document)), logical);
+
+    // ! WICHTIG: Bei doppelten Originalkapiteln darf der erste Wert nicht ueberschrieben werden.
+    // ? WARUM: Sonst erhalten mehrere Dokumente dieselbe displayKapitel-Nummer und Luecken entstehen.
+    if (!logicalByOriginal.has(original)) {
+      logicalByOriginal.set(original, logical);
+    }
   });
 
-  return logicalByOriginal;
+  return {
+    byOriginal: logicalByOriginal,
+    byDocument: logicalByDocument,
+    byKey: logicalByKey
+  };
+}
+
+function logicalChapterNumber(documents, options = {}) {
+  return logicalChapterNumberRecords(documents, options).byOriginal;
 }
 
 // * INFO: Ergänzt jedes Dokument um originalKapitel und displayKapitel.
 function applyLogicalChapterNumbers(documents, options = {}) {
-  const logicalByOriginal = logicalChapterNumber(documents, options);
+  const logical = logicalChapterNumberRecords(documents, options);
 
-  return (documents || []).map((document) => {
+  return (documents || []).map((document, index) => {
     const originalKapitel = document.originalKapitel || document.kapitel || "";
-    const displayKapitel = logicalByOriginal.get(String(document.kapitel || "")) || "";
+    const displayKapitel = logical.byDocument.get(document)
+      || logical.byKey.get(documentKey(document, index))
+      || "";
     return {
       ...document,
       originalKapitel,

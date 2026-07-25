@@ -111,6 +111,15 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 - Theme-Presets um GitHub Light/Dark Default, High Contrast, Colorblind und Dark Dimmed erweitert.
 - Theme-Editor auf die wichtigsten Stellschrauben reduziert, damit die Einstellungen übersichtlicher bleiben.
 
+### Nachtrag 2026-07-25
+
+- API-/Backend-Grundgerüst in den Hauptstand übernommen und dokumentiert.
+- API-Fehlerantworten und 404-Verhalten vereinheitlicht.
+- Session-Cookie-Erkennung für lokalen Betrieb und Reverse Proxy gehärtet.
+- Kapitelnummerierung im Export korrigiert, damit doppelte Original-Kapitelnummern keine doppelten Anzeige-Kapitel mehr erzeugen.
+- Importierte PDF-Anhänge erzwingen ihre Elternkapitel im Inhaltsverzeichnisbaum.
+- `CHANGELOG.md`, `docs/AKTUELLER_STAND.md` und `docs/REPO_SICHERHEITSCHECK.md` ergänzt.
+
 ### Bekannte Grenzen
 
 - Noch keine produktive Server-Härtung
