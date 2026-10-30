@@ -132,8 +132,10 @@
                     <td><%= project.geaendertAm || "-" %></td>
                     <td class="actions-cell">
                       <% if (project.status !== "geloescht") { %>
-                        <form action="/projekte/<%= project.id %>/oeffnen" method="post"><button type="submit">Öffnen</button></form>
-                        <form action="/projekte/<%= project.id %>/exportieren" method="post"><button type="submit">Exportieren</button></form>
+                        <form action="/projekte/<%= project.id %>/oeffnen" method="post">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>"><button type="submit">Öffnen</button></form>
+                        <form action="/projekte/<%= project.id %>/exportieren" method="post">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>"><button type="submit">Exportieren</button></form>
                       <% } %>
                     </td>
                   </tr>

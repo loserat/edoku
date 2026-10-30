@@ -1406,6 +1406,12 @@ tr:last-child td {
   color: var(--danger);
 }
 
+.notice.warning {
+  background: #fff8c5;
+  border-color: #d4a72c;
+  color: #633c01;
+}
+
 /* * INFO: Zentrale Exportaktionen; bewusst wenige primäre Buttons. */
 .export-actions {
   display: grid;

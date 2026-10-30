@@ -99,6 +99,7 @@
         <div class="section-tabs-subhead">
           <span>Projektmanager</span>
           <form action="/projekte" method="post" class="section-plus-form" title="Neues Projekt">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
             <input type="hidden" name="projektname" value="Neues Projekt">
             <input type="hidden" name="auftragGewerk" value="Elektrotechnik">
             <button class="section-plus-button" type="submit" aria-label="Neues Projekt anlegen">+</button>
@@ -107,6 +108,7 @@
         <% activeProjects.forEach((project) => { %>
           <% const isCurrentProject = project.id === currentProjectId; %>
           <form action="/projekte/<%= project.id %>/oeffnen" method="post">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
             <button class="section-project-item <%= isCurrentProject ? "active" : "" %>" type="submit">
               <%- include("icon", { name: "project" }) %>
               <span><%= project.projektname || project.id %></span>

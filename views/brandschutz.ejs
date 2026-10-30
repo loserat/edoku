@@ -42,6 +42,7 @@
               </button>
             <% } %>
             <form action="/brandschutz/hinzufuegen" method="post">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
               <button type="submit">Brandschottung hinzufügen</button>
             </form>
           </div>
@@ -49,6 +50,7 @@
 
         <%# Auto-Save-Formular: Änderungen an Schottungen werden ohne Speichern-Button geschrieben. %>
         <form action="/brandschutz" method="post" data-autosave>
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
           <div class="table-wrap brandschutz-list-wrap">
             <table class="editable-table brandschutz-table" data-sortable-table>
                     <thead>

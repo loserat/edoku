@@ -7,6 +7,7 @@ Stand: 2026-10-30. Benötigt Node.js 20 oder neuer und installierte Abhängigkei
 ```bash
 npm run test:exports
 npm run test:preservation
+npm run test:security
 ```
 
 Die Tests verwenden temporäre Verzeichnisse, synthetische Konten und
@@ -20,7 +21,7 @@ sauberen Checkout mit neutralen Startdaten bauen:
 
 ```bash
 docker build -t edoku:pruefung .
-docker run --rm --network none --entrypoint node edoku:pruefung --test scripts/export-counting.test.js scripts/update-preservation.test.js
+docker run --rm --network none --entrypoint node edoku:pruefung --test scripts/export-counting.test.js scripts/update-preservation.test.js scripts/security-archive.test.js
 ```
 
 Der Testcontainer benötigt keine eingebundenen Laufzeitordner. Bei lokalem
@@ -47,6 +48,29 @@ beschreiben ausschließlich synthetische Prüffälle.
 1. Bestehende Kontonamen, Passwort-Hashes, Rollen, Sperren, Sitzungen und Projekte bleiben bei Start, zwölf angemeldeten Seitenaufrufen und erneutem Start erhalten. Projektdateien und altes Register werden verglichen.
 2. Eine vorhandene leere Datenbank wird nicht mit Testkonten befüllt.
 3. Eine echte Erstinstallation ohne Datenbank legt die vorgesehenen Startkonten weiterhin an.
+
+### Sicherheit und Archive: 17 Prüfungen
+
+`npm run test:security` prüft atomare JSON-Dateien, Projektanlage unter
+Parallelzugriff, gleiche Projektnamen, eindeutige und mehrdeutige Alt-Ausgaben,
+Symlinks, private Anhangsablage und Rückfalleordner. Weitere Fälle prüfen echte
+ZIP-Struktur, Paket-Rückimporte, beschädigte/manipulierte Dateien, absolute
+und fremde Dateiverweise sowie bereits fehlende Quellen.
+
+Der tatsächliche HTTP-Server prüft CSRF einschließlich Multipart-Upload,
+Viewer-/Systemadmin-Grenzen, HTML-Dateien unter falscher MIME-Angabe,
+fehlerhafte Cookies, fehlgeschlagene Speicherziele, Kontosperren und
+Sitzungsentzug nach Passwortänderungen. Finale Exporte werden bei einem
+Publikationsfehler nicht ersetzt; erfolgreiche Vorgänger bleiben erhalten.
+Insgesamt bestehen damit 38 automatisierte Prüfungen.
+
+Zusätzlich wurden alle acht nicht gelöschten Projekte einer konsistenten
+Kopie der tatsächlichen Installation exportiert und mit neuen Kennungen
+rückimportiert. Alle ursprünglichen Projektdateien sowie bestehende Konto-,
+Sitzungs- und Projektzeilen blieben unverändert. Vorhandene fehlende Logos/
+Brandschutzbilder wurden ausdrücklich als Quelllücken dokumentiert;
+gemeinsame Alt-Ausgaben blieben separat. Diese Prüfung erfolgte nur in der
+Kopie, nicht durch neue Exporte in der normalen Anwendung.
 
 ### API-Smoke-Test
 
@@ -94,5 +118,5 @@ mit echtem Projektbestand nur bewusst in der normalen Anwendung starten.
 6. Trennstreifen und Ordnerrücken auf echten Bögen ausdrucken und Maß, Ausrichtung und Lesbarkeit prüfen.
 
 Offen bleiben die fachliche Abnahme der Norm-/Formulartexte, vollständige
-Rechte- und Archivtests, beliebige reale PDFs und physische Druckabnahme.
+Browser-/Betriebsabnahme, beliebige reale PDFs und physische Druckabnahme.
 Automatisierte Prüfergebnisse ersetzen diese Abnahmen nicht.

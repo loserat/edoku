@@ -18,13 +18,15 @@ Version 1 ist bewusst leichtgewichtig aufgebaut:
 
 edoku ist aktuell als **Beta-Version** vorgesehen. Die Anwendung ist lokal und per Docker lauffähig und kann bereits für Testläufe, Demo-Projekte und die Weiterentwicklung der Elektro-Bestandsdokumentation genutzt werden.
 
-Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. Rollen/Rechte, Projektarchive und die fachliche Abnahme mit echten Dokumentationen bleiben offen. Kapitel-/Exportlogik und Datenerhalt sind mit 21 automatisierten Prüfungen abgedeckt.
+Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. Zentrale Audit-Protokollierung, externe Sicherung und die fachliche Abnahme mit echten Dokumentationen bleiben offen. Kapitel-/Exportlogik, Datenerhalt, Zugriffsgrenzen und Projektarchive sind mit 38 automatisierten Prüfungen abgedeckt.
 
 Die aktuelle Arbeitsliste mit offenen Punkten steht in [docs/OFFENE_PUNKTE.md](docs/OFFENE_PUNKTE.md).
 Der kompakte aktuelle Projektstand steht in [docs/AKTUELLER_STAND.md](docs/AKTUELLER_STAND.md).
 Änderungen werden zusätzlich im [CHANGELOG.md](CHANGELOG.md) gepflegt.
 
 ### Stand 30. Oktober 2026
+
+Sicherheits- und Archivkorrekturen: getrennte Ausgabeablagen je Benutzer und Projekt, begrenzte Dateizugriffe, Schutz schreibender Formulare, zuverlässige Speicherfehler und echte geprüfte Projekt-ZIPs. Gemeinsam genutzte Alt-Ausgaben bleiben als historischer Bestand erhalten. Siehe [Zugriffsschutz](docs/SICHERHEIT.md) und [Projektarchive](docs/PROJEKTARCHIVE.md).
 
 - Ruhige technische Oberfläche mit gemeinsamen Seitenköpfen, Kennzahlenkarten und klarer Navigation.
 - Einheitliches Dokument-/Prüfhaken-Icon für Browser, App und Startbildschirm.
@@ -233,9 +235,10 @@ Nach Installation der Abhängigkeiten:
 ```bash
 npm run test:exports
 npm run test:preservation
+npm run test:security
 ```
 
-Die 21 Prüfungen arbeiten mit temporären Prüfprojekten. Sie prüfen unter anderem Kapitelkollisionen, PDF-Seitenzahlen, Inhaltsverzeichnis-Sprunglinks und Datenerhalt über Neustarts. Die Exporttests schreiben zusätzlich eigene Nachweise unter `output/pdf/` und `output/counting-review/`; Tests deshalb in einem getrennten Checkout oder Container ausführen. Vorhandene Benutzerprojekte werden nicht bearbeitet. Eine Anleitung zur zusätzlichen manuellen Abnahme steht in [docs/TESTS.md](docs/TESTS.md).
+Die 38 Prüfungen arbeiten mit temporären Prüfprojekten. Sie prüfen unter anderem Kapitelkollisionen, PDF-Seitenzahlen, Inhaltsverzeichnis-Sprunglinks und Datenerhalt über Neustarts. Die Exporttests schreiben zusätzlich eigene Nachweise unter `output/pdf/` und `output/counting-review/`; Tests deshalb in einem getrennten Checkout oder Container ausführen. Vorhandene Benutzerprojekte werden nicht bearbeitet. Eine Anleitung zur zusätzlichen manuellen Abnahme steht in [docs/TESTS.md](docs/TESTS.md).
 
 ## Theme-System
 
@@ -285,13 +288,15 @@ Siehe auch:
 - [Release Notes](docs/RELEASE_NOTES.md)
 - [Tests und Beta-Abnahme](docs/TESTS.md)
 - [Lokales Update und Datensicherung](docs/UPDATE.md)
+- [Zugriffsschutz und Datenerhalt](docs/SICHERHEIT.md)
+- [Projektarchive und Wiederherstellung](docs/PROJEKTARCHIVE.md)
 
 ## Aktuelle Grenzen
 
 - keine externe Datenbank
 - Rollenverwaltung ist als Beta-Funktion vorhanden und muss für produktiven Serverbetrieb weiter gehärtet werden
 - PDF-Gesamtdatei und ZIP-Export sind als Beta-Funktion vorhanden und müssen weiter visuell geprüft werden
-- automatisierte Prüfungen decken Exportzählung und Datenerhalt ab; systematische Rechte-, Browser- und Archivtests fehlen noch
+- automatisierte Prüfungen decken Exportzählung, Datenerhalt und zentrale Sicherheits-/Archivfälle ab; vollständige Browser-, Fach- und Betriebsabnahme bleibt offen
 
 ## Lizenz
 

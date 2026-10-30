@@ -2,6 +2,16 @@
 
 ## Entwicklungsstand 2026-10-30 (noch kein neuer Release-Tag)
 
+### Sicherheits- und Archivnachtrag
+
+- Stabile Ausgabeablagen je Benutzer/Projekt und begrenzte Dateifreigaben einschließlich Symlink-Prüfung und Erkennung tatsächlicher Vorschautypen.
+- CSRF-Schutz, Login-/Registrierungsbegrenzung und Systemadmin-Grenzen für globale Änderungen.
+- Zuverlässige JSON-Speicherfehler sowie Erhalt vorheriger PDFs und fertiger Exporte bei Abbrüchen.
+- Geprüfte Projekt-ZIPs mit tatsächlichen Anhängen, Prüfsummen und Rückimport unter neuer Kennung; fehlende Quellen werden sichtbar dokumentiert.
+- Gemeinsame Alt-Ausgaben bleiben auf Benutzerwunsch separat historisch erhalten. Originale Exportindizes bleiben passiv erhalten und erteilen nach einem Import keine alten Dateirechte.
+- 38 automatisierte Prüfungen erfolgreich, zusätzlich Export/Rückimport aller acht nicht gelöschten Projekte ausschließlich in einer Datenkopie ohne Änderung der ursprünglichen Projektdateien.
+- Details: [Zugriffsschutz](SICHERHEIT.md), [Projektarchive](PROJEKTARCHIVE.md).
+
 ### Oberfläche und Wartbarkeit
 
 - Ruhige technische Gestaltung für Navigation, Tabellen, Formulare und Projektübersicht.

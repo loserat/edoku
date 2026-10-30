@@ -19,6 +19,7 @@
         <p class="auth-subtitle">Melde dich an, um an deinen Projekten weiterzuarbeiten.</p>
         <%- include("partials/flash", { flash }) %>
         <form action="/login" method="post" class="stack-form">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
           <label>
             <span>E-Mail oder Benutzername</span>
             <input type="text" name="email" autocomplete="username" required>

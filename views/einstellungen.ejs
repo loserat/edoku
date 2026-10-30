@@ -39,6 +39,7 @@
       <section class="settings-grid">
         <%# Allgemeine Systemwerte für Oberfläche, Export und PDF-Grunddaten. %>
         <form id="system" action="/einstellungen/system" method="post" data-autosave class="settings-panel" data-settings-panel="system">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
           <div class="panel-head">
             <div>
               <h2>System-Grundeinstellungen</h2>
@@ -117,6 +118,7 @@
 
         <%# Theme-Editor: zentrale Designwerte werden in systemEinstellungen.json gespeichert. %>
         <form id="theme-editor" action="/einstellungen/theme" method="post" class="settings-panel theme-editor" data-theme-editor data-settings-panel="theme" hidden>
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
           <div class="panel-head">
             <div>
               <h2>Theme-Editor</h2>
@@ -220,6 +222,7 @@
             </div>
           </div>
           <form action="/einstellungen/ersteller" method="post" data-autosave class="stack-form">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
             <div class="form-grid compact">
               <label>
                 <span>Name</span>
@@ -258,6 +261,7 @@
                 <img src="/einstellungen/ersteller-logo" alt="Erstellerlogo">
                 <span><%= systemSettings.ersteller.logoPfad %></span>
                 <form action="/einstellungen/ersteller-logo/loeschen" method="post" data-confirm="Zentrales Logo wirklich löschen?">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
                   <button class="danger icon-only-button" type="submit" aria-label="Logo löschen"><%- include("partials/icon", { name: "trash" }) %></button>
                 </form>
               <% } else { %>
@@ -266,6 +270,7 @@
               <% } %>
             </div>
             <form action="/einstellungen/ersteller-logo" method="post" enctype="multipart/form-data" class="logo-upload-form">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
               <label>
                 <span>Zentrales Logo</span>
                 <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" required>
@@ -276,6 +281,7 @@
         </section>
 
         <form id="ordnerstruktur" action="/einstellungen/ordnerstruktur" method="post" data-autosave class="settings-panel" data-settings-panel="ordnerstruktur" hidden>
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
           <div class="panel-head">
             <div>
               <h2>Projektordner</h2>
@@ -302,6 +308,7 @@
             </div>
 
             <form action="/einstellungen/benutzer" method="post" class="form-grid compact user-create-form">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
               <label>
                 <span>Login</span>
                 <input type="text" name="email" placeholder="z. B. neuer_user">
@@ -370,6 +377,7 @@
                               <span>Aktualisiert: <strong><%= updatedLabel %></strong></span>
                             </div>
                             <form action="/einstellungen/benutzer/<%= account.id %>/rolle" method="post" class="user-modal-form">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
                               <label>
                                 <span>Rolle</span>
                                 <select name="role" <%= account.id === user.id ? "disabled" : "" %>>
@@ -381,6 +389,7 @@
                               <button class="secondary compact-button" type="submit" <%= account.id === user.id ? "disabled" : "" %>>Rolle speichern</button>
                             </form>
                             <form action="/einstellungen/benutzer/<%= account.id %>/passwort" method="post" class="user-modal-form" data-confirm="Passwort für <%= account.email %> wirklich zurücksetzen? Bestehende Sessions werden beendet.">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
                               <label>
                                 <span>Neues Passwort</span>
                                 <input type="password" name="password" placeholder="neues Passwort" autocomplete="new-password">
@@ -389,6 +398,7 @@
                             </form>
                             <footer class="user-modal-actions">
                               <form action="/einstellungen/benutzer/<%= account.id %>/status" method="post" data-confirm="<%= account.status === "disabled" ? "Benutzer wirklich aktivieren?" : "Benutzer wirklich sperren? Bestehende Sessions werden beendet." %>">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
                                 <input type="hidden" name="status" value="<%= account.status === "disabled" ? "active" : "disabled" %>">
                                 <button class="secondary compact-button <%= account.status === "disabled" ? "" : "danger" %>" type="submit" <%= account.id === user.id ? "disabled" : "" %>>
                                   <%= account.status === "disabled" ? "Aktivieren" : "Sperren" %>
@@ -409,6 +419,7 @@
       </section>
 
       <form id="leistungsbereiche-admin" action="/einstellungen/leistungsbereiche-formulare" method="post" data-autosave class="settings-panel" data-settings-panel="leistungsbereiche" hidden>
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
         <div class="panel-head">
           <div>
             <h2>Leistungsbereiche</h2>
@@ -526,6 +537,7 @@
       </form>
 
       <form id="geraetelisten-vorlagen" action="/einstellungen/geraetelisten-vorlagen" method="post" data-autosave class="settings-panel" data-settings-panel="geraetelisten-vorlagen" hidden>
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
         <div class="panel-head">
           <div>
             <h2>Gerätelisten-Vorlagen</h2>

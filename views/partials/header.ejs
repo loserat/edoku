@@ -1,6 +1,9 @@
 <%# Gemeinsamer Header für alle angemeldeten Seiten: Branding, Projektstatus, Hauptnavigation, Benutzer und Theme-Schalter. %>
 <%- include("themeVariables") %>
 <a class="skip-link" href="#main-content">Zum Inhalt springen</a>
+<% if (typeof storageWarning === 'string' && storageWarning) { %>
+  <aside class="status-panel warning" role="status"><%= storageWarning %></aside>
+<% } %>
 <header class="site-header">
   <div class="brand-block">
     <a class="brand" href="/">
@@ -43,6 +46,7 @@
             <a href="/einstellungen#benutzer" role="menuitem">Benutzerverwaltung</a>
           <% } %>
           <form action="/logout" method="post">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
             <button type="submit" role="menuitem">Abmelden</button>
           </form>
         </div>

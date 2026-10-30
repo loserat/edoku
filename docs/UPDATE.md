@@ -17,7 +17,7 @@ Compose bindet fünf bestehende Verzeichnisse nach `/app/` ein:
 | `templates/` | Dokumentvorlagen |
 
 Für eine vollständige Sicherung alle fünf Verzeichnisse gemeinsam erfassen.
-Der Projektarchivexport innerhalb der App ist noch kein Ersatz dafür. Lokale
+Ein [Projektpaket](PROJEKTARCHIVE.md) enthält keine vollständige Installation und ersetzt diese Sicherung nicht. Lokale
 Anpassungen der bereits versionierten Einstellungsdateien unter `config/`
 nicht durch einen unkontrollierten Checkout überschreiben.
 
@@ -58,3 +58,15 @@ Die lokale Hauptanwendung wurde am 30.10.2026 nach diesem Ablauf aktualisiert.
 Die Sicherung und privaten Vorher/Nachher-Nachweise bleiben lokal. Ein
 allgemein getesteter automatisierter Wiederherstellungsablauf, externe
 Sicherung und regelmäßige Aufbewahrungskontrolle sind weiterhin offen.
+
+## Sicherheits-/Archivstand vom 30.10.2026
+
+Die neue Ausgabeablage benötigt keine automatische Datenmigration. Gemeinsam
+verwendete Alt-Ausgaben bleiben auf Benutzerwunsch als historischer Bestand
+unverändert erhalten. Nach dem Neustart bereits offene Formulare einmal neu
+laden, damit der neue CSRF-Token verwendet wird. Bestehende Sitzungen und
+Passwörter werden nicht zurückgesetzt.
+
+Vorhandene Quelldateilücken werden in Projektpaketen ausdrücklich dokumentiert;
+sie werden beim Update weder durch Platzhalterdateien verdeckt noch aus den
+Originalprojekten gelöscht.

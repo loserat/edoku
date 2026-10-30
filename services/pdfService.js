@@ -2,7 +2,9 @@ const fs = require("fs");
 const fsp = require("fs/promises");
 const path = require("path");
 const PDFDocument = require("pdfkit");
-const { createProjectFolder, fileSafeName } = require("./projectService");
+const { assertSafePath } = require("./pathService");
+const crypto = require("crypto");
+const { createProjectFolder, fileSafeName, resolveProjectSource } = require("./projectService");
 const { normalizeBrandschutz } = require("./brandschutzService");
 const { deviceListFieldsForLeistungsbereich, normalizeGeraetelisten } = require("./geraetelistenService");
 const { getLeistungsbereichConfig, selectedHerstellerConfig } = require("./systemService");
@@ -80,27 +82,39 @@ function manualChapterNumbers(matrix, lists = [], attachments = [], areas = {}, 
   return new Map(buildDocumentationPlan(matrix, lists, attachments, areas, project).filter((entry) => entry.attachmentId).map((entry) => [entry.attachmentId, entry.displayKapitel]));
 }
 
-// * INFO: Löscht alte generierte PDFs eines Bereichs, bevor neue PDFs erzeugt werden.
-async function clearGeneratedPdfs(folderPath) {
+// Alte Ausgaben bleiben in einer privaten Historie erhalten.
+async function clearGeneratedPdfs(folderPath, rootDir) {
+  await assertSafePath(rootDir, folderPath, { allowMissing: true });
   try {
     const entries = await fsp.readdir(folderPath, { withFileTypes: true });
     await Promise.all(entries
       .filter((entry) => entry.isFile() && path.extname(entry.name).toLowerCase() === ".pdf")
-      .map((entry) => fsp.unlink(path.join(folderPath, entry.name))));
+      .map(async (entry) => {
+        const history = path.join(folderPath, ".previous", crypto.randomUUID());
+        await assertSafePath(rootDir, history, { allowMissing: true });
+        await fsp.mkdir(history, { recursive: true });
+        await fsp.rename(path.join(folderPath, entry.name), path.join(history, entry.name));
+      }));
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
   }
 }
 
-// * INFO: Löscht Formular-PDFs im Generiert-Root, lässt das Inhaltsverzeichnis aber stehen.
-async function clearGeneratedRootFormPdfs(folderPath) {
+// Vorherige Formular-PDFs sichern; das Inhaltsverzeichnis bleibt aktiv.
+async function clearGeneratedRootFormPdfs(folderPath, rootDir) {
+  await assertSafePath(rootDir, folderPath, { allowMissing: true });
   try {
     const entries = await fsp.readdir(folderPath, { withFileTypes: true });
     await Promise.all(entries
       .filter((entry) => entry.isFile()
         && path.extname(entry.name).toLowerCase() === ".pdf"
         && entry.name !== "Inhaltsverzeichnis.pdf")
-      .map((entry) => fsp.unlink(path.join(folderPath, entry.name))));
+      .map(async (entry) => {
+        const history = path.join(folderPath, ".previous", crypto.randomUUID());
+        await assertSafePath(rootDir, history, { allowMissing: true });
+        await fsp.mkdir(history, { recursive: true });
+        await fsp.rename(path.join(folderPath, entry.name), path.join(history, entry.name));
+      }));
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
   }
@@ -460,31 +474,40 @@ function writeSignature(doc, label = "Firmenstempel / Unterschrift:") {
 // * INFO: Gemeinsamer PDF-Wrapper: Datei anlegen, Writer ausführen und Stream abschließen.
 async function writePdf(filePath, title, writer, options = {}) {
   await fsp.mkdir(path.dirname(filePath), { recursive: true });
-  return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({
-      margin: options.margin ?? 48,
-      size: options.size || "A4",
-      layout: options.layout || "portrait",
-      bufferPages: true
-    });
+  const temporary = `${filePath}.${crypto.randomUUID()}.tmp`;
+  const doc = new PDFDocument({ margin: options.margin ?? 48, size: options.size || "A4", layout: options.layout || "portrait", bufferPages: true });
+  const stream = fs.createWriteStream(temporary, { flags: "wx", mode: 0o600 });
+  const completed = new Promise((resolve,reject) => {
+    let finished=false;
+    stream.once("finish",()=>{finished=true;});
+    stream.once("close",()=>finished?resolve():reject(new Error("PDF konnte nicht vollständig geschrieben werden.")));
+    stream.once("error",reject); doc.once("error",reject);
+  });
+  try {
     doc.info.Title = title;
     if (options.documentId) doc.info.Subject = JSON.stringify({ edoku: 1, id: options.documentId, chapter: options.chapter });
-    const stream = fs.createWriteStream(filePath);
     doc._systemSettings = options.systemSettings || {};
     doc.pipe(stream);
-    stream.on("finish", () => resolve(filePath));
-    stream.on("error", reject);
     writer(doc, { title });
     const pageRange = doc.bufferedPageRange();
-    // ! WICHTIG: Trennstreifen deaktivieren Footer-Branding explizit, weil Registerdruck ohne Fußlogo erfolgen soll.
     if (options.includeFooterBranding !== false && isBrandingEnabled(options.systemSettings || {})) {
       for (let pageIndex = pageRange.start; pageIndex < pageRange.start + pageRange.count; pageIndex += 1) {
-        doc.switchToPage(pageIndex);
-        writeFooterBranding(doc, options.systemSettings || {});
+        doc.switchToPage(pageIndex); writeFooterBranding(doc, options.systemSettings || {});
       }
     }
-    doc.end();
-  });
+    doc.end(); await completed;
+    try {
+      const previous=await fsp.lstat(filePath);
+      if(!previous.isFile()||previous.isSymbolicLink()) throw Object.assign(new Error("Ungültiges PDF-Speicherziel."),{status:403});
+      const history=path.join(path.dirname(filePath),".previous",crypto.randomUUID());
+      await assertSafePath(path.dirname(filePath),history,{allowMissing:true});
+      await fsp.mkdir(history,{recursive:true});await fsp.copyFile(filePath,path.join(history,path.basename(filePath)));
+    } catch(error) { if(error.code!=="ENOENT")throw error; }
+    await fsp.rename(temporary,filePath);
+    return filePath;
+  } catch(error) {
+    doc.destroy();stream.destroy();await completed.catch(()=>{});throw error;
+  } finally { await fsp.unlink(temporary).catch(()=>{}); }
 }
 
 // * INFO: Ermittelt Normen aus Projekt-Systemauswahl oder Systemdefaults.
@@ -750,7 +773,7 @@ async function generateDeckblaetter(rootDir, projekt, matrix, systemSettings = {
 async function generateTrennstreifen(rootDir, projekt, matrix, systemSettings = {}, geraetelisten = [], anhaenge = [], leistungsbereiche = {}, options = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generatedDir = path.join(paths.generatedPath, "Trennstreifen");
-  await clearGeneratedPdfs(generatedDir);
+  await clearGeneratedPdfs(generatedDir, rootDir);
   const filePath = path.join(generatedDir, "Trennstreifen_Unterkategorien_24x10_5cm.pdf");
   const docs = buildInhaltsverzeichnisEntries(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt)
     .filter((entry) => Number(entry.ebene || 1) === 2);
@@ -854,7 +877,7 @@ function drawOrdnerRueckenLabel(doc, projekt, index, count, x, y, width, height,
 async function generateOrdnerruecken(rootDir, projekt, systemSettings = {}, options = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generatedDir = path.join(paths.generatedPath, "Ordnerruecken");
-  await clearGeneratedPdfs(generatedDir);
+  await clearGeneratedPdfs(generatedDir, rootDir);
   const formatKey = normalizeOrdnerRueckenFormatKey(options.format);
   const format = ORDNER_RUECKEN_FORMATS[formatKey] || ORDNER_RUECKEN_FORMATS["61x192-r"];
   const count = Math.max(1, Math.min(999, Number(options.ordnerAnzahl) || 1));
@@ -885,7 +908,7 @@ async function generateFormularPdfs(rootDir, projekt, matrix, leistungsbereiche,
   const generated = [];
   const docs = buildDocumentationPlan(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt).filter((entry) => entry.matrixId && entry.requiresFile && !entry.isCover);
   const templates = mergeFormTemplates(formTemplates);
-  await clearGeneratedRootFormPdfs(paths.generatedPath);
+  await clearGeneratedRootFormPdfs(paths.generatedPath, rootDir);
 
   const anlagenbeschreibung = docs.find((entry) => entry.dokumenttyp === "Anlagenbeschreibung" && /Anlagenbeschreibung/i.test(entry.titel || ""));
   if (anlagenbeschreibung) {
@@ -1211,7 +1234,7 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
   const logicalNumbers = logicalDeviceListNumbers(matrix, listen, leistungsbereiche, anhaenge, projekt);
   const manualNumbers = manualChapterNumbers(matrix, listen, anhaenge, leistungsbereiche, projekt);
   const generatedDir = path.join(paths.generatedPath, "Geraetelisten");
-  await clearGeneratedPdfs(generatedDir);
+  await clearGeneratedPdfs(generatedDir, rootDir);
 
   for (const liste of listen) {
     const displayKapitel = logicalNumbers.get(liste.id) || liste.kapitel;
@@ -1282,9 +1305,16 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
 
 // * INFO: Generiert Brandschutzseiten: eine Seite pro aktiver Brandschottung mit Foto 1/2.
 async function generateBrandschutzPdf(rootDir, projekt, brandschutz, systemSettings = {}, matrix = [], geraetelisten = [], leistungsbereiche = {}, anhaenge = []) {
+  brandschutz=normalizeBrandschutz(brandschutz);
+  for (const entry of brandschutz) for (const key of ["foto_vorher", "foto_nachher"]) {
+    if (entry[key]) {
+      try { entry[key]=path.relative(rootDir,await resolveProjectSource(rootDir, projekt, entry[key])); }
+      catch(error) { if (error.code !== "ENOENT") throw error; entry[key]=""; }
+    }
+  }
   const paths = await createProjectFolder(rootDir, projekt);
   const generatedDir = path.join(paths.generatedPath, "Brandschutz");
-  await clearGeneratedPdfs(generatedDir);
+  await clearGeneratedPdfs(generatedDir, rootDir);
   const target = buildDocumentationPlan(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt).find((entry) => entry.matrixId && entry.originalKapitel === "13.5");
   if (!target) return [];
   const displayKapitel = target.displayKapitel;

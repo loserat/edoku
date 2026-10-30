@@ -30,6 +30,7 @@
             </div>
             <div class="toolbar split">
               <form action="/geraetelisten/aktualisieren" method="post">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
                 <button type="submit">Aus Leistungsbereichen aktualisieren</button>
               </form>
               <a class="button-link" href="/geraetelisten<%= nurAktive ? "" : "?aktiv=1" %>"><%= nurAktive ? "Alle anzeigen" : "Nur aktive anzeigen" %></a>
@@ -88,6 +89,7 @@
             </div>
           </div>
           <form action="/geraetelisten" method="post" data-autosave>
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
             <% if (geraetelisten.length === 0) { %>
               <p class="notice">Noch keine Gerätelisten vorhanden. Bitte aus Leistungsbereichen aktualisieren.</p>
             <% } %>
@@ -240,6 +242,7 @@
             <% geraetelisten.forEach((liste) => { %>
               <% const passendeVorlagen = (geraetelistenVorlagen || []).filter((vorlage) => vorlage.leistungsbereich === liste.leistungsbereich); %>
               <form id="save-device-template-<%= liste.id %>" action="/geraetelisten/<%= liste.id %>/vorlagen" method="post">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
                 <input type="hidden" name="name" value="<%= `${liste.titel} - ${liste.leistungsbereich}` %>">
               </form>
               <% passendeVorlagen.forEach((vorlage) => { %>
@@ -248,6 +251,7 @@
                   action="/geraetelisten/<%= liste.id %>/vorlagen/<%= vorlage.id %>/laden"
                   method="post"
                   data-confirm="Vorlage '<%= vorlage.name %>' laden? Die aktuellen Positionen dieser Geräteliste werden ersetzt.">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
                 </form>
               <% }) %>
             <% }) %>

@@ -1,6 +1,8 @@
 <%# Gemeinsamer Seitenkopf: Titel, Icons und Styles werden an einer Stelle gepflegt. %>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf-token" content="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+<meta name="edoku-user-role" content="<%= typeof user !== 'undefined' && user ? user.role : '' %>">
 <title><%= pageTitle ? pageTitle + " | edoku" : "edoku" %></title>
 <%- include("headIcons") %>
 <link rel="stylesheet" href="/css/style.css">
