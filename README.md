@@ -222,6 +222,10 @@ Der finale Export aktualisiert interne PDFs und erstellt eine Gesamt-PDF mit kli
 
 Das Softwareupdate selbst verändert vorhandene PDFs nicht. Ältere generierte PDFs können als veraltet erscheinen; die neue Struktur greift beim nächsten bewusst gestarteten Export.
 
+Gerätelisten können über das Drei-Punkte-Menü als systemweite Vorlage gespeichert werden. Die Verwaltung erfolgt unter `System > Gerätelisten`; passende Vorlagen können später wieder in Gerätelisten geladen werden.
+
+Systemadmins können unter `System > System` das sichtbare edoku-/nickgm-Branding für Oberfläche und PDF-Exporte deaktivieren. Das ist als Vollversions-/Lizenzoption vorbereitet; projektbezogene Logos und Erstellerlogos bleiben davon unabhängig.
+
 ## Tests
 
 Nach Installation der Abhängigkeiten:
@@ -232,10 +236,6 @@ npm run test:preservation
 ```
 
 Die 21 Prüfungen arbeiten mit temporären Prüfprojekten. Sie prüfen unter anderem Kapitelkollisionen, PDF-Seitenzahlen, Inhaltsverzeichnis-Sprunglinks und Datenerhalt über Neustarts. Die Exporttests schreiben zusätzlich eigene Nachweise unter `output/pdf/` und `output/counting-review/`; Tests deshalb in einem getrennten Checkout oder Container ausführen. Vorhandene Benutzerprojekte werden nicht bearbeitet. Eine Anleitung zur zusätzlichen manuellen Abnahme steht in [docs/TESTS.md](docs/TESTS.md).
-
-Gerätelisten können über das Drei-Punkte-Menü als systemweite Vorlage gespeichert werden. Die Verwaltung erfolgt unter `System > Gerätelisten`; passende Vorlagen können später wieder in Gerätelisten geladen werden.
-
-Systemadmins können unter `System > System` das sichtbare edoku-/nickgm-Branding für Oberfläche und PDF-Exporte deaktivieren. Das ist als Vollversions-/Lizenzoption vorbereitet; projektbezogene Logos und Erstellerlogos bleiben davon unabhängig.
 
 ## Theme-System
 

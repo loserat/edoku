@@ -71,5 +71,5 @@ Empfohlene Kurzprüfung:
 ```bash
 git status --short
 git ls-files | rg '^(storage/|intern/|output/|\\.env)'
-rg -n "(PRIVATE KEY|BEGIN RSA|github_pat_|ghp_|sk-|API_KEY|SECRET|DATABASE_URL)" --glob '!node_modules/**' --glob '!storage/**' --glob '!output/**' --glob '!intern/**'
+rg -n "(PRIVATE KEY|BEGIN RSA|github_pat_|ghp_|sk-|API_KEY|SECRET|DATABASE_URL)" --glob '!node_modules/**' --glob '!storage/**' --glob '!output/**' --glob '!intern/**' --glob '!backups/**'
 ```
