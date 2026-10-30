@@ -8,6 +8,8 @@ Diese Datei fasst zusammen, wo das Projekt gerade steht und wo wir sinnvoll weit
 
 Sicherheitsprotokoll mit Systemadmin-Ansicht, Vollsicherung einschließlich Docker-Abbild, getrennte Wiederherstellung und GitHub-Prüfungen sind ergänzt. Alle 52 automatisierten Prüfungen bestehen im Node-22-Abbild. Eine vollständige Sicherung einschließlich Abbild wurde getrennt wiederhergestellt; alte und neue Anwendung öffneten jeweils sechs öffentliche und zwölf angemeldete Seiten, ohne Projektdateien oder Datenbankinhalte zu ändern. Anleitungen und Grenzen: [BETA_BETRIEB.md](BETA_BETRIEB.md).
 
+Die normale lokale Anwendung auf Port 3000 wurde nach geprüfter Vollsicherung auf diesen Stand umgestellt. Alle 761 vorhandenen Dateien einschließlich operativer SQLite-Dateien sind in der Sicherung enthalten; beim Vergleich nach der Übernahme blieben die 758 übrigen Dateien sowie Datenbankschema und alle Tabelleninhalte unverändert. 129 Programmdateien entsprachen dem vorbereiteten Abbild. Acht öffentliche Prüfungen, 13 angemeldete Seiten einschließlich Sicherheitsprotokoll und der API-Smoke-Test waren erfolgreich. Die [GitHub-Prüfung des Programmstands](https://github.com/loserat/edoku/actions/runs/41108350058) war erfolgreich. Private Sicherungen und Nachweise bleiben ausschließlich lokal.
+
 ## Sicherheits- und Archivkorrekturen vom 30.10.2026
 
 - Nach vollständiger geprüfter Sicherung in die normale lokale Anwendung auf Port 3000 übernommen; vorhandene Projektdateien, Einstellungen und Datenbankinhalte unverändert.
