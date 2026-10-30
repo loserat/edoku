@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "smoke:api": "node scripts/smoke-api.js"
+    "smoke:api": "node scripts/smoke-api.js",
+    "test:exports": "node --test scripts/export-counting.test.js",
+    "test:preservation": "node --test scripts/update-preservation.test.js"
   },
   "dependencies": {
     "better-sqlite3": "^11.9.1",

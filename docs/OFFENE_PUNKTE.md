@@ -1,10 +1,23 @@
 # Offene Punkte edoku
 
-Stand: 2026-07-25
+Stand: 2026-10-30
 
 Diese Datei sammelt offene Aufgaben, bekannte Beta-Einschränkungen und sinnvolle nächste Schritte. Sie dient als gemeinsame Arbeitsliste, damit Punkte aus Tests, GUI-Feedback und Exportprüfungen nicht im Chat verloren gehen.
 
 ## Priorität A: Für eine belastbare Beta wichtig
+
+### Datenzugriff und zuverlässiges Speichern absichern
+
+Status: offen; durch die lokale Design-/Exportübernahme nicht behoben
+
+- Archivdownloads auf das erlaubte Exportverzeichnis und den angemeldeten Benutzer begrenzen. Die bisherige Begrenzung auf das Anwendungsverzeichnis allein reicht nicht.
+- Generierte Ausgaben nach Benutzer und Projekt isolieren; gleiche Projektnummern dürfen keine gemeinsamen Ausgabepfade erzeugen.
+- Schreibfehler aus `writeJson` bis zur Oberfläche weitergeben. Eine fehlgeschlagene Speicherung darf keine Erfolgsmeldung anzeigen.
+- Projektpakete auf Vollständigkeit prüfen: tatsächliche Ablage von Uploads und Ausgaben mit dem Paketexport abgleichen. Der ZIP-Download des Projektarchivs ist noch nicht vollständig umgesetzt und ersetzt keine Vollsicherung.
+
+Bereits behoben und getestet: Neustarts setzen bestehende Konten nicht zurück,
+vorhandene Datenbanken werden nicht erneut aus Altdaten befüllt, reine
+Seitenaufrufe schreiben keine vorhandenen Projektzeitstempel oder Systemauswahl.
 
 ### PDF-Gesamtdokumentation final prüfen
 
@@ -27,20 +40,20 @@ Prüfen:
 
 ### Klickbares Inhaltsverzeichnis im Gesamt-PDF
 
-Status: offen
+Status: umgesetzt und mit Prüfprojekten getestet; Abnahme mit realen Projektdaten offen
 
-Das Inhaltsverzeichnis soll später klickbare Einträge enthalten, die im zusammengeführten Gesamt-PDF direkt zum passenden Kapitel springen. Das ist vor allem wichtig, sobald importierte PDF-Dateien, Bedienungsanleitungen und längere Anhänge eingebunden werden.
+Das Inhaltsverzeichnis enthält jetzt klickbare Einträge, die im zusammengeführten Gesamt-PDF direkt zum passenden Kapitel springen. Das ist vor allem wichtig, sobald importierte PDF-Dateien, Bedienungsanleitungen und längere Anhänge eingebunden werden.
 
 Wichtig:
 
 - Sprungmarken müssen im finalen Gesamt-PDF gesetzt werden.
 - Seitenzahlen müssen nach dem Einfügen externer PDFs korrekt berechnet werden.
 - Importierte PDFs können mehrere Seiten haben; diese Seitenanzahl muss berücksichtigt werden.
-- Die Umsetzung sollte erst final erfolgen, wenn PDF-Merge und Inhaltsstruktur stabil sind.
+- Technisch geprüft: tatsächliche Startseiten und gemessene Linkflächen auch bei mehrseitigem Inhaltsverzeichnis.
 
 ### PDF-Merge und importierte PDFs
 
-Status: offen
+Status: umgesetzt und mit Prüfprojekten getestet; Abnahme mit realen Projektdaten offen
 
 Importierte PDFs sollen nicht nur in der Matrix und im Inhaltsverzeichnis auftauchen, sondern an der richtigen Stelle in die finale Dokumentation eingefügt werden.
 
@@ -53,11 +66,11 @@ Prüfen:
 
 ### ZIP-Export mit Ordnerstruktur
 
-Status: offen
+Status: umgesetzt und mit Prüfprojekten getestet; Abnahme mit realen Projektdaten offen
 
 Neben PDF-Ausgaben soll ein ZIP-Export erzeugt werden, der eine einfache Ordnerstruktur passend zum Inhaltsverzeichnis enthält. Ziel ist eine saubere Übergabe der Dokumentation ohne zu viele Unterordner.
 
-Geplant:
+Umgesetzt, mit Prüfprojekten getestet:
 
 - Ordnerstruktur aus aktiven Exportkapiteln ableiten.
 - Erzeugte PDFs und importierte Anhänge einsortieren.
@@ -187,7 +200,7 @@ Offen:
 - Textrichtung je Ablageart final festlegen.
 - Zentrierung auf echten Avery-Bögen prüfen.
 - Projektkenndaten auf Lesbarkeit prüfen.
-- Anzahl der Ordnerrücken anhand Blattzahl später genauer berechnen.
+- Seitenbasierte Ablageschätzung (umgesetzt und automatisiert geprüft) mit tatsächlicher Ordnerkapazität und Druckmodus praktisch abgleichen.
 
 ### Trennstreifen final prüfen
 
@@ -229,6 +242,8 @@ Erledigt:
 - PDF-Aktionsbuttons im Exportbereich wurden kompakter gesetzt.
 - GitHub-orientierte Presets ergänzt: Light/Dark Default, High Contrast, Colorblind und Dark Dimmed.
 - Theme-Editor auf die wichtigsten Werte reduziert.
+- Gemeinsame Seitenköpfe, Kennzahlenkarten, Authentifizierungsansichten und sechs CSS-Fachdateien umgesetzt.
+- App-Icon, Favicon und Startbildschirmvarianten vereinheitlicht.
 
 Offen:
 
@@ -351,9 +366,13 @@ Tags:
 
 ### Tests
 
-Status: offen
+Status: gezielte Export- und Datenerhalt-Prüfungen vorhanden; weitere Abdeckung offen
 
-Es gibt noch keine vollständige automatisierte Test-Suite.
+18 gezielte Kapitel-/Exporttests sind über `npm run test:exports` vorhanden,
+drei weitere Datenerhalt-Prüfungen über `npm run test:preservation`.
+Alle 21 Prüfungen sind im eingesetzten Node-20-Abbild erfolgreich.
+Anleitung, Prüfumfang und Grenzen stehen in [TESTS.md](TESTS.md).
+Eine vollständige Test-Suite für alle Fachbereiche fehlt weiterhin.
 
 Manuelle Tests:
 
@@ -382,11 +401,13 @@ Erledigt:
 
 - `CHANGELOG.md` angelegt.
 - `docs/REPO_SICHERHEITSCHECK.md` ergänzt.
+- README, Release Notes, technische Doku und Arbeitsstand auf den 30.10.2026 aktualisiert.
+- Beta-Prüfanleitung sowie lokales Update-/Sicherungsvorgehen ergänzt.
+- Fünf Screenshots mit künstlichen Beispieldaten aus einer getrennten Demo-Installation im README eingebunden.
 
 Offen:
 
-- Screenshots ergänzen.
-- Kurze Beta-Test-Anleitung ergänzen.
+- Screenshots bei größeren Oberflächenänderungen erneuern und ausschließlich neutrale Daten verwenden.
 - Bekannte Einschränkungen aktuell halten.
 - Release-Tags sauber pflegen.
 - Installationshinweise für Docker/Coolify weiter ausbauen.

@@ -1,4 +1,3 @@
-const { applyLogicalChapterNumbers } = require("./chapterNumberingService");
 const { normalizeAttachments } = require("./attachmentService");
 
 // * INFO: Kategorien, die als importierte Dokumentations-PDFs im Inhaltsverzeichnis
@@ -48,8 +47,6 @@ const DOCUMENT_ATTACHMENT_CATEGORIES_BY_NAME = new Map(
 
 // * INFO: Stockwerke werden für die Sortierung vereinheitlicht, damit "1. OG" und
 // * INFO: ähnliche Schreibweisen zuverlässig vergleichbar sind.
-const DEFAULT_STOCKWERK_ORDER = ["UG", "EG", "1. OG", "2. OG", "3. OG", "4. OG", "DG"];
-
 function normalizeStockwerk(value) {
   return String(value || "")
     .trim()
@@ -58,10 +55,10 @@ function normalizeStockwerk(value) {
     .replace(/\./g, "");
 }
 
-// * INFO: Nutzt projektbezogene Stockwerke, wenn sie gepflegt sind; sonst Default-Reihenfolge.
+// * INFO: Gepflegte Stockwerke haben Vorrang; ohne Vorgabe gilt die natürliche Geschossfolge.
 function stockwerkOrderMap(projekt = {}) {
   const configured = Array.isArray(projekt.stockwerke) ? projekt.stockwerke : [];
-  const values = configured.length ? configured : DEFAULT_STOCKWERK_ORDER;
+  const values = configured;
   return new Map(values.map((stockwerk, index) => [normalizeStockwerk(stockwerk), index]));
 }
 
@@ -82,7 +79,7 @@ function fallbackStockwerkRank(value) {
 function stockwerkRank(value, orderMap) {
   const normalized = normalizeStockwerk(value);
   if (orderMap.has(normalized)) return orderMap.get(normalized);
-  return fallbackStockwerkRank(value);
+  return (orderMap.size ? 1000 : 0) + fallbackStockwerkRank(value);
 }
 
 function defaultDocumentMetaForCategory(category) {
@@ -156,14 +153,10 @@ function manualContextByAttachmentId(geraetelisten = []) {
  * * INFO: Die Einträge bekommen logische Kapitelnummern und werden nach Kategorie,
  * * INFO: Kapitel und Stockwerk sortiert.
  */
-function buildDocumentationAttachmentEntries(matrix, rawAttachments, projekt = {}, geraetelisten = []) {
+function prepareDocumentationAttachmentEntries(matrix, rawAttachments, projekt = {}, geraetelisten = []) {
   const attachments = documentationAttachments(rawAttachments).filter((entry) => entry.export !== false);
   if (!attachments.length) return [];
 
-  const matrixLogical = applyLogicalChapterNumbers(matrix || [], { exportOnly: true });
-  const parentByOriginal = new Map(
-    matrixLogical.map((entry) => [String(entry.originalKapitel || entry.kapitel || ""), entry])
-  );
   const countersByKapitel = new Map();
   const orderMap = stockwerkOrderMap(projekt);
   const manualContexts = manualContextByAttachmentId(geraetelisten);
@@ -190,20 +183,16 @@ function buildDocumentationAttachmentEntries(matrix, rawAttachments, projekt = {
     .map((entry, index) => {
       const categoryMeta = defaultDocumentMetaForCategory(entry.category);
       const originalKapitel = String(entry.kapitel || categoryMeta.kapitel || "");
-      const parent = parentByOriginal.get(originalKapitel);
       const next = (countersByKapitel.get(originalKapitel) || 0) + 1;
       countersByKapitel.set(originalKapitel, next);
       const fallbackSort = Number.isFinite(categoryMeta.sortierung) ? categoryMeta.sortierung : 90000 + index;
-      const displayKapitel = parent
-        ? `${parent.displayKapitel || parent.kapitel}.${next}`
-        : originalKapitel ? `${originalKapitel}.${next}` : "";
 
       return {
         id: `attachment-${entry.id}`,
         attachmentId: entry.id,
-        kapitel: displayKapitel,
+        kapitel: originalKapitel,
         originalKapitel,
-        displayKapitel,
+        parentKapitel: originalKapitel,
         titel: attachmentDisplayTitle(entry, categoryMeta, manualContexts.get(entry.id)),
         ebene: 3,
         aktiv: true,
@@ -214,7 +203,7 @@ function buildDocumentationAttachmentEntries(matrix, rawAttachments, projekt = {
         formularart: "PDF-Import",
         quelle: "Anhang",
         dateipfad: entry.relativePath,
-        sortierung: (parent && Number.isFinite(parent.sortierung) ? parent.sortierung : fallbackSort) + next / 100
+        sortierung: fallbackSort + next / 100
       };
     })
     .sort((a, b) => {
@@ -255,7 +244,7 @@ function updateAttachmentDocumentMeta(rawAttachments, attachmentId, values) {
 
 module.exports = {
   DOCUMENT_ATTACHMENT_CATEGORIES,
-  buildDocumentationAttachmentEntries,
+  prepareDocumentationAttachmentEntries,
   defaultDocumentMetaForCategory,
   documentationAttachments,
   updateAttachmentDocumentMeta

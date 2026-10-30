@@ -40,7 +40,7 @@ const { buildExportPreview } = require("./services/exportPreviewService");
 const { listPdfPreviewFiles, listFinalExportFiles, resolvePdfPreviewFile, resolveExportDownloadFile } = require("./services/pdfPreviewService");
 const { buildExportliste, prepareFinalExport } = require("./services/exportService");
 const { generateBrandschutzPdf, generateDeckblaetter, generateFormularPdfs, generateGeraetelisten, generateInhaltsverzeichnis, generateOrdnerruecken, generateTrennstreifen } = require("./services/pdfService");
-const { applyLogicalChapterNumbers, sortDocuments } = require("./services/chapterNumberingService");
+const { sortDocuments } = require("./services/chapterNumberingService");
 const { BRANDSCHUTZ_REQUIRED_FIELDS, addBrandschutzEintrag, normalizeBrandschutz, normalizePostedBrandschutz } = require("./services/brandschutzService");
 const {
   addGeraetelistenVorlage,
@@ -86,10 +86,10 @@ const {
 } = require("./services/attachmentService");
 const {
   DOCUMENT_ATTACHMENT_CATEGORIES,
-  buildDocumentationAttachmentEntries,
   defaultDocumentMetaForCategory,
   updateAttachmentDocumentMeta
 } = require("./services/documentAttachmentService");
+const { buildDocumentationAttachmentEntries, numberMatrixForExport, estimateBinderCount: countBinders } = require("./services/documentationPlanService");
 const apiRoutes = require("./src/routes/api.routes");
 
 // ! WICHTIG: Zentrale Pfade der Anwendung. Alle Dateioperationen werden relativ zu
@@ -107,12 +107,15 @@ const APP_NAME = packageInfo.name || "edoku";
 const GITHUB_RELEASE_API = "https://api.github.com/repos/loserat/edoku/releases/latest";
 const DEFAULT_STOCKWERKE = ["UG", "EG", "1. OG", "2. OG", "3. OG", "4. OG", "5. OG", "DG", "Dach"];
 
-// ! WICHTIG: Startinitialisierung: Ordner und Default-Dateien vorbereiten, Datenbank
-// ! WICHTIG: öffnen, Demo-Benutzer bereitstellen und ältere Projektregister migrieren.
+// ! WICHTIG: Bestehende Datenbanken werden beim Update weder neu befüllt noch migriert.
+// * INFO: Startkonten und das alte JSON-Projektregister gelten nur für die Erstinstallation.
+const existingDatabase = fs.existsSync(path.join(STORAGE_DIR, "app.db"));
 bootstrapStorage({ ROOT_DIR, DATA_DIR, CONFIG_DIR, OUTPUT_DIR, TEMPLATES_DIR, STORAGE_DIR });
 initDatabase(STORAGE_DIR);
-ensureDefaultUser();
-migrateProjectsJson(ROOT_DIR);
+if (!existingDatabase) {
+  ensureDefaultUser();
+  migrateProjectsJson(ROOT_DIR);
+}
 
 const app = express();
 if (["1", "true", "yes", "on"].includes(String(process.env.TRUST_PROXY || "").trim().toLowerCase())) {
@@ -168,8 +171,8 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// * INFO: Lokale Demo-Benutzer für Version 1. Passwörter werden nicht im Klartext
-// * INFO: gespeichert, sondern bei jedem Start als Hash/Salt-Kombination gesetzt.
+// * INFO: Startkonten werden ausschließlich für eine neue Installation angelegt.
+// ! WICHTIG: Vorhandene Passwörter, Rollen, Namen und Kontosperren bleiben erhalten.
 function hashSeedPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
   const passwordHash = crypto.scryptSync(password, salt, 64).toString("hex");
@@ -177,22 +180,9 @@ function hashSeedPassword(password) {
 }
 
 function ensureSeedUser({ id, email, name, password, role = "user", status = "active", currentProjectId = "projekt_demo" }) {
+  if (getUserByEmail(email)) return;
   const { passwordHash, salt } = hashSeedPassword(password);
   const now = new Date().toISOString();
-  const existingUser = getUserByEmail(email);
-  if (existingUser) {
-    connection().prepare(`
-      UPDATE users
-      SET name = ?,
-          role = ?,
-          status = ?,
-          password_hash = ?,
-          password_salt = ?,
-          updated_at = ?
-      WHERE lower(email) = lower(?)
-    `).run(name, normalizeUserRole(role), status, passwordHash, salt, now, email);
-    return;
-  }
 
   createUser({
     id,
@@ -209,22 +199,7 @@ function ensureSeedUser({ id, email, name, password, role = "user", status = "ac
 }
 
 function ensureDefaultUser() {
-  const existingLegacyUser = getUserByEmail("nick");
-  if (existingLegacyUser && !getUserByEmail("admin")) {
-    const { passwordHash, salt } = hashSeedPassword("admin");
-    connection().prepare(`
-      UPDATE users
-      SET email = 'admin',
-          name = 'admin',
-          role = 'systemadmin',
-          status = 'active',
-          password_hash = ?,
-          password_salt = ?,
-          updated_at = ?
-      WHERE lower(email) = lower('nick')
-    `).run(passwordHash, salt, new Date().toISOString());
-  }
-
+  if (listUsers().length) return;
   [
     { id: "user_demo", email: "admin", name: "admin", password: "admin", role: "systemadmin" },
     { id: "user_marx", email: "marx", name: "Marx", password: "marx" },
@@ -351,8 +326,8 @@ async function fileExistsForAttachment(relativePath) {
  * * INFO: Ergänzt Rohdaten um Dateistatus, Typ-Erkennung, Inhaltsverzeichnis-Zuordnung
  * * INFO: und Brandschutz-Fotoverweise.
  */
-async function buildAttachmentViewModel(attachments, brandschutz, matrix, projekt = {}, geraetelisten = []) {
-  const tocEntries = buildDocumentationAttachmentEntries(matrix, attachments, projekt, geraetelisten);
+async function buildAttachmentViewModel(attachments, brandschutz, matrix, projekt = {}, geraetelisten = [], leistungsbereiche = {}) {
+  const tocEntries = buildDocumentationAttachmentEntries(matrix, attachments, projekt, geraetelisten, leistungsbereiche);
   const tocByAttachmentId = new Map(tocEntries.map((entry) => [entry.attachmentId, entry]));
   const rows = await Promise.all(normalizeAttachments(attachments).map(async (entry) => {
     const assignedFoto1 = (brandschutz || []).filter((schottung) => schottung.foto_vorher === entry.relativePath);
@@ -488,6 +463,11 @@ async function loadCurrent(req) {
   };
 }
 
+// Dateistatus und Seitenzahlen werden gelesen, ohne Projektdaten zu verändern.
+async function currentExportEntries(data) {
+  return buildExportliste(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche, { persist: false });
+}
+
 // * INFO: Leitet aus aktiven Leistungsbereichen und Systemzuordnungen ab,
 // * INFO: welche Matrixeinträge aktiv und exportierbar sind.
 function templateKeyForMatrixEntry(entry) {
@@ -615,6 +595,7 @@ app.use(blockViewerWrites);
 app.get("/dashboard", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
+    data.exportliste = await currentExportEntries(data);
     const stats = buildDashboardStats({
       projekt: data.projekt,
       leistungsbereiche: data.leistungsbereiche,
@@ -622,7 +603,8 @@ app.get("/dashboard", requireAuth, async (req, res, next) => {
       geraetelisten: data.geraetelisten,
       brandschutz: data.brandschutz,
       exportliste: data.exportliste,
-      projektSysteme: data.projektSysteme
+      projektSysteme: data.projektSysteme,
+      anhaenge: data.anhaenge
     });
     res.render("dashboard", { active: "dashboard", stats });
   } catch (error) {
@@ -749,7 +731,6 @@ app.get("/systemauswahl", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
     const synced = syncProjektSysteme(data.systemConfig, data.projektSysteme, data.leistungsbereiche.aktiv);
-    await writeJson(data.files.projektSysteme, synced);
     res.render("systemauswahl", {
       active: "systemauswahl",
       systemConfig: data.systemConfig,
@@ -778,7 +759,7 @@ app.get("/dokumente", requireAuth, async (req, res, next) => {
     const data = await loadCurrent(req);
     res.render("dokumente", {
       active: "dokumente",
-      dokumente: sortDocuments(applyLogicalChapterNumbers(data.matrix, { exportOnly: false }))
+      dokumente: sortDocuments(numberMatrixForExport(data.matrix, data.geraetelisten, data.anhaenge, data.leistungsbereiche, data.projekt))
     });
   } catch (error) {
     next(error);
@@ -931,6 +912,7 @@ app.post("/brandschutz/hinzufuegen", requireAuth, async (req, res) => {
 app.get("/export", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
+    data.exportliste = await currentExportEntries(data);
     const pdfPreviewFiles = await listPdfPreviewFiles(ROOT_DIR, data.projekt);
     const finalExportFiles = await listFinalExportFiles(ROOT_DIR, data.projekt);
     const ordnerrueckenSettings = (((data.systemSettings || {}).export || {}).ordnerruecken || {});
@@ -939,17 +921,18 @@ app.get("/export", requireAuth, async (req, res, next) => {
       active: "export",
       exportliste: data.exportliste,
       ordnerstruktur: data.ordnerstruktur,
-      dokumente: sortDocuments(applyLogicalChapterNumbers(data.matrix, { exportOnly: false })),
+      dokumente: sortDocuments(numberMatrixForExport(data.matrix, data.geraetelisten, data.anhaenge, data.leistungsbereiche, data.projekt)),
       preview: buildExportPreview({
         projekt: data.projekt,
         matrix: data.matrix,
         exportliste: data.exportliste,
-        projektSysteme: data.projektSysteme
+        projektSysteme: data.projektSysteme,
+        geraetelisten: data.geraetelisten, anhaenge: data.anhaenge, leistungsbereiche: data.leistungsbereiche
       }),
       pdfPreviewFiles,
       finalExportFiles,
       ordnerrueckenSettings,
-      estimatedBinderCount: estimateBinderCount(data, pdfPreviewFiles)
+      estimatedBinderCount: estimateBinderCount(data)
     });
   } catch (error) {
     next(error);
@@ -1022,20 +1005,17 @@ async function generateCompleteDocumentation(rootDir, data) {
   const generated = [];
   await createProjectFolder(rootDir, data.projekt);
   generated.push(...await generateInhaltsverzeichnis(rootDir, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche));
-  generated.push(...await generateFormularPdfs(rootDir, data.projekt, data.matrix, data.leistungsbereiche, data.systemConfig, data.projektSysteme, data.templates, data.systemSettings));
+  generated.push(...await generateFormularPdfs(rootDir, data.projekt, data.matrix, data.leistungsbereiche, data.systemConfig, data.projektSysteme, data.templates, data.systemSettings, data.geraetelisten, data.anhaenge));
   generated.push(...await generateDeckblaetter(rootDir, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche));
   generated.push(...await generateGeraetelisten(rootDir, data.projekt, data.geraetelisten, data.systemSettings, data.matrix, data.leistungsbereiche, data.anhaenge));
-  generated.push(...await generateBrandschutzPdf(rootDir, data.projekt, data.brandschutz, data.systemSettings, data.matrix, data.geraetelisten, data.leistungsbereiche));
+  generated.push(...await generateBrandschutzPdf(rootDir, data.projekt, data.brandschutz, data.systemSettings, data.matrix, data.geraetelisten, data.leistungsbereiche, data.anhaenge));
   await buildExportliste(rootDir, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche);
   return generated;
 }
 
-function estimateBinderCount(data, pdfPreviewFiles = []) {
-  const presentExports = (data.exportliste || []).filter((entry) => entry.status === "vorhanden").length;
-  const pdfCount = Array.isArray(pdfPreviewFiles) ? pdfPreviewFiles.length : 0;
-  const baseCount = Math.max(presentExports, pdfCount, 1);
-  // * INFO: Grobe Ablageschaetzung bis echte Seitenzahlen der Gesamt-PDF ausgewertet werden.
-  return Math.max(1, Math.min(20, Math.ceil(baseCount / 80)));
+function estimateBinderCount(data, capacity) {
+  const pagesPerBinder = capacity || data.systemSettings?.export?.ordnerruecken?.seitenProOrdner || 80;
+  return countBinders(data.exportliste, pagesPerBinder);
 }
 
 app.post("/export/projektordner", requireAuth, async (req, res) => {
@@ -1073,7 +1053,7 @@ app.post("/export/inhaltsverzeichnis", requireAuth, async (req, res) => {
 
 app.post("/export/formulare", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
-  await generateFormularPdfs(ROOT_DIR, data.projekt, data.matrix, data.leistungsbereiche, data.systemConfig, data.projektSysteme, data.templates, data.systemSettings);
+  await generateFormularPdfs(ROOT_DIR, data.projekt, data.matrix, data.leistungsbereiche, data.systemConfig, data.projektSysteme, data.templates, data.systemSettings, data.geraetelisten, data.anhaenge);
   redirectWithFlash(res, "/export", "success", "Formular-PDFs wurden generiert.");
 });
 
@@ -1085,7 +1065,7 @@ app.post("/export/geraetelisten", requireAuth, async (req, res) => {
 
 app.post("/export/brandschutz", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
-  await generateBrandschutzPdf(ROOT_DIR, data.projekt, data.brandschutz, data.systemSettings, data.matrix, data.geraetelisten, data.leistungsbereiche);
+  await generateBrandschutzPdf(ROOT_DIR, data.projekt, data.brandschutz, data.systemSettings, data.matrix, data.geraetelisten, data.leistungsbereiche, data.anhaenge);
   redirectWithFlash(res, "/export", "success", "Brandschutzdokumentation wurde generiert.");
 });
 
@@ -1112,9 +1092,10 @@ app.post("/export/trennstreifen", requireAuth, async (req, res) => {
 
 app.post("/export/ordnerruecken", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
+  data.exportliste = await currentExportEntries(data);
   const settingsPath = path.join(CONFIG_DIR, "systemEinstellungen.json");
   const currentSettings = mergeSystemSettings(await readJson(settingsPath, DEFAULT_SYSTEM_SETTINGS));
-  const pdfPreviewFiles = await listPdfPreviewFiles(ROOT_DIR, data.projekt);
+  const pagesPerBinder = Math.max(1, Math.min(5000, Number(req.body.seitenProOrdner) || currentSettings.export.ordnerruecken.seitenProOrdner || 80));
   const mode = req.body.anzahlModus === "auto" ? "auto" : "manuell";
   const format = req.body.format === "schmal"
     ? "38x192-r"
@@ -1126,7 +1107,8 @@ app.post("/export/ordnerruecken", requireAuth, async (req, res) => {
   const binderOptions = {
     format,
     anzahlModus: mode,
-    ordnerAnzahl: mode === "auto" ? estimateBinderCount(data, pdfPreviewFiles) : Math.max(1, Math.min(20, Number(req.body.ordnerAnzahl) || 1)),
+    ordnerAnzahl: mode === "auto" ? estimateBinderCount(data, pagesPerBinder) : Math.max(1, Math.min(999, Number(req.body.ordnerAnzahl) || 1)),
+    seitenProOrdner: pagesPerBinder,
     showProjektname: req.body.showProjektname === "1",
     showProjektnummer: req.body.showProjektnummer === "1",
     showAuftraggeber: req.body.showAuftraggeber === "1",
@@ -1154,11 +1136,16 @@ app.post("/export/exportliste", requireAuth, async (req, res) => {
 });
 
 app.post("/export/final", requireAuth, async (req, res) => {
-  const data = await loadCurrent(req);
-  const result = await prepareFinalExport(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste);
-  const zipName = result.zipPath ? path.basename(result.zipPath) : "Export.zip";
-  const pdfInfo = result.completePdfPath ? `, Gesamt-PDF mit ${result.completePdfPages} Seite(n)` : "";
-  redirectWithFlash(res, "/export", "success", `Finaler Export wurde vorbereitet (${zipName}${pdfInfo}).`);
+  try {
+    const data = await loadCurrent(req);
+    await generateCompleteDocumentation(ROOT_DIR, data);
+    const result = await prepareFinalExport(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, { systemSettings: data.systemSettings });
+    const warnings = result.missingFiles.length + result.skippedMergeFiles.length + result.unassignedFiles.length;
+    const message = `${warnings ? "Unvollständiger Export" : "Export erstellt"}: Gesamt-PDF mit ${result.completePdfPages} Seiten, ${result.summary.present} Einzel-PDFs. ${warnings ? `${warnings} Datei(en) fehlen oder konnten nicht übernommen werden. Details in der Reihenfolge-Datei.` : ""}`;
+    redirectWithFlash(res, "/export", warnings ? "error" : "success", message.trim());
+  } catch (error) {
+    fail(req, res, "/export", error);
+  }
 });
 
 // * INFO: Einstellungen: Systemvorgaben, Erstellerstammdaten, Ordnerstruktur und Formulare.
@@ -1560,7 +1547,7 @@ app.get("/anhaenge", requireAuth, async (req, res, next) => {
     ];
     const selectedKategorie = attachmentCategories.includes(req.query.kategorie) ? req.query.kategorie : attachmentCategories[0];
     const categoryDefaults = defaultDocumentMetaForCategory(selectedKategorie);
-    const attachmentView = await buildAttachmentViewModel(data.anhaenge, data.brandschutz, data.matrix, data.projekt, data.geraetelisten);
+    const attachmentView = await buildAttachmentViewModel(data.anhaenge, data.brandschutz, data.matrix, data.projekt, data.geraetelisten, data.leistungsbereiche);
     const attachmentRows = attachmentView.rows
       .filter((entry) => entry.category === selectedKategorie)
       .sort((a, b) => {

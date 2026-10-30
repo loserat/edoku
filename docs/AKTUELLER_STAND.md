@@ -1,8 +1,22 @@
 # Aktueller Stand edoku
 
-Stand: 2026-07-25
+Stand: 2026-10-30
 
 Diese Datei fasst zusammen, wo das Projekt gerade steht und wo wir sinnvoll weiterarbeiten sollten.
+
+## Aktuelle lokale Weiterentwicklung
+
+- Design, App-Icon und gemeinsame Ansichtsbausteine überarbeitet.
+- Kapitel- und Exportzählung vereinheitlicht; Details in `docs/TECHNIK.md`.
+- 18 gezielte Exporttests, ein 20-seitiges Prüfprojekt und 56 interne Links eines dreiseitigen Inhaltsverzeichnisses geprüft.
+- Am 30.10.2026 in die normale lokale Docker-Anwendung auf Port 3000 übernommen, nach vollständiger geprüfter Sicherung.
+- Vorher/Nachher: 761 Laufzeitdateien gesichert; Projektdateien, Einstellungen, Anhänge und vorhandene Exporte unverändert. Datenbankinhalt und Schema mit neun Projekten, fünf Konten und zwei Sitzungen unverändert.
+- 21 automatisierte Prüfungen bestanden: 18 Kapitel-/Exportprüfungen und drei Prüfungen zum Datenerhalt. Zusätzlich zwölf angemeldete Seiten mit einer konsistenten Kopie der echten Daten geprüft.
+- 105 Programmdateien der laufenden Hauptinstanz stimmen mit dem getesteten Abbild überein. Erreichbarkeit auf Port 3000 und API-Smoke-Test erfolgreich.
+- Bestehende Konten werden beim Neustart nicht zurückgesetzt; reine Seitenaufrufe ändern keine Projektzeitstempel und speichern keine Systemauswahl.
+- Sicherung und lokale Nachweise: `backups/2026-10-30_uebernahme-edoku-6hmt5og/UEBERNAHME.md` (von Git und Docker-Builds ausgeschlossen).
+- Paketversion bleibt `0.1.0-beta.1`; die Weiterentwicklung ist kein neuer getaggter Release.
+- Weitere Sicherheits- und Projektarchivprobleme bleiben offen; die lokale Übernahme ist keine Freigabe für öffentlichen Serverbetrieb.
 
 ## Kurzstatus
 
@@ -10,9 +24,8 @@ edoku ist aktuell eine lauffähige Beta-Anwendung für lokale und Docker-basiert
 
 Der aktuelle Stand ist noch nicht als final gehärtete Produktivversion zu bewerten. Für einen bezahlten Webserverbetrieb fehlen vor allem Sicherheits-, Rollen-, Backup-, Deployment- und Testhärtung.
 
-## Letzter technischer Stand
+## Bestehende technische Grundlage
 
-- Hauptbranch `main` ist mit GitHub synchron.
 - Das API-/Backend-Grundgerüst wurde in `main` übernommen.
 - Die API liefert einheitliche JSON-Antworten für Healthcheck, Projekte, Leistungsbereiche, Gerätelisten, Dokumente und Exportstatus.
 - Session-Cookies wurden für lokalen Betrieb und Reverse-Proxy-/HTTPS-Betrieb gehärtet.
@@ -46,42 +59,22 @@ Der aktuelle Stand ist noch nicht als final gehärtete Produktivversion zu bewer
 - Systembereich mit Version und GitHub-Update-Prüfung
 - API-Grundgerüst unter `/api/*`
 
-## Wo wir stehen geblieben sind
+## Nächste Arbeitspakete
 
-Zuletzt ging es darum, die Anwendung weiter sauber zu strukturieren und den nächsten fachlichen Bereich anzulegen:
+1. Archivdownloads, Benutzertrennung der Ausgaben und zuverlässige Fehlermeldungen beim Speichern absichern. Projektpakete auf Vollständigkeit prüfen.
+2. Neue Kapitel-/Seitenzählung und Inhaltsverzeichnis mit echten Anhängen fachlich und visuell abnehmen; ZIP-Inhalte und Druckvorlagen praktisch prüfen.
+3. Rechte-/Rollenmodell systematisch testen, CSRF-/Login-Schutz und ein wiederholbares Backup-/Restore-Verfahren ergänzen.
+4. Liegenschaften und Gebäude additiv einführen. Die spätere Objektstruktur vorbereiten, ohne bestehende Projektdaten automatisch umzubauen.
 
-1. `Liegenschaften` soll als eigener Strukturpunkt vorbereitet werden.
-2. Darunter soll ein Untermenüpunkt `Gebäude` entstehen.
-3. Dieser Bereich soll später Objekt-/Gebäudestruktur zentral verwalten.
-4. Die dort definierten Gebäude sollen perspektivisch für Pläne, Brandschutz und projektbezogene Zuordnung nutzbar sein.
+Klickbare Inhaltsverzeichnisse und das Einrechnen externer PDF-Seiten sind
+bereits umgesetzt und automatisiert geprüft. Die offene Aufgabe ist deren
+Abnahme mit realen Dokumentationen.
 
-Dieser Punkt ist fachlich sinnvoll, weil Stockwerke alleine langfristig nicht reichen, wenn mehrere Gebäude oder Gebäudeteile in einer Liegenschaft dokumentiert werden.
+## Einstieg in die Dokumentation
 
-## Nächster sinnvoller Umsetzungsschritt
-
-Als nächstes sollte additiv umgesetzt werden:
-
-- Route für `Liegenschaften > Gebäude`
-- Navigation beziehungsweise Unterstruktur passend zum bestehenden UI-Konzept
-- zunächst einfache Platzhalter-/Verwaltungsansicht ohne bestehende Logik umzubauen
-- keine Datenmigration erzwingen
-- spätere Datenstruktur für Gebäude vorbereiten, aber noch nicht tief in Export, Anhänge und Brandschutz verdrahten
-
-## Danach wichtige Prüfpunkte
-
-- Läuft Docker weiterhin ohne Neubauprobleme?
-- Funktioniert Login weiterhin lokal und hinter Proxy?
-- Bleiben bestehende Projekt-, Anhangs-, Geräte-, Brandschutz- und Exportseiten unverändert erreichbar?
-- Ist die neue Gebäude-Struktur neutral und ohne echte Demo-Namen?
-- Sind lokale Runtime-Dateien weiterhin nicht versehentlich im Git?
-
-## Größte offene Arbeitspakete
-
-- PDF-Gesamtdokumentation final mit echten Anhängen prüfen
-- klickbares Inhaltsverzeichnis im final gemergten PDF umsetzen
-- externe PDF-Seitenzahlen sauber in Inhaltsverzeichnis und Sprungmarken einrechnen
-- ZIP-Export und Ordnerstruktur im Praxistest härten
-- Rechte-/Rollenmodell produktionsreif testen
-- Liegenschaften/Gebäude fachlich sauber einführen
-- automatisierte Smoke-/Regressionstests erweitern
-- Produktivbetrieb mit Backup-, Update- und Deployment-Konzept absichern
+- [Technik und gemeinsame Exportstruktur](TECHNIK.md)
+- [Gestaltung, CSS-Aufteilung und Icons](THEME.md)
+- [Automatisierte Prüfungen und manuelle Beta-Abnahme](TESTS.md)
+- [Lokales Update, Sicherung und Wiederherstellung](UPDATE.md)
+- [Priorisierte offene Punkte](OFFENE_PUNKTE.md)
+- [Release Notes](RELEASE_NOTES.md)

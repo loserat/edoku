@@ -1,15 +1,12 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Gerätelisten | edoku</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <%- include("partials/head", { pageTitle: "Gerätelisten" }) %>
   </head>
   <body>
     <%# Gerätelistenansicht: aktive Leistungsbereiche werden als linke Tabs auswählbar. %>
     <%- include("partials/header", { active }) %>
-    <main class="page wide device-list-page">
+    <main id="main-content" tabindex="-1" class="page wide device-list-page">
       <%- include("partials/flash", { flash }) %>
       <%# Nur aktive Listen werden bevorzugt in der Sidebar angezeigt, Fallback sind alle Listen. %>
       <% const aktiveListen = geraetelisten.filter((liste) => liste.aktiv); %>

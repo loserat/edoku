@@ -12,7 +12,7 @@ Die Anwendung ist so aufgebaut, dass sie lokal auf einem Rechner laufen kann, ab
 - `services/` enthält fachliche und technische Hilfsdienste.
 - JSON-Zugriffe laufen über robuste Lese-/Schreibfunktionen.
 - Dateipfade werden mit `path.join` und kontrollierten Projektpfaden aufgebaut.
-- Uploads und Downloads sind projekt- und benutzerbezogen gekapselt.
+- Projektdateien werden über Projekt- und Benutzerkennungen aufgelöst. Die Rechtebegrenzung für Archivdownloads und die Benutzertrennung generierter Ausgaben sind noch nicht vollständig abgesichert; siehe `docs/OFFENE_PUNKTE.md`.
 
 ## Datenhaltung
 
@@ -164,6 +164,84 @@ Nicht ins Repository gehören:
 
 - Rollen- und Rechteverwaltung ist Beta und muss vor produktiver Nutzung weiter geprüft werden
 - keine produktive Webserver-Härtung
-- keine automatisierte Test-Suite
+- 21 gezielte automatisierte Prüfungen; eine vollständige Fach-, Rechte- und Browser-Testabdeckung fehlt
 - PDF-Gesamtdatei, ZIP-Export und Archivstruktur weiter im Praxistest prüfen
 - fachliche Texte und Normbezüge müssen weiter geprüft werden
+
+## Einheitliche Kapitel- und Exportzählung (2026-10-30)
+
+`services/documentationPlanService.js` baut die gemeinsame Struktur für Matrix,
+Inhaltsverzeichnis, Gerätelisten, Anhänge, Dateinamen und Exportvorschau.
+Originalkapitel bleiben Fachschlüssel; die Ausgabenummerierung folgt einem Baum.
+Fehlende Vorfahren werden ergänzt. Doppelte Originalnummern, zusätzliche
+Gerätelisten und importierte PDFs erhalten eindeutige Ausgabenummern.
+
+Die Zählungen haben unterschiedliche, ausdrücklich getrennte Einheiten:
+
+- Kapitelgruppen: Hauptkapitel, ohne das Inhaltsverzeichnis mit Kennung 0.
+- Strukturüberschriften: Gliederung ohne eigene PDF, daher keine fehlende Datei.
+- Einzel-PDFs: gewählte Dokumente einschließlich Deckblättern und Inhaltsverzeichnis.
+- Seiten: tatsächlich gelesene Seiten vorhandener, lesbarer Einzel-PDFs.
+- Gesamt-PDF und separate Druckvorlagen zählen nicht zusätzlich als Einzel-PDFs.
+- Dateinummern der final enthaltenen PDFs sind lückenlos; Überschriften verbrauchen keine Dateinummer.
+
+Neu erzeugte PDFs enthalten eine Dokumentkennung und Kapitelnummer als
+Metadaten. Alte oder unpassende generierte PDFs werden als veraltet ausgewiesen;
+Dateinummern allein reichen nicht für eine eindeutige Zuordnung. Für eine
+Dokumentation nach der neuen Struktur wird der Export bewusst neu gestartet.
+Das Update selbst erzeugt keine PDFs neu und migriert keine Projektdaten.
+
+Dashboard und Export prüfen den aktuellen Plan und die Quelldateien neu. Eine
+leere Exportliste gilt nicht als vollständiger Pflichtnachweis. Pflicht-PDFs
+werden im Gesamtfortschritt nicht zusätzlich ein zweites Mal gewichtet.
+
+Beim finalen Export werden interne PDFs aktualisiert und das Inhaltsverzeichnis
+mit den tatsächlichen Startseiten neu gesetzt. Die Linkflächen stammen aus dem
+gemessenen Textsatz einschließlich mehrzeiliger Titel und Seitenumbrüche.
+Unlesbare, fehlende und nicht zuordenbare externe PDFs werden ausdrücklich
+gemeldet. Verschlüsselte PDFs werden nicht als lesbare Exportquellen gezählt.
+ZIP-Ordner verwenden die tatsächlichen Kapiteltitel, auch wenn Hauptkapitel
+durch die Auswahl eine neue Ausgabenummer erhalten.
+
+Die automatische Ordneranzahl berechnet sich aus den vorhandenen PDF-Seiten
+und dem einstellbaren Wert `seitenProOrdner` (Standard: 80). Das ist eine
+Ablageschätzung; Druckmodus und physische Ordnerkapazität bleiben zu berücksichtigen.
+
+Prüfung: `npm run test:exports`. Die 18 gezielten Prüfungen umfassen unter
+anderem Nummernkollisionen, abgewählte Kapitel, mehrere Gerätelisten,
+mehrseitige Anhänge, ungültige PDFs, alte Zuordnungen, Dateireihenfolge und ein
+dreiseitiges Inhaltsverzeichnis mit 56 überprüften internen Sprunglinks.
+Projektarchiv/Backup und Sicherheitsbefunde sind separate offene Arbeitspakete.
+
+## Datenerhalt bei der lokalen Übernahme (2026-10-30)
+
+Beim Start werden Startkonten und das alte JSON-Projektregister nur bei einer
+echten Erstinstallation ohne vorhandene Datenbank eingerichtet. Bestehende
+Konten behalten Passwort-Hashes, Rollen, Sperren und aktuelles Projekt; auch
+eine vorhandene leere Datenbank wird nicht automatisch mit Konten befüllt.
+Bereits registrierte Projekte werden beim Aufrufen nicht neu gespeichert.
+Die GET-Systemauswahl gleicht ihre Anzeige ab, speichert aber erst nach einer
+ausdrücklichen Benutzeraktion.
+
+`npm run test:preservation` prüft drei Fälle einschließlich Neustart und zwölf
+angemeldeter Seiten. Zusammen mit `npm run test:exports` bestehen 21 Prüfungen
+im tatsächlich eingesetzten Node-20-Abbild. Zusätzlich wurde die neue Version
+mit einer konsistenten Kopie der echten Daten vorab geprüft.
+
+Die Hauptinstanz wurde mit denselben fünf eingebundenen Laufzeitordnern
+(`data`, `config`, `storage`, `output`, `templates`), Ports und Startparametern
+umgestellt. Eine bei gestoppter Anwendung erstellte vollständige Sicherung
+enthält 761 Dateien. Nach dem Start wurden sämtliche nichtoperativen
+Laufzeitdateien per SHA-256 verglichen; Datenbankschema und alle Tabellenzeilen
+wurden gesondert verglichen, weil SQLite seine Betriebsdateien verändern kann.
+Es gab keine Inhaltsänderung. Die Sicherung selbst ist bytegleich erhalten.
+
+Der Nachweis liegt lokal unter
+`backups/2026-10-30_uebernahme-edoku-6hmt5og/UEBERNAHME.md`.
+Die Sicherung liegt außerhalb der Laufzeitordner und wird weder in Git noch in
+Docker-Abbilder aufgenommen. Dies ist eine geprüfte lokale Einzelsicherung;
+ein allgemeines automatisiertes Backup-/Wiederherstellungssystem bleibt offen.
+
+Reproduzierbare Prüfschritte stehen in [TESTS.md](TESTS.md), das Vorgehen für
+weitere lokale Updates in [UPDATE.md](UPDATE.md). Private Sicherungen und
+Prüfprotokolle werden nicht veröffentlicht.

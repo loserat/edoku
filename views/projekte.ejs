@@ -1,15 +1,12 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Projekte | edoku</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <%- include("partials/head", { pageTitle: "Projekte" }) %>
   </head>
   <body>
     <%# Projektmanager: aktuelles Projekt anzeigen, aktive Projekte öffnen und Archivstatus verwalten. %>
     <%- include("partials/header", { active }) %>
-    <main class="page wide project-manager-page compact-work-page">
+    <main id="main-content" tabindex="-1" class="page wide project-manager-page compact-work-page">
       <div class="page-title">
         <p class="eyebrow">Projektverwaltung</p>
         <h1>Projekte</h1>

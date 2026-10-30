@@ -1,12 +1,17 @@
 # Repo-Sicherheitscheck
 
-Stand: 2026-07-25
+Stand: 2026-10-30
 
 Diese Notiz dokumentiert den aktuellen Check, ob versehentlich sensible oder lokale Laufzeitdaten im Git-Repository landen.
 
 ## Ergebnis
 
-Es wurden keine privaten Schlüssel, API-Tokens, GitHub-Tokens oder `.env`-Dateien in den versionierten Projektdateien gefunden.
+Die Veröffentlichung umfasst Quellcode, neutrale Grafiken, Tests und Dokumentation.
+Die beiden lokalen Änderungen an `config/systemEinstellungen.json` und
+`config/geraetelistenVorlagen.json` bleiben außerhalb des Commits. Private
+Sicherungen, Datenbanken, Sitzungen, Projektdateien und vorhandene Exporte werden
+nicht hinzugefügt. Die Prüfung des Commit-Inhalts ist kein vollständiger
+historischer Secret-Scan und keine Sicherheitsfreigabe der Anwendung.
 
 ## Geprüfte Risikobereiche
 
@@ -56,6 +61,7 @@ Aktuell ausgeschlossen:
 - `output/`
 - `storage/*` mit Ausnahme von `storage/README.md`
 - `intern/`
+- `backups/` (auch vom Docker-Build ausgeschlossen)
 - Logs und temporäre Dateien
 
 ## Vor Push prüfen

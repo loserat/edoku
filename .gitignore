@@ -22,3 +22,6 @@ docs/GITHUB_CHECKLISTE.md
 *.log
 tmp/
 temp/
+
+# Lokale Datensicherungen niemals veröffentlichen oder ins Image kopieren
+backups/

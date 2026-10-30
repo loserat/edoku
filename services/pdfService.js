@@ -6,10 +6,9 @@ const { createProjectFolder, fileSafeName } = require("./projectService");
 const { normalizeBrandschutz } = require("./brandschutzService");
 const { deviceListFieldsForLeistungsbereich, normalizeGeraetelisten } = require("./geraetelistenService");
 const { getLeistungsbereichConfig, selectedHerstellerConfig } = require("./systemService");
-const { applyLogicalChapterNumbers } = require("./chapterNumberingService");
 const { formEnabledForLeistungsbereiche, mergeFormTemplates, templateTitle, textForKonformitaet } = require("./formTemplateService");
 const { resolveCreatorLogo, resolveProjectLogo } = require("./logoService");
-const { buildDocumentationAttachmentEntries, defaultDocumentMetaForCategory, documentationAttachments } = require("./documentAttachmentService");
+const { buildDocumentationPlan, filterExportGeraetelisten } = require("./documentationPlanService");
 
 const BRAND_LINK_URL = "https://nickgm.de";
 const BRAND_ICON_PATH = "M10 2h4M11 2v6.5l-5.2 9.2C4.6 19.8 6.1 22 8.5 22h7c2.4 0 3.9-2.2 2.7-4.3L13 8.5V2M8.2 15h7.6M9.2 19h5.6";
@@ -70,171 +69,15 @@ function pageContentWidth(doc) {
   return doc.page.width - pageLeft(doc) - pageRight(doc);
 }
 
-// * INFO: Filtert die aktivierten und exportierbaren Matrixeinträge.
-function activeExportDocs(matrix) {
-  return matrix
-    .filter((doc) => doc.aktiv && doc.export)
-    .sort((a, b) => a.sortierung - b.sortierung);
-}
-
-// * INFO: Import-Platzhalter werden im Inhaltsverzeichnis durch echte Anhänge ersetzt.
-function isImportedDocumentPlaceholder(entry) {
-  const dokumenttyp = String(entry.dokumenttyp || "");
-  const formularart = String(entry.formularart || "");
-  return dokumenttyp === "Plan" && formularart === "Dateiliste" && Number(entry.ebene || 1) >= 2;
-}
-
-// * INFO: Numerischer Sortierwert aus Kapitelnummern für künstlich ergänzte Einträge.
-function chapterSortValue(kapitel, fallback = 999000) {
-  const parts = String(kapitel || "")
-    .split(".")
-    .map((part) => Number.parseInt(part, 10))
-    .filter((part) => Number.isFinite(part));
-
-  if (!parts.length) return fallback;
-
-  return parts.reduce((sum, part, index) => {
-    const weight = index === 0 ? 1000 : 10 ** Math.max(0, 2 - index);
-    return sum + part * weight;
-  }, 0);
-}
-
-// * INFO: Aktive Leistungsbereiche als Set für Gerätelisten- und Exportfilter.
-function activeLeistungsbereicheSet(leistungsbereiche = {}) {
-  return new Set(Array.isArray(leistungsbereiche.aktiv) ? leistungsbereiche.aktiv : []);
-}
-
-// * INFO: Gerätelisten erscheinen nur im Export, wenn sie aktiv und exportierbar sind.
-function filterExportGeraetelisten(geraetelisten = [], leistungsbereiche = {}) {
-  const activeSet = activeLeistungsbereicheSet(leistungsbereiche);
-  return normalizeGeraetelisten(geraetelisten).filter((liste) => {
-    if (!liste.aktiv || !liste.export) return false;
-    return !activeSet.size || activeSet.has(liste.leistungsbereich);
-  });
-}
-
-/**
- * * INFO: Baut das Inhaltsverzeichnis aus Matrix, aktiven Gerätelisten und importierten PDFs.
- * ? WARUM: Ergänzt fehlende Elternkapitel, damit Gerätelisten logisch einsortiert werden.
- */
+// Alle PDF-Arten nutzen dieselbe vollständige Exportstruktur.
 function buildInhaltsverzeichnisEntries(matrix, geraetelisten = [], anhaenge = [], leistungsbereiche = {}, projekt = {}) {
-  const activeLists = filterExportGeraetelisten(geraetelisten, leistungsbereiche);
-  const matrixByKapitel = new Map((matrix || []).map((entry) => [String(entry.kapitel || ""), entry]));
-  const tocBaseById = new Map();
-
-  (matrix || [])
-    .filter((entry) => entry.aktiv && entry.export && !isImportedDocumentPlaceholder(entry))
-    .forEach((entry) => tocBaseById.set(entry.id || `matrix-${entry.kapitel}`, entry));
-
-  function ensureTocParent(kapitel, fallbackListe) {
-    const normalizedKapitel = String(kapitel || "");
-    if (!normalizedKapitel) return;
-    const parentAlreadyVisible = [...tocBaseById.values()].some((entry) => String(entry.kapitel || "") === normalizedKapitel);
-    if (parentAlreadyVisible) return;
-
-    const matrixParent = matrixByKapitel.get(normalizedKapitel);
-    tocBaseById.set(`toc-parent-${normalizedKapitel}`, {
-      ...(matrixParent || {}),
-      id: matrixParent ? matrixParent.id : `toc-parent-${normalizedKapitel}`,
-      kapitel: normalizedKapitel,
-      titel: matrixParent ? matrixParent.titel : fallbackListe.titel.replace(/^Geräteliste\s*/i, ""),
-      ebene: matrixParent ? matrixParent.ebene : normalizedKapitel.includes(".") ? 2 : 1,
-      aktiv: true,
-      export: true,
-      pflicht: Boolean(matrixParent && matrixParent.pflicht),
-      leistungsbereich: matrixParent ? matrixParent.leistungsbereich : fallbackListe.leistungsbereich,
-      dokumenttyp: matrixParent ? matrixParent.dokumenttyp : "Geräteliste",
-      formularart: matrixParent ? matrixParent.formularart : "Tabelle",
-      quelle: matrixParent ? matrixParent.quelle : "data/geraetelisten.json",
-      sortierung: matrixParent && Number.isFinite(matrixParent.sortierung)
-        ? matrixParent.sortierung
-        : chapterSortValue(normalizedKapitel)
-    });
-  }
-
-  activeLists.forEach((liste) => {
-    const kapitel = String(liste.kapitel || "");
-    const parts = kapitel.split(".").filter(Boolean);
-    parts.forEach((_, index) => {
-      ensureTocParent(parts.slice(0, index + 1).join("."), liste);
-    });
-  });
-
-  // * INFO: Importierte PDFs brauchen ihr Kategorie-Elternkapitel im Inhaltsverzeichnis.
-  // ? WARUM: Sonst kann z. B. ein Stromlaufplan als 12.1.1 erscheinen, waehrend 12.1 fehlt.
-  documentationAttachments(anhaenge)
-    .filter((entry) => entry.export !== false)
-    .forEach((entry) => {
-      const meta = defaultDocumentMetaForCategory(entry.category);
-      const kapitel = String(entry.kapitel || meta.kapitel || "");
-      const parts = kapitel.split(".").filter(Boolean);
-      parts.forEach((_, index) => {
-        ensureTocParent(parts.slice(0, index + 1).join("."), {
-          titel: meta.title || entry.category || "Dokumentation",
-          leistungsbereich: "Dokumentation"
-        });
-      });
-    });
-
-  const docs = activeExportDocs(applyLogicalChapterNumbers([...tocBaseById.values()], { exportOnly: true }));
-  const docsByOriginalKapitel = new Map(
-    docs.map((entry) => [String(entry.originalKapitel || entry.kapitel), entry])
-  );
-  const listCountersByKapitel = new Map();
-  const listEntries = activeLists.map((liste) => {
-      const parent = docsByOriginalKapitel.get(String(liste.kapitel || ""));
-      const counterKey = String(liste.kapitel || "");
-      const next = (listCountersByKapitel.get(counterKey) || 0) + 1;
-      listCountersByKapitel.set(counterKey, next);
-
-      return {
-        id: `toc-${liste.id}`,
-        kapitel: liste.kapitel,
-        originalKapitel: liste.kapitel,
-        displayKapitel: `${parent ? parent.displayKapitel || parent.kapitel : liste.kapitel}.${next}`,
-        titel: `${liste.titel} - ${liste.leistungsbereich}`,
-        ebene: 3,
-        aktiv: true,
-        export: true,
-        sortierung: (parent ? parent.sortierung : chapterSortValue(liste.kapitel)) + next / 100
-      };
-    });
-
-  const attachmentEntries = buildDocumentationAttachmentEntries([...tocBaseById.values()], anhaenge, projekt, activeLists);
-
-  return [...docs, ...listEntries, ...attachmentEntries].sort((a, b) => {
-    const sortA = Number.isFinite(a.sortierung) ? a.sortierung : 0;
-    const sortB = Number.isFinite(b.sortierung) ? b.sortierung : 0;
-    if (sortA !== sortB) return sortA - sortB;
-    return String(a.displayKapitel || a.kapitel || "").localeCompare(String(b.displayKapitel || b.kapitel || ""), "de", { numeric: true });
-  });
+  return buildDocumentationPlan(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt);
 }
-
-// * INFO: Map Gerätelisten-ID -> logische Kapitelnummer für PDF-Dateinamen und Überschriften.
-function logicalDeviceListNumbers(matrix, geraetelisten = [], leistungsbereiche = {}) {
-  return new Map(
-    buildInhaltsverzeichnisEntries(matrix, geraetelisten, [], leistungsbereiche)
-      .filter((entry) => String(entry.id || "").startsWith("toc-"))
-      .map((entry) => [String(entry.id).replace(/^toc-/, ""), entry.displayKapitel || entry.kapitel])
-  );
+function logicalDeviceListNumbers(matrix, lists = [], areas = {}, attachments = [], project = {}) {
+  return new Map(buildDocumentationPlan(matrix, lists, attachments, areas, project).filter((entry) => entry.deviceListId).map((entry) => [entry.deviceListId, entry.displayKapitel]));
 }
-
-// * INFO: Verweist Gerätepositionen auf Kapitel der optional hinterlegten Bedienungsanleitungen.
-function manualChapterNumbers(matrix, geraetelisten = [], anhaenge = [], leistungsbereiche = {}, projekt = {}) {
-  return new Map(
-    buildInhaltsverzeichnisEntries(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt)
-      .filter((entry) => entry.attachmentId)
-      .map((entry) => [entry.attachmentId, entry.displayKapitel || entry.kapitel])
-  );
-}
-
-// * INFO: Map Originalkapitel -> logische Anzeige-Kapitelnummer für Formular-PDFs.
-function logicalDocumentNumbers(matrix, geraetelisten = [], leistungsbereiche = {}) {
-  return new Map(
-    buildInhaltsverzeichnisEntries(matrix, geraetelisten, [], leistungsbereiche)
-      .filter((entry) => !String(entry.id || "").startsWith("toc-"))
-      .map((entry) => [String(entry.originalKapitel || entry.kapitel), entry.displayKapitel || entry.kapitel])
-  );
+function manualChapterNumbers(matrix, lists = [], attachments = [], areas = {}, project = {}) {
+  return new Map(buildDocumentationPlan(matrix, lists, attachments, areas, project).filter((entry) => entry.attachmentId).map((entry) => [entry.attachmentId, entry.displayKapitel]));
 }
 
 // * INFO: Löscht alte generierte PDFs eines Bereichs, bevor neue PDFs erzeugt werden.
@@ -624,6 +467,8 @@ async function writePdf(filePath, title, writer, options = {}) {
       layout: options.layout || "portrait",
       bufferPages: true
     });
+    doc.info.Title = title;
+    if (options.documentId) doc.info.Subject = JSON.stringify({ edoku: 1, id: options.documentId, chapter: options.chapter });
     const stream = fs.createWriteStream(filePath);
     doc._systemSettings = options.systemSettings || {};
     doc.pipe(stream);
@@ -829,35 +674,55 @@ async function generateAnlagenbeschreibungPdf(rootDir, projekt, entry, leistungs
     writeDocumentTitle(doc, title, `Kapitel ${displayKapitel} - Übersicht der installierten Anlagenbereiche`);
     writeParagraphWithPageBreaks(doc, text, projekt, rootDir, systemSettings, title);
     writeFooter(doc, projekt);
-  }, { systemSettings });
+  }, { systemSettings, documentId: entry.id, chapter: displayKapitel });
 
   return filePath;
 }
 
 // * INFO: Generiert das Inhaltsverzeichnis aus Matrix, Gerätelisten und importierten PDFs.
-async function generateInhaltsverzeichnis(rootDir, projekt, matrix, systemSettings = {}, geraetelisten = [], anhaenge = [], leistungsbereiche = {}) {
+async function generateInhaltsverzeichnis(rootDir, projekt, matrix, systemSettings = {}, geraetelisten = [], anhaenge = [], leistungsbereiche = {}, options = {}) {
   const paths = await createProjectFolder(rootDir, projekt);
   const filePath = path.join(paths.generatedPath, "Inhaltsverzeichnis.pdf");
-  const docs = buildInhaltsverzeichnisEntries(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt);
-
+  const docs = options.entries
+    ? options.entries.filter((entry) => !entry.isToc && entry.kapitel !== "0")
+    : buildInhaltsverzeichnisEntries(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt);
+  const rows = [];
   await writePdf(filePath, "Inhaltsverzeichnis", (doc) => {
-    writeProjectHeader(doc, projekt, rootDir, systemSettings);
-    writeDocumentTitle(doc, "Inhaltsverzeichnis");
+    function heading(continued = false) {
+      writeProjectHeader(doc, projekt, rootDir, systemSettings);
+      writeDocumentTitle(doc, "Inhaltsverzeichnis", continued ? "Fortsetzung - Seiten im Gesamt-PDF" : "Seiten im Gesamt-PDF");
+    }
+    heading();
     docs.forEach((entry) => {
-      if (doc.y > 745) {
+      const level = String(entry.displayKapitel || entry.kapitel).split(".").length;
+      const indent = Math.min(5, level - 1) * 14;
+      const x = pageLeft(doc) + indent;
+      const width = pageContentWidth(doc) - indent;
+      const textWidth = width - 48;
+      const text = `${entry.displayKapitel || entry.kapitel}  ${entry.titel}`;
+      const font = level === 1 ? "Helvetica-Bold" : "Helvetica";
+      const size = level === 1 ? 11 : 9.5;
+      doc.font(font).fontSize(size);
+      const height = Math.ceil(doc.heightOfString(text, { width: textWidth, lineGap: 1 })) + 7;
+      const bottom = doc.page.height - FOOTER_Y_OFFSET - 14;
+      if (height > bottom - 170) throw new Error("Eine Kapitelüberschrift ist zu lang für das Inhaltsverzeichnis.");
+      if (doc.y + height > bottom) {
         writeFooter(doc, projekt);
         doc.addPage();
-        writeProjectHeader(doc, projekt, rootDir, systemSettings);
-        writeDocumentTitle(doc, "Inhaltsverzeichnis", "Fortsetzung");
+        heading(true);
       }
-      const indent = (entry.ebene - 1) * 14;
-      doc.font(entry.ebene === 1 ? "Helvetica-Bold" : "Helvetica").fontSize(entry.ebene === 1 ? 12 : 10);
-      doc.text(`${entry.displayKapitel || entry.kapitel}  ${entry.titel}`, 48 + indent, doc.y, { width: 500 - indent });
-      doc.moveDown(0.25);
+      const y = doc.y;
+      const pageIndex = doc.bufferedPageRange().count - 1;
+      doc.font(font).fontSize(size).fillColor("#111827").text(text, x, y, { width: textWidth, lineGap: 1 });
+      const label = entry.startSeite ? String(entry.startSeite) : entry.status === "fehlt" ? "fehlt" : entry.status === "fehlerhaft" ? "Fehler" : entry.status === "veraltet" ? "neu" : "-";
+      doc.font("Helvetica").fontSize(9).fillColor("#4b5563").text(label, x + width - 40, y, { width: 40, align: "right", lineBreak: false });
+      rows.push({ id: entry.id, kapitel: entry.displayKapitel || entry.kapitel, pageIndex, x, y, width, height, startSeite: entry.startSeite || null });
+      doc.y = y + height;
     });
     writeFooter(doc, projekt);
-  }, { systemSettings });
-
+  }, { systemSettings, documentId: "inhaltsverzeichnis", chapter: "0" });
+  // Linkflächen werden aus dem tatsächlichen Satz gespeichert, auch bei langen Titeln.
+  await fsp.writeFile(`${filePath}.layout.json`, JSON.stringify({ rows }, null, 2));
   return [filePath];
 }
 
@@ -874,7 +739,7 @@ async function generateDeckblaetter(rootDir, projekt, matrix, systemSettings = {
     const filePath = path.join(paths.generatedPath, `${String(displayKapitel).replaceAll(".", "_")}_${fileSafeName(entry.titel || "Deckblatt")}.pdf`);
     await writePdf(filePath, entry.titel || "Deckblatt", (doc) => {
       writeCoverPage(doc, projekt, rootDir, systemSettings, entry);
-    }, { systemSettings });
+    }, { systemSettings, documentId: entry.id, chapter: displayKapitel });
     generated.push(filePath);
   }
 
@@ -992,7 +857,7 @@ async function generateOrdnerruecken(rootDir, projekt, systemSettings = {}, opti
   await clearGeneratedPdfs(generatedDir);
   const formatKey = normalizeOrdnerRueckenFormatKey(options.format);
   const format = ORDNER_RUECKEN_FORMATS[formatKey] || ORDNER_RUECKEN_FORMATS["61x192-r"];
-  const count = Math.max(1, Math.min(20, Number(options.ordnerAnzahl) || 1));
+  const count = Math.max(1, Math.min(999, Number(options.ordnerAnzahl) || 1));
   const filePath = path.join(generatedDir, `Ordnerruecken_Avery_Zweckform_${formatKey.toUpperCase()}_${count}x.pdf`);
 
   await writePdf(filePath, "Ordnerrücken", (doc) => {
@@ -1015,10 +880,10 @@ async function generateOrdnerruecken(rootDir, projekt, systemSettings = {}, opti
 }
 
 // * INFO: Generiert Formular-PDFs wie Konformitäts- und Errichterbestätigungen.
-async function generateFormularPdfs(rootDir, projekt, matrix, leistungsbereiche, systeme, projektSysteme = [], formTemplates = {}, systemSettings = {}) {
+async function generateFormularPdfs(rootDir, projekt, matrix, leistungsbereiche, systeme, projektSysteme = [], formTemplates = {}, systemSettings = {}, geraetelisten = [], anhaenge = []) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generated = [];
-  const docs = activeExportDocs(applyLogicalChapterNumbers(matrix, { exportOnly: true }));
+  const docs = buildDocumentationPlan(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt).filter((entry) => entry.matrixId && entry.requiresFile && !entry.isCover);
   const templates = mergeFormTemplates(formTemplates);
   await clearGeneratedRootFormPdfs(paths.generatedPath);
 
@@ -1062,7 +927,7 @@ async function generateFormularPdfs(rootDir, projekt, matrix, leistungsbereiche,
       }
       if (template.showSignature) writeSignature(doc, template.signatureLabel);
       if (template.showFooter) writeFooter(doc, projekt);
-    }, { ...template, systemSettings });
+    }, { ...template, systemSettings, documentId: entry.id, chapter: displayKapitel });
     generated.push(filePath);
   }
 
@@ -1083,7 +948,7 @@ async function generateFormularPdfs(rootDir, projekt, matrix, leistungsbereiche,
       writeConfirmationBody(doc, template.bodyText || "", { fontSize: template.fontSizeBody });
       if (template.showSignature) writeSignature(doc, template.signatureLabel);
       if (template.showFooter) writeFooter(doc, projekt);
-    }, { ...template, systemSettings });
+    }, { ...template, systemSettings, documentId: entry.id, chapter: displayKapitel });
     generated.push(filePath);
   }
 
@@ -1105,7 +970,7 @@ async function generateFormularPdfs(rootDir, projekt, matrix, leistungsbereiche,
       }
       if (template.showSignature) writeSignature(doc, template.signatureLabel);
       if (template.showFooter) writeFooter(doc, projekt);
-    }, { ...template, systemSettings });
+    }, { ...template, systemSettings, documentId: dguv.id, chapter: displayKapitel });
     generated.push(filePath);
   }
 
@@ -1127,7 +992,7 @@ async function generateFormularPdfs(rootDir, projekt, matrix, leistungsbereiche,
       }
       if (template.showSignature) writeSignature(doc, template.signatureLabel);
       if (template.showFooter) writeFooter(doc, projekt);
-    }, { ...template, systemSettings });
+    }, { ...template, systemSettings, documentId: errichter.id, chapter: displayKapitel });
     generated.push(filePath);
   }
 
@@ -1343,7 +1208,7 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
   const paths = await createProjectFolder(rootDir, projekt);
   const generated = [];
   const listen = filterExportGeraetelisten(geraetelisten, leistungsbereiche);
-  const logicalNumbers = logicalDeviceListNumbers(matrix, listen, leistungsbereiche);
+  const logicalNumbers = logicalDeviceListNumbers(matrix, listen, leistungsbereiche, anhaenge, projekt);
   const manualNumbers = manualChapterNumbers(matrix, listen, anhaenge, leistungsbereiche, projekt);
   const generatedDir = path.join(paths.generatedPath, "Geraetelisten");
   await clearGeneratedPdfs(generatedDir);
@@ -1408,7 +1273,7 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
       });
       doc.y = tableY + 8;
       writeFooter(doc, projekt);
-    }, { layout: "landscape", margin: 36, systemSettings });
+    }, { layout: "landscape", margin: 36, systemSettings, documentId: `device-list-${liste.id}`, chapter: displayKapitel });
     generated.push(filePath);
   }
 
@@ -1416,11 +1281,13 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
 }
 
 // * INFO: Generiert Brandschutzseiten: eine Seite pro aktiver Brandschottung mit Foto 1/2.
-async function generateBrandschutzPdf(rootDir, projekt, brandschutz, systemSettings = {}, matrix = [], geraetelisten = [], leistungsbereiche = {}) {
+async function generateBrandschutzPdf(rootDir, projekt, brandschutz, systemSettings = {}, matrix = [], geraetelisten = [], leistungsbereiche = {}, anhaenge = []) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generatedDir = path.join(paths.generatedPath, "Brandschutz");
   await clearGeneratedPdfs(generatedDir);
-  const displayKapitel = logicalDocumentNumbers(matrix, geraetelisten, leistungsbereiche).get("13.5") || "13.5";
+  const target = buildDocumentationPlan(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt).find((entry) => entry.matrixId && entry.originalKapitel === "13.5");
+  if (!target) return [];
+  const displayKapitel = target.displayKapitel;
   const filePath = path.join(generatedDir, `${String(displayKapitel).replaceAll(".", "_")}_Bilddokumentation_Brandschottungen.pdf`);
   const entries = normalizeBrandschutz(brandschutz).filter((entry) => entry.aktiv);
 
@@ -1466,7 +1333,7 @@ async function generateBrandschutzPdf(rootDir, projekt, brandschutz, systemSetti
       doc.y = imageY + imageHeight + 10;
     });
     writeFooter(doc, projekt);
-  }, { layout: "landscape", margin: 36, systemSettings });
+  }, { layout: "landscape", margin: 36, systemSettings, documentId: target.id, chapter: displayKapitel });
 
   return [filePath];
 }

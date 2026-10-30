@@ -1,14 +1,11 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><%= title %> | edoku</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <%- include("partials/head", { pageTitle: title }) %>
   </head>
   <body>
     <%- include("partials/header", { active }) %>
-    <main class="page">
+    <main id="main-content" tabindex="-1" class="page">
       <div class="page-title">
         <p class="eyebrow">Modul</p>
         <h1><%= heading %></h1>

@@ -1,15 +1,12 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Anhänge | edoku</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <%- include("partials/head", { pageTitle: "Anhänge" }) %>
   </head>
   <body>
     <%# Anhangsverwaltung: Upload, Metadaten und Zuordnung laufen immer in der aktuell ausgewählten Kategorie. %>
     <%- include("partials/header", { active }) %>
-    <main class="page wide compact-work-page attachments-page">
+    <main id="main-content" tabindex="-1" class="page wide compact-work-page attachments-page">
       <%- include("partials/flash", { flash }) %>
       <%- include("partials/sectionTabs", { active, selectedKategorie }) %>
       <%# Projekt-Stockwerke als Vorschlagsliste für Pläne, Messprotokolle und Brandschutzbilder. %>

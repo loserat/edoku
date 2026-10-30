@@ -1,23 +1,21 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Registrieren | edoku</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <%- include("partials/head", { pageTitle: "Registrieren" }) %>
   </head>
   <body>
     <%- include("partials/themeVariables") %>
-    <main class="auth-page">
+    <main id="main-content" tabindex="-1" class="auth-page">
+      <%- include("partials/authIntro") %>
       <section class="auth-card">
         <div class="auth-brand">
-          <img class="auth-logo" src="/img/logo.svg" alt="" width="48" height="48">
+          <img class="auth-logo" src="/img/icons/edoku-app-icon.svg?v=2" alt="" width="48" height="48">
           <div>
             <p class="eyebrow">edoku</p>
             <h1>Registrieren</h1>
           </div>
         </div>
-        <p class="auth-subtitle">Neuen lokalen Benutzer für projektbezogene Dokumentation anlegen.</p>
+        <p class="auth-subtitle">Erstelle dein Konto und beginne mit deiner Dokumentation.</p>
         <%- include("partials/flash", { flash }) %>
         <form action="/register" method="post" class="stack-form">
           <label>

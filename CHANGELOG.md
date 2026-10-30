@@ -8,12 +8,39 @@ Das Format orientiert sich an Keep a Changelog. Die Versionierung folgt semantis
 
 ### Geändert
 
+- README mit fünf Screenshots aus einer getrennten Demo-Installation ergänzt; Release Notes, Installation, Arbeitsstand und offene Punkte aktualisiert.
+- Reproduzierbare Test-/Abnahmeanleitung und Vorgehen für lokale Updates, Sicherung und Wiederherstellung dokumentiert.
+
+- Bestehende Konten werden beim Start nicht mehr durch Startkonten überschrieben; eine vorhandene Datenbank wird nicht erneut aus dem alten Projektregister migriert.
+- Projektaufrufe aktualisieren keine vorhandenen Projektzeitstempel; GET-Systemauswahl speichert keine automatisch abgeglichene Auswahl.
+- Lokale Sicherungen von Git und Docker-Build-Kontext ausgeschlossen.
+
+- Kapitelnummern, Gerätelisten und importierte PDFs nutzen eine gemeinsame Exportstruktur; Nummernkollisionen und falsche Dateistatus-Zuordnungen behoben.
+- PDF-Dateien, Strukturüberschriften und tatsächliche Seiten werden getrennt gezählt; Dashboard und Export verwenden denselben aktuellen Stand.
+- Gesamt-PDF mit tatsächlichen Startseiten und gemessenen Inhaltsverzeichnis-Sprungflächen; mehrseitige Anhänge und lange Titel berücksichtigt.
+- Eindeutige Dokumentkennungen für generierte PDFs, lückenlose finale Dateinummern und passende ZIP-Kapiteltitel ergänzt.
+- Ordneranzahl folgt PDF-Seiten und einstellbarer Kapazität; fehlende, veraltete und unlesbare Dateien werden ausdrücklich ausgewiesen.
+
+- App-Icon auf Dokument mit Prüfhaken reduziert; Favicon, Safari-Maske und PNG-Startbildschirmvarianten vereinheitlicht.
+
+- Ruhige technische Oberfläche mit klarer Navigation, flacheren Bedienelementen und vereinheitlichten Abständen.
+- Projektübersicht mit Erfassungsstand, hervorgehobenem nächsten Schritt und einheitlichen Kennzahlenkarten überarbeitet.
+- Anmeldung und Registrierung mit gemeinsamer technischer Dokumentengrafik gestaltet.
+- Seitenkopf und Navigationsdefinition zentralisiert; CSS bei unveränderter Reihenfolge in Fachbereiche aufgeteilt.
+- Tastaturfokus, Sprunglink zum Inhalt und reduzierte Bewegung berücksichtigt.
+
+- Browser-Tab-Icons und kompaktes App-Icon fuer Header, Login und Register ergaenzt.
 - Kapitelnummerierung im Export korrigiert.
 - Doppelte Original-Kapitelnummern in der Dokumentenmatrix erzeugen jetzt keine doppelten Anzeige-Kapitel mehr.
 - Importierte PDF-Anhänge erzwingen ihre Elternkapitel im Inhaltsverzeichnis, damit Unterkapitel wie `12.1.1` nicht ohne `12.1` erscheinen.
 - Aktueller Projektstand in `docs/AKTUELLER_STAND.md` ergänzt.
 
 ### Geprüft
+
+- Übernahme in die lokale Hauptanwendung auf Port 3000 mit vollständiger Sicherung und unverändertem Datenbankinhalt sowie unveränderten Projekt-, Anhangs-, Einstellungs- und Exportdateien.
+- Drei zusätzliche Datenerhalt-Prüfungen: bestehende Konten und Projekte über Seitenaufrufe/Neustarts, vorhandene leere Datenbank und echte Erstinstallation. Zusammen mit den Exportprüfungen: 21 erfolgreich.
+
+- 18 automatisierte Kapitel-/Exportprüfungen sowie HTTP-Abgleich von Dashboard, Export und Gesamt-PDF in einer getrennten Testkopie.
 
 - Docker-Container neu gebaut und gestartet.
 - API-Smoke-Test im Container erfolgreich ausgeführt.

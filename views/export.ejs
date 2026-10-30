@@ -1,15 +1,12 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Export | edoku</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <%- include("partials/head", { pageTitle: "Export" }) %>
   </head>
   <body>
     <%# Exportansicht: bündelt PDF-Vorschau, Exportstruktur, Aktionen und finale Exportliste. %>
     <%- include("partials/header", { active }) %>
-    <main class="page compact-work-page full-width-page">
+    <main id="main-content" tabindex="-1" class="page compact-work-page full-width-page">
       <div class="page-title">
         <p class="eyebrow">Ausgabe</p>
         <h1>Export</h1>
@@ -19,8 +16,6 @@
       <%- include("partials/flash", { flash }) %>
 
       <%# Kleine Statuszählung für die kompakten Export-Kennzahlen. %>
-      <% const vorhanden = exportliste.filter((entry) => entry.status === "vorhanden").length; %>
-      <% const fehlt = exportliste.filter((entry) => entry.status === "fehlt").length; %>
       <% const finalFiles = finalExportFiles || []; %>
       <% const completePdf = finalFiles.find((file) => file.kind === "gesamt-pdf"); %>
       <% const zipFile = finalFiles.find((file) => file.kind === "zip"); %>
@@ -34,15 +29,7 @@
       <% const findPdfByName = (pattern) => pdfPreviewFiles.find((file) => pattern.test(file.name || "")); %>
       <% const tocPdf = findPdfByName(/^Inhaltsverzeichnis\.pdf$/i); %>
       <% const selectedPdf = tocPdf || (completePdf && pdfPreviewFiles.find((file) => file.id === completePdf.id)) || pdfPreviewFiles[0]; %>
-      <% const chapterFileKey = (value) => String(value || "").replaceAll(".", "_"); %>
-      <% const findPdfForDocument = (entry) => {
-        const displayKey = chapterFileKey(entry.displayKapitel || entry.kapitel);
-        const originalKey = chapterFileKey(entry.originalKapitel || "");
-        return pdfPreviewFiles.find((file) => {
-          const name = String(file.name || "");
-          return (displayKey && name.startsWith(`${displayKey}_`)) || (originalKey && name.startsWith(`${originalKey}_`));
-        });
-      }; %>
+      <% const findPdfForDocument = (entry) => entry.requiresFile === false || entry.status !== "vorhanden" ? null : entry.previewUrl ? { id: `attachment-${entry.attachmentId}`, relativePath: "Importierter Anhang", previewUrl: entry.previewUrl } : pdfPreviewFiles.find((file) => file.id === entry.previewId); %>
       <% const referencedPdfIds = new Set(); %>
       <% if (tocPdf) referencedPdfIds.add(tocPdf.id); %>
       <% const formatSize = (bytes) => {
@@ -66,7 +53,7 @@
           <div class="panel-head">
             <div>
               <h2>Matrix</h2>
-              <p>Hier wird festgelegt, welche vorhandenen Dokumente erzeugt und exportiert werden.</p>
+              <p>Hier wird festgelegt, welche Dokumente erzeugt und exportiert werden. Übergeordnete Kapitel für ausgewählte Gerätelisten und Anhänge werden automatisch ergänzt.</p>
             </div>
           </div>
 
@@ -161,7 +148,7 @@
               <aside class="pdf-preview-sidebar" aria-label="PDF-Inhaltsbaum">
                 <div class="pdf-preview-sidebar-head">
                   <span>Inhaltsbaum</span>
-                  <strong><%= pdfPreviewFiles.length %></strong>
+                  <strong><%= preview.stats.vorhandeneDateien %></strong>
                 </div>
                 <div class="pdf-preview-tree">
                   <details class="pdf-tree-group" open>
@@ -201,7 +188,7 @@
                           <% const file = findPdfForDocument(entry); %>
                           <% if (file) referencedPdfIds.add(file.id); %>
                           <% if (file) { %>
-                            <% const pdfUrl = `/export/pdf-preview?file=${encodeURIComponent(file.id)}`; %>
+                            <% const pdfUrl = file.previewUrl || `/export/pdf-preview?file=${encodeURIComponent(file.id)}`; %>
                             <button
                               class="pdf-tree-item level-<%= entry.ebene || 2 %> <%= selectedPdf && file.id === selectedPdf.id ? "active" : "" %>"
                               type="button"
@@ -214,7 +201,7 @@
                           <% } else { %>
                             <button class="pdf-tree-item level-<%= entry.ebene || 2 %> is-missing" type="button" disabled>
                               <span><%= entry.kapitel %> <%= entry.titel %></span>
-                              <small>Noch keine PDF gefunden</small>
+                              <small><%= entry.requiresFile === false ? "Kapitelüberschrift" : entry.status === "veraltet" ? "Dokumentation neu erzeugen" : entry.status === "fehlerhaft" ? "PDF nicht lesbar" : "Noch keine PDF gefunden" %></small>
                             </button>
                           <% } %>
                         <% }) %>
@@ -231,7 +218,7 @@
                       </summary>
                       <div class="pdf-tree-items">
                         <% additionalPdfs.forEach((file) => { %>
-                          <% const pdfUrl = `/export/pdf-preview?file=${encodeURIComponent(file.id)}`; %>
+                          <% const pdfUrl = file.previewUrl || `/export/pdf-preview?file=${encodeURIComponent(file.id)}`; %>
                           <button
                             class="pdf-tree-item <%= selectedPdf && file.id === selectedPdf.id ? "active" : "" %>"
                             type="button"
@@ -343,15 +330,20 @@
                   </label>
                   <label>
                     <span>Anzahl</span>
-                    <input type="number" name="ordnerAnzahl" min="1" max="20" value="<%= binderSettings.ordnerAnzahl || estimatedBinderCount || 1 %>">
+                    <input type="number" name="ordnerAnzahl" min="1" max="999" value="<%= binderSettings.ordnerAnzahl || estimatedBinderCount || 1 %>">
                   </label>
                   <label>
                     <span>Berechnung</span>
                     <select name="anzahlModus">
                       <option value="manuell" <%= binderSettings.anzahlModus !== "auto" ? "selected" : "" %>>Manuell</option>
-                      <option value="auto" <%= binderSettings.anzahlModus === "auto" ? "selected" : "" %>>Auto-Schätzung (<%= estimatedBinderCount || 1 %>)</option>
+                      <option value="auto" <%= binderSettings.anzahlModus === "auto" ? "selected" : "" %>>Nach PDF-Seiten (<%= estimatedBinderCount || 1 %>)</option>
                     </select>
                   </label>
+                  <label>
+                    <span>PDF-Seiten je Ordner</span>
+                    <input type="number" name="seitenProOrdner" min="1" max="5000" value="<%= binderSettings.seitenProOrdner || 80 %>">
+                  </label>
+                  <p class="muted"><%= preview.stats.seiten %> PDF-Seiten sind aktuell vorhanden. Fehlende Dateien werden nicht geschätzt. Der Rechenwert je Ordner hängt von Druck und Ablage ab.</p>
                   <div class="binder-print-options" aria-label="Bedruckte Bereiche">
                     <label class="compact-toggle">
                       <input type="checkbox" name="showProjektname" value="1" <%= binderSettings.showProjektname !== false ? "checked" : "" %>>
@@ -472,7 +464,7 @@
             <form class="export-action-primary" action="/export/final" method="post">
               <button type="submit">
                 <span>Finalen Export vorbereiten</span>
-                <small>Gesamt-PDF, ZIP und Reihenfolge-Datei neu erzeugen</small>
+                <small>Aktuelle Dokumentation erzeugen, Seiten zählen und Gesamt-PDF / ZIP erstellen</small>
               </button>
             </form>
           </section>
@@ -521,14 +513,20 @@
           </section>
 
           <section class="summary-cards preview-stats">
-            <div class="summary-card"><span>Export-Dokumente</span><strong><%= preview.stats.dokumente %></strong></div>
+            <div class="summary-card"><span>Geplante Einzel-PDFs</span><strong><%= preview.stats.dokumente %></strong></div>
             <div class="summary-card"><span>Pflicht</span><strong><%= preview.stats.pflichtdokumente %></strong></div>
             <div class="summary-card"><span>Fehlende Pflicht</span><strong><%= preview.stats.fehlendePflicht %></strong></div>
-            <div class="summary-card"><span>Vorhandene Dateien</span><strong><%= preview.stats.vorhandeneDateien %></strong></div>
-            <div class="summary-card"><span>Fehlende Dateien</span><strong><%= preview.stats.fehlendeDateien %></strong></div>
-            <div class="summary-card"><span>Nicht geprüft</span><strong><%= preview.stats.ungeprueft %></strong></div>
+            <div class="summary-card"><span>Vorhandene Einzel-PDFs</span><strong><%= preview.stats.vorhandeneDateien %></strong></div>
+            <div class="summary-card"><span>Fehlende Einzel-PDFs</span><strong><%= preview.stats.fehlendeDateien %></strong></div>
+            <div class="summary-card"><span>Fehlerhaft / veraltet</span><strong><%= preview.stats.fehlerhafteDateien %></strong></div>
+            <div class="summary-card"><span>Vorhandene PDF-Seiten</span><strong><%= preview.stats.seiten %></strong></div>
+            <div class="summary-card"><span>Strukturüberschriften</span><strong><%= preview.stats.struktur %></strong></div>
           </section>
 
+          <p class="muted">Gezählt werden Inhaltsverzeichnis, Deckblätter und ausgewählte Dokumente. Die Gesamtdatei und separate Druckvorlagen werden nicht nochmals gezählt.</p>
+          <% if (preview.stats.nichtZugeordnet.length) { %>
+            <p class="export-warning" role="status"><%= preview.stats.nichtZugeordnet.length %> externe PDF-Datei(en) konnten keinem ausgewählten Dokument eindeutig zugeordnet werden und sind nicht im Export enthalten. Kapitelnummer oder Dokumenttitel im Dateinamen prüfen.</p>
+          <% } %>
           <% if (!preview.groups.length) { %>
             <p class="empty-state">Noch keine aktiven Export-Dokumente vorhanden.</p>
           <% } %>
@@ -583,31 +581,35 @@
             <table>
               <thead>
                 <tr>
-                  <th>Reihenfolge</th>
+                  <th>Dateireihenfolge</th>
                   <th>Kapitel</th>
                   <th>Original</th>
                   <th>Titel</th>
                   <th>Dateipfad</th>
                   <th>Quelle</th>
                   <th>Status</th>
+                  <th>Seiten</th>
+                  <th>Beginn im Gesamt-PDF</th>
                   <th>Pflicht</th>
                 </tr>
               </thead>
               <tbody>
                 <% if (!exportliste.length) { %>
                   <tr>
-                    <td colspan="8">Noch keine Exportliste erzeugt.</td>
+                    <td colspan="10">Noch keine Exportliste erzeugt.</td>
                   </tr>
                 <% } %>
                 <% exportliste.forEach((entry) => { %>
-                  <tr class="<%= entry.pflicht && entry.status === "fehlt" ? "row-missing-required" : "" %>">
-                    <td><%= entry.reihenfolge %></td>
+                  <tr class="<%= entry.pflicht && entry.status !== "vorhanden" ? "row-missing-required" : "" %>">
+                    <td><%= entry.reihenfolge || "-" %></td>
                     <td><%= entry.kapitel %></td>
                     <td><small><%= entry.originalKapitel || "-" %></small></td>
                     <td><%= entry.titel %></td>
                     <td><%= entry.dateipfad || "-" %></td>
                     <td><%= entry.quelle %></td>
-                    <td><span class="badge <%= entry.status === "vorhanden" ? "on" : "off" %>"><%= entry.status %></span></td>
+                    <td><span class="badge <%= entry.status === "vorhanden" ? "on" : entry.status === "struktur" ? "" : "off" %>"><%= entry.status %></span></td>
+                    <td><%= entry.requiresFile && entry.status === "vorhanden" ? entry.seiten : "-" %></td>
+                    <td><%= entry.startSeite || "-" %></td>
                     <td><%= entry.pflicht ? "Ja" : "Nein" %></td>
                   </tr>
                 <% }) %>
