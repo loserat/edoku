@@ -1,118 +1,92 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard | edoku</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <%- include("partials/head", { pageTitle: "Projektübersicht" }) %>
   </head>
   <body>
-    <%# Dashboard: verdichtete Projektkennzahlen aus dashboardService.buildDashboardStats. %>
     <%- include("partials/header", { active }) %>
-    <main class="page wide">
-      <div class="page-title">
-        <p class="eyebrow">Status</p>
-        <h1>Dashboard</h1>
+    <main id="main-content" tabindex="-1" class="page wide dashboard-page">
+      <div class="page-title dashboard-title">
+        <div>
+          <p class="eyebrow"><%= stats.projekt.projektnummer !== "-" ? stats.projekt.projektnummer : "Aktuelles Projekt" %></p>
+          <h1>Projektübersicht</h1>
+          <p class="page-subtitle">Der Stand deiner Dokumentation. Die nächsten Schritte im Blick.</p>
+        </div>
+        <a class="button-link secondary" href="/projekt"><%- include("partials/icon", { name: "edit" }) %> Stammdaten</a>
       </div>
       <%- include("partials/flash", { flash }) %>
 
-      <%# Fortschrittsanzeige auf Basis notwendiger Angaben, Pflichtdokumente und fehlender Dateien. %>
-      <section class="completion-panel" aria-label="Fertigstellungsgrad der Dokumentation">
-        <div class="completion-main">
-          <div>
-            <p class="eyebrow">Dokumentationsstand</p>
-            <h2><%= stats.completion.percent %>% fertiggestellt</h2>
-            <p><%= stats.completion.missing %> von <%= stats.completion.total %> notwendigen Angaben oder Nachweisen fehlen noch.</p>
-          </div>
-          <strong><%= stats.completion.percent %>%</strong>
-        </div>
-        <div class="completion-bar" role="progressbar" aria-valuenow="<%= stats.completion.percent %>" aria-valuemin="0" aria-valuemax="100">
-          <span style="width: <%= stats.completion.percent %>%"></span>
-        </div>
-        <div class="completion-checks">
-          <% stats.completion.checks.forEach((check) => { %>
-            <div class="<%= check.missing ? "warning" : "success" %>">
-              <span><%= check.label %></span>
-              <strong><%= check.percent %>%</strong>
-              <small><%= check.hint %></small>
+      <div class="dashboard-overview">
+        <section class="completion-panel" aria-label="Erfassungsstand der Dokumentation">
+          <div class="completion-main">
+            <div>
+              <p class="eyebrow">Dokumentationsstand</p>
+              <h2><%= stats.projekt.projektname %></h2>
+              <p><%= stats.completion.missing %> von <%= stats.completion.total %> Angaben oder Nachweisen sind noch offen.</p>
             </div>
+            <strong><%= stats.completion.percent %><span>%</span></strong>
+          </div>
+          <div class="completion-bar" role="progressbar" aria-label="Erfassungsstand" aria-valuenow="<%= stats.completion.percent %>" aria-valuemin="0" aria-valuemax="100">
+            <span style="width: <%= stats.completion.percent %>%"></span>
+          </div>
+          <p class="completion-note">Erfassungsstand nach hinterlegten Angaben; die fachliche Prüfung erfolgt separat.</p>
+          <div class="completion-checks">
+            <% stats.completion.checks.forEach((check) => { %>
+              <div class="<%= check.missing ? "warning" : "success" %>">
+                <span><%= check.label %></span>
+                <strong><% if (check.applicable) { %><%= check.percent %><small>%</small><% } else { %>-<% } %></strong>
+                <small><%= check.label === "Exportdateien" && !stats.export.gesamt ? "Noch keine Exportliste" : check.hint %></small>
+              </div>
+            <% }) %>
+          </div>
+        </section>
+        <section class="next-step-panel">
+          <div class="next-step-top"><span class="step-symbol"><%- include("partials/icon", { name: "arrow-right" }) %></span><span class="eyebrow">Als Nächstes</span><span class="step-count">Schritt <%= stats.nextStep.nr %> / <%= stats.workflow.length %></span></div>
+          <div>
+            <h2><%= stats.nextStep.titel %></h2>
+            <p><%= stats.nextStep.beschreibung %></p>
+          </div>
+          <a class="button-link primary" href="<%= stats.nextStep.href %>">Weiterarbeiten <%- include("partials/icon", { name: "arrow-right" }) %></a>
+        </section>
+      </div>
+
+      <section class="dashboard-workflow" aria-labelledby="workflow-heading">
+        <div class="dashboard-section-head"><h2 id="workflow-heading">Arbeitsschritte</h2><span class="muted"><%= stats.workflow.filter((step) => step.status === "fertig").length %> von <%= stats.workflow.length %> bearbeitet</span></div>
+        <div class="workflow-board">
+          <% stats.workflow.forEach((step) => { %>
+            <a class="workflow-step <%= step.status %>" href="<%= step.href %>" <%- step.nr === stats.nextStep.nr ? 'aria-current="step"' : '' %>>
+              <span class="workflow-number"><% if (step.status === "fertig") { %><%- include("partials/icon", { name: "check" }) %><% } else { %><%= step.nr %><% } %></span>
+              <span class="workflow-content"><strong><%= step.titel %></strong><small><%= step.kennzahl %></small></span>
+              <span class="workflow-status"><%= step.status === "fertig" ? "Bearbeitet" : step.status === "in-arbeit" ? "In Arbeit" : "Offen" %></span>
+              <%- include("partials/icon", { name: "arrow-right", className: "workflow-arrow" }) %>
+            </a>
           <% }) %>
         </div>
       </section>
 
-      <section class="next-step-panel">
-        <div>
-          <p class="eyebrow">Nächster Schritt</p>
-          <h2><%= stats.nextStep.nr %>. <%= stats.nextStep.titel %></h2>
-          <p><%= stats.nextStep.beschreibung %></p>
+      <section class="dashboard-details" aria-labelledby="details-heading">
+        <div class="dashboard-section-head"><h2 id="details-heading">Projekt im Detail</h2><span class="muted">Angaben und Nachweise</span></div>
+        <div class="dashboard-grid">
+          <article class="dashboard-card dashboard-project-card">
+            <header class="dashboard-card-head"><span class="dashboard-card-symbol"><%- include("partials/icon", { name: "project" }) %></span><h3>Projekt</h3><a class="text-link" href="/projekt">Bearbeiten</a></header>
+            <dl>
+              <% [["Projektname", stats.projekt.projektname], ["Projektnummer", stats.projekt.projektnummer], ["Auftraggeber", stats.projekt.auftraggeber], ["Liegenschaft", stats.projekt.liegenschaft], ["Baumaßnahme", stats.projekt.baumassnahme]].forEach(([label, value]) => { %>
+                <dt><%= label %></dt><dd><%= value %></dd>
+              <% }) %>
+            </dl>
+          </article>
+          <article class="dashboard-card">
+            <header class="dashboard-card-head"><span class="dashboard-card-symbol"><%- include("partials/icon", { name: "grid" }) %></span><h3>Leistungsbereiche</h3><a class="text-link" href="/leistungsbereiche">Öffnen</a></header>
+            <p class="metric"><%= stats.leistungsbereiche.aktiv %><span>aktiv</span></p>
+            <% if (stats.leistungsbereiche.liste.length) { %>
+              <ul class="compact-list"><% stats.leistungsbereiche.liste.forEach((item) => { %><li><%= item %></li><% }) %></ul>
+            <% } else { %><p class="muted">Noch keine Leistungsbereiche ausgewählt.</p><% } %>
+          </article>
+          <%- include("partials/metricCard", { title: "Dokumente", icon: "documentation", href: "/export#matrix", rows: [{ label: "Aktive Matrixeinträge", value: stats.dokumente.aktiv }, { label: "Einzel-PDFs", value: stats.dokumente.export }, { label: "Pflichtdokumente", value: stats.dokumente.pflicht }, { label: "Pflicht fehlt", value: stats.dokumente.fehlendePflicht, tone: "warning" }] }) %>
+          <%- include("partials/metricCard", { title: "Gerätelisten", icon: "list", href: "/geraetelisten", rows: [{ label: "Gesamt", value: stats.geraetelisten.gesamt }, { label: "Aktiv", value: stats.geraetelisten.aktiv }, { label: "Ohne Positionen", value: stats.geraetelisten.leer }] }) %>
+          <%- include("partials/metricCard", { title: "Brandschutz", icon: "shield", href: "/brandschutz", rows: [{ label: "Brandschottungen", value: stats.brandschutz.gesamt }, { label: "Unvollständig", value: stats.brandschutz.fehlendePflichtangaben, tone: "warning" }] }) %>
+          <%- include("partials/metricCard", { title: "Exportstatus", icon: "export", href: "/export", rows: [{ label: "Einzel-PDFs", value: stats.export.gesamt }, { label: "Vorhanden", value: stats.export.vorhanden, tone: "success" }, { label: "Offen / fehlerhaft", value: stats.export.fehlt, tone: "warning" }, { label: "PDF-Seiten vorhanden", value: stats.export.seiten }] }) %>
         </div>
-        <a class="button-link" href="<%= stats.nextStep.href %>">Öffnen</a>
-      </section>
-
-      <%# Workflow-Karten führen durch die geplante Reihenfolge der Dokumentation. %>
-      <section class="workflow-board" aria-label="Arbeitsablauf">
-        <% stats.workflow.forEach((step) => { %>
-          <a class="workflow-step <%= step.status %>" href="<%= step.href %>">
-            <span class="workflow-number"><%= step.nr %></span>
-            <span class="workflow-content">
-              <strong><%= step.titel %></strong>
-              <small><%= step.kennzahl %></small>
-            </span>
-            <span class="workflow-status"><%= step.status === "fertig" ? "Fertig" : step.status === "in-arbeit" ? "In Arbeit" : "Offen" %></span>
-          </a>
-        <% }) %>
-      </section>
-
-      <section class="dashboard-grid">
-        <article class="dashboard-card">
-          <h2>Projekt</h2>
-          <dl>
-            <dt>Projektname</dt><dd><%= stats.projekt.projektname %></dd>
-            <dt>Projektnummer</dt><dd><%= stats.projekt.projektnummer %></dd>
-            <dt>Auftraggeber</dt><dd><%= stats.projekt.auftraggeber %></dd>
-            <dt>Liegenschaft</dt><dd><%= stats.projekt.liegenschaft %></dd>
-            <dt>Baumaßnahme</dt><dd><%= stats.projekt.baumassnahme %></dd>
-          </dl>
-        </article>
-
-        <article class="dashboard-card">
-          <h2>Leistungsbereiche</h2>
-          <p class="metric"><%= stats.leistungsbereiche.aktiv %></p>
-          <p class="muted">aktive Leistungsbereiche</p>
-          <ul class="compact-list">
-            <% stats.leistungsbereiche.liste.forEach((item) => { %>
-              <li><%= item %></li>
-            <% }) %>
-          </ul>
-        </article>
-
-        <article class="dashboard-card">
-          <h2>Dokumente</h2>
-          <div class="metric-row"><span>Aktiv</span><strong><%= stats.dokumente.aktiv %></strong></div>
-          <div class="metric-row"><span>Export</span><strong><%= stats.dokumente.export %></strong></div>
-          <div class="metric-row"><span>Pflicht</span><strong><%= stats.dokumente.pflicht %></strong></div>
-          <div class="metric-row warning"><span>Pflicht fehlt</span><strong><%= stats.dokumente.fehlendePflicht %></strong></div>
-        </article>
-
-        <article class="dashboard-card">
-          <h2>Gerätelisten</h2>
-          <div class="metric-row"><span>Gesamt</span><strong><%= stats.geraetelisten.gesamt %></strong></div>
-          <div class="metric-row"><span>Aktiv</span><strong><%= stats.geraetelisten.aktiv %></strong></div>
-          <div class="metric-row"><span>Leer</span><strong><%= stats.geraetelisten.leer %></strong></div>
-        </article>
-
-        <article class="dashboard-card">
-          <h2>Brandschutz</h2>
-          <div class="metric-row"><span>Brandschottungen</span><strong><%= stats.brandschutz.gesamt %></strong></div>
-          <div class="metric-row warning"><span>Unvollständig</span><strong><%= stats.brandschutz.fehlendePflichtangaben %></strong></div>
-        </article>
-
-        <article class="dashboard-card">
-          <h2>Exportstatus</h2>
-          <div class="metric-row"><span>Einträge</span><strong><%= stats.export.gesamt %></strong></div>
-          <div class="metric-row success"><span>Vorhanden</span><strong><%= stats.export.vorhanden %></strong></div>
-          <div class="metric-row warning"><span>Fehlt</span><strong><%= stats.export.fehlt %></strong></div>
-        </article>
       </section>
     </main>
     <%- include("partials/footer") %>

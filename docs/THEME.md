@@ -122,3 +122,51 @@ Stattdessen:
 ```
 
 Damit reagieren Komponenten automatisch auf Presets, Light/Dark Mode und spätere Theme-Änderungen.
+
+## Ruhige technische Oberfläche
+
+Die Gestaltung verwendet feste Navigationsbezeichnungen, klare Linien-Icons,
+reduzierte Schatten und eine Projektübersicht mit Erfassungsstand, nächstem
+Arbeitsschritt und Detailkennzahlen. Der Erfassungsstand ersetzt keine fachliche
+Prüfung. Gespeicherte Farben und Theme-Einstellungen bleiben erhalten.
+
+`public/css/style.css` ist der zentrale Einstieg und importiert diese Bereiche
+in festgelegter Reihenfolge:
+
+| Datei unter `public/css/components/` | Aufgabe |
+| --- | --- |
+| `foundation.css` | Variablen, Grundlayout, Header, Anmeldung |
+| `dashboard.css` | Bestehende Kennzahlen- und Workflow-Grundstile |
+| `workspace.css` | Navigation im Arbeitsbereich, Formulare, Tabellen, Export |
+| `modules.css` | Brandschutz, Anhänge, Einstellungen und Vorschau |
+| `responsive.css` | Bestehende Anpassungen für kleine Bildschirme |
+| `technical.css` | Gemeinsame technische Gestaltung, neue Übersicht und Anmeldung |
+
+Die bestehenden Regeln wurden zunächst ohne Umordnung aufgeteilt, damit die
+Reihenfolge und die fachlichen Ansichten stabil bleiben. Änderungen am neuen
+Erscheinungsbild gehören in `technical.css`; Änderungen an fachlichen
+Komponenten in den jeweiligen Bereich. Weitere Zusammenführungen sollten pro
+Komponente mit Sichtprüfung erfolgen.
+
+Wiederverwendbare Ansichten:
+
+- `views/partials/head.ejs`: Metadaten, Seitentitel, Icons und Styles aller Seiten.
+- `views/partials/header.ejs`: zentrale Navigation mit aktivem Bereich und Sprunglink.
+- `views/partials/metricCard.ejs`: Kennzahlenkarten der Projektübersicht.
+- `views/partials/authIntro.ejs`: gemeinsamer Einstieg für Anmeldung und Registrierung.
+
+Die Navigation bleibt auf kleinen Bildschirmen horizontal scrollbar. Farben
+und Status werden zusätzlich durch Text und Symbole vermittelt. Sichtbare
+Tastaturfokusse und die Einstellung für reduzierte Bewegung werden berücksichtigt.
+
+## App-Icon
+
+Das Hauptmotiv liegt in `public/img/icons/edoku-app-icon.svg`: ein Dokument mit
+Prüfhaken auf einfarbig blauem Grund. Das Favicon in `public/favicon.svg` ist
+für kleine Größen vereinfacht. `edoku-mask-icon.svg` ist die einfarbige Variante.
+
+PNG-Ausgaben liegen in 180, 192 und 512 Pixeln vor. Apple-Touch-Icon und
+maskierbare 512-Pixel-Variante haben einen vollständig deckenden Hintergrund.
+Die Dateien sind über `headIcons.ejs` und `site.webmanifest` eingebunden.
+Bei Änderungen an den SVG-Quellen müssen PNG-Ausgaben und Cache-Version
+gemeinsam aktualisiert werden.

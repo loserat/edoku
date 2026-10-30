@@ -243,6 +243,7 @@ const DEFAULT_SYSTEM_SETTINGS = {
       format: "61x192-r",
       anzahlModus: "manuell",
       ordnerAnzahl: 1,
+      seitenProOrdner: 80,
       showProjektname: true,
       showProjektnummer: true,
       showAuftraggeber: false,

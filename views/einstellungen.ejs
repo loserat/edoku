@@ -1,15 +1,12 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Einstellungen | edoku</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <%- include("partials/head", { pageTitle: "Einstellungen" }) %>
   </head>
   <body>
     <%# Systemeinstellungen: globale Defaults, Erstellerdaten und Formularvorlagen. %>
     <%- include("partials/header", { active }) %>
-    <main class="page wide compact-work-page settings-page">
+    <main id="main-content" tabindex="-1" class="page wide compact-work-page settings-page">
       <div class="page-title">
         <p class="eyebrow">Konfiguration</p>
         <h1>Einstellungen</h1>

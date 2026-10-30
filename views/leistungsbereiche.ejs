@@ -1,14 +1,11 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Leistungsbereiche | edoku</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <%- include("partials/head", { pageTitle: "Leistungsbereiche" }) %>
   </head>
   <body>
     <%- include("partials/header", { active }) %>
-    <main class="page compact-work-page">
+    <main id="main-content" tabindex="-1" class="page compact-work-page">
       <div class="page-title">
         <p class="eyebrow">Projekt</p>
         <h1>Leistungsbereiche</h1>

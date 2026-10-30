@@ -1,5 +1,38 @@
 # Release Notes
 
+## Entwicklungsstand 2026-10-30 (noch kein neuer Release-Tag)
+
+### Oberfläche und Wartbarkeit
+
+- Ruhige technische Gestaltung für Navigation, Tabellen, Formulare und Projektübersicht.
+- Gemeinsame EJS-Bausteine für Seitenkopf, Kennzahlen und Anmeldung; CSS in sechs Fachdateien aufgeteilt.
+- Dokument mit Prüfhaken als App-Icon, vereinfachtes Favicon, Safari-Maske und PNG-Varianten für Startbildschirme.
+- Sichtbarer Tastaturfokus, Sprunglink zum Inhalt und reduzierte Bewegung berücksichtigt.
+
+### Kapitel und Exporte
+
+- Ein Kapitelplan verbindet Matrix, Gerätelisten, Anhänge, Dateinamen, Vorschau und finale Ausgabe.
+- Doppelte Originalkapitel, ergänzte Elternkapitel und zusätzliche Listen erzeugen eindeutige Ausgabenummern.
+- PDF-Dateien, Gliederungsüberschriften und tatsächliche Seiten werden getrennt gezählt; Sammel-PDF und Druckhilfen zählen nicht doppelt.
+- Gesamt-PDF mit tatsächlichen Startseiten und klickbarem, auch mehrseitigem Inhaltsverzeichnis.
+- Generierte PDFs tragen Dokumentkennungen; veraltete oder nicht zuordenbare Dateien werden erkennbar.
+- Fortlaufende finale Dateinummern und ZIP-Ordner mit den passenden Kapiteltiteln.
+- Automatische Ordneranzahl aus vorhandenen PDF-Seiten und einstellbarer Kapazität statt aus der Dateianzahl.
+
+### Datenerhalt und Prüfungen
+
+- Neustarts überschreiben keine bestehenden Konten, Passwörter, Rollen oder Sperren.
+- Keine erneute Altdatenmigration bei vorhandener Datenbank; reine Seitenaufrufe aktualisieren keine vorhandenen Projektzeitstempel und speichern keine Systemauswahl.
+- 18 Exportprüfungen und drei Datenerhalt-Prüfungen erfolgreich im eingesetzten Node-20-Abbild.
+- Lokale Hauptanwendung nach Sicherung aktualisiert; Vorher/Nachher-Vergleich von Dateien, Datenbankschema und Tabelleninhalten ohne Inhaltsänderung. Angemeldete Seiten zusätzlich in einer Kopie tatsächlicher Daten geprüft.
+- [Tests](TESTS.md), [Update-Anleitung](UPDATE.md) und [offene Punkte](OFFENE_PUNKTE.md) dokumentieren Umfang und Grenzen.
+
+Vorhandene PDFs bleiben beim Update erhalten. Ein neu gestarteter Export
+verwendet die neue Struktur. Die fachliche und visuelle Abnahme mit echten
+Projekten, physische Ausdrucke sowie Sicherheits- und Archivhärtung bleiben
+offen. Der Versionswert bleibt `0.1.0-beta.1`; dieser Stand erhält durch den
+GitHub-Push allein keinen neuen Release-Tag.
+
 ## 0.1.0-beta.1 - 2026-06-07
 
 Erste öffentliche Beta-Vorbereitung für `edoku`.

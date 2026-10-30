@@ -18,11 +18,53 @@ Version 1 ist bewusst leichtgewichtig aufgebaut:
 
 edoku ist aktuell als **Beta-Version** vorgesehen. Die Anwendung ist lokal und per Docker lauffähig und kann bereits für Testläufe, Demo-Projekte und die Weiterentwicklung der Elektro-Bestandsdokumentation genutzt werden.
 
-Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. Es gibt bewusst noch Einschränkungen bei Rollen/Rechten, automatisierten Tests, PDF-Merge und Archivfunktionen.
+Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. Rollen/Rechte, Projektarchive und die fachliche Abnahme mit echten Dokumentationen bleiben offen. Kapitel-/Exportlogik und Datenerhalt sind mit 21 automatisierten Prüfungen abgedeckt.
 
 Die aktuelle Arbeitsliste mit offenen Punkten steht in [docs/OFFENE_PUNKTE.md](docs/OFFENE_PUNKTE.md).
 Der kompakte aktuelle Projektstand steht in [docs/AKTUELLER_STAND.md](docs/AKTUELLER_STAND.md).
 Änderungen werden zusätzlich im [CHANGELOG.md](CHANGELOG.md) gepflegt.
+
+### Stand 30. Oktober 2026
+
+- Ruhige technische Oberfläche mit gemeinsamen Seitenköpfen, Kennzahlenkarten und klarer Navigation.
+- Einheitliches Dokument-/Prüfhaken-Icon für Browser, App und Startbildschirm.
+- Gemeinsamer Kapitelplan für Matrix, Gerätelisten, importierte PDFs, Inhaltsverzeichnis und Export.
+- Tatsächliche PDF-Seitenzahlen, klickbares Inhaltsverzeichnis und fortlaufende finale Dateinummern.
+- Dashboard und Export unterscheiden geplante, vorhandene, fehlende und veraltete Dateien sowie Strukturüberschriften.
+- Bestehende Konten und Projektdaten bleiben bei Neustarts erhalten; die lokale Hauptanwendung wurde mit vollständiger Sicherung aktualisiert.
+
+Details: [Release Notes](docs/RELEASE_NOTES.md), [Tests und Beta-Abnahme](docs/TESTS.md) und [sicheres lokales Update](docs/UPDATE.md).
+
+## Einblick in die Anwendung
+
+Aufnahmen vom 30.10.2026 in einem schmalen Browserfenster. Alle sichtbaren
+Projektangaben sind künstliche Beispieldaten aus einer getrennten
+Demo-Installation. Das gezeigte Musterprojekt enthält zwölf Einzel-PDFs mit
+20 Seiten; der Erfassungsstand ersetzt keine fachliche Prüfung.
+
+| Projektübersicht | Gesamt-PDF und ZIP-Export |
+| --- | --- |
+| [![Projektübersicht mit Erfassungsstand und nächstem Arbeitsschritt](docs/screenshots/uebersicht.jpg)](docs/screenshots/uebersicht.jpg) | [![Finaler Export mit Gesamt-PDF, ZIP und Reihenfolgeprotokoll](docs/screenshots/zip-export.jpg)](docs/screenshots/zip-export.jpg) |
+
+<details>
+<summary>Weitere Screenshots: Anmeldung, Dokumentenmatrix und PDF-Inhaltsbaum</summary>
+
+### Anmeldung
+
+![Anmeldemaske ohne eingetragene Zugangsdaten](docs/screenshots/anmeldung.jpg)
+
+### Dokumentenmatrix
+
+Auswahl der Dokumente mit Original- und Ausgabekapiteln. Breite Tabellen
+bleiben in der schmalen Ansicht horizontal bedienbar.
+
+![Dokumentenmatrix mit Kapitelnummern und Ausgabeauswahl](docs/screenshots/dokumentenmatrix.jpg)
+
+### PDF-Erzeugung und Inhaltsbaum
+
+![Aktionen zur PDF-Erzeugung und hierarchischer Inhaltsbaum](docs/screenshots/pdf-dokumentation.jpg)
+
+</details>
 
 ## Funktionen
 
@@ -114,13 +156,14 @@ http://localhost:3000
 
 Die Installationsschritte, Hinweise zu lokalen Demo-Konten und erste Setup-Schritte stehen in [INSTALL.md](INSTALL.md).
 
-Die Demo-Zugänge sind nur für lokale Entwicklung und Tests gedacht. Passwörter werden nicht im Klartext gespeichert, sondern beim Start gehasht in SQLite abgelegt.
+Die Demo-Zugänge werden ausschließlich bei einer Erstinstallation ohne vorhandene Datenbank angelegt. Ihre Passwörter werden gehasht in SQLite abgelegt. Bestehende Konten, Passwörter, Rollen und Sperren werden bei Neustarts nicht zurückgesetzt.
 
 ## Projektstruktur
 
 ```text
 .
 ├── config/              # System- und Formular-Konfiguration
+├── backups/             # private lokale Sicherungen, nicht für Git oder Docker-Images
 ├── data/                # globale Startdaten und JSON-Defaults
 ├── docs/                # technische Doku, Projektupdate und Release Notes
 ├── intern/              # lokale interne Notizen, größtenteils ignoriert
@@ -173,7 +216,22 @@ Anhänge werden kategoriebezogen als Kacheln verwaltet. Datei-Metadaten, Vorscha
 
 Trennstreifen werden separat erzeugt und bewusst ohne Footer-Branding gedruckt. Der Standarddruck ist tintensparend: schwarze Kapitelnummer am Registerrand, keine blaue Fläche und kein zusätzlicher Projekttext.
 
-Ordnerrücken werden unter `Export > Ordnerrücken` als separate PDF erzeugt. Unterstützt sind Avery-Zweckform-Bögen `61x192-R` mit 4 Rücken je A4-Seite und `38x192-R` mit 7 Rücken je A4-Seite. Der Text wird gedreht, zentriert im Rücken angeordnet und kann Projektname, Projektnummer, Auftraggeber, Liegenschaft, Baumaßnahme und Ordnernummer enthalten. Die Ordneranzahl kann manuell gesetzt oder grob aus den vorhandenen Export-/PDF-Einträgen geschätzt werden.
+Ordnerrücken werden unter `Export > Ordnerrücken` als separate PDF erzeugt. Unterstützt sind Avery-Zweckform-Bögen `61x192-R` mit 4 Rücken je A4-Seite und `38x192-R` mit 7 Rücken je A4-Seite. Der Text wird gedreht, zentriert im Rücken angeordnet und kann Projektname, Projektnummer, Auftraggeber, Liegenschaft, Baumaßnahme und Ordnernummer enthalten. Die Ordneranzahl kann manuell gesetzt oder aus den tatsächlichen vorhandenen PDF-Seiten und der einstellbaren Kapazität geschätzt werden (Standard: 80 Seiten pro Ordner). Der physische Ausdruck und die Ordnerkapazität müssen praktisch geprüft werden.
+
+Der finale Export aktualisiert interne PDFs und erstellt eine Gesamt-PDF mit klickbarem Inhaltsverzeichnis sowie ein ZIP mit Kapitelordnern. Mehrseitige Anhänge zählen mit ihrer tatsächlichen Seitenzahl. Überschriften ohne eigene Datei, die Gesamt-PDF und separate Druckvorlagen erhöhen die Anzahl der Einzel-PDFs nicht. Fehlende, unlesbare oder veraltete Dateien werden ausgewiesen.
+
+Das Softwareupdate selbst verändert vorhandene PDFs nicht. Ältere generierte PDFs können als veraltet erscheinen; die neue Struktur greift beim nächsten bewusst gestarteten Export.
+
+## Tests
+
+Nach Installation der Abhängigkeiten:
+
+```bash
+npm run test:exports
+npm run test:preservation
+```
+
+Die 21 Prüfungen arbeiten mit temporären Prüfprojekten. Sie prüfen unter anderem Kapitelkollisionen, PDF-Seitenzahlen, Inhaltsverzeichnis-Sprunglinks und Datenerhalt über Neustarts. Die Exporttests schreiben zusätzlich eigene Nachweise unter `output/pdf/` und `output/counting-review/`; Tests deshalb in einem getrennten Checkout oder Container ausführen. Vorhandene Benutzerprojekte werden nicht bearbeitet. Eine Anleitung zur zusätzlichen manuellen Abnahme steht in [docs/TESTS.md](docs/TESTS.md).
 
 Gerätelisten können über das Drei-Punkte-Menü als systemweite Vorlage gespeichert werden. Die Verwaltung erfolgt unter `System > Gerätelisten`; passende Vorlagen können später wieder in Gerätelisten geladen werden.
 
@@ -210,6 +268,8 @@ Diese Inhalte sollen nicht ins Repository:
 - `node_modules/`
 - `output/`
 - `storage/` außer `storage/README.md`
+- `backups/`
+- lokale Änderungen an `config/systemEinstellungen.json` und `config/geraetelistenVorlagen.json`
 - `.env`
 - `.DS_Store`
 - interne Tagesupdates und lokale Arbeitsnotizen
@@ -223,13 +283,15 @@ Siehe auch:
 - [Repo-Sicherheitscheck](docs/REPO_SICHERHEITSCHECK.md)
 - [Projektupdate](docs/PROJEKTUPDATE.md)
 - [Release Notes](docs/RELEASE_NOTES.md)
+- [Tests und Beta-Abnahme](docs/TESTS.md)
+- [Lokales Update und Datensicherung](docs/UPDATE.md)
 
 ## Aktuelle Grenzen
 
 - keine externe Datenbank
 - Rollenverwaltung ist als Beta-Funktion vorhanden und muss für produktiven Serverbetrieb weiter gehärtet werden
 - PDF-Gesamtdatei und ZIP-Export sind als Beta-Funktion vorhanden und müssen weiter visuell geprüft werden
-- automatisierte Tests sind noch nicht aufgebaut
+- automatisierte Prüfungen decken Exportzählung und Datenerhalt ab; systematische Rechte-, Browser- und Archivtests fehlen noch
 
 ## Lizenz
 

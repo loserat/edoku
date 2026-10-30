@@ -1,0 +1,435 @@
+/* * INFO: Responsive Anpassungen für mittlere Bildschirme und kleinere Laptopbreiten. */
+@media (max-width: 1180px) {
+  .attachment-topline {
+    grid-template-columns: 1fr;
+  }
+
+  .attachment-header-upload {
+    justify-self: stretch;
+    max-width: none;
+  }
+
+  .brand-block {
+    flex-basis: 190px;
+  }
+
+  .brand-name {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .nav {
+    max-width: calc(100vw - 450px);
+  }
+
+  .nav a,
+  .nav summary {
+    max-width: 44px;
+    padding: 0 10px;
+  }
+
+  .nav a span,
+  .nav summary span {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  .page:has(.section-tabs) {
+    padding-left: 264px;
+    padding-right: 18px;
+  }
+
+  .section-tabs {
+    width: 244px;
+  }
+}
+
+/* * INFO: Mobile/tablet-nahe Ansicht: Navigation und Inhaltsbereiche stapeln sich stärker. */
+@media (max-width: 900px) {
+  .site-header {
+    align-items: center;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 8px 12px;
+  }
+
+  .brand-block {
+    flex-basis: auto;
+    min-width: 0;
+  }
+
+  .brand-name {
+    max-width: 190px;
+  }
+
+  .nav {
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    border-top: 1px solid var(--line);
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    left: auto;
+    margin: 0 -12px -8px;
+    max-width: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 6px 12px;
+    position: static;
+    scrollbar-width: thin;
+    transform: none;
+    width: 100%;
+  }
+
+  .nav a,
+  .nav summary {
+    flex: 0 0 auto;
+    max-width: none;
+    min-width: 0;
+    padding: 0 10px;
+  }
+
+  .nav a span,
+  .nav summary span {
+    clip: auto;
+    clip-path: none;
+    height: auto;
+    overflow: hidden;
+    position: static;
+    text-overflow: ellipsis;
+    width: auto;
+  }
+
+  .header-actions {
+    margin-left: 0;
+  }
+
+  .settings-top-tabs {
+    justify-content: flex-start;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .pdf-preview-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .pdf-preview-sidebar {
+    min-height: 220px;
+  }
+
+  .page:has(.section-tabs) {
+    margin: 0 auto;
+    max-width: none;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .attachment-header-upload {
+    grid-template-columns: 1fr;
+  }
+
+  .section-tabs {
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    bottom: auto;
+    flex-direction: row;
+    left: auto;
+    margin: -2px 0 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 6px;
+    position: sticky;
+    top: 88px;
+    width: auto;
+  }
+
+  .section-tabs-head {
+    border-bottom: 0;
+    margin: 0;
+    padding: 0 8px 0 2px;
+  }
+
+  .section-tabs-head strong {
+    display: none;
+  }
+
+  .section-tabs a,
+  .section-tabs button {
+    align-items: center;
+    display: inline-flex;
+    flex: 0 0 auto;
+    min-height: 32px;
+    padding: 7px 9px;
+    white-space: nowrap;
+    width: auto;
+  }
+
+  .section-tabs span {
+    max-width: 180px;
+    white-space: nowrap;
+  }
+
+  .toolbar.split,
+  .edit-section-head,
+  .next-step-panel,
+  .completion-main {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .list-tools {
+    justify-items: stretch;
+  }
+
+  .add-position-control {
+    align-items: stretch;
+  }
+
+  .add-position-control button {
+    width: 100%;
+  }
+
+  .quick-grid,
+  .workflow-board,
+  .system-grid,
+  .system-default-levels,
+  .project-manager-layout,
+  .project-dashboard-stats,
+  .project-mini-status,
+  .current-project-mini-dashboard,
+  .current-project-panel,
+  .current-project-meta,
+  .settings-layout,
+  .settings-grid,
+  .theme-editor-layout,
+  .generator-layout,
+  .logo-import-grid,
+  .preview-head,
+  .form-grid,
+  .checkbox-grid,
+  .summary-cards,
+  .export-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-head {
+    flex-direction: column;
+  }
+
+  .generator-preview {
+    position: static;
+  }
+
+  .theme-preview-card {
+    position: static;
+  }
+
+  .settings-sidebar {
+    position: static;
+  }
+
+  .project-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    min-height: 0;
+    position: static;
+  }
+
+  .brandschutz-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .brandschutz-sidebar {
+    max-height: none;
+    min-height: 0;
+    position: static;
+  }
+
+  .brandschutz-list {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(220px, 260px);
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .brandschutz-status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .project-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .intro h1,
+  .page-title h1 {
+    font-size: 24px;
+  }
+
+  .lab-floating {
+    height: 42px;
+    width: 42px;
+  }
+
+  .lab-floating svg {
+    height: 24px;
+    width: 24px;
+  }
+}
+
+/* * INFO: Kleine Smartphone-Breiten: Buttons, Tabellen und Header weiter verdichten. */
+@media (max-width: 560px) {
+  body {
+    font-size: 13px;
+  }
+
+  .site-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .brand {
+    font-size: 16px;
+  }
+
+  .brand-logo {
+    height: 28px;
+    width: 28px;
+  }
+
+  .brand-name {
+    max-width: 150px;
+  }
+
+  .brand-project {
+    font-size: 10px;
+  }
+
+  .header-icon-link,
+  .header-icon-button,
+  .theme-toggle {
+    height: 28px;
+    min-height: 28px;
+    min-width: 28px;
+    padding: 5px 8px;
+    width: 28px;
+  }
+
+  .user-dropdown {
+    right: -34px;
+  }
+
+  .nav {
+    grid-column: 1 / -1;
+  }
+
+  .nav a,
+  .nav summary {
+    height: 30px;
+    padding: 0 9px;
+  }
+
+  .page,
+  .page:has(.section-tabs) {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .section-tabs {
+    top: 122px;
+  }
+
+  .section-tabs-head {
+    display: none;
+  }
+
+  .summary-card {
+    padding: 8px;
+  }
+
+  .summary-card strong {
+    font-size: 17px;
+  }
+
+  .tab-panel {
+    border-radius: 12px;
+    padding: 8px;
+  }
+
+  .panel-head {
+    gap: 6px;
+  }
+
+  .compact-summary .summary-card {
+    min-height: 28px;
+    padding: 4px 8px;
+  }
+
+  .pdf-preview-shell {
+    height: 64vh;
+    min-height: 420px;
+  }
+
+  .table-wrap {
+    border-radius: 10px;
+  }
+
+  .table-wrap th,
+  .table-wrap td {
+    padding: 7px;
+  }
+
+  .lab-floating {
+    bottom: max(12px, env(safe-area-inset-bottom));
+    height: 40px;
+    left: max(12px, env(safe-area-inset-left));
+    width: 40px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .export-artifacts {
+    grid-template-columns: 1fr;
+  }
+
+  .attachment-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .attachment-sidebar {
+    position: static;
+  }
+
+  .attachment-category-list {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .attachment-upload-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .attachment-topline {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .attachment-stat-strip {
+    justify-content: flex-start;
+  }
+
+  .attachment-upload-grid {
+    grid-template-columns: 1fr;
+  }
+}

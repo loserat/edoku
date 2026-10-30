@@ -1,0 +1,280 @@
+/* * INFO: Dashboard-Kacheln und kompakte Statusanzeigen. */
+.dashboard-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.dashboard-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  min-height: 142px;
+  padding: 14px;
+}
+
+.dashboard-card h2 {
+  font-size: 16px;
+  margin: 0 0 10px;
+}
+
+.dashboard-card dl {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 110px minmax(0, 1fr);
+  margin: 0;
+}
+
+.dashboard-card dt {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.dashboard-card dd {
+  margin: 0;
+}
+
+.completion-panel {
+  background: var(--panel);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  display: grid;
+  gap: 12px;
+  order: 30;
+  padding: 16px;
+}
+
+.completion-main {
+  align-items: flex-end;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+.completion-main h2 {
+  font-size: 22px;
+  margin: 0 0 4px;
+}
+
+.completion-main p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.completion-main > strong {
+  color: var(--accent);
+  font-size: 42px;
+  line-height: 1;
+}
+
+.completion-bar {
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  height: 16px;
+  overflow: hidden;
+}
+
+.completion-bar span {
+  background: linear-gradient(90deg, var(--accent), var(--success));
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  min-width: 4px;
+}
+
+.completion-checks {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.completion-checks div {
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  display: grid;
+  gap: 2px;
+  padding: 9px 10px;
+}
+
+.completion-checks span,
+.completion-checks small {
+  color: var(--muted);
+}
+
+.completion-checks strong {
+  font-size: 18px;
+}
+
+.completion-checks .success strong {
+  color: var(--success);
+}
+
+.completion-checks .warning strong {
+  color: var(--warning);
+}
+
+.metric {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+}
+
+.metric-row {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+.metric-row:last-child {
+  border-bottom: 0;
+}
+
+.metric-row strong {
+  font-size: 18px;
+}
+
+.metric-row.warning strong {
+  color: var(--warning);
+}
+
+.metric-row.success strong {
+  color: var(--success);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.compact-list {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 12px 0 0;
+  max-height: 132px;
+  overflow: auto;
+  padding-left: 18px;
+}
+
+.quick-link {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 92px;
+  padding: 14px;
+  text-decoration: none;
+}
+
+.quick-link:hover {
+  border-color: var(--accent);
+}
+
+.quick-link span {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.quick-link small {
+  color: var(--muted);
+}
+
+.next-step-panel {
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  order: 30;
+  padding: 14px;
+}
+
+.next-step-panel h2 {
+  font-size: 18px;
+  margin: 0 0 4px;
+}
+
+.next-step-panel p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.workflow-board {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  order: 30;
+}
+
+.workflow-step {
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 72px;
+  padding: 10px;
+  position: relative;
+  text-decoration: none;
+}
+
+.workflow-step:hover {
+  border-color: var(--accent);
+}
+
+.workflow-number {
+  align-items: center;
+  background: var(--surface-muted);
+  border-radius: 999px;
+  color: var(--muted);
+  display: inline-flex;
+  font-weight: 700;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.workflow-content {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.workflow-content strong,
+.workflow-content small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workflow-content small,
+.workflow-status {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.workflow-status {
+  grid-column: 2;
+}
+
+.workflow-step.fertig .workflow-number {
+  background: color-mix(in srgb, var(--success) 20%, var(--surface));
+  color: var(--success);
+}
+
+.workflow-step.in-arbeit .workflow-number {
+  background: color-mix(in srgb, var(--warning) 20%, var(--surface));
+  color: var(--warning);
+}

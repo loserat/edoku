@@ -1,15 +1,12 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Brandschutz | edoku</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <%- include("partials/head", { pageTitle: "Brandschutz" }) %>
   </head>
   <body>
     <%# Brandschutzverwaltung: eine breite, sortierbare Tabelle für alle Schottungen. %>
     <%- include("partials/header", { active }) %>
-    <main class="page wide compact-work-page full-width-page brandschutz-page">
+    <main id="main-content" tabindex="-1" class="page wide compact-work-page full-width-page brandschutz-page">
       <div class="page-title">
         <p class="eyebrow">Brandschutzdokumentation</p>
         <h1>Brandschutz</h1>

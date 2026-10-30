@@ -1,0 +1,7 @@
+<%# Einheitliche Kennzahlenkarte; alle Werte bleiben im Dashboard-Service berechnet. %>
+<article class="dashboard-card">
+  <header class="dashboard-card-head"><span class="dashboard-card-symbol"><%- include("icon", { name: icon }) %></span><h3><%= title %></h3><a class="text-link" href="<%= href %>">Öffnen</a></header>
+  <% rows.forEach((row) => { %>
+    <div class="metric-row <%= row.value > 0 && row.tone ? row.tone : "" %>"><span><%= row.label %></span><strong><%= row.value %></strong></div>
+  <% }) %>
+</article>

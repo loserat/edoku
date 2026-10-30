@@ -1,5 +1,6 @@
 const { hasMissingRequiredBrandschutzFields, normalizeBrandschutz } = require("./brandschutzService");
 const { isGeraetelisteComplete, normalizeGeraetelisten } = require("./geraetelistenService");
+const { buildDocumentationPlan, filterExportGeraetelisten, mergeExportStatus, summarizeExportEntries } = require("./documentationPlanService");
 
 // * INFO: Begrenzt Fortschrittswerte auf gültige Prozentbereiche.
 function clampPercent(value) {
@@ -7,27 +8,30 @@ function clampPercent(value) {
 }
 
 // * INFO: Verdichtet alle Projektbereiche zu Dashboard-Kennzahlen, Fortschritt und Workflow.
-function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten, brandschutz, exportliste, projektSysteme }) {
+function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten, brandschutz, exportliste, projektSysteme, anhaenge = [] }) {
   const aktiveLeistungsbereiche = leistungsbereiche.aktiv || [];
   const dokumente = Array.isArray(matrix) ? matrix : [];
   const listen = normalizeGeraetelisten(geraetelisten);
   const brandschutzEintraege = normalizeBrandschutz(brandschutz);
-  const exportEintraege = Array.isArray(exportliste) ? exportliste : [];
+  const storedExports = Array.isArray(exportliste) ? exportliste : [];
+  const plan = buildDocumentationPlan(dokumente, listen, anhaenge, leistungsbereiche, projekt);
+  const exportEintraege = mergeExportStatus(plan, storedExports);
+  exportEintraege.unshift(storedExports.find((entry) => entry.isToc) || { id: "inhaltsverzeichnis", isToc: true, requiresFile: true, pflicht: true, status: "nicht geprüft" });
+  const exportCount = summarizeExportEntries(exportEintraege);
 
   const aktiveDokumente = dokumente.filter((dokument) => dokument.aktiv);
-  const exportDokumente = dokumente.filter((dokument) => dokument.export);
-  const pflichtDokumente = dokumente.filter((dokument) => dokument.pflicht);
-  const fehlendePflicht = exportEintraege.filter((entry) => entry.pflicht && entry.status === "fehlt");
+  const pflichtDokumente = exportEintraege.filter((entry) => entry.requiresFile && entry.pflicht);
+  const fehlendePflicht = pflichtDokumente.filter((entry) => entry.status !== "vorhanden");
 
   const projectFields = ["projektname", "projektnummer", "auftraggeber", "liegenschaft", "baumassnahme"];
   const projectComplete = projectFields.filter((field) => String(projekt[field] || "").trim()).length;
-  const activeLists = listen.filter((liste) => liste.aktiv);
+  const activeLists = filterExportGeraetelisten(listen, leistungsbereiche);
   const filledLists = activeLists.filter(isGeraetelisteComplete);
-  const exportReady = exportEintraege.length > 0;
-  const missingBrandschutz = brandschutzEintraege.filter((entry) => entry.aktiv && hasMissingRequiredBrandschutzFields(entry)).length;
-  const missingRequiredExport = exportEintraege.filter((entry) => entry.pflicht && entry.status === "fehlt").length;
-  const missingExportFiles = exportEintraege.filter((entry) => entry.status === "fehlt").length;
-  const emptyActiveLists = activeLists.filter((liste) => !liste.positionen || liste.positionen.length === 0).length;
+  const exportReady = exportCount.present > 0;
+  const activeBrandschutz = aktiveLeistungsbereiche.includes("Brandschutzabschottungen") ? brandschutzEintraege.filter((entry) => entry.aktiv) : [];
+  const missingBrandschutz = activeBrandschutz.filter(hasMissingRequiredBrandschutzFields).length;
+  const missingRequiredExport = exportCount.requiredMissing;
+  const missingExportFiles = exportCount.missing + exportCount.invalid + exportCount.unchecked;
   const missingListContent = Math.max(0, activeLists.length - filledLists.length);
   const missingProjectFields = projectFields.length - projectComplete;
   const requiredDocumentsCount = pflichtDokumente.length || 0;
@@ -47,26 +51,27 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
     },
     {
       label: "Pflichtdokumente",
-      total: requiredDocumentsCount || 1,
+      total: requiredDocumentsCount,
+      informational: true,
       missing: missingRequiredExport,
       hint: `${missingRequiredExport} fehlen`
     },
     {
       label: "Gerätelisten",
-      total: activeLists.length || 1,
-      missing: activeLists.length ? missingListContent : 1,
-      hint: `${filledLists.length}/${activeLists.length || 1} gefüllt`
+      total: activeLists.length,
+      missing: missingListContent,
+      hint: activeLists.length ? `${filledLists.length}/${activeLists.length} gefüllt` : "Nicht für Export gewählt"
     },
     {
       label: "Brandschutz",
-      total: brandschutzEintraege.filter((entry) => entry.aktiv).length || 1,
-      missing: missingBrandschutz,
-      hint: `${missingBrandschutz} unvollständig`
+      total: aktiveLeistungsbereiche.includes("Brandschutzabschottungen") ? Math.max(1, activeBrandschutz.length) : 0,
+      missing: aktiveLeistungsbereiche.includes("Brandschutzabschottungen") && !activeBrandschutz.length ? 1 : missingBrandschutz,
+      hint: !aktiveLeistungsbereiche.includes("Brandschutzabschottungen") ? "Nicht ausgewählt" : `${missingBrandschutz || (!activeBrandschutz.length ? 1 : 0)} unvollständig`
     },
     {
       label: "Exportdateien",
-      total: exportEintraege.length || 1,
-      missing: exportEintraege.length ? missingExportFiles : 1,
+      total: exportCount.files,
+      missing: missingExportFiles,
       hint: `${missingExportFiles} fehlen`
     }
   ].map((check) => {
@@ -76,13 +81,15 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
       ...check,
       missing,
       done,
-      percent: clampPercent((done / check.total) * 100)
+      applicable: check.total > 0,
+      percent: check.total ? clampPercent((done / check.total) * 100) : 0
     };
   });
 
-  const completionTotal = completionChecks.reduce((sum, check) => sum + check.total, 0);
-  const completionDone = completionChecks.reduce((sum, check) => sum + check.done, 0);
-  const completionMissing = completionChecks.reduce((sum, check) => sum + check.missing, 0);
+  const countedChecks = completionChecks.filter((check) => !check.informational);
+  const completionTotal = countedChecks.reduce((sum, check) => sum + check.total, 0);
+  const completionDone = countedChecks.reduce((sum, check) => sum + check.done, 0);
+  const completionMissing = countedChecks.reduce((sum, check) => sum + check.missing, 0);
 
   const workflow = [
     {
@@ -122,7 +129,7 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
       titel: "Gerätelisten füllen",
       beschreibung: "Gerätepositionen pro Leistungsbereich ergänzen.",
       href: "/geraetelisten",
-      status: activeLists.length && filledLists.length === activeLists.length ? "fertig" : filledLists.length ? "in-arbeit" : "offen",
+      status: !activeLists.length || filledLists.length === activeLists.length ? "fertig" : filledLists.length ? "in-arbeit" : "offen",
       kennzahl: `${filledLists.length}/${activeLists.length} Listen`
     },
     {
@@ -130,16 +137,16 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
       titel: "Brandschutz prüfen",
       beschreibung: "Brandschottungen erfassen, falls erforderlich.",
       href: "/brandschutz",
-      status: brandschutzEintraege.length && !brandschutzEintraege.filter((entry) => entry.aktiv && hasMissingRequiredBrandschutzFields(entry)).length ? "fertig" : brandschutzEintraege.length ? "in-arbeit" : "offen",
-      kennzahl: `${brandschutzEintraege.length} Einträge`
+      status: !aktiveLeistungsbereiche.includes("Brandschutzabschottungen") || (activeBrandschutz.length && !missingBrandschutz) ? "fertig" : activeBrandschutz.length ? "in-arbeit" : "offen",
+      kennzahl: aktiveLeistungsbereiche.includes("Brandschutzabschottungen") ? `${activeBrandschutz.length} Einträge` : "Nicht ausgewählt"
     },
     {
       nr: 7,
       titel: "Export vorbereiten",
       beschreibung: "PDFs erzeugen, Exportliste prüfen und final vorbereiten.",
       href: "/export",
-      status: exportReady && !exportEintraege.filter((entry) => entry.pflicht && entry.status === "fehlt").length ? "fertig" : exportReady ? "in-arbeit" : "offen",
-      kennzahl: `${exportEintraege.length} Exporteinträge`
+      status: exportCount.complete ? "fertig" : exportReady ? "in-arbeit" : "offen",
+      kennzahl: `${exportCount.present}/${exportCount.files} Einzel-PDFs`
     }
   ];
 
@@ -159,22 +166,23 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
     },
     dokumente: {
       aktiv: aktiveDokumente.length,
-      export: exportDokumente.length,
+      export: exportCount.files,
       pflicht: pflichtDokumente.length,
       fehlendePflicht: fehlendePflicht.length
     },
     geraetelisten: {
       gesamt: listen.length,
-      aktiv: listen.filter((liste) => liste.aktiv).length,
-      leer: listen.filter((liste) => !liste.positionen || liste.positionen.length === 0).length
+      aktiv: activeLists.length,
+      leer: activeLists.filter((liste) => !liste.positionen || liste.positionen.length === 0).length
     },
     brandschutz: {
       gesamt: brandschutzEintraege.length,
       fehlendePflichtangaben: missingBrandschutz
     },
     export: {
-      gesamt: exportEintraege.length,
-      vorhanden: exportEintraege.filter((entry) => entry.status === "vorhanden").length,
+      gesamt: exportCount.files,
+      seiten: exportCount.pages,
+      vorhanden: exportCount.present,
       fehlt: missingExportFiles
     },
     completion: {

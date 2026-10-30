@@ -154,7 +154,8 @@ async function ensureCurrentProject(rootDir, dataDir, userId) {
     }
   }
 
-  await upsertProjectFromData(rootDir, userId, projectId);
+  // Reine Seitenaufrufe dürfen bestehende Projektmetadaten nicht verändern.
+  if (!getProject(userId, projectId)) await upsertProjectFromData(rootDir, userId, projectId);
   return { projectId, dataDir: targetDataDir };
 }
 

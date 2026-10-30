@@ -1,88 +1,70 @@
-// * INFO: Sortiert Dokumente zuerst nach fachlicher Sortierung, danach nach Kapitelnummer.
+// Originalkapitel bleiben stabile Fachschlüssel; Ausgaben werden als Baum nummeriert.
 function sortDocuments(documents) {
   return [...(documents || [])].sort((a, b) => {
-    const sortA = Number.isFinite(a.sortierung) ? a.sortierung : 0;
-    const sortB = Number.isFinite(b.sortierung) ? b.sortierung : 0;
-    if (sortA !== sortB) return sortA - sortB;
-    return String(a.kapitel || "").localeCompare(String(b.kapitel || ""), "de", { numeric: true });
+    const left = Number.isFinite(a.sortierung) ? a.sortierung : 0;
+    const right = Number.isFinite(b.sortierung) ? b.sortierung : 0;
+    return left - right || String(a.originalKapitel || a.kapitel || "").localeCompare(String(b.originalKapitel || b.kapitel || ""), "de", { numeric: true });
   });
 }
 
-// * INFO: Entscheidet, ob ein Dokument bei der logischen Nummerierung berücksichtigt wird.
-function shouldNumber(document, options) {
-  if (!document.aktiv) return false;
-  if (options.exportOnly && !document.export) return false;
-  return true;
-}
-
-// * INFO: Stabiler interner Schluessel fuer Dokumente ohne eindeutige Objektidentitaet.
-// ? WARUM: In der Matrix duerfen mehrere Eintraege dieselbe Original-Kapitelnummer haben.
-function documentKey(document, index) {
-  return document && document.id ? `id:${document.id}` : `index:${index}`;
-}
-
-// * INFO: Berechnet fortlaufende Kapitelnummern aus der vorhandenen Matrix.
-// * INFO: Originalkapitel bleiben erhalten, die Anzeige nutzt später displayKapitel.
-function logicalChapterNumberRecords(documents, options = {}) {
-  const sorted = sortDocuments(documents).filter((document) => shouldNumber(document, options));
-  const countersByParent = new Map();
-  const logicalByOriginal = new Map();
-  const logicalByDocument = new Map();
-  const logicalByKey = new Map();
-  const sourceIndexes = new Map((documents || []).map((document, index) => [document, index]));
-
-  sorted.forEach((document) => {
-    const original = String(document.kapitel || "").trim();
-    if (!original) return;
-
-    const parts = original.split(".");
-    const parentOriginal = parts.slice(0, -1).join(".");
-    const parentLogical = parentOriginal ? logicalByOriginal.get(parentOriginal) : "";
-    const parentKey = parentOriginal || "__root__";
-    const next = (countersByParent.get(parentKey) || 0) + 1;
-    countersByParent.set(parentKey, next);
-
-    const logical = parentLogical ? `${parentLogical}.${next}` : String(next);
-    logicalByDocument.set(document, logical);
-    logicalByKey.set(documentKey(document, sourceIndexes.get(document)), logical);
-
-    // ! WICHTIG: Bei doppelten Originalkapiteln darf der erste Wert nicht ueberschrieben werden.
-    // ? WARUM: Sonst erhalten mehrere Dokumente dieselbe displayKapitel-Nummer und Luecken entstehen.
-    if (!logicalByOriginal.has(original)) {
-      logicalByOriginal.set(original, logical);
-    }
+function numberChapterTree(documents) {
+  const nodes = documents.map((node) => ({ ...node }));
+  const canonical = new Map();
+  nodes.forEach((node) => {
+    const key = String(node.originalKapitel || node.kapitel || "").trim();
+    if (key && !canonical.has(key)) canonical.set(key, node);
   });
+  // Fehlende Vorfahren erhalten eigene Zähler. Ein verwaistes 4.1 darf nicht zu 1 werden.
+  function parentFor(chapter, child) {
+    if (!chapter) return null;
+    if (canonical.has(chapter)) return canonical.get(chapter);
+    const parent = { id: `numbering-parent-${chapter}`, kapitel: chapter, originalKapitel: chapter, sortierung: child.sortierung, virtual: true };
+    canonical.set(chapter, parent);
+    nodes.push(parent);
+    return parent;
+  }
+  for (let i = 0; i < nodes.length; i += 1) {
+    const node = nodes[i];
+    const chapter = String(node.originalKapitel || node.kapitel || "");
+    node._numberingParent = node.parentId
+      ? nodes.find((candidate) => candidate.id === node.parentId)
+      : parentFor(chapter.split(".").slice(0, -1).join("."), node);
+  }
+  const children = new Map();
+  nodes.forEach((node) => {
+    const parent = node._numberingParent || null;
+    if (!children.has(parent)) children.set(parent, []);
+    children.get(parent).push(node);
+  });
+  const numbered = [];
+  function visit(parent, prefix) {
+    sortDocuments(children.get(parent) || []).forEach((node, index) => {
+      const displayKapitel = prefix ? `${prefix}.${index + 1}` : String(index + 1);
+      const { _numberingParent, ...clean } = node;
+      numbered.push({ ...clean, displayKapitel, ebene: displayKapitel.split(".").length });
+      visit(node, displayKapitel);
+    });
+  }
+  visit(null, "");
+  nodes.forEach((node) => delete node._numberingParent);
+  return numbered;
+}
 
-  return {
-    byOriginal: logicalByOriginal,
-    byDocument: logicalByDocument,
-    byKey: logicalByKey
-  };
+function applyLogicalChapterNumbers(documents, options = {}) {
+  const source = documents || [];
+  const selected = source.map((document, index) => ({ ...document, _sourceIndex: index }))
+    .filter((document) => document.aktiv && (!options.exportOnly || document.export));
+  const numbered = numberChapterTree(selected);
+  const byIndex = new Map(numbered.filter((entry) => !entry.virtual).map((entry) => [entry._sourceIndex, entry.displayKapitel]));
+  return source.map((document, index) => ({ ...document, originalKapitel: document.originalKapitel || document.kapitel || "", displayKapitel: byIndex.get(index) || "" }));
 }
 
 function logicalChapterNumber(documents, options = {}) {
-  return logicalChapterNumberRecords(documents, options).byOriginal;
-}
-
-// * INFO: Ergänzt jedes Dokument um originalKapitel und displayKapitel.
-function applyLogicalChapterNumbers(documents, options = {}) {
-  const logical = logicalChapterNumberRecords(documents, options);
-
-  return (documents || []).map((document, index) => {
-    const originalKapitel = document.originalKapitel || document.kapitel || "";
-    const displayKapitel = logical.byDocument.get(document)
-      || logical.byKey.get(documentKey(document, index))
-      || "";
-    return {
-      ...document,
-      originalKapitel,
-      displayKapitel
-    };
+  const result = new Map();
+  applyLogicalChapterNumbers(documents, options).forEach((entry) => {
+    if (entry.displayKapitel && !result.has(entry.originalKapitel)) result.set(entry.originalKapitel, entry.displayKapitel);
   });
+  return result;
 }
 
-module.exports = {
-  applyLogicalChapterNumbers,
-  logicalChapterNumber,
-  sortDocuments
-};
+module.exports = { applyLogicalChapterNumbers, logicalChapterNumber, numberChapterTree, sortDocuments };

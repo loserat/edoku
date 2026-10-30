@@ -1,28 +1,26 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Anmelden | edoku</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <%- include("partials/head", { pageTitle: "Anmelden" }) %>
   </head>
   <body>
     <%# Öffentliche Login-Seite. Authentifizierung wird serverseitig in authService geprüft. %>
     <%- include("partials/themeVariables") %>
-    <main class="auth-page">
+    <main id="main-content" tabindex="-1" class="auth-page">
+      <%- include("partials/authIntro") %>
       <section class="auth-card">
         <div class="auth-brand">
-          <img class="auth-logo" src="/img/logo.svg" alt="" width="48" height="48">
+          <img class="auth-logo" src="/img/icons/edoku-app-icon.svg?v=2" alt="" width="48" height="48">
           <div>
             <p class="eyebrow">edoku</p>
             <h1>Anmelden</h1>
           </div>
         </div>
-        <p class="auth-subtitle">Lokale Projekt- und Dokumentationsverwaltung.</p>
+        <p class="auth-subtitle">Melde dich an, um an deinen Projekten weiterzuarbeiten.</p>
         <%- include("partials/flash", { flash }) %>
         <form action="/login" method="post" class="stack-form">
           <label>
-            <span>E-Mail</span>
+            <span>E-Mail oder Benutzername</span>
             <input type="text" name="email" autocomplete="username" required>
           </label>
           <label>

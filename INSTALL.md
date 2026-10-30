@@ -49,7 +49,7 @@ http://localhost:3000
 
 ## Lokale Demo-Konten
 
-Beim Start werden lokale Demo-Konten vorbereitet, falls sie noch nicht vorhanden sind.
+Nur bei einer Erstinstallation ohne vorhandene `storage/app.db` werden lokale Demo-Konten vorbereitet. Eine vorhandene Datenbank wird beim Neustart weder mit Demo-Konten befüllt noch erneut aus dem alten JSON-Projektregister migriert. Eigene Konten, Passwortänderungen, Rollen und Sperren bleiben erhalten. Das gilt auch für eine vorhandene leere Datenbank; sie wird nicht automatisch mit Testkonten gefüllt.
 
 ```text
 Benutzer: admin
@@ -92,6 +92,15 @@ Wichtige Ordner:
 - `output/`
 - `templates/`
 - `storage/`
+
+## Vorhandene Installation aktualisieren
+
+Vor dem Update alle fünf eingebundenen Ordner gemeinsam sichern und die neue
+Version zunächst mit einer Kopie prüfen. Testdaten werden niemals zurück in
+die normale Anwendung kopiert. Ablauf und Wiederherstellung stehen in
+[docs/UPDATE.md](docs/UPDATE.md).
+
+Die automatisierten Prüfungen werden in [docs/TESTS.md](docs/TESTS.md) beschrieben.
 
 ## Sicherheitshinweis
 

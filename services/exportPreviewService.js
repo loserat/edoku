@@ -1,118 +1,25 @@
-const { applyLogicalChapterNumbers, sortDocuments } = require("./chapterNumberingService");
-
-// * INFO: Kleine Anzeigehilfe für leere Stammdatenfelder in der Exportvorschau.
-function valueOrDash(value) {
-  return value && String(value).trim() ? value : "-";
-}
-
-// * INFO: Indexiert die Exportliste nach Kapitel/Titel, damit Matrixeinträge ihren Dateistatus finden.
-function indexExportliste(exportliste) {
-  return new Map((exportliste || []).map((entry) => [entry.originalKapitel || entry.kapitel || entry.titel, entry]));
-}
-
-// * INFO: CSS-Statusklasse für vorhandene, fehlende oder ungeprüfte Exportdateien.
-function statusClass(status) {
-  if (status === "vorhanden") return "on";
-  if (status === "fehlt") return "off";
-  return "";
-}
-
-// * INFO: Baut die strukturierte Vorschau der späteren Exportdokumentation.
-function buildExportPreview({ projekt = {}, matrix = [], exportliste = [], projektSysteme = [] }) {
-  const exportByKapitel = indexExportliste(exportliste);
-  const matrixDocuments = sortDocuments(
-    applyLogicalChapterNumbers(matrix, { exportOnly: true }).filter((entry) => entry.aktiv && entry.export)
-  );
-  const documents = (exportliste || []).length
-    ? (exportliste || []).map((entry) => {
-        const matrixEntry = matrixDocuments.find((document) => {
-          return String(document.originalKapitel || document.kapitel || "") === String(entry.originalKapitel || entry.kapitel || "");
-        }) || {};
-        return {
-          ...matrixEntry,
-          ...entry,
-          ebene: matrixEntry.ebene || String(entry.kapitel || "").split(".").filter(Boolean).length || 2,
-          displayKapitel: entry.kapitel || matrixEntry.displayKapitel || matrixEntry.kapitel || "",
-          originalKapitel: entry.originalKapitel || matrixEntry.originalKapitel || matrixEntry.kapitel || "",
-          titel: entry.titel || matrixEntry.titel || "Dokument",
-          pflicht: Boolean(entry.pflicht || matrixEntry.pflicht)
-        };
-      })
-    : matrixDocuments;
+const { buildDocumentationPlan, summarizeExportEntries } = require("./documentationPlanService");
+function valueOrDash(value) { return value && String(value).trim() ? value : "-"; }
+function buildExportPreview({ projekt = {}, matrix = [], exportliste = [], projektSysteme = [], geraetelisten = [], anhaenge = [], leistungsbereiche = {} }) {
+  const documents = exportliste.length ? exportliste : buildDocumentationPlan(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt).map((entry) => ({ ...entry, kapitel: entry.displayKapitel, status: entry.requiresFile ? "nicht geprüft" : "struktur" }));
   const groups = [];
-  const groupsByTop = new Map();
-
-  documents.forEach((document) => {
-    const originalKapitel = document.originalKapitel || document.kapitel || "";
-    const displayKapitel = document.displayKapitel || document.kapitel || "";
-    const topKapitel = String(displayKapitel).split(".")[0] || "0";
-    const exportEntry = exportByKapitel.get(originalKapitel) || exportByKapitel.get(displayKapitel) || document || {};
-    const systemEntry = (projektSysteme || []).find((entry) => {
-      return entry.leistungsbereich === document.leistungsbereich || (entry.kapitel || []).includes(originalKapitel);
-    }) || {};
-
-    if (!groupsByTop.has(topKapitel)) {
-      const titleSource = documents.find((entry) => {
-        return (entry.displayKapitel || entry.kapitel) === topKapitel && entry.ebene === 1;
-      });
-      const group = {
-        kapitel: topKapitel,
-        titel: titleSource ? titleSource.titel : `Kapitel ${topKapitel}`,
-        dokumente: []
-      };
-      groupsByTop.set(topKapitel, group);
-      groups.push(group);
+  const byTop = new Map();
+  for (const document of documents) {
+    const chapter = String(document.displayKapitel || document.kapitel || "");
+    const top = chapter.split(".")[0];
+    if (!byTop.has(top)) {
+      const heading = documents.find((entry) => String(entry.displayKapitel || entry.kapitel) === top);
+      const group = { kapitel: top, titel: heading?.titel || `Kapitel ${top}`, dokumente: [] };
+      byTop.set(top, group); groups.push(group);
     }
-
-    groupsByTop.get(topKapitel).dokumente.push({
-      kapitel: displayKapitel,
-      originalKapitel,
-      titel: document.titel,
-      ebene: document.ebene || 2,
-      pflicht: Boolean(document.pflicht),
-      leistungsbereich: exportEntry.leistungsbereich || document.leistungsbereich || systemEntry.leistungsbereich || "",
-      dokumenttyp: document.dokumenttyp || "",
-      formularart: document.formularart || "",
-      quelle: exportEntry.quelle || document.quelle || "noch nicht geprüft",
-      status: exportEntry.status || "nicht geprüft",
-      statusClass: statusClass(exportEntry.status),
-      dateipfad: exportEntry.dateipfad || "",
-      hersteller: exportEntry.hersteller || systemEntry.hersteller || "",
-      systemart: exportEntry.systemart || systemEntry.systemart || ""
-    });
-  });
-
-  const statusEntries = documents.map((document) => exportByKapitel.get(document.originalKapitel || document.kapitel || document.titel || "") || document);
-  const vorhandeneDateien = statusEntries.filter((entry) => entry && entry.status === "vorhanden").length;
-  const fehlendeDateien = statusEntries.filter((entry) => entry && entry.status === "fehlt").length;
-  const ungeprueft = documents.length - vorhandeneDateien - fehlendeDateien;
-  const pflichtdokumente = documents.filter((entry) => entry.pflicht).length;
-  const fehlendePflicht = documents.filter((document) => {
-    const entry = exportByKapitel.get(document.originalKapitel || document.kapitel || "");
-    return document.pflicht && (!entry || entry.status === "fehlt");
-  }).length;
-
+    const system = projektSysteme.find((entry) => entry.leistungsbereich === document.leistungsbereich) || {};
+    byTop.get(top).dokumente.push({ ...document, kapitel: chapter, ebene: document.ebene || chapter.split(".").length, status: document.status || "nicht geprüft", statusClass: document.status === "vorhanden" ? "on" : ["fehlt", "fehlerhaft", "veraltet"].includes(document.status) ? "off" : "", hersteller: document.hersteller || system.hersteller || "", systemart: document.systemart || system.systemart || "" });
+  }
+  const count = summarizeExportEntries(documents);
   return {
-    projekt: {
-      projektname: valueOrDash(projekt.projektname),
-      projektnummer: valueOrDash(projekt.projektnummer),
-      auftraggeber: valueOrDash(projekt.auftraggeber),
-      liegenschaft: valueOrDash(projekt.liegenschaft),
-      baumassnahme: valueOrDash(projekt.baumassnahme)
-    },
-    stats: {
-      dokumente: documents.length,
-      kapitel: groups.length,
-      vorhandeneDateien,
-      fehlendeDateien,
-      ungeprueft,
-      pflichtdokumente,
-      fehlendePflicht
-    },
+    projekt: Object.fromEntries(["projektname", "projektnummer", "auftraggeber", "liegenschaft", "baumassnahme"].map((key) => [key, valueOrDash(projekt[key])])),
+    stats: { dokumente: count.files, kapitel: groups.filter((group) => group.kapitel !== "0").length, struktur: documents.filter((entry) => entry.requiresFile === false).length, vorhandeneDateien: count.present, fehlendeDateien: count.missing, fehlerhafteDateien: count.invalid, nichtZugeordnet: exportliste.find((entry) => entry.isToc)?.unzugeordneteDateien || [], ungeprueft: count.unchecked, pflichtdokumente: count.required, fehlendePflicht: count.requiredMissing, seiten: count.pages },
     groups
   };
 }
-
-module.exports = {
-  buildExportPreview
-};
+module.exports = { buildExportPreview };
