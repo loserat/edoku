@@ -1,7 +1,9 @@
 const fs = require("fs/promises");
 const path = require("path");
+const { writeZipFile } = require("./zipService");
+const { assertSafePath } = require("./pathService");
 const { PDFDocument, PDFName } = require("pdf-lib");
-const { chapterFolderForKapitel, createProjectFolder, fileSafeName, getProjectPaths } = require("./projectService");
+const { chapterFolderForKapitel, createProjectFolder, fileSafeName, getProjectPaths, readableProjectPaths, resolveProjectSource } = require("./projectService");
 const { writeJson } = require("./jsonService");
 const { buildDocumentationPlan, summarizeExportEntries } = require("./documentationPlanService");
 const { generateInhaltsverzeichnis } = require("./pdfService");
@@ -13,7 +15,7 @@ async function listPdfFiles(dir) {
     const files = [];
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
+      if (entry.isDirectory() && !entry.name.startsWith(".")) {
         files.push(...await listPdfFiles(fullPath));
       } else if (entry.isFile() && entry.name.toLowerCase().endsWith(".pdf")) {
         files.push(fullPath);
@@ -52,97 +54,6 @@ function topChapterFolderName(entry, entries = []) {
   const chapter = entries.find((item) => item.kapitel === top);
   const title = top === "0" ? "Inhaltsverzeichnis" : chapter?.titel || "Dokumentation";
   return `${top.padStart(2, "0")}_${fileSafeName(title)}`;
-}
-
-// * INFO: CRC32 wird für das ZIP-Format benötigt. Die Implementierung vermeidet eine
-// * INFO: zusätzliche Abhängigkeit und schreibt unkomprimierte ZIP-Einträge.
-function crc32(buffer) {
-  if (!crc32.table) {
-    crc32.table = Array.from({ length: 256 }, (_, index) => {
-      let value = index;
-      for (let bit = 0; bit < 8; bit += 1) {
-        value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1;
-      }
-      return value >>> 0;
-    });
-  }
-
-  let crc = 0xffffffff;
-  for (const byte of buffer) {
-    crc = crc32.table[(crc ^ byte) & 0xff] ^ (crc >>> 8);
-  }
-  return (crc ^ 0xffffffff) >>> 0;
-}
-
-// * INFO: Wandelt JS-Datum in DOS-Zeit/Datum um, wie es ZIP-Header erwarten.
-function dosDateTime(date = new Date()) {
-  const year = Math.max(1980, date.getFullYear());
-  const time = (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2);
-  const day = (year - 1980) << 9 | ((date.getMonth() + 1) << 5) | date.getDate();
-  return { time, day };
-}
-
-// * INFO: Schreibt ein einfaches ZIP-Archiv aus vorhandenen Dateien.
-// * INFO: Seiteneffekt: legt/überschreibt die ZIP-Datei am angegebenen Pfad.
-async function writeZipFile(zipPath, files) {
-  const chunks = [];
-  const central = [];
-  let offset = 0;
-  const { time, day } = dosDateTime();
-
-  for (const file of files) {
-    const data = await fs.readFile(file.sourcePath);
-    const name = Buffer.from(file.zipPath.replaceAll("\\", "/"), "utf8");
-    const crc = crc32(data);
-    const localHeader = Buffer.alloc(30);
-    localHeader.writeUInt32LE(0x04034b50, 0);
-    localHeader.writeUInt16LE(20, 4);
-    localHeader.writeUInt16LE(0x0800, 6);
-    localHeader.writeUInt16LE(0, 8);
-    localHeader.writeUInt16LE(time, 10);
-    localHeader.writeUInt16LE(day, 12);
-    localHeader.writeUInt32LE(crc, 14);
-    localHeader.writeUInt32LE(data.length, 18);
-    localHeader.writeUInt32LE(data.length, 22);
-    localHeader.writeUInt16LE(name.length, 26);
-    localHeader.writeUInt16LE(0, 28);
-    chunks.push(localHeader, name, data);
-
-    const centralHeader = Buffer.alloc(46);
-    centralHeader.writeUInt32LE(0x02014b50, 0);
-    centralHeader.writeUInt16LE(20, 4);
-    centralHeader.writeUInt16LE(20, 6);
-    centralHeader.writeUInt16LE(0x0800, 8);
-    centralHeader.writeUInt16LE(0, 10);
-    centralHeader.writeUInt16LE(time, 12);
-    centralHeader.writeUInt16LE(day, 14);
-    centralHeader.writeUInt32LE(crc, 16);
-    centralHeader.writeUInt32LE(data.length, 20);
-    centralHeader.writeUInt32LE(data.length, 24);
-    centralHeader.writeUInt16LE(name.length, 28);
-    centralHeader.writeUInt16LE(0, 30);
-    centralHeader.writeUInt16LE(0, 32);
-    centralHeader.writeUInt16LE(0, 34);
-    centralHeader.writeUInt16LE(0, 36);
-    centralHeader.writeUInt32LE(0, 38);
-    centralHeader.writeUInt32LE(offset, 42);
-    central.push(centralHeader, name);
-    offset += localHeader.length + name.length + data.length;
-  }
-
-  const centralOffset = offset;
-  const centralSize = central.reduce((sum, chunk) => sum + chunk.length, 0);
-  const end = Buffer.alloc(22);
-  end.writeUInt32LE(0x06054b50, 0);
-  end.writeUInt16LE(0, 4);
-  end.writeUInt16LE(0, 6);
-  end.writeUInt16LE(files.length, 8);
-  end.writeUInt16LE(files.length, 10);
-  end.writeUInt32LE(centralSize, 12);
-  end.writeUInt32LE(centralOffset, 16);
-  end.writeUInt16LE(0, 20);
-
-  await fs.writeFile(zipPath, Buffer.concat([...chunks, ...central, end]));
 }
 
 /**
@@ -284,15 +195,26 @@ function assignPageRanges(entries) {
 // Der Plan wird vor jeder Prüfung aus aktuellen Auswahlen neu aufgebaut.
 async function buildExportliste(rootDir, projekt, matrix, exportlistePath, projektSysteme = [], anhaenge = [], geraetelisten = [], leistungsbereiche = {}, options = {}) {
   const paths = getProjectPaths(rootDir, projekt);
-  const generated = await listPdfFiles(paths.generatedPath);
-  const external = await listPdfFiles(paths.configPath);
+  const sources = readableProjectPaths(rootDir, projekt);
+  for (const p of sources) for (const folder of [p.projectPath,p.generatedPath,p.configPath]) await assertSafePath(rootDir, folder, { allowMissing: true });
+  const generated = (await Promise.all(sources.map(p => listPdfFiles(p.generatedPath)))).flat();
+  const external = (await Promise.all(sources.map(p => listPdfFiles(p.configPath)))).flat();
   const used = new Set();
   const inspected = new Map();
-  async function inspect(file) { if (!inspected.has(file)) inspected.set(file, await inspectPdf(file)); return inspected.get(file); }
+  async function inspect(file) {
+    try { await resolveProjectSource(rootDir, projekt, relative(rootDir, file)); }
+    catch (error) { if (error.code !== "ENOENT") throw error; }
+    if (!inspected.has(file)) inspected.set(file, await inspectPdf(file));
+    return inspected.get(file);
+  }
   const plan = buildDocumentationPlan(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt);
   const entries = [];
-  const tocPath = path.join(paths.generatedPath, "Inhaltsverzeichnis.pdf");
-  const toc = { id: "inhaltsverzeichnis", isToc: true, requiresFile: true, kapitel: "0", originalKapitel: "0", ebene: 1, titel: "Inhaltsverzeichnis", dateipfad: relative(rootDir, tocPath), quelle: "intern", pflicht: true, ...await inspectPdf(tocPath) };
+  let tocPath = path.join(paths.generatedPath, "Inhaltsverzeichnis.pdf");
+  for (const source of sources) {
+    const candidate=path.join(source.generatedPath,"Inhaltsverzeichnis.pdf");
+    try { await fs.access(candidate); tocPath=candidate; break; } catch (error) { if(error.code!=="ENOENT")throw error; }
+  }
+  const toc = { id: "inhaltsverzeichnis", isToc: true, requiresFile: true, kapitel: "0", originalKapitel: "0", ebene: 1, titel: "Inhaltsverzeichnis", dateipfad: relative(rootDir, tocPath), quelle: "intern", pflicht: true, ...await inspect(tocPath) };
   if (toc.status === "vorhanden" && (toc.pdfDocumentId !== "inhaltsverzeichnis" || toc.pdfChapter !== "0")) Object.assign(toc, { status: "veraltet", seiten: 0, fehler: "Inhaltsverzeichnis neu erzeugen." });
   entries.push(toc);
   for (const node of plan) {
@@ -302,9 +224,9 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
     if (node.requiresFile && !source) {
       const candidates = generated.filter((file) => {
         if (!chapterFileMatches(file, node.displayKapitel)) return false;
-        if (node.deviceListId) return path.dirname(file) === path.join(paths.generatedPath, "Geraetelisten");
-        if (node.originalKapitel === "13.5" && !node.isCover) return path.dirname(file) === path.join(paths.generatedPath, "Brandschutz");
-        return path.dirname(file) === paths.generatedPath;
+        if (node.deviceListId) return sources.some(p => path.dirname(file) === path.join(p.generatedPath, "Geraetelisten"));
+        if (node.originalKapitel === "13.5" && !node.isCover) return sources.some(p => path.dirname(file) === path.join(p.generatedPath, "Brandschutz"));
+        return sources.some(p => path.dirname(file) === p.generatedPath);
       });
       const identified = [];
       for (const file of candidates) {
@@ -348,20 +270,15 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
   return entries;
 }
 
-async function clearFinalExportFolder(finalPath) {
-  const entries = await fs.readdir(finalPath, { withFileTypes: true });
-  await Promise.all(entries.filter((entry) => entry.isFile() && [".pdf", ".txt", ".zip"].includes(path.extname(entry.name).toLowerCase())).map((entry) => fs.unlink(path.join(finalPath, entry.name))));
-}
-
-async function prepareFinalExport(rootDir, projekt, matrix, exportlistePath, options = {}) {
-  const paths = await createProjectFolder(rootDir, projekt);
+async function buildFinalExport(rootDir, projekt, matrix, exportlistePath, options = {}) {
+  const paths = { ...await createProjectFolder(rootDir, projekt), finalPath: options.finalPath };
   const entries = JSON.parse(await fs.readFile(exportlistePath, "utf8"));
   const ordered = entries.sort((a, b) => Number(a.position || a.reihenfolge) - Number(b.position || b.reihenfolge));
   const toc = ordered.find((entry) => entry.isToc || entry.kapitel === "0");
   if (!toc) throw new Error("Exportliste ohne Inhaltsverzeichnis. Bitte Dokumentation neu erzeugen.");
   // Vor dem Zusammenführen werden Seiten und Zeilen aus demselben Exportplan gesetzt.
   for (const entry of ordered.filter((item) => item.requiresFile !== false)) {
-    if (entry.dateipfad) Object.assign(entry, await inspectPdf(path.join(rootDir, entry.dateipfad)));
+    if (entry.dateipfad) Object.assign(entry, await inspectPdf(await resolveProjectSource(rootDir, projekt, entry.dateipfad)));
   }
   for (let pass = 0; pass < 3; pass += 1) {
     const oldPages = toc.seiten;
@@ -374,7 +291,6 @@ async function prepareFinalExport(rootDir, projekt, matrix, exportlistePath, opt
   }
   assignPageRanges(ordered);
   const layout = JSON.parse(await fs.readFile(path.join(rootDir, toc.dateipfad) + ".layout.json", "utf8"));
-  await clearFinalExportFolder(paths.finalPath);
   const zipFiles = [];
   const pdfFiles = [];
   let exportedFile = 0;
@@ -383,7 +299,7 @@ async function prepareFinalExport(rootDir, projekt, matrix, exportlistePath, opt
     entry.exportReihenfolge = ++exportedFile;
     const finalName = finalExportFileName({ ...entry, reihenfolge: entry.exportReihenfolge });
     const target = path.join(paths.finalPath, finalName);
-    await fs.copyFile(path.join(rootDir, entry.dateipfad), target);
+    await fs.copyFile(await resolveProjectSource(rootDir, projekt, entry.dateipfad), target);
     pdfFiles.push({ sourcePath: target, entry });
     zipFiles.push({ sourcePath: target, zipPath: `${topChapterFolderName(entry, ordered)}/${finalName}` });
   }
@@ -400,9 +316,36 @@ async function prepareFinalExport(rootDir, projekt, matrix, exportlistePath, opt
   if (merged.targetPath) zipFiles.unshift({ sourcePath: merged.targetPath, zipPath: `00_Inhaltsverzeichnis/${path.basename(merged.targetPath)}` });
   const zipPath = path.join(paths.finalPath, `${fileSafeName(projekt.projektnummer || "Projekt")}_${fileSafeName(projekt.projektname || "edoku")}_Export.zip`);
   await writeZipFile(zipPath, zipFiles);
-  const saved = await writeJson(exportlistePath, ordered);
-  if (!saved.ok) throw new Error(saved.error);
-  return { completePdfPath: merged.targetPath, completePdfPages: merged.pages, skippedMergeFiles: merged.skipped, unassignedFiles: toc.unzugeordneteDateien || [], orderFile, zipPath, missingRequired: missing.filter((entry) => entry.pflicht).map((entry) => `${entry.kapitel} ${entry.titel}`), missingFiles: missing, summary: summarizeExportEntries(ordered) };
+  return { ordered, completePdfPath: merged.targetPath, completePdfPages: merged.pages, skippedMergeFiles: merged.skipped, unassignedFiles: toc.unzugeordneteDateien || [], orderFile, zipPath, missingRequired: missing.filter((entry) => entry.pflicht).map((entry) => `${entry.kapitel} ${entry.titel}`), missingFiles: missing, summary: summarizeExportEntries(ordered) };
+}
+
+// Ein gescheiterter Export darf die letzte fertige Ausgabe nicht zerstören.
+const finalOperations = new Map();
+async function prepareFinalExport(rootDir,projekt,matrix,exportlistePath,options={}) {
+  const live=await createProjectFolder(rootDir,projekt);
+  const previous=finalOperations.get(live.projectPath)||Promise.resolve();
+  const operation=previous.catch(()=>{}).then(async()=>{
+    const working=await fs.mkdtemp(path.join(live.projectPath,'.final-'));
+    const history=path.join(live.projectPath,'07_Vorherige_Exporte');
+    const archived=path.join(history,new Date().toISOString().replace(/[:.]/g,'-')+'_'+require('crypto').randomUUID());
+    let moved=false,published=false;
+    try {
+      const result=await buildFinalExport(rootDir,projekt,matrix,exportlistePath,{...options,finalPath:working});
+      await assertSafePath(rootDir,history,{allowMissing:true});await fs.mkdir(history,{recursive:true});
+      await fs.rename(live.finalPath,archived);moved=true;
+      await fs.rename(working,live.finalPath);published=true;
+      await writeJson(exportlistePath,result.ordered);
+      const relocate=file=>file?path.join(live.finalPath,path.basename(file)):file;
+      const {ordered,...answer}=result;
+      return {...answer,completePdfPath:relocate(result.completePdfPath),orderFile:relocate(result.orderFile),zipPath:relocate(result.zipPath)};
+    } catch(error) {
+      if(published)await fs.rename(live.finalPath,working);
+      if(moved)await fs.rename(archived,live.finalPath);
+      throw error;
+    } finally { await fs.rm(working,{recursive:true,force:true}); }
+  });
+  finalOperations.set(live.projectPath,operation);
+  try{return await operation;}finally{if(finalOperations.get(live.projectPath)===operation)finalOperations.delete(live.projectPath);}
 }
 
 module.exports = { buildExportliste, prepareFinalExport, assignPageRanges, inspectPdf };

@@ -7,6 +7,16 @@ const savedTheme = localStorage.getItem("dm-theme") || window.edokuThemeDefaultM
 document.documentElement.setAttribute("data-theme", resolveEdokuThemeMode(savedTheme));
 
 document.addEventListener("DOMContentLoaded", () => {
+  const role = document.querySelector('meta[name="edoku-user-role"]')?.content || "";
+  for (const form of document.querySelectorAll('form[method="post"]')) {
+    const pathname = new URL(form.action, location.href).pathname;
+    const systemWrite = pathname.startsWith("/einstellungen") || /^\/geraetelisten\/[^/]+\/vorlagen$/.test(pathname);
+    if ((role === "viewer" && pathname !== "/logout") || (systemWrite && role !== "systemadmin")) {
+      form.removeAttribute("data-autosave");
+      form.title = systemWrite ? "Änderungen nur durch Systemadmins." : "Dieses Konto darf nur lesen.";
+      for (const control of form.querySelectorAll("input,select,textarea,button")) control.disabled = true;
+    }
+  }
   const notices = document.querySelectorAll(".notice");
   const themeToggle = document.querySelector("[data-theme-toggle]");
 
@@ -317,6 +327,7 @@ document.addEventListener("DOMContentLoaded", () => {
             body: new URLSearchParams(new FormData(form)),
             headers: {
               Accept: "application/json",
+              "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]')?.content || "",
               "Content-Type": "application/x-www-form-urlencoded"
             }
           });

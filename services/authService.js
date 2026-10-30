@@ -50,8 +50,7 @@ function sameSiteValue() {
 }
 
 function requestUsesHttps(req) {
-  const forwardedProto = String((req && req.headers && req.headers["x-forwarded-proto"]) || "").toLowerCase();
-  return Boolean(req && req.secure) || forwardedProto.split(",").map((part) => part.trim()).includes("https");
+  return Boolean(req && req.secure);
 }
 
 function secureCookieEnabled(req) {
@@ -161,7 +160,8 @@ function parseCookies(req, res, next) {
       .map((part) => {
         const index = part.indexOf("=");
         if (index === -1) return [part, ""];
-        return [decodeURIComponent(part.slice(0, index)), decodeURIComponent(part.slice(index + 1))];
+        try { return [decodeURIComponent(part.slice(0, index)), decodeURIComponent(part.slice(index + 1))]; }
+        catch { return ["invalid_cookie", ""]; }
       })
   );
   next();

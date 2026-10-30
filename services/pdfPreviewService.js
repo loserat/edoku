@@ -1,7 +1,7 @@
 const fs = require("fs/promises");
 const path = require("path");
-const { ensureInsideBase } = require("./pathService");
-const { getProjectPaths } = require("./projectService");
+const { ensureInsideBase, assertSafePath, accessError } = require("./pathService");
+const { getProjectPaths, readableProjectPaths } = require("./projectService");
 
 const PREVIEW_FOLDERS = [
   { key: "generated", label: "Generiert", pathKey: "generatedPath" },
@@ -43,7 +43,7 @@ async function listPdfFiles(baseDir, rootDir, sourceLabel) {
 
     for (const entry of entries) {
       const fullPath = path.join(baseDir, entry.name);
-      if (entry.isDirectory()) {
+      if (entry.isDirectory() && !entry.name.startsWith(".")) {
         files.push(...await listPdfFiles(fullPath, rootDir, sourceLabel));
       } else if (entry.isFile() && entry.name.toLowerCase().endsWith(".pdf")) {
         const relativePath = path.relative(rootDir, fullPath).replaceAll(path.sep, "/");
@@ -65,12 +65,16 @@ async function listPdfFiles(baseDir, rootDir, sourceLabel) {
 
 // * INFO: Listet alle PDFs, die im Projekt für eine Vorschau freigegeben sind.
 async function listPdfPreviewFiles(rootDir, projekt) {
-  const paths = getProjectPaths(rootDir, projekt);
   const files = [];
-
-  for (const folder of PREVIEW_FOLDERS) {
-    files.push(...await listPdfFiles(paths[folder.pathKey], paths.projectPath, folder.label));
+  for (const paths of readableProjectPaths(rootDir, projekt)) {
+    await assertSafePath(rootDir, paths.projectPath, { allowMissing: true });
+    for (const folder of PREVIEW_FOLDERS) {
+      await assertSafePath(rootDir, paths[folder.pathKey], { allowMissing: true });
+      files.push(...await listPdfFiles(paths[folder.pathKey], paths.projectPath, folder.label));
+    }
   }
+  const seen = new Set();
+  files.splice(0, files.length, ...files.filter(file => !seen.has(file.id) && seen.add(file.id)));
 
   return files.sort((a, b) => {
     if (a.source !== b.source) return a.source.localeCompare(b.source, "de");
@@ -80,77 +84,36 @@ async function listPdfPreviewFiles(rootDir, projekt) {
 
 // * INFO: Listet finale Export-Artefakte, die bewusst zum Download freigegeben sind.
 async function listFinalExportFiles(rootDir, projekt) {
-  const paths = getProjectPaths(rootDir, projekt);
-
-  try {
-    const entries = await fs.readdir(paths.finalPath, { withFileTypes: true });
-    const files = [];
-
-    for (const entry of entries) {
-      const fullPath = path.join(paths.finalPath, entry.name);
-      const extension = path.extname(entry.name).toLowerCase();
-      if (!entry.isFile() || !DOWNLOAD_EXTENSIONS.has(extension)) continue;
-
-      const stat = await fs.stat(fullPath);
-      const relativePath = path.relative(paths.projectPath, fullPath).replaceAll(path.sep, "/");
-      files.push({
-        id: relativePath,
-        name: entry.name,
-        extension,
-        kind: formatFileKind(entry.name, extension),
-        relativePath,
-        size: stat.size,
-        updatedAt: stat.mtime.toISOString()
-      });
+  const files=[], seen=new Set();
+  for(const paths of readableProjectPaths(rootDir,projekt)) {
+    await assertSafePath(rootDir,paths.finalPath,{allowMissing:true});
+    let entries;try{entries=await fs.readdir(paths.finalPath,{withFileTypes:true});}catch(error){if(error.code==='ENOENT')continue;throw error;}
+    for(const entry of entries){
+      const extension=path.extname(entry.name).toLowerCase();
+      if(!entry.isFile()||!DOWNLOAD_EXTENSIONS.has(extension)||seen.has(entry.name))continue;
+      const full=await assertSafePath(rootDir,path.join(paths.finalPath,entry.name),{type:'file'});
+      const stat=await fs.stat(full), relativePath=path.relative(paths.projectPath,full).split(path.sep).join('/');
+      seen.add(entry.name);files.push({id:relativePath,name:entry.name,extension,kind:formatFileKind(entry.name,extension),relativePath,size:stat.size,updatedAt:stat.mtime.toISOString()});
     }
-
-    return sortFinalExportFiles(files);
-  } catch (error) {
-    return [];
   }
+  return sortFinalExportFiles(files);
 }
 
 // * INFO: Löst eine Vorschau-Datei sicher auf und begrenzt den Zugriff auf Projektordner.
-async function resolvePdfPreviewFile(rootDir, projekt, relativePath) {
-  if (!relativePath || String(relativePath).includes("..")) {
-    throw new Error("Keine gueltige PDF-Datei angegeben.");
+async function resolveOutputFile(rootDir,projekt,relativePath,preview) {
+  if(typeof relativePath!=='string'||!relativePath||relativePath.includes('..')||path.isAbsolute(relativePath))throw accessError();
+  const extension=path.extname(relativePath).toLowerCase();
+  if(preview ? extension!=='.pdf' : !DOWNLOAD_EXTENSIONS.has(extension))throw accessError();
+  for(const paths of readableProjectPaths(rootDir,projekt)){
+    const target=ensureInsideBase(paths.projectPath,path.join(paths.projectPath,relativePath));
+    const allowed=(preview?[paths.generatedPath,paths.finalPath,paths.configPath]:[paths.finalPath]).some(base=>{try{ensureInsideBase(base,target);return true;}catch{return false;}});
+    if(!allowed)throw accessError();
+    try{return await assertSafePath(rootDir,target,{type:'file'});}catch(error){if(error.code!=='ENOENT')throw error;}
   }
-
-  const paths = getProjectPaths(rootDir, projekt);
-  const targetPath = ensureInsideBase(paths.projectPath, path.join(paths.projectPath, relativePath));
-  const allowedFolders = [paths.generatedPath, paths.finalPath, paths.configPath];
-  const isAllowed = allowedFolders.some((folder) => {
-    const relative = path.relative(path.resolve(folder), targetPath);
-    return !relative.startsWith("..") && !path.isAbsolute(relative);
-  });
-
-  if (!isAllowed || path.extname(targetPath).toLowerCase() !== ".pdf") {
-    throw new Error("Diese Datei ist nicht fuer die PDF-Vorschau freigegeben.");
-  }
-
-  await fs.access(targetPath);
-  return targetPath;
+  throw Object.assign(new Error('Datei nicht gefunden.'),{status:404});
 }
-
-// ! WICHTIG: Downloads bleiben auf den finalen Projektordner und erlaubte Dateitypen begrenzt.
-async function resolveExportDownloadFile(rootDir, projekt, relativePath) {
-  if (!relativePath || String(relativePath).includes("..")) {
-    throw new Error("Keine gueltige Export-Datei angegeben.");
-  }
-
-  const paths = getProjectPaths(rootDir, projekt);
-  const targetPath = ensureInsideBase(paths.projectPath, path.join(paths.projectPath, relativePath));
-  const relativeToFinal = path.relative(path.resolve(paths.finalPath), targetPath);
-  const isInsideFinal = !relativeToFinal.startsWith("..") && !path.isAbsolute(relativeToFinal);
-  const extension = path.extname(targetPath).toLowerCase();
-
-  if (!isInsideFinal || !DOWNLOAD_EXTENSIONS.has(extension)) {
-    throw new Error("Diese Datei ist nicht fuer den Export-Download freigegeben.");
-  }
-
-  await fs.access(targetPath);
-  return targetPath;
-}
+async function resolvePdfPreviewFile(rootDir,projekt,relativePath){return resolveOutputFile(rootDir,projekt,relativePath,true);}
+async function resolveExportDownloadFile(rootDir,projekt,relativePath){return resolveOutputFile(rootDir,projekt,relativePath,false);}
 
 module.exports = {
   listPdfPreviewFiles,

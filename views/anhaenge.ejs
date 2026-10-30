@@ -33,6 +33,7 @@
           </p>
         </div>
         <form class="attachment-header-upload" action="/anhaenge/upload?kategorie=<%= encodeURIComponent(selectedKategorie) %>" method="post" enctype="multipart/form-data" data-attachment-upload-form>
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
           <input type="hidden" name="category" value="<%= selectedKategorie %>">
           <input type="hidden" name="kapitel" value="<%= categoryDefaults.kapitel || "" %>">
           <label>
@@ -175,6 +176,7 @@
                       <% } %>
 
                       <form class="attachment-detail-form attachment-modal-grid" action="/anhaenge/<%= encodeURIComponent(entry.id) %>/aktualisieren" method="post">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
                         <input type="hidden" name="returnKategorie" value="<%= selectedKategorie || "" %>">
                         <input type="hidden" name="category" value="<%= selectedKategorie %>">
                         <input type="hidden" name="kapitel" value="<%= entry.kapitel || categoryDefaults.kapitel || "" %>">
@@ -305,7 +307,8 @@
                           </div>
                         </footer>
                       </form>
-                      <form id="delete-<%= entry.id %>" action="/anhaenge/<%= encodeURIComponent(entry.id) %>/loeschen" method="post" data-confirm="Anhang wirklich löschen?" hidden></form>
+                      <form id="delete-<%= entry.id %>" action="/anhaenge/<%= encodeURIComponent(entry.id) %>/loeschen" method="post" data-confirm="Anhang wirklich löschen?" hidden>
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>"></form>
                     </section>
                   </div>
                 </article>

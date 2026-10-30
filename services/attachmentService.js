@@ -1,7 +1,15 @@
 const fs = require("fs/promises");
 const path = require("path");
 const crypto = require("crypto");
-const { sanitizeFileName } = require("./pathService");
+const { sanitizeFileName, safeJoin, ensureInsideBase, assertSafePath, accessError } = require("./pathService");
+
+async function resolveAttachmentFile(rootDir, files, relativePath, options = {}) {
+  if (!files?.dataDir || !relativePath || path.isAbsolute(relativePath)) throw accessError();
+  const base = /^(anhaenge|uploads|assets)\//.test(relativePath) ? path.dirname(files.dataDir) : rootDir;
+  const target = safeJoin(base, relativePath);
+  ensureInsideBase(path.dirname(files.dataDir), target);
+  return assertSafePath(rootDir, target, { type: "file", ...options });
+}
 
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = new Set([
@@ -11,6 +19,20 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/gif",
   "application/pdf"
 ]);
+
+function detectAttachmentMime(buffer) {
+  if (buffer.subarray(0,5).toString("ascii") === "%PDF-") return "application/pdf";
+  if (buffer.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) return "image/png";
+  if (buffer[0]===255 && buffer[1]===216 && buffer[2]===255) return "image/jpeg";
+  if (buffer.subarray(0,4).toString("ascii")==="RIFF" && buffer.subarray(8,12).toString("ascii")==="WEBP") return "image/webp";
+  return "";
+}
+async function attachmentPreviewMime(file) {
+  const handle=await fs.open(file,"r");
+  try { const header=Buffer.alloc(16);const {bytesRead}=await handle.read(header,0,header.length,0);const mime=detectAttachmentMime(header.subarray(0,bytesRead));
+    if(!mime)throw Object.assign(new Error("Diese Datei ist nicht als PDF oder Bild für die Vorschau freigegeben."),{status:415});return mime;
+  } finally { await handle.close(); }
+}
 
 // * INFO: Vereinheitlicht gespeicherte Anhangsdaten aus JSON. Fehlende Felder bekommen
 // * INFO: stabile Defaults, damit alte Projektstände weiter angezeigt werden können.
@@ -82,21 +104,22 @@ function parseHeaderBlock(value) {
 // * INFO: Minimaler Multipart-Parser für Uploads ohne zusätzliche Upload-Bibliothek.
 // * INFO: Gibt Formularfelder und genau eine Datei zurück.
 async function parseMultipartUpload(req) {
+  if (req.multipartUpload) return req.multipartUpload;
   const contentType = req.headers["content-type"] || "";
-  const boundaryMatch = contentType.match(/boundary=([^;]+)/);
+  const boundaryMatch = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/);
   if (!boundaryMatch) throw new Error("Upload-Formular ist ungueltig.");
 
   const chunks = [];
   let size = 0;
 
-  for await (const chunk of req) {
+  for await (const chunk of Buffer.isBuffer(req.body) ? [req.body] : req) {
     size += chunk.length;
     if (size > MAX_UPLOAD_BYTES) throw new Error("Datei ist zu gross. Maximal erlaubt sind 15 MB.");
     chunks.push(chunk);
   }
 
   const body = Buffer.concat(chunks);
-  const boundary = Buffer.from(`--${boundaryMatch[1]}`);
+  const boundary = Buffer.from(`--${boundaryMatch[1] || boundaryMatch[2]}`);
   const parts = splitBuffer(body, boundary);
   const fields = {};
   let file = null;
@@ -130,6 +153,7 @@ async function parseMultipartUpload(req) {
       };
       files.push(file);
     } else {
+      if (["__proto__", "constructor", "prototype"].includes(name)) throw new Error("Ungültiges Formularfeld.");
       fields[name] = content.toString("utf8");
     }
   }
@@ -189,6 +213,7 @@ async function saveAttachment(rootDir, files, existingRaw, upload) {
   if (!ALLOWED_MIME_TYPES.has(upload.file.mimeType)) {
     throw new Error("Dateityp ist nicht erlaubt. Erlaubt sind Bilder und PDF-Dateien.");
   }
+  if (!detectAttachmentMime(upload.file.buffer)) throw new Error("Der Dateiinhalt ist kein unterstütztes Bild oder PDF.");
 
   const attachments = normalizeAttachments(existingRaw);
   const projectRoot = projectRootFromFiles(files);
@@ -213,7 +238,8 @@ async function saveAttachment(rootDir, files, existingRaw, upload) {
   };
   const fileName = logicalAttachmentFileName(fields, baseName, extension, id);
   const targetPath = path.join(attachmentDir, fileName);
-  await fs.writeFile(targetPath, upload.file.buffer);
+  await assertSafePath(rootDir, targetPath, { allowMissing: true });
+  await fs.writeFile(targetPath, upload.file.buffer, { flag: "wx", mode: 0o600 });
 
   const relativePath = path.relative(rootDir, targetPath).split(path.sep).join("/");
 
@@ -259,13 +285,15 @@ async function syncAttachmentFileName(rootDir, files, attachmentsRaw, attachment
   const nextFileName = logicalAttachmentFileName(target, originalBaseName, extension, target.id);
   if (nextFileName === target.fileName) return { attachments, renamed: null };
 
-  const oldPath = path.join(rootDir, target.relativePath);
+  const oldPath = await resolveAttachmentFile(rootDir, files, target.relativePath, { allowMissing: true });
   const nextPath = path.join(attachmentDir, nextFileName);
+  await assertSafePath(rootDir, nextPath, { allowMissing: true });
   const nextRelativePath = path.relative(rootDir, nextPath).split(path.sep).join("/");
 
   try {
     await fs.mkdir(attachmentDir, { recursive: true });
-    await fs.rename(oldPath, nextPath);
+    // Das Original bleibt als Rückfallebene erhalten, falls das spätere Metadaten-Speichern scheitert.
+    await fs.copyFile(oldPath, nextPath);
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
   }
@@ -287,14 +315,17 @@ async function syncAttachmentFileName(rootDir, files, attachmentsRaw, attachment
 }
 
 // ! WICHTIG: Entfernt Datei und JSON-Eintrag eines Anhangs. Fehlende Dateien werden toleriert.
-async function deleteAttachment(rootDir, attachmentsRaw, attachmentId) {
+async function deleteAttachment(rootDir, attachmentsRaw, attachmentId, files) {
   const attachments = normalizeAttachments(attachmentsRaw);
   const target = attachments.find((entry) => entry.id === attachmentId);
   if (!target) return attachments;
 
-  const filePath = path.join(rootDir, target.relativePath);
+  const filePath = await resolveAttachmentFile(rootDir, files, target.relativePath, { allowMissing: true });
   try {
-    await fs.unlink(filePath);
+    const trash = path.join(path.dirname(files.dataDir), ".trash");
+    await assertSafePath(rootDir, trash, { allowMissing: true });
+    await fs.mkdir(trash, { recursive: true });
+    await fs.rename(filePath, path.join(trash, crypto.randomUUID() + "_" + path.basename(filePath)));
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
   }
@@ -343,6 +374,8 @@ function assignAttachmentToBrandschutz(brandschutz, relativePath, brandschutzId,
 }
 
 module.exports = {
+  attachmentPreviewMime,
+  resolveAttachmentFile,
   assignAttachmentToBrandschutz,
   clearAttachmentReferencesFromBrandschutz,
   deleteAttachment,

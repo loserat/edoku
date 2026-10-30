@@ -98,7 +98,7 @@ function resolveCreatorLogo(storageDir, logoPath) {
     throw new Error("Kein gültiger Erstellerlogo-Pfad hinterlegt.");
   }
 
-  const target = ensureInsideBase(storageDir, path.join(storageDir, logoPath));
+  const target = ensureInsideBase(path.join(storageDir, "creator"), path.join(storageDir, logoPath));
   const extension = path.extname(target).toLowerCase();
   if (!Object.values(ALLOWED_LOGO_TYPES).includes(extension)) {
     throw new Error("Logo-Dateityp ist nicht freigegeben.");

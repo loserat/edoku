@@ -19,7 +19,7 @@
         <section class="summary-cards compact-summary">
           <div class="summary-card"><span>Projekt</span><strong><%= currentProjectId %></strong></div>
           <div class="summary-card"><span>Exporte</span><strong><%= exports.length %></strong></div>
-          <div class="summary-card"><span>Importstatus</span><strong><%= validation && validation.ok ? "OK" : "-" %></strong></div>
+          <div class="summary-card"><span>Importstatus</span><strong><%= validation && validation.ok ? validation.complete ? "OK" : "Mit Hinweisen" : "-" %></strong></div>
         </section>
 
         <div class="tabs" role="tablist" aria-label="Projektarchivansichten">
@@ -36,11 +36,12 @@
             </div>
           </div>
           <form action="/projektarchiv/exportieren" method="post" class="stack-form">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
             <input type="hidden" name="projectId" value="<%= currentProjectId %>">
             <label class="switch-control"><input type="checkbox" name="includeUploads" checked><span class="switch-track" aria-hidden="true"></span><span>Uploads einschließen</span></label>
             <label class="switch-control"><input type="checkbox" name="includeGenerated" checked><span class="switch-track" aria-hidden="true"></span><span>generierte PDFs einschließen</span></label>
             <label class="switch-control"><input type="checkbox" name="includeFinal" checked><span class="switch-track" aria-hidden="true"></span><span>finale PDFs einschließen</span></label>
-            <label class="switch-control"><input type="checkbox" name="createZip" checked><span class="switch-track" aria-hidden="true"></span><span>ZIP erzeugen vorbereiten</span></label>
+            <label class="switch-control"><input type="checkbox" name="createZip" checked><span class="switch-track" aria-hidden="true"></span><span>ZIP-Datei erzeugen</span></label>
             <button type="submit">Projekt exportieren</button>
           </form>
         </section>
@@ -49,10 +50,11 @@
           <div class="panel-head">
             <div>
               <h2>Projekt importieren</h2>
-              <p>Import aus einem entpackten Ordner innerhalb von <code>storage/imports</code>.</p>
+              <p>Import aus einem entpackten Ordner innerhalb von <code>storage/imports/&lt;Benutzerkennung&gt;</code>.</p>
             </div>
           </div>
           <form action="/projektarchiv/validieren" method="post" class="inline-form">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
             <label>
               Importordner
               <input type="text" name="importOrdner" value="<%= importOrdner %>" placeholder="projekt_export">
@@ -61,7 +63,7 @@
           </form>
 
           <% if (validation) { %>
-            <div class="status-panel <%= validation.ok ? "ok" : "warning" %>">
+            <div class="status-panel <%= validation.ok && validation.complete ? "ok" : "warning" %>">
               <h3>Validierung</h3>
               <ul>
                 <li>manifest.json gefunden: <strong><%= validation.manifestFound ? "Ja" : "Nein" %></strong></li>
@@ -77,10 +79,17 @@
               <% if (validation.error) { %>
                 <p><%= validation.error %></p>
               <% } %>
+              <% if (validation.ok && !validation.complete) { %>
+                <p>Das Paket ist sicher importierbar, enthält aber nicht den vollständigen historischen Dateibestand. Nicht gewählte Bereiche oder gemeinsam genutzte Alt-Ausgaben bleiben separat erhalten.</p>
+              <% } %>
+              <% if (validation.missingSourceFiles && validation.missingSourceFiles.length) { %>
+                <p>Bereits im Quellprojekt fehlende Dateien: <%= validation.missingSourceFiles.join(", ") %></p>
+              <% } %>
             </div>
           <% } %>
 
           <form action="/projektarchiv/importieren" method="post" class="export-actions">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
             <input type="hidden" name="importOrdner" value="<%= importOrdner %>">
             <button type="submit">Projekt importieren</button>
           </form>
@@ -90,7 +99,7 @@
           <div class="panel-head">
             <div>
               <h2>Letzte Exporte</h2>
-              <p>Manifest-Downloads und lokale Exportpfade.</p>
+              <p>Geprüfte Projektpakete als ZIP und Manifest herunterladen.</p>
             </div>
           </div>
           <div class="table-wrap">
@@ -114,7 +123,7 @@
                     <td><%= item.projekt || currentProjectId %></td>
                     <td><%= item.dateiname %></td>
                     <td><%= item.pfad %></td>
-                    <td><a class="button-link" href="/projektarchiv/download?pfad=<%= encodeURIComponent(item.manifestPfad) %>">Manifest</a></td>
+                    <td><a class="button-link" href="/projektarchiv/download?pfad=<%= encodeURIComponent(item.manifestPfad) %>">Manifest</a> <% if (item.zipPfad) { %><a class="button-link" href="/projektarchiv/download?pfad=<%= encodeURIComponent(item.zipPfad) %>">ZIP herunterladen</a><% } %></td>
                   </tr>
                 <% }) %>
               </tbody>

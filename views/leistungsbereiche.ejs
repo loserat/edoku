@@ -15,6 +15,7 @@
       <%- include("partials/sectionTabs", { active }) %>
 
       <form action="/leistungsbereiche" method="post" data-tabs="leistungsbereiche" data-autosave class="tab-shell">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
         <p class="notice">
           Abgewählte Leistungsbereiche bleiben im Hintergrund erhalten. Zugehörige Gerätelisten werden deaktiviert und nicht exportiert; vorhandene Positionen werden nicht gelöscht.
         </p>

@@ -12,6 +12,10 @@ storage/users
 intern/tagesupdates/*.md
 .DS_Store
 .env
+.env.*
+storage/
+intern/
+*.log
 
 # Lokale Datensicherungen niemals veröffentlichen oder ins Image kopieren
 backups/

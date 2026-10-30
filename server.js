@@ -32,9 +32,12 @@ const {
   listProjects,
   setCurrentProject,
   updateProjectStatus,
+  resolveArchiveDownload,
+  resolveImportDirectory,
   upsertProjectFromData
 } = require("./services/projectArchiveService");
-const { createProjectFolder, fileSafeName } = require("./services/projectService");
+const { createProjectFolder, fileSafeName, bindProjectScope, legacyOutputStatus, resolveProjectSource } = require("./services/projectService");
+const { installAsyncHandlers, createCsrfProtection, createAuthLimiter } = require("./services/requestSecurityService");
 const { buildDashboardStats } = require("./services/dashboardService");
 const { buildExportPreview } = require("./services/exportPreviewService");
 const { listPdfPreviewFiles, listFinalExportFiles, resolvePdfPreviewFile, resolveExportDownloadFile } = require("./services/pdfPreviewService");
@@ -82,6 +85,8 @@ const {
   normalizeAttachments,
   parseMultipartUpload,
   saveAttachment,
+  resolveAttachmentFile,
+  attachmentPreviewMime,
   syncAttachmentFileName
 } = require("./services/attachmentService");
 const {
@@ -118,18 +123,45 @@ if (!existingDatabase) {
 }
 
 const app = express();
+installAsyncHandlers(app);
+app.disable("x-powered-by");
+const authLimiter = createAuthLimiter();
 if (["1", "true", "yes", "on"].includes(String(process.env.TRUST_PROXY || "").trim().toLowerCase())) {
   app.set("trust proxy", 1);
 }
 app.set("view engine", "ejs");
 app.set("views", path.join(ROOT_DIR, "views"));
 app.set("query parser", "extended");
+Object.assign(app.locals, {
+  csrfToken: "", user: null, currentProjectId: "", currentProjectName: "", currentProjectNumber: "",
+  projectSidebarProjects: [], showBrandschutzNavigation: false, storageWarning: "", deleteConfirmDialogs: true,
+  systemSettings: mergeSystemSettings(DEFAULT_SYSTEM_SETTINGS)
+});
 
 app.use(express.static(path.join(ROOT_DIR, "public")));
 app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 app.use(express.json({ limit: "25mb" }));
 app.use(parseCookies);
 app.use(attachUser);
+app.use((req,res,next) => {
+  res.set("X-Content-Type-Options", "nosniff");
+  res.set("X-Frame-Options", "SAMEORIGIN");
+  res.set("Referrer-Policy", "same-origin");
+  if (req.user) res.set("Cache-Control", "no-store");
+  next();
+});
+// Uploads werden einmal begrenzt gelesen; derselbe Parser liefert den CSRF-Token und die Datei.
+app.use((req,res,next) => {
+  if (!req.is("multipart/form-data")) return next();
+  if (!["/anhaenge/upload", "/einstellungen/ersteller-logo"].includes(req.path)) return next(Object.assign(new Error("Dieser Bereich erwartet kein Upload-Formular."), { status: 415 }));
+  if (!req.user) return res.status(401).send("Bitte zuerst anmelden.");
+  if (req.path.startsWith("/einstellungen/") && req.user.role !== "systemadmin") return res.status(403).send("Zugriff nur für Systemadmins.");
+  express.raw({ type: "multipart/form-data", limit: req.path === "/einstellungen/ersteller-logo" ? "10mb" : "15mb" })(req,res,async(error) => {
+    if (error) return next(error);
+    try { req.multipartUpload = await parseMultipartUpload(req); next(); } catch(e) { next(e); }
+  });
+});
+app.use(createCsrfProtection());
 app.use("/api", apiRoutes);
 
 // * INFO: Gemeinsamer Template-Kontext für eingeloggte Benutzer. Die Views nutzen diese
@@ -141,6 +173,7 @@ app.use(async (req, res, next) => {
   res.locals.currentProjectNumber = "";
   res.locals.projectSidebarProjects = [];
   res.locals.showBrandschutzNavigation = false;
+  res.locals.storageWarning = "";
   res.locals.deleteConfirmDialogs = true;
   res.locals.systemSettings = mergeSystemSettings(DEFAULT_SYSTEM_SETTINGS);
 
@@ -159,6 +192,9 @@ app.use(async (req, res, next) => {
     res.locals.currentProjectId = current.projectId;
     res.locals.projectSidebarProjects = await listProjects(ROOT_DIR, req.user.id);
     const currentProject = res.locals.projectSidebarProjects.find((project) => project.id === current.projectId);
+    if (currentProject && legacyOutputStatus(ROOT_DIR, bindProjectScope(currentProject, req.user.id, current.projectId)) === "ambiguous") {
+      res.locals.storageWarning = "Gemeinsam genutzte Alt-Ausgaben bleiben als historischer Bestand erhalten. Neue Ausgaben werden getrennt gespeichert. Projektarchive enthalten nur eindeutig zugehörige Dateien; der alte Exportindex bleibt als Begleitmetadaten erhalten.";
+    }
     res.locals.currentProjectName = currentProject ? currentProject.projektname || currentProject.id : current.projectId;
     res.locals.currentProjectNumber = currentProject ? currentProject.projektnummer || "" : "";
     const files = await getCurrentDataFiles(ROOT_DIR, DATA_DIR, req.user.id);
@@ -210,6 +246,7 @@ function ensureDefaultUser() {
 function flashFromQuery(req) {
   return {
     success: req.query.success || "",
+    warning: req.query.warning || "",
     error: req.query.error || ""
   };
 }
@@ -273,9 +310,9 @@ function okOrRedirect(req, res, target, message = "Gespeichert.") {
 
 // * INFO: Einheitliche Fehlerantwort für HTML-Formulare und JSON-basierte Auto-Saves.
 function fail(req, res, target, error) {
-  const message = error && error.message ? error.message : String(error || "Fehler");
+  const message = error?.code && /^E[A-Z]+$/.test(error.code) ? "Die Datei konnte nicht gespeichert oder gelesen werden. Bitte Zugriffsrechte und Speicherplatz prüfen." : error && error.message ? error.message : String(error || "Fehler");
   if ((req.headers.accept || "").includes("application/json")) {
-    res.status(500).json({ ok: false, error: message });
+    res.status(error.status || 500).json({ ok: false, error: message });
     return;
   }
   redirectWithFlash(res, target, "error", message);
@@ -311,10 +348,10 @@ function mergeStockwerkOptions(stockwerke, values = []) {
 }
 
 // ! WICHTIG: Prüft projektbezogene Anhangspfade innerhalb des erlaubten Root-Verzeichnisses.
-async function fileExistsForAttachment(relativePath) {
+async function fileExistsForAttachment(relativePath, files) {
   if (!relativePath) return false;
   try {
-    await fsp.access(safeJoin(ROOT_DIR, relativePath));
+    await resolveAttachmentFile(ROOT_DIR, files, relativePath);
     return true;
   } catch {
     return false;
@@ -326,14 +363,14 @@ async function fileExistsForAttachment(relativePath) {
  * * INFO: Ergänzt Rohdaten um Dateistatus, Typ-Erkennung, Inhaltsverzeichnis-Zuordnung
  * * INFO: und Brandschutz-Fotoverweise.
  */
-async function buildAttachmentViewModel(attachments, brandschutz, matrix, projekt = {}, geraetelisten = [], leistungsbereiche = {}) {
+async function buildAttachmentViewModel(attachments, brandschutz, matrix, projekt = {}, geraetelisten = [], leistungsbereiche = {}, files) {
   const tocEntries = buildDocumentationAttachmentEntries(matrix, attachments, projekt, geraetelisten, leistungsbereiche);
   const tocByAttachmentId = new Map(tocEntries.map((entry) => [entry.attachmentId, entry]));
   const rows = await Promise.all(normalizeAttachments(attachments).map(async (entry) => {
     const assignedFoto1 = (brandschutz || []).filter((schottung) => schottung.foto_vorher === entry.relativePath);
     const assignedFoto2 = (brandschutz || []).filter((schottung) => schottung.foto_nachher === entry.relativePath);
     const tocEntry = tocByAttachmentId.get(entry.id);
-    const exists = await fileExistsForAttachment(entry.relativePath);
+    const exists = await fileExistsForAttachment(entry.relativePath, files);
     const isPdf = entry.mimeType === "application/pdf";
     const isImage = entry.mimeType.startsWith("image/");
 
@@ -444,7 +481,7 @@ async function loadCurrent(req) {
 
   return {
     files,
-    projekt,
+    projekt: bindProjectScope(projekt, req.user.id, files.projectId),
     leistungsbereiche: {
       optionen: leistungsbereiche.optionen || DEFAULT_LEISTUNGSBEREICHE,
       aktiv: leistungsbereiche.aktiv || [],
@@ -559,12 +596,14 @@ app.get("/login", (req, res) => {
   res.render("login", { flash: flashFromQuery(req) });
 });
 
-app.post("/login", (req, res) => {
+app.post("/login", authLimiter.check, (req, res) => {
   try {
     const user = loginUser(req.body.email, req.body.password);
+    authLimiter.succeeded(req);
     startSession(res, user.id);
     res.redirect("/dashboard");
   } catch (error) {
+    authLimiter.failed(req);
     redirectWithFlash(res, "/login", "error", error.message);
   }
 });
@@ -574,7 +613,7 @@ app.get("/register", (req, res) => {
   res.render("register", { flash: flashFromQuery(req) });
 });
 
-app.post("/register", (req, res) => {
+app.post("/register", authLimiter.registration, (req, res) => {
   try {
     const user = registerUser(req.body);
     startSession(res, user.id);
@@ -590,6 +629,10 @@ app.post("/logout", (req, res) => {
 });
 
 app.use(blockViewerWrites);
+app.use((req,res,next) => {
+  if (!["GET","HEAD","OPTIONS"].includes(req.method) && (req.path.startsWith("/einstellungen") || /^\/geraetelisten\/[^/]+\/vorlagen$/.test(req.path))) return requireSystemAdmin(req,res,next);
+  next();
+});
 
 // * INFO: Dashboard: fasst Projektfortschritt, fehlende Angaben und nächste Schritte zusammen.
 app.get("/dashboard", requireAuth, async (req, res, next) => {
@@ -655,8 +698,8 @@ app.post("/projekte/:projectId/loeschen", requireAuth, async (req, res) => {
 
 app.post("/projekte/:projectId/exportieren", requireAuth, async (req, res) => {
   try {
-    await exportProject(ROOT_DIR, req.params.projectId, req.user.id, {});
-    redirectWithFlash(res, "/projekte", "success", "Projektpaket wurde vorbereitet.");
+    const result = await exportProject(ROOT_DIR, req.params.projectId, req.user.id, {});
+    redirectWithFlash(res, "/projekte", result.complete ? "success" : "warning", result.complete ? "Projektpaket wurde geprüft und erstellt." : "Projektpaket mit Hinweisen erstellt. Fehlende Quelldateien und separat erhaltene Alt-Ausgaben stehen im Manifest.");
   } catch (error) {
     fail(req, res, "/projekte", error);
   }
@@ -1490,8 +1533,8 @@ app.get("/projektarchiv", requireAuth, async (req, res, next) => {
 
 app.post("/projektarchiv/exportieren", requireAuth, async (req, res) => {
   try {
-    await exportProject(ROOT_DIR, req.body.projectId || res.locals.currentProjectId, req.user.id, req.body);
-    redirectWithFlash(res, "/projektarchiv", "success", "Projektpaket wurde exportiert.");
+    const result = await exportProject(ROOT_DIR, req.body.projectId || res.locals.currentProjectId, req.user.id, Object.fromEntries(["includeUploads","includeGenerated","includeFinal","createZip"].map(key => [key, req.body[key] === "on"])));
+    redirectWithFlash(res, "/projektarchiv", result.complete ? "success" : "warning", result.complete ? "Projektpaket wurde geprüft und exportiert." : "Projektpaket mit Hinweisen erstellt. Nicht enthaltene Bereiche, bereits fehlende Quelldateien und separat erhaltene Alt-Ausgaben stehen im Manifest.");
   } catch (error) {
     fail(req, res, "/projektarchiv", error);
   }
@@ -1501,7 +1544,7 @@ app.post("/projektarchiv/validieren", requireAuth, async (req, res) => {
   const { validateProjectArchive, storagePaths } = require("./services/projectArchiveService");
   const importOrdner = req.body.importOrdner || "projekt_export";
   try {
-    const validation = await validateProjectArchive(safeJoin(storagePaths(ROOT_DIR).importsDir, importOrdner));
+    const validation = await validateProjectArchive(await resolveImportDirectory(ROOT_DIR, req.user.id, importOrdner));
     res.render("projektarchiv", {
       active: "projektarchiv",
       currentProjectId: res.locals.currentProjectId,
@@ -1525,8 +1568,7 @@ app.post("/projektarchiv/importieren", requireAuth, async (req, res) => {
 
 app.get("/projektarchiv/download", requireAuth, async (req, res, next) => {
   try {
-    const filePath = safeJoin(ROOT_DIR, req.query.pfad || "");
-    await fsp.access(filePath);
+    const filePath = await resolveArchiveDownload(ROOT_DIR, req.user.id, req.query.pfad || "");
     res.download(filePath);
   } catch (error) {
     next(error);
@@ -1547,7 +1589,7 @@ app.get("/anhaenge", requireAuth, async (req, res, next) => {
     ];
     const selectedKategorie = attachmentCategories.includes(req.query.kategorie) ? req.query.kategorie : attachmentCategories[0];
     const categoryDefaults = defaultDocumentMetaForCategory(selectedKategorie);
-    const attachmentView = await buildAttachmentViewModel(data.anhaenge, data.brandschutz, data.matrix, data.projekt, data.geraetelisten, data.leistungsbereiche);
+    const attachmentView = await buildAttachmentViewModel(data.anhaenge, data.brandschutz, data.matrix, data.projekt, data.geraetelisten, data.leistungsbereiche, data.files);
     const attachmentRows = attachmentView.rows
       .filter((entry) => entry.category === selectedKategorie)
       .sort((a, b) => {
@@ -1672,7 +1714,7 @@ app.post("/anhaenge/:id/loeschen", requireAuth, async (req, res) => {
     const files = await currentFiles(req);
     const attachments = normalizeAttachments(await readJson(files.anhaenge, []));
     const target = attachments.find((entry) => entry.id === req.params.id);
-    const nextAttachments = await deleteAttachment(ROOT_DIR, attachments, req.params.id);
+    const nextAttachments = await deleteAttachment(ROOT_DIR, attachments, req.params.id, files);
     await writeJson(files.anhaenge, nextAttachments);
 
     if (target) {
@@ -1724,7 +1766,7 @@ app.get("/anhaenge/download", requireAuth, async (req, res, next) => {
       return;
     }
 
-    const filePath = safeJoin(ROOT_DIR, target.relativePath);
+    const filePath = await resolveAttachmentFile(ROOT_DIR, files, target.relativePath);
     res.download(filePath, target.fileName || target.originalName);
   } catch (error) {
     next(error);
@@ -1743,9 +1785,9 @@ app.get("/anhaenge/preview", requireAuth, async (req, res, next) => {
 
     // ! WICHTIG: Die Vorschau liefert nur Dateien aus der aktuellen Projektablage.
     // * INFO: safeJoin verhindert freie Serverpfade aus Benutzerinput.
-    const filePath = safeJoin(ROOT_DIR, target.relativePath);
+    const filePath = await resolveAttachmentFile(ROOT_DIR, files, target.relativePath);
     const previewName = target.fileName || target.originalName || "anhang";
-    res.type(target.mimeType || "application/octet-stream");
+    res.type(await attachmentPreviewMime(filePath));
     res.setHeader("Content-Disposition", `inline; filename="${previewName.replace(/"/g, "")}"`);
     res.sendFile(filePath);
   } catch (error) {
@@ -1764,11 +1806,15 @@ app.use((req, res) => {
 
 app.use((error, req, res, _next) => {
   console.error(error);
-  res.status(500).render("placeholder", {
+  if (res.headersSent) return _next(error);
+  const status = error.status || 500;
+  const message = error.code && !["WRITE_FAILED","READ_FAILED"].includes(error.code) ? "Die Datei konnte nicht verarbeitet werden. Bitte die Eingabe und Zugriffsrechte prüfen." : error.message || "Ein unerwarteter Fehler ist aufgetreten.";
+  if ((req.headers.accept || "").includes("application/json")) return res.status(status).json({ ok: false, error: message });
+  res.status(status).render("placeholder", {
     active: "",
     title: "Fehler",
     heading: "Fehler",
-    text: error.message || "Ein unerwarteter Fehler ist aufgetreten."
+    text: message
   });
 });
 

@@ -17,6 +17,7 @@
 
       <%# Interne Tabs gruppieren Stammdaten logisch, bleiben aber Teil eines Formulars. %>
       <form action="/projekt" method="post" data-tabs="projekt" data-autosave class="tab-shell">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
         <div class="tabs" role="tablist" aria-label="Projektbereiche">
           <button class="tab-button" type="button" data-tab-target="basis">Basisdaten</button>
           <button class="tab-button" type="button" data-tab-target="auftrag">Auftrag</button>

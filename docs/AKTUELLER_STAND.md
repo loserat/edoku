@@ -4,7 +4,21 @@ Stand: 2026-10-30
 
 Diese Datei fasst zusammen, wo das Projekt gerade steht und wo wir sinnvoll weiterarbeiten sollten.
 
-## Aktuelle lokale Weiterentwicklung
+## Sicherheits- und Archivkorrekturen vom 30.10.2026
+
+- Nach vollständiger geprüfter Sicherung in die normale lokale Anwendung auf Port 3000 übernommen; vorhandene Projektdateien, Einstellungen und Datenbankinhalte unverändert.
+- Begrenzte Archiv-/Anhangsdownloads, Prüfung tatsächlicher Dateitypen und Abweisung von Symlink-Umgehungen.
+- Neue Ausgabeablage nach Benutzer-/Projektkennung; alte gemeinsame Ausgaben bleiben auf ausdrücklichen Benutzerwunsch separat historisch erhalten.
+- Signierter CSRF-Schutz, Login-/Registrierungsbegrenzung und serverseitige Rollenprüfung für globale Änderungen.
+- Atomare JSON-Speicherung, Fehlerweitergabe und Erhalt vorheriger PDFs/finaler Exporte.
+- Echte Projekt-ZIPs, Prüfsummen, sichere Rückimporte mit umgesetzten Pfaden und Kennungsschutz.
+- 38 automatisierte Prüfungen erfolgreich. In einer konsistenten echten Datenkopie: alle acht nicht gelöschten Projekte erfolgreich exportiert und rückimportiert, ohne ursprüngliche Projektdateien oder bestehende Datenbankzeilen zu verändern.
+- Start, sechs öffentliche und zwölf angemeldete Seiten mit Datenkopie geprüft; Dateien und Datenbank unverändert. Private Nachweise und Vollsicherungen bleiben lokal unter `backups/`.
+- Bereits fehlende Logos/Fotos werden als Quelllücken dokumentiert; keine erfundenen Dateien und keine automatische Änderung bestehender Projekteinträge.
+
+Details: [Zugriffsschutz](SICHERHEIT.md), [Projektarchive](PROJEKTARCHIVE.md), [Tests](TESTS.md).
+
+## Zuvor übernommene Gestaltung und Exportzählung
 
 - Design, App-Icon und gemeinsame Ansichtsbausteine überarbeitet.
 - Kapitel- und Exportzählung vereinheitlicht; Details in `docs/TECHNIK.md`.
@@ -16,7 +30,7 @@ Diese Datei fasst zusammen, wo das Projekt gerade steht und wo wir sinnvoll weit
 - Bestehende Konten werden beim Neustart nicht zurückgesetzt; reine Seitenaufrufe ändern keine Projektzeitstempel und speichern keine Systemauswahl.
 - Sicherung und lokale Nachweise: `backups/2026-10-30_uebernahme-edoku-6hmt5og/UEBERNAHME.md` (von Git und Docker-Builds ausgeschlossen).
 - Paketversion bleibt `0.1.0-beta.1`; die Weiterentwicklung ist kein neuer getaggter Release.
-- Weitere Sicherheits- und Projektarchivprobleme bleiben offen; die lokale Übernahme ist keine Freigabe für öffentlichen Serverbetrieb.
+- Die anschließenden Sicherheits-/Archivkorrekturen stehen im oberen Abschnitt; die lokale Übernahme ist keine Freigabe für öffentlichen Serverbetrieb.
 
 ## Kurzstatus
 
@@ -61,9 +75,9 @@ Der aktuelle Stand ist noch nicht als final gehärtete Produktivversion zu bewer
 
 ## Nächste Arbeitspakete
 
-1. Archivdownloads, Benutzertrennung der Ausgaben und zuverlässige Fehlermeldungen beim Speichern absichern. Projektpakete auf Vollständigkeit prüfen.
+1. Zentrale Audit-Protokollierung, externe Sicherung und automatisierte Wiederherstellung ergänzen. Historische Dateibestände bei Bedarf bewusst zuordnen.
 2. Neue Kapitel-/Seitenzählung und Inhaltsverzeichnis mit echten Anhängen fachlich und visuell abnehmen; ZIP-Inhalte und Druckvorlagen praktisch prüfen.
-3. Rechte-/Rollenmodell systematisch testen, CSRF-/Login-Schutz und ein wiederholbares Backup-/Restore-Verfahren ergänzen.
+3. Browser-/Proxy- und Fachtestabdeckung über die umgesetzten Rechte-, CSRF- und Login-Kernfälle hinaus erweitern.
 4. Liegenschaften und Gebäude additiv einführen. Die spätere Objektstruktur vorbereiten, ohne bestehende Projektdaten automatisch umzubauen.
 
 Klickbare Inhaltsverzeichnisse und das Einrechnen externer PDF-Seiten sind

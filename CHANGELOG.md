@@ -6,6 +6,17 @@ Das Format orientiert sich an Keep a Changelog. Die Versionierung folgt semantis
 
 ## Unreleased
 
+### Sicherheit und Projektarchive
+
+- Archivdownloads auf eigene Manifest-/ZIP-Dateien begrenzt; Datei- und Symlinkgrenzen für Vorschauen, Anhänge und Pakete ergänzt.
+- Ausgabeablage von sichtbaren Namen auf stabile Benutzer-/Projektkennungen umgestellt; Altbestände bleiben unverändert und eindeutig zuordenbare Dateien lesbar. Gemeinsame Alt-Ausgaben bleiben auf Benutzerwunsch separat historisch erhalten.
+- Signierte CSRF-Tokens für Formulare, Auto-Save und Uploads; Login-/Registrierungsbegrenzung und Systemadmin-Grenzen für globale Änderungen.
+- Atomare JSON-Speicherung und Fehlerweitergabe; vorherige PDFs/fertige Exporte sowie entfernte Anhänge bleiben in privaten Rückfallebenen erhalten.
+- Echte Streaming-ZIPs und Paketformat 2.0 mit Prüfsummen, tatsächlichen Anhängen und sicheren Rückimporten ohne Überschreiben vorhandener Projekte.
+- Alte Exportindizes bleiben als passive Begleitmetadaten erhalten; fehlende ursprüngliche Quellen werden ausdrücklich dokumentiert.
+- 17 zusätzliche Sicherheits-/Archivprüfungen; insgesamt 38 erfolgreich. Alle acht nicht gelöschten Projekte in einer echten Datenkopie erfolgreich exportiert und rückimportiert, ursprüngliche Dateien und bestehende Datenbankzeilen unverändert.
+- Anleitungen zu Zugriffsschutz, Archivformat und Wiederherstellung ergänzt.
+
 ### Geändert
 
 - README mit fünf Screenshots aus einer getrennten Demo-Installation ergänzt; Release Notes, Installation, Arbeitsstand und offene Punkte aktualisiert.

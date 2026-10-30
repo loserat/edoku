@@ -8,16 +8,18 @@ Diese Datei sammelt offene Aufgaben, bekannte Beta-Einschränkungen und sinnvoll
 
 ### Datenzugriff und zuverlässiges Speichern absichern
 
-Status: offen; durch die lokale Design-/Exportübernahme nicht behoben
+Status: umgesetzt und getestet am 30.10.2026
 
-- Archivdownloads auf das erlaubte Exportverzeichnis und den angemeldeten Benutzer begrenzen. Die bisherige Begrenzung auf das Anwendungsverzeichnis allein reicht nicht.
-- Generierte Ausgaben nach Benutzer und Projekt isolieren; gleiche Projektnummern dürfen keine gemeinsamen Ausgabepfade erzeugen.
-- Schreibfehler aus `writeJson` bis zur Oberfläche weitergeben. Eine fehlgeschlagene Speicherung darf keine Erfolgsmeldung anzeigen.
-- Projektpakete auf Vollständigkeit prüfen: tatsächliche Ablage von Uploads und Ausgaben mit dem Paketexport abgleichen. Der ZIP-Download des Projektarchivs ist noch nicht vollständig umgesetzt und ersetzt keine Vollsicherung.
+- Archivdownloads sind auf Manifest/ZIP des eigenen Benutzerprojekts beschränkt; Pfad- und Symlinkprüfungen greifen serverseitig.
+- Neue Ausgaben liegen unter stabilen Benutzer-/Projektkennungen. Gemeinsam genutzte Alt-Ausgaben bleiben entsprechend der Benutzerentscheidung separat historisch erhalten.
+- JSON-Speicherung erfolgt atomar je Datei; Fehler werden bis zur Oberfläche weitergereicht. Beschädigte bestehende Dateien werden nicht still durch leere Werte ersetzt.
+- Projektpakete erfassen die tatsächliche Anhangsablage und erstellen echte ZIPs mit Dateiinventar und Prüfsummen. Rückimporte prüfen Kopien und setzen Zielpfade um, ohne bestehende Projekte zu überschreiben.
+- Fehlende ursprüngliche Quelldateien und ausgelassene historische Bereiche werden ausdrücklich als Hinweise dokumentiert.
+- PDF-Vorgänger und letzte fertige Exporte bleiben erhalten; fehlerhafte finale Ausgaben ersetzen keine fertige Dokumentation.
+- Start-/Seitenaufrufe erhalten bestehende Konten und Projektdaten.
 
-Bereits behoben und getestet: Neustarts setzen bestehende Konten nicht zurück,
-vorhandene Datenbanken werden nicht erneut aus Altdaten befüllt, reine
-Seitenaufrufe schreiben keine vorhandenen Projektzeitstempel oder Systemauswahl.
+Details: [SICHERHEIT.md](SICHERHEIT.md), [PROJEKTARCHIVE.md](PROJEKTARCHIVE.md).
+Eine Vollsicherung und ein automatisiertes externes Restore-Verfahren bleiben erforderlich.
 
 ### PDF-Gesamtdokumentation final prüfen
 
@@ -79,7 +81,7 @@ Umgesetzt, mit Prüfprojekten getestet:
 
 ### Rechte- und Benutzerverwaltung härten
 
-Status: offen
+Status: zentrale Grenzen umgesetzt und automatisiert geprüft; weitere Abdeckung offen
 
 Das Rollenmodell mit `viewer`, `user`, `admin` und `systemadmin` ist vorhanden. Für produktivere Nutzung muss die Rechteprüfung weiter systematisch getestet und gehärtet werden.
 
@@ -343,9 +345,9 @@ Die Anwendung ist als Beta vorbereitet, aber noch nicht als bezahltes produktive
 
 Offen:
 
-- Rechteprüfung systematisch automatisiert testen.
-- CSRF-Schutz für schreibende Formular- und API-Aktionen prüfen.
-- Rate-Limits für Login und API ergänzen.
+- Rechteprüfung über die bereits automatisierten Kernfälle hinaus erweitern.
+- Weitere Browser-/Proxy-Konstellationen für den umgesetzten CSRF-Schutz prüfen.
+- Verteilte Rate-Limits und spätere produktive API-Nutzung planen; Login-/Registrierungsgrenzen je Prozess sind umgesetzt.
 - Sichere Produktions-ENV dokumentieren.
 - Backup-/Restore-Konzept für SQLite und projektbezogene Dateien definieren.
 - Audit-Log für kritische Systemadmin-Aktionen prüfen.
@@ -370,7 +372,9 @@ Status: gezielte Export- und Datenerhalt-Prüfungen vorhanden; weitere Abdeckung
 
 18 gezielte Kapitel-/Exporttests sind über `npm run test:exports` vorhanden,
 drei weitere Datenerhalt-Prüfungen über `npm run test:preservation`.
-Alle 21 Prüfungen sind im eingesetzten Node-20-Abbild erfolgreich.
+Weitere 17 Sicherheits-/Archivprüfungen sind über `npm run test:security` vorhanden.
+Alle 38 Prüfungen sind im geprüften Node-20-Abbild erfolgreich.
+In einer echten Datenkopie wurden alle acht nicht gelöschten Projekte exportiert und unter neuer Kennung rückimportiert; bestehende Projektdateien und Datenbankzeilen blieben unverändert.
 Anleitung, Prüfumfang und Grenzen stehen in [TESTS.md](TESTS.md).
 Eine vollständige Test-Suite für alle Fachbereiche fehlt weiterhin.
 

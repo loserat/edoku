@@ -18,6 +18,7 @@
         <p class="auth-subtitle">Erstelle dein Konto und beginne mit deiner Dokumentation.</p>
         <%- include("partials/flash", { flash }) %>
         <form action="/register" method="post" class="stack-form">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
           <label>
             <span>Name</span>
             <input type="text" name="name" autocomplete="name" required>

@@ -12,7 +12,7 @@ Die Anwendung ist so aufgebaut, dass sie lokal auf einem Rechner laufen kann, ab
 - `services/` enthält fachliche und technische Hilfsdienste.
 - JSON-Zugriffe laufen über robuste Lese-/Schreibfunktionen.
 - Dateipfade werden mit `path.join` und kontrollierten Projektpfaden aufgebaut.
-- Projektdateien werden über Projekt- und Benutzerkennungen aufgelöst. Die Rechtebegrenzung für Archivdownloads und die Benutzertrennung generierter Ausgaben sind noch nicht vollständig abgesichert; siehe `docs/OFFENE_PUNKTE.md`.
+- Projektdateien und neue Ausgaben werden über Benutzer-/Projektkennungen aufgelöst. Archivdownloads und Dateivorschauen prüfen Benutzergrenzen, Dateitypen und Symlinks; siehe `docs/SICHERHEIT.md`.
 
 ## Datenhaltung
 
@@ -164,7 +164,7 @@ Nicht ins Repository gehören:
 
 - Rollen- und Rechteverwaltung ist Beta und muss vor produktiver Nutzung weiter geprüft werden
 - keine produktive Webserver-Härtung
-- 21 gezielte automatisierte Prüfungen; eine vollständige Fach-, Rechte- und Browser-Testabdeckung fehlt
+- 38 gezielte automatisierte Prüfungen; eine vollständige Fach-, Browser- und Betriebsabnahme fehlt
 - PDF-Gesamtdatei, ZIP-Export und Archivstruktur weiter im Praxistest prüfen
 - fachliche Texte und Normbezüge müssen weiter geprüft werden
 
@@ -211,7 +211,7 @@ Prüfung: `npm run test:exports`. Die 18 gezielten Prüfungen umfassen unter
 anderem Nummernkollisionen, abgewählte Kapitel, mehrere Gerätelisten,
 mehrseitige Anhänge, ungültige PDFs, alte Zuordnungen, Dateireihenfolge und ein
 dreiseitiges Inhaltsverzeichnis mit 56 überprüften internen Sprunglinks.
-Projektarchiv/Backup und Sicherheitsbefunde sind separate offene Arbeitspakete.
+Sicherheits- und Archivkorrekturen stehen in `SICHERHEIT.md` und `PROJEKTARCHIVE.md`; externe Vollsicherung und Betriebsabnahme bleiben offen.
 
 ## Datenerhalt bei der lokalen Übernahme (2026-10-30)
 
@@ -245,3 +245,18 @@ ein allgemeines automatisiertes Backup-/Wiederherstellungssystem bleibt offen.
 Reproduzierbare Prüfschritte stehen in [TESTS.md](TESTS.md), das Vorgehen für
 weitere lokale Updates in [UPDATE.md](UPDATE.md). Private Sicherungen und
 Prüfprotokolle werden nicht veröffentlicht.
+
+## Sicherheits- und Archivstruktur
+
+- `requestSecurityService.js`: signierte sitzungsgebundene CSRF-Tokens, Ursprungsprüfung, Login-/Registrierungsbegrenzung und Weitergabe asynchroner Routenfehler.
+- `projectService.js`: nur im Speicher gebundener Projektkontext, neue stabile Ausgabeablage und eindeutige, rein lesende Altbestandszuordnung.
+- `pathService.js`: lexikalische Pfadgrenzen plus Prüfung der Dateisystemkomponenten auf Symlinks/Spezialdateien.
+- `projectPackageService.js`: Paketformat 2.0, tatsächliche Dateiinventare, Prüfsummen, benutzerbezogene Import-/Exportpfade und konfliktfreie Rückimporte.
+- `zipService.js`: Streaming-ZIP mit geprüften relativen Einträgen und Größenlimits, ohne neue Laufzeitabhängigkeit.
+- `jsonService.js`: synchronisierte temporäre Dateien und anschließender Austausch; Fehler statt stiller Erfolgsmeldung.
+
+Neue Ausgaben liegen unter `storage/users/<Benutzer-ID>/projects/<Projekt-ID>/output/`.
+Bestehende Ordner werden weder umbenannt noch automatisch migriert. Historische
+Mehrfachzuordnungen werden nicht als neue Dateirechte verwendet. Originale
+abgeleiteter Exportindizes bleiben in Archiv-Begleitmetadaten erhalten;
+importierte aktive Indizes werden neu aufgebaut.

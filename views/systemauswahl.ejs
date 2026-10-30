@@ -56,6 +56,7 @@
 
         <section class="tab-panel" data-tab-panel="bearbeiten">
           <form action="/systemauswahl" method="post" data-autosave>
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
             <% systemConfig.leistungsbereiche.forEach((bereich, index) => { %>
               <% const selection = selections.get(bereich.name) || {}; %>
               <% const selectedHersteller = (bereich.hersteller || []).find((hersteller) => hersteller.name === selection.hersteller) || (bereich.hersteller || [])[0] || {}; %>
