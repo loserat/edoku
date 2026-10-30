@@ -32,6 +32,9 @@ function createCsrfProtection(secret = crypto.randomBytes(32)) {
       const targetOrigin = process.env.APP_ORIGIN || `${req.protocol}://${req.get("host")}`;
       if (req.get("sec-fetch-site") === "cross-site" || (origin && origin !== new URL(targetOrigin).origin)) throw forbidden("Anfrage von einer anderen Website abgewiesen.");
       if (typeof token !== "string" || !/^[a-f0-9]{64}$/.test(token) || !crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expected))) throw forbidden("Die Sicherheitsprüfung ist abgelaufen. Bitte die Seite neu laden und erneut speichern.");
+      // Der Token gehört zur Anfrage und darf nicht durch allgemeine Formularspeicherung persistiert werden.
+      if (req.body && !Buffer.isBuffer(req.body)) delete req.body._csrf;
+      if (req.multipartUpload?.fields) delete req.multipartUpload.fields._csrf;
       next();
     } catch (error) { next(error); }
   };

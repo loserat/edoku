@@ -76,7 +76,7 @@ gleiche Projektnamen, Symlinks, manipulierte Archive, HTTP-Rechte, CSRF,
 Sitzungsentzug, Speicherfehler und Exportabbrüche. Änderungen an bestehenden
 Projekten werden zusätzlich in einer getrennten Datenkopie geprüft.
 
-Noch offen bleiben insbesondere zentrale Audit-Protokollierung, verteilte
+Ein lokales Sicherheitsprotokoll ist umgesetzt; Details und Grenzen stehen in [BETA_BETRIEB.md](BETA_BETRIEB.md). Noch offen bleiben insbesondere verteilte
 Rate-Limits, systematische Prüfung aller Browser-/Uploadvarianten, ein
 automatisiertes externes Backup-/Restore-System und die vollständige Härtung
 eines öffentlichen Serverbetriebs. Vorhandene lokale Demo-Zugänge wurden

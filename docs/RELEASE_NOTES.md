@@ -1,5 +1,13 @@
 # Release Notes
 
+## Lokaler Beta-Betrieb – 30.10.2026
+
+- Sicherheitsprotokoll für kritische Verwaltungsaktionen mit Versuchs-/Ergebnisdatensätzen, Hash-Verkettung und Systemadmin-Ansicht; keine Formularinhalte oder Zugangsdaten.
+- Vollsicherung aller fünf Laufzeitordner einschließlich SQLite, Einstellungen, Medien, Ausgaben und historischem Bestand; Docker-Abbild inklusive. Wiederherstellung ausschließlich in einen neuen Ordner und mit Prüfsummenprüfung.
+- Formular-Sicherheitstoken werden nach der Prüfung entfernt, bevor allgemeine Projektformulare gespeichert werden. Bestehende Dateien werden nicht migriert.
+- Reproduzierbares Node-22-Abbild mit `npm ci`; GitHub-Prüfung und 52 automatische Tests einschließlich vollständigem PDF-/ZIP-/Archiv-Ablauf.
+- Betriebsanleitung: [BETA_BETRIEB.md](BETA_BETRIEB.md).
+
 ## Entwicklungsstand 2026-10-30 (noch kein neuer Release-Tag)
 
 ### Sicherheits- und Archivnachtrag

@@ -34,7 +34,7 @@ docker compose logs -f
 
 ## Start ohne Docker
 
-Voraussetzung: Node.js 20 oder neuer.
+Voraussetzung: Node.js 22.
 
 ```bash
 npm install

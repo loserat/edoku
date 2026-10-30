@@ -59,6 +59,10 @@ Die Sicherung und privaten Vorher/Nachher-Nachweise bleiben lokal. Ein
 allgemein getesteter automatisierter Wiederherstellungsablauf, externe
 Sicherung und regelmäßige Aufbewahrungskontrolle sind weiterhin offen.
 
+## Werkzeug für vollständige Sicherung und getrennte Wiederherstellung
+
+Das neue Werkzeug übernimmt Anhalten, vollständige Kopie aller fünf Laufzeitordner, Docker-Abbild, Prüfsummen und Wiederanlauf. Die Wiederherstellung ist ausschließlich in einen neuen Ordner erlaubt. Befehle, Datenschutz und Grenzen stehen in [BETA_BETRIEB.md](BETA_BETRIEB.md). Ein Projektpaket ersetzt diese Vollsicherung weiterhin nicht.
+
 ## Sicherheits-/Archivstand vom 30.10.2026
 
 Die neue Ausgabeablage benötigt keine automatische Datenmigration. Gemeinsam

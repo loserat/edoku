@@ -145,7 +145,7 @@ Importierte Dateien werden serverseitig mit einem logischen Dateinamen aus Kateg
 
 Die Anwendung ist über `Dockerfile` und `docker-compose.yml` startbar. Persistente lokale Ordner werden als Volumes eingebunden.
 
-Der Container nutzt Node.js 20. Für lokale Entwicklung sollte ebenfalls Node.js 20 oder neuer verwendet werden.
+Der Container nutzt Node.js 22. Für lokale Entwicklung sollte ebenfalls Node.js 22 verwendet werden.
 
 ## GitHub-Upload
 
@@ -164,7 +164,7 @@ Nicht ins Repository gehören:
 
 - Rollen- und Rechteverwaltung ist Beta und muss vor produktiver Nutzung weiter geprüft werden
 - keine produktive Webserver-Härtung
-- 38 gezielte automatisierte Prüfungen; eine vollständige Fach-, Browser- und Betriebsabnahme fehlt
+- 52 gezielte automatisierte Prüfungen; eine vollständige Fach-, Browser- und Betriebsabnahme fehlt
 - PDF-Gesamtdatei, ZIP-Export und Archivstruktur weiter im Praxistest prüfen
 - fachliche Texte und Normbezüge müssen weiter geprüft werden
 
@@ -211,7 +211,7 @@ Prüfung: `npm run test:exports`. Die 18 gezielten Prüfungen umfassen unter
 anderem Nummernkollisionen, abgewählte Kapitel, mehrere Gerätelisten,
 mehrseitige Anhänge, ungültige PDFs, alte Zuordnungen, Dateireihenfolge und ein
 dreiseitiges Inhaltsverzeichnis mit 56 überprüften internen Sprunglinks.
-Sicherheits- und Archivkorrekturen stehen in `SICHERHEIT.md` und `PROJEKTARCHIVE.md`; externe Vollsicherung und Betriebsabnahme bleiben offen.
+Sicherheits- und Archivkorrekturen stehen in `SICHERHEIT.md` und `PROJEKTARCHIVE.md`; Vollsicherung und getrennte Wiederherstellung stehen in `BETA_BETRIEB.md`; externe Aufbewahrung und Betriebsabnahme bleiben offen.
 
 ## Datenerhalt bei der lokalen Übernahme (2026-10-30)
 
@@ -240,7 +240,7 @@ Der Nachweis liegt lokal unter
 `backups/2026-10-30_uebernahme-edoku-6hmt5og/UEBERNAHME.md`.
 Die Sicherung liegt außerhalb der Laufzeitordner und wird weder in Git noch in
 Docker-Abbilder aufgenommen. Dies ist eine geprüfte lokale Einzelsicherung;
-ein allgemeines automatisiertes Backup-/Wiederherstellungssystem bleibt offen.
+das neue lokale Sicherungswerkzeug und dessen Grenzen stehen in `BETA_BETRIEB.md`.
 
 Reproduzierbare Prüfschritte stehen in [TESTS.md](TESTS.md), das Vorgehen für
 weitere lokale Updates in [UPDATE.md](UPDATE.md). Private Sicherungen und
