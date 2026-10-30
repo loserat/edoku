@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="de">
+  <head><%- include("partials/head", { pageTitle: "Sicherheitsprotokoll" }) %></head>
+  <body>
+    <%- include("partials/header", { active: "einstellungen" }) %>
+    <main id="main-content" tabindex="-1" class="page wide">
+      <%- include("partials/sectionTabs", { active: "audit" }) %>
+      <div class="page-title"><p class="eyebrow">System</p><h1>Sicherheitsprotokoll</h1><p>Verwaltungsaktionen und ihre Ergebnisse. Formularinhalte und Zugangsdaten werden nicht gespeichert.</p></div>
+      <% if (auditError) { %><p class="notice error"><%= auditError %></p><% } %>
+      <p><%= events.length %> letzte Einträge · Versuche und Ergebnisse werden getrennt aufgezeichnet.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Zeit</th><th>Aktion</th><th>Konto</th><th>Projekt</th><th>Ergebnis</th></tr></thead>
+        <tbody>
+          <% if (!events.length) { %><tr><td colspan="5">Noch keine protokollierten Aktionen.</td></tr><% } %>
+          <% events.forEach(event => { %><tr>
+            <td><%= new Date(event.time).toLocaleString("de-DE", { timeZone: "Europe/Berlin" }) %></td>
+            <td><%= event.label %></td><td><%= event.actorName %></td><td><%= event.projectId || "–" %></td><td><%= event.resultLabel %></td>
+          </tr><% }) %>
+        </tbody>
+      </table></div>
+    </main>
+    <%- include("partials/footer") %><script src="/js/app.js"></script>
+  </body>
+</html>

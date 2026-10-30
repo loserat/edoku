@@ -19,7 +19,7 @@ Status: umgesetzt und getestet am 30.10.2026
 - Start-/Seitenaufrufe erhalten bestehende Konten und Projektdaten.
 
 Details: [SICHERHEIT.md](SICHERHEIT.md), [PROJEKTARCHIVE.md](PROJEKTARCHIVE.md).
-Eine Vollsicherung und ein automatisiertes externes Restore-Verfahren bleiben erforderlich.
+Vollsicherung und getrennte Wiederherstellung sind umgesetzt, siehe [BETA_BETRIEB.md](BETA_BETRIEB.md). Eine zusätzliche externe Sicherung und regelmäßige Wiederherstellungsproben bleiben Betriebsaufgaben.
 
 ### PDF-Gesamtdokumentation final prüfen
 
@@ -349,8 +349,8 @@ Offen:
 - Weitere Browser-/Proxy-Konstellationen für den umgesetzten CSRF-Schutz prüfen.
 - Verteilte Rate-Limits und spätere produktive API-Nutzung planen; Login-/Registrierungsgrenzen je Prozess sind umgesetzt.
 - Sichere Produktions-ENV dokumentieren.
-- Backup-/Restore-Konzept für SQLite und projektbezogene Dateien definieren.
-- Audit-Log für kritische Systemadmin-Aktionen prüfen.
+- Externe Aufbewahrung und regelmäßige Proben für das vorhandene Vollsicherungs-/Wiederherstellungswerkzeug einrichten.
+- Zentrale Ablage außerhalb des Anwendungsrechners sowie Rotation des vorhandenen lokalen Sicherheitsprotokolls planen.
 
 ### Better Comments
 
@@ -373,7 +373,7 @@ Status: gezielte Export- und Datenerhalt-Prüfungen vorhanden; weitere Abdeckung
 18 gezielte Kapitel-/Exporttests sind über `npm run test:exports` vorhanden,
 drei weitere Datenerhalt-Prüfungen über `npm run test:preservation`.
 Weitere 17 Sicherheits-/Archivprüfungen sind über `npm run test:security` vorhanden.
-Alle 38 Prüfungen sind im geprüften Node-20-Abbild erfolgreich.
+Zusätzlich bestehen fünf Protokolltests, acht Sicherungstests und ein vollständiger HTTP-Ablauf. Alle 52 Prüfungen sind im Node-22-Abbild erfolgreich; GitHub Actions führt sie automatisch aus.
 In einer echten Datenkopie wurden alle acht nicht gelöschten Projekte exportiert und unter neuer Kennung rückimportiert; bestehende Projektdateien und Datenbankzeilen blieben unverändert.
 Anleitung, Prüfumfang und Grenzen stehen in [TESTS.md](TESTS.md).
 Eine vollständige Test-Suite für alle Fachbereiche fehlt weiterhin.

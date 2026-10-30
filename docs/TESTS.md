@@ -1,13 +1,12 @@
 # Tests und Beta-Abnahme
 
-Stand: 2026-10-30. Benötigt Node.js 20 oder neuer und installierte Abhängigkeiten.
+Stand: 2026-10-30. Benötigt Node.js 22, Python 3.11 oder neuer und installierte Abhängigkeiten.
 
 ## Automatisierte Prüfungen
 
 ```bash
-npm run test:exports
-npm run test:preservation
-npm run test:security
+npm run check
+npm test
 ```
 
 Die Tests verwenden temporäre Verzeichnisse, synthetische Konten und
@@ -21,12 +20,12 @@ sauberen Checkout mit neutralen Startdaten bauen:
 
 ```bash
 docker build -t edoku:pruefung .
-docker run --rm --network none --entrypoint node edoku:pruefung --test scripts/export-counting.test.js scripts/update-preservation.test.js scripts/security-archive.test.js
+docker run --rm --network none edoku:pruefung npm test
 ```
 
 Der Testcontainer benötigt keine eingebundenen Laufzeitordner. Bei lokalem
 `npm install` müssen die nativen Abhängigkeiten zu Node-Version und Plattform
-passen; die Prüfung im Node-20-Container vermeidet einen Plattformwechsel.
+passen; die Prüfung im Node-22-Container vermeidet einen Plattformwechsel.
 
 ### Kapitel und Export: 18 Prüfungen
 
@@ -62,7 +61,7 @@ Viewer-/Systemadmin-Grenzen, HTML-Dateien unter falscher MIME-Angabe,
 fehlerhafte Cookies, fehlgeschlagene Speicherziele, Kontosperren und
 Sitzungsentzug nach Passwortänderungen. Finale Exporte werden bei einem
 Publikationsfehler nicht ersetzt; erfolgreiche Vorgänger bleiben erhalten.
-Insgesamt bestehen damit 38 automatisierte Prüfungen.
+Zusammen mit fünf Protokollprüfungen, acht Python-Sicherungsprüfungen und einem vollständigen HTTP-Ablauf bestehen 52 Prüfungen (44 Node.js, acht Python).
 
 Zusätzlich wurden alle acht nicht gelöschten Projekte einer konsistenten
 Kopie der tatsächlichen Installation exportiert und mit neuen Kennungen
@@ -71,6 +70,13 @@ Sitzungs- und Projektzeilen blieben unverändert. Vorhandene fehlende Logos/
 Brandschutzbilder wurden ausdrücklich als Quelllücken dokumentiert;
 gemeinsame Alt-Ausgaben blieben separat. Diese Prüfung erfolgte nur in der
 Kopie, nicht durch neue Exporte in der normalen Anwendung.
+
+### Neue Prüfungen für den lokalen Beta-Betrieb
+
+- `npm run test:audit`: erlaubte Metadaten, parallele Einträge, beschädigte Protokolle, echte HTTP-Ergebnisse und Sperre bei unlesbarer Ablage.
+- `npm run test:backup`: vollständige Kopie und getrennte Wiederherstellung, Prüfsummenfehler, Pfadgrenzen, vorhandene Ziele, falsche Containeranbindungen, Neustart nach Kopierfehler und Erhalt bereits gestoppter Container.
+- `npm run test:e2e`: Anmeldung, neues Projekt, Gerät und zweiseitiger Anhang, Gesamt-PDF mit sechs Seiten aus fünf Einzel-PDFs, ZIP-Inhalte sowie Archiv-Rückimport ohne Änderung des Quellprojekts. Alle Daten sind künstlich.
+- GitHub Actions führt `npm ci`, `npm run check` und `npm test` bei Push auf `main` und Pull Requests aus. Echte Projekte oder Sicherungen werden dabei nicht übertragen.
 
 ### API-Smoke-Test
 
@@ -103,6 +109,10 @@ Abbild überein; Erreichbarkeit und API-Smoke-Test auf Port 3000 waren erfolgrei
 Die privaten Nachweise liegen in der lokalen Sicherung unter `backups/`.
 Datenbanken, Projektdateien, Sitzungen und private Prüfprotokolle werden nicht
 nach GitHub übertragen.
+
+## Vollsicherungsprobe für das lokale Beta-Goal
+
+Die fünf tatsächlichen Laufzeitordner einschließlich des historischen Bestands wurden mit dem neuen Werkzeug bei gestoppter Anwendung gesichert, einschließlich Docker-Abbild. Die Wiederherstellung in ein neues Verzeichnis bestand die Prüfsummen- und Datenbankprüfung. Sowohl die gesicherte alte Version als auch die neue Node-22-Version öffneten mit diesen kopierten Daten sechs öffentliche und zwölf angemeldete Seiten. 758 Dateien außerhalb der operativen SQLite-Dateien sowie sämtliche Datenbankschema-/Tabelleninhalte blieben unverändert. Private Nachweise bleiben ausschließlich lokal.
 
 ## Manuelle Beta-Abnahme
 

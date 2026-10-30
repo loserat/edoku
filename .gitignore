@@ -25,3 +25,6 @@ temp/
 
 # Lokale Datensicherungen niemals veröffentlichen oder ins Image kopieren
 backups/
+__pycache__/
+*.pyc
+test-results/

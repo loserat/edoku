@@ -1,5 +1,13 @@
 # Changelog
 
+## Lokaler Beta-Betrieb – 30.10.2026
+
+- Sicherheitsprotokoll für kritische Verwaltungsaktionen mit Versuchs-/Ergebnisdatensätzen, Hash-Verkettung und Systemadmin-Ansicht; keine Formularinhalte oder Zugangsdaten.
+- Vollsicherung aller fünf Laufzeitordner einschließlich SQLite, Einstellungen, Medien, Ausgaben und historischem Bestand; Docker-Abbild inklusive. Wiederherstellung ausschließlich in einen neuen Ordner und mit Prüfsummenprüfung.
+- Formular-Sicherheitstoken werden nach der Prüfung entfernt, bevor allgemeine Projektformulare gespeichert werden. Bestehende Dateien werden nicht migriert.
+- Reproduzierbares Node-22-Abbild mit `npm ci`; GitHub-Prüfung und 52 automatische Tests einschließlich vollständigem PDF-/ZIP-/Archiv-Ablauf.
+- Betriebsanleitung: [BETA_BETRIEB.md](docs/BETA_BETRIEB.md).
+
 Alle relevanten Änderungen an `edoku` werden hier dokumentiert.
 
 Das Format orientiert sich an Keep a Changelog. Die Versionierung folgt semantischen Versionen mit Beta-Suffix, solange die Anwendung noch nicht produktionsreif freigegeben ist.

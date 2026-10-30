@@ -2,7 +2,7 @@
 <% const projectTabs = ["projekte", "projekt", "leistungsbereiche", "projektarchiv"]; %>
 <% const documentationTabs = ["dokumente", "anhaenge"]; %>
 <% const outputTabs = ["export"]; %>
-<% const systemTabs = ["einstellungen"]; %>
+<% const systemTabs = ["einstellungen", "audit"]; %>
 <% let tabs = []; %>
 <% const selectedCategoryValue = typeof selectedKategorie !== "undefined" ? selectedKategorie : ""; %>
 <% const hasDeviceListTabs = active === "geraetelisten" && typeof deviceListTabs !== "undefined" && Array.isArray(deviceListTabs); %>
@@ -72,7 +72,8 @@
     ["einstellungen", "/einstellungen#leistungsbereiche-admin", "Leistungsbereiche", "list"],
     ["einstellungen", "/einstellungen#ordnerstruktur", "Ordnerstruktur", "folder-tree"],
     ["einstellungen", "/einstellungen#formulare", "Formulare", "file"]
-  ]; %>
+  ];
+  if (typeof user !== "undefined" && user && user.role === "systemadmin") tabs.push(["audit", "/einstellungen/protokoll", "Sicherheitsprotokoll", "shield"]); %>
 <% } %>
 
 <% if (!hasDeviceListTabs && tabs.length) { %>

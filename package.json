@@ -8,7 +8,13 @@
     "smoke:api": "node scripts/smoke-api.js",
     "test:exports": "node --test scripts/export-counting.test.js",
     "test:preservation": "node --test scripts/update-preservation.test.js",
-    "test:security": "node --test scripts/security-archive.test.js"
+    "test:security": "node --test scripts/security-archive.test.js",
+    "test:audit": "node --test scripts/audit.test.js",
+    "test:backup": "python3 -m unittest discover -s scripts -p test_installation_backup.py",
+    "test:e2e": "node --test scripts/local-beta.e2e.test.js",
+    "check": "node scripts/check-source.js",
+    "test": "node --test scripts/export-counting.test.js scripts/update-preservation.test.js scripts/security-archive.test.js scripts/audit.test.js scripts/local-beta.e2e.test.js && npm run test:backup",
+    "backup": "python3 scripts/installation_backup.py"
   },
   "dependencies": {
     "better-sqlite3": "^11.9.1",

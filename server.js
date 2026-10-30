@@ -11,6 +11,8 @@ const {
   initDatabase,
   connection,
   getUserByEmail,
+  getUserById,
+  getProject,
   createUser,
   deleteSessionsForUser,
   listUsers,
@@ -38,6 +40,7 @@ const {
 } = require("./services/projectArchiveService");
 const { createProjectFolder, fileSafeName, bindProjectScope, legacyOutputStatus, resolveProjectSource } = require("./services/projectService");
 const { installAsyncHandlers, createCsrfProtection, createAuthLimiter } = require("./services/requestSecurityService");
+const { createAuditService } = require("./services/auditService");
 const { buildDashboardStats } = require("./services/dashboardService");
 const { buildExportPreview } = require("./services/exportPreviewService");
 const { listPdfPreviewFiles, listFinalExportFiles, resolvePdfPreviewFile, resolveExportDownloadFile } = require("./services/pdfPreviewService");
@@ -126,6 +129,11 @@ const app = express();
 installAsyncHandlers(app);
 app.disable("x-powered-by");
 const authLimiter = createAuthLimiter();
+const audit = createAuditService(ROOT_DIR, { resolveTarget: req => {
+  if (req.params?.userId && getUserById(req.params.userId)) return req.params.userId;
+  if (req.params?.projectId && req.user && getProject(req.user.id,req.params.projectId)) return req.params.projectId;
+  return null;
+} });
 if (["1", "true", "yes", "on"].includes(String(process.env.TRUST_PROXY || "").trim().toLowerCase())) {
   app.set("trust proxy", 1);
 }
@@ -150,6 +158,7 @@ app.use((req,res,next) => {
   if (req.user) res.set("Cache-Control", "no-store");
   next();
 });
+app.use(audit.middleware);
 // Uploads werden einmal begrenzt gelesen; derselbe Parser liefert den CSRF-Token und die Datei.
 app.use((req,res,next) => {
   if (!req.is("multipart/form-data")) return next();
@@ -599,6 +608,7 @@ app.get("/login", (req, res) => {
 app.post("/login", authLimiter.check, (req, res) => {
   try {
     const user = loginUser(req.body.email, req.body.password);
+    res.locals.auditIdentity = { actorId: user.id, actorRole: user.role };
     authLimiter.succeeded(req);
     startSession(res, user.id);
     res.redirect("/dashboard");
@@ -616,6 +626,7 @@ app.get("/register", (req, res) => {
 app.post("/register", authLimiter.registration, (req, res) => {
   try {
     const user = registerUser(req.body);
+    res.locals.auditIdentity = { actorId: user.id, actorRole: user.role };
     startSession(res, user.id);
     res.redirect("/dashboard");
   } catch (error) {
@@ -670,7 +681,8 @@ app.get("/projekte", requireAuth, async (req, res, next) => {
 
 app.post("/projekte", requireAuth, async (req, res) => {
   try {
-    await createProject(ROOT_DIR, DATA_DIR, req.user.id, req.body);
+    const created = await createProject(ROOT_DIR, DATA_DIR, req.user.id, req.body);
+    res.locals.auditIdentity = { targetId: created.projectId };
     redirectWithFlash(res, "/projekt", "success", "Projekt wurde angelegt. Bitte Basisdaten erfassen.");
   } catch (error) {
     fail(req, res, "/projekte", error);
@@ -1217,6 +1229,16 @@ app.get("/einstellungen", requireAuth, async (req, res, next) => {
   }
 });
 
+app.get("/einstellungen/protokoll", requireSystemAdmin, async (req,res) => {
+  const labels = { login: "Anmeldung", registration: "Registrierung", logout: "Abmeldung", "account.create": "Konto angelegt", "account.role": "Kontorolle", "account.status": "Kontostatus", "account.password": "Passwortänderung", "settings.change": "Einstellungen", "archive.export": "Projektpaket exportiert", "archive.import": "Projektpaket importiert", "archive.validate": "Projektpaket geprüft", "documentation.export": "Dokumentation exportiert", "project.create": "Projekt angelegt", "project.open": "Projekt geöffnet", "project.archive": "Projekt archiviert", "project.delete": "Projekt entfernt", "attachment.delete": "Anhang entfernt" };
+  const results = { attempt: "Versuch", success: "Erfolgreich", warning: "Mit Hinweisen", failure: "Abgewiesen / fehlgeschlagen", interrupted: "Unterbrochen" };
+  const users = new Map(listUsers().map(user => [user.id,user.name]));
+  let events=[],auditError="";
+  try { events=(await audit.read()).slice(-200).reverse().map(event => ({ ...event, label: labels[event.event] || "Verwaltungsaktion", actorName: users.get(event.actorId) || event.actorId || "Nicht angemeldet", resultLabel: results[event.outcome] })); }
+  catch { auditError="Das Protokoll ist beschädigt oder nicht lesbar. Bitte eine Kopie sichern und die Protokollablage prüfen."; }
+  res.render("audit",{events,auditError});
+});
+
 app.get("/einstellungen/update-check", requireAuth, async (req, res) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 6000);
@@ -1559,7 +1581,8 @@ app.post("/projektarchiv/validieren", requireAuth, async (req, res) => {
 
 app.post("/projektarchiv/importieren", requireAuth, async (req, res) => {
   try {
-    await importProject(ROOT_DIR, req.body.importOrdner || "projekt_export", req.user.id);
+    const imported = await importProject(ROOT_DIR, req.body.importOrdner || "projekt_export", req.user.id);
+    res.locals.auditIdentity = { targetId: imported.projectId };
     redirectWithFlash(res, "/projekte", "success", "Projekt wurde importiert.");
   } catch (error) {
     fail(req, res, "/projektarchiv", error);
@@ -1818,6 +1841,9 @@ app.use((error, req, res, _next) => {
   });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`edoku läuft auf http://localhost:${PORT}`);
 });
+
+process.once("SIGTERM", () => server.close(async () => { await audit.flush(); process.exit(0); }));
+process.once("SIGINT", () => server.close(async () => { await audit.flush(); process.exit(0); }));

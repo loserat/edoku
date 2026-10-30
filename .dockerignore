@@ -16,6 +16,9 @@ intern/tagesupdates/*.md
 storage/
 intern/
 *.log
+__pycache__/
+*.pyc
+test-results/
 
 # Lokale Datensicherungen niemals veröffentlichen oder ins Image kopieren
 backups/

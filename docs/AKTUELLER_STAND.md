@@ -4,6 +4,10 @@ Stand: 2026-10-30
 
 Diese Datei fasst zusammen, wo das Projekt gerade steht und wo wir sinnvoll weiterarbeiten sollten.
 
+## Lokaler Beta-Betrieb
+
+Sicherheitsprotokoll mit Systemadmin-Ansicht, Vollsicherung einschließlich Docker-Abbild, getrennte Wiederherstellung und GitHub-Prüfungen sind ergänzt. Alle 52 automatisierten Prüfungen bestehen im Node-22-Abbild. Eine vollständige Sicherung einschließlich Abbild wurde getrennt wiederhergestellt; alte und neue Anwendung öffneten jeweils sechs öffentliche und zwölf angemeldete Seiten, ohne Projektdateien oder Datenbankinhalte zu ändern. Anleitungen und Grenzen: [BETA_BETRIEB.md](BETA_BETRIEB.md).
+
 ## Sicherheits- und Archivkorrekturen vom 30.10.2026
 
 - Nach vollständiger geprüfter Sicherung in die normale lokale Anwendung auf Port 3000 übernommen; vorhandene Projektdateien, Einstellungen und Datenbankinhalte unverändert.
@@ -75,7 +79,7 @@ Der aktuelle Stand ist noch nicht als final gehärtete Produktivversion zu bewer
 
 ## Nächste Arbeitspakete
 
-1. Zentrale Audit-Protokollierung, externe Sicherung und automatisierte Wiederherstellung ergänzen. Historische Dateibestände bei Bedarf bewusst zuordnen.
+1. Externe Sicherung und regelmäßige Proben einrichten; lokales Sicherheitsprotokoll sowie Vollsicherung und getrennte Wiederherstellung sind umgesetzt. Historische Dateibestände bleiben unverändert erhalten.
 2. Neue Kapitel-/Seitenzählung und Inhaltsverzeichnis mit echten Anhängen fachlich und visuell abnehmen; ZIP-Inhalte und Druckvorlagen praktisch prüfen.
 3. Browser-/Proxy- und Fachtestabdeckung über die umgesetzten Rechte-, CSRF- und Login-Kernfälle hinaus erweitern.
 4. Liegenschaften und Gebäude additiv einführen. Die spätere Objektstruktur vorbereiten, ohne bestehende Projektdaten automatisch umzubauen.

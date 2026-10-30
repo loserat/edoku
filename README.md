@@ -18,7 +18,7 @@ Version 1 ist bewusst leichtgewichtig aufgebaut:
 
 edoku ist aktuell als **Beta-Version** vorgesehen. Die Anwendung ist lokal und per Docker lauffähig und kann bereits für Testläufe, Demo-Projekte und die Weiterentwicklung der Elektro-Bestandsdokumentation genutzt werden.
 
-Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. Zentrale Audit-Protokollierung, externe Sicherung und die fachliche Abnahme mit echten Dokumentationen bleiben offen. Kapitel-/Exportlogik, Datenerhalt, Zugriffsgrenzen und Projektarchive sind mit 38 automatisierten Prüfungen abgedeckt.
+Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. Sicherheitsprotokoll und vollständige Sicherung mit getrennter Wiederherstellung sind vorhanden. Eine zusätzliche Sicherung auf einem anderen Datenträger sowie die fachliche Abnahme mit echten Dokumentationen bleiben offen. 52 automatisierte Prüfungen decken Export, Datenerhalt, Zugriffsgrenzen, Archive, Protokoll und Sicherung ab.
 
 Die aktuelle Arbeitsliste mit offenen Punkten steht in [docs/OFFENE_PUNKTE.md](docs/OFFENE_PUNKTE.md).
 Der kompakte aktuelle Projektstand steht in [docs/AKTUELLER_STAND.md](docs/AKTUELLER_STAND.md).
@@ -141,7 +141,7 @@ docker compose logs -f
 
 ## Start ohne Docker
 
-Voraussetzung: Node.js 20 oder neuer. Docker nutzt ebenfalls Node.js 20.
+Voraussetzung: Node.js 22 und Python 3.11 oder neuer für Sicherungswerkzeuge und deren Tests. Docker nutzt Node.js 22.
 
 ```bash
 npm install
@@ -228,6 +228,10 @@ Gerätelisten können über das Drei-Punkte-Menü als systemweite Vorlage gespei
 
 Systemadmins können unter `System > System` das sichtbare edoku-/nickgm-Branding für Oberfläche und PDF-Exporte deaktivieren. Das ist als Vollversions-/Lizenzoption vorbereitet; projektbezogene Logos und Erstellerlogos bleiben davon unabhängig.
 
+## Sicherung und Sicherheitsprotokoll
+
+Systemadmins finden das Sicherheitsprotokoll unter **System → Sicherheitsprotokoll**. Eine vollständige Sicherung enthält alle fünf Laufzeitordner, die Datenbank und standardmäßig das passende Docker-Abbild. Die Wiederherstellung erfolgt ausschließlich in einen neuen Ordner. Anleitung und Grenzen: [Lokaler Beta-Betrieb](docs/BETA_BETRIEB.md).
+
 ## Tests
 
 Nach Installation der Abhängigkeiten:
@@ -236,9 +240,12 @@ Nach Installation der Abhängigkeiten:
 npm run test:exports
 npm run test:preservation
 npm run test:security
+npm run test:audit
+npm run test:backup
+npm run test:e2e
 ```
 
-Die 38 Prüfungen arbeiten mit temporären Prüfprojekten. Sie prüfen unter anderem Kapitelkollisionen, PDF-Seitenzahlen, Inhaltsverzeichnis-Sprunglinks und Datenerhalt über Neustarts. Die Exporttests schreiben zusätzlich eigene Nachweise unter `output/pdf/` und `output/counting-review/`; Tests deshalb in einem getrennten Checkout oder Container ausführen. Vorhandene Benutzerprojekte werden nicht bearbeitet. Eine Anleitung zur zusätzlichen manuellen Abnahme steht in [docs/TESTS.md](docs/TESTS.md).
+Die 52 Prüfungen arbeiten mit temporären Prüfprojekten. Sie prüfen unter anderem Kapitelkollisionen, PDF-Seitenzahlen, Inhaltsverzeichnis-Sprunglinks und Datenerhalt über Neustarts. Die Exporttests schreiben zusätzlich eigene Nachweise unter `output/pdf/` und `output/counting-review/`; Tests deshalb in einem getrennten Checkout oder Container ausführen. Vorhandene Benutzerprojekte werden nicht bearbeitet. Eine Anleitung zur zusätzlichen manuellen Abnahme steht in [docs/TESTS.md](docs/TESTS.md).
 
 ## Theme-System
 

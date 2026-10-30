@@ -41,7 +41,7 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Benutzer/Sessions/Projektübersicht: SQLite
 - PDF-Erzeugung: `pdfkit`
 - Containerisierung: Docker Compose
-- Zielumgebung: Node.js 20 im Docker-Container
+- Zielumgebung: Node.js 22 im Docker-Container
 
 ## Update 2026-06-07 Abend
 
