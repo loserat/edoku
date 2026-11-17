@@ -94,3 +94,5 @@ Die bestehenden Dokumentationen sind durch die technischen Kopientests nicht fac
 ## Coolify-Deploymentfälle vom 17.11.2026
 
 Die sechs zusätzlichen Fälle prüfen den eigenen Erstzugang nur bei neuer Datenbank, dessen Passwortprüfung vor Datenbankanlage, die echte Bereitschaft und den Containercheck. Das neue Abbild bestand alle 109 Prüfungen. Eine isolierte Compose-Probe startete mit fünf frischen Volumes und überstand den Austausch des Containers mit identischen Tabellenzeilen und Markerdateien. Das ist ein lokaler Bereitstellungsnachweis; die Online-Abnahme ist gesondert zu dokumentieren. Einrichtung: [Coolify](COOLIFY.md).
+
+Der abschließend korrigierte Paketstand vom 17.11.2026 bestand die vollständige Suite ebenfalls mit 109 Prüfungen. Die ergänzende Paketprüfung `npm audit --omit=dev` meldete 0 bekannte Lücken. Das ersetzt keine vollständige Sicherheitsabnahme.
