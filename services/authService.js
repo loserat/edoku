@@ -11,6 +11,7 @@ const {
   normalizeUserRole
 } = require("./dbService");
 const { sanitizeId } = require("./pathService");
+const { validateNewPassword } = require("./passwordPolicyService");
 
 const SESSION_COOKIE = process.env.SESSION_COOKIE_NAME || "dm_session";
 const SESSION_DAYS = 14;
@@ -95,9 +96,7 @@ function registerUser({ email, name, password }) {
   if (!normalizedEmail || !normalizedEmail.includes("@")) {
     throw new Error("Bitte eine gültige E-Mail-Adresse eingeben.");
   }
-  if (!String(password || "").trim() || String(password).length < 8) {
-    throw new Error("Das Passwort muss mindestens 8 Zeichen lang sein.");
-  }
+  password = validateNewPassword(password);
   if (getUserByEmail(normalizedEmail)) {
     throw new Error("Diese E-Mail-Adresse ist bereits registriert.");
   }

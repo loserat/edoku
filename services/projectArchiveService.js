@@ -2,6 +2,7 @@ const fs = require("fs/promises");
 const path = require("path");
 const { safeJoin, sanitizeFileName, sanitizeId, assertSafePath, accessError } = require("./pathService");
 const {
+  connection,
   getCurrentProjectId: dbGetCurrentProjectId,
   getProject,
   getUserById,
@@ -10,6 +11,7 @@ const {
   updateProjectStatus: dbUpdateProjectStatus,
   upsertProject
 } = require("./dbService");
+const projectStore = require("./projectDataStoreService");
 
 // * INFO: Fachliche JSON-Dateien, die pro Projekt in storage/users/... gespiegelt werden.
 const DATA_FILE_NAMES = [
@@ -92,6 +94,7 @@ async function ensureCurrentProject(rootDir, dataDir, userId) {
 
   for (const fileName of DATA_FILE_NAMES) {
     const target = path.join(targetDataDir, fileName);
+    if (projectStore.readProjectDocument(target).handled) continue;
     if (await exists(target)) { await assertSafePath(rootDir, target, { type: "file" }); continue; }
 
     const globalSource = path.join(dataDir, fileName);
@@ -104,6 +107,7 @@ async function ensureCurrentProject(rootDir, dataDir, userId) {
 
   // Reine Seitenaufrufe dürfen bestehende Projektmetadaten nicht verändern.
   if (!getProject(userId, projectId)) await upsertProjectFromData(rootDir, userId, projectId);
+  projectStore.enrollProject(rootDir, userId, projectId);
   return { projectId, dataDir: targetDataDir };
 }
 
@@ -161,7 +165,7 @@ async function listProjects(rootDir, userId) {
 async function updateProjectStatus(rootDir, userId, projectId, status) {
   const sanitizedProjectId = sanitizeId(projectId, "projekt_demo");
   if (!getProject(userId, sanitizedProjectId) || !["aktiv", "archiviert", "geloescht"].includes(status)) throw accessError("Kein Zugriff auf dieses Projekt.");
-  dbUpdateProjectStatus(userId, sanitizedProjectId, status);
+  if(!projectStore.writeProjectMetadata(rootDir,userId,sanitizedProjectId,{status,updatedAt:new Date().toISOString()}))dbUpdateProjectStatus(userId, sanitizedProjectId, status);
 }
 
 // * INFO: Wechselt das aktive Projekt des Benutzers und verhindert Zugriff auf gelöschte/fremde Projekte.
@@ -231,14 +235,18 @@ async function createProject(rootDir, dataDir, userId, input = {}) {
   }
 
   const now = new Date().toISOString();
-  upsertProject({ id: projectId, userId, status: "aktiv", createdAt: now, updatedAt: now });
-  setCurrentProjectId(userId, projectId);
+  connection().transaction(() => {
+    upsertProject({ id: projectId, userId, status: "aktiv", createdAt: now, updatedAt: now });
+    projectStore.enrollProject(rootDir, userId, projectId);
+    setCurrentProjectId(userId, projectId);
+  })();
 
   return { projectId, dataDir: files.dataDir };
 }
 
 async function upsertProjectFromData(rootDir, userId, projectId) {
   const now = new Date().toISOString();
+  if(projectStore.writeProjectMetadata(rootDir,userId,projectId,{updatedAt:now}))return;
   upsertProject({ id: projectId, userId, updatedAt: now });
 }
 

@@ -1,6 +1,7 @@
 const { numberChapterTree, sortDocuments } = require("./chapterNumberingService");
 const { normalizeGeraetelisten } = require("./geraetelistenService");
 const { prepareDocumentationAttachmentEntries, defaultDocumentMetaForCategory } = require("./documentAttachmentService");
+const { photoWarningsFromEntries } = require("./brandschutzPhotoService");
 
 function isImportedDocumentPlaceholder(entry) {
   return entry.dokumenttyp === "Plan" && entry.formularart === "Dateiliste" && Number(entry.ebene || 1) >= 2;
@@ -95,7 +96,8 @@ function summarizeExportEntries(entries = []) {
   const invalid = files.filter((entry) => ["fehlerhaft", "veraltet"].includes(entry.status));
   const required = files.filter((entry) => entry.pflicht);
   const unchecked = files.length - present.length - missing.length - invalid.length;
-  return { entries: entries.length, files: files.length, present: present.length, missing: missing.length, invalid: invalid.length, unchecked, required: required.length, requiredMissing: required.filter((entry) => entry.status !== "vorhanden").length, pages: present.reduce((sum, entry) => sum + (Number(entry.seiten) || 0), 0), complete: files.length > 0 && present.length === files.length };
+  const photoWarnings = photoWarningsFromEntries(entries).length;
+  return { entries: entries.length, files: files.length, present: present.length, missing: missing.length, invalid: invalid.length, unchecked, required: required.length, requiredMissing: required.filter((entry) => entry.status !== "vorhanden").length, pages: present.reduce((sum, entry) => sum + (Number(entry.seiten) || 0), 0), photoWarnings, complete: files.length > 0 && present.length === files.length && !photoWarnings };
 }
 function estimateBinderCount(entries, capacity = 80) {
   return Math.max(1, Math.ceil(summarizeExportEntries(entries).pages / Math.max(1, Number(capacity) || 80)));

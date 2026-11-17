@@ -3,6 +3,19 @@ function resolveEdokuThemeMode(mode) {
   return mode === "dark" ? "dark" : "light";
 }
 
+// Lesbare Beschriftung auch bei selbst gewählten Schaltflächenfarben.
+function themeContrastInk(value) {
+  const hex = String(value || "").replace(/^#/, "");
+  if (!/^[a-f0-9]{6}$/i.test(hex)) return "#ffffff";
+  const c = [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4);
+  return c[0] * .2126 + c[1] * .7152 + c[2] * .0722 > .179 ? "#000000" : "#ffffff";
+}
+function themeButtonHover(value) {
+  const hex = String(value || "").replace(/^#/, "");
+  if (!/^[a-f0-9]{6}$/i.test(hex)) return "#284eaa";
+  return "#" + [0, 2, 4].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * .82).toString(16).padStart(2, "0")).join("");
+}
+
 const savedTheme = localStorage.getItem("dm-theme") || window.edokuThemeDefaultMode || "light";
 document.documentElement.setAttribute("data-theme", resolveEdokuThemeMode(savedTheme));
 
@@ -17,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
       for (const control of form.querySelectorAll("input,select,textarea,button")) control.disabled = true;
     }
   }
-  const notices = document.querySelectorAll(".notice");
+  const notices = document.querySelectorAll(".notice:not([data-persistent])");
   const themeToggle = document.querySelector("[data-theme-toggle]");
 
   // * INFO: Statusmeldungen für Screenreader als dynamische Hinweise markieren.
@@ -153,20 +166,31 @@ document.addEventListener("DOMContentLoaded", () => {
   // * INFO: Die Benutzerliste bleibt kompakt; Rollen, Passwort und Status werden in einem Dialog bearbeitet.
   const userModals = Array.from(document.querySelectorAll("[data-user-modal]"));
   if (userModals.length) {
+    const userModalTriggers = new WeakMap();
+    let activeUserModal = null;
+    const userModalFields = modal => Array.from(modal.querySelectorAll('button, input:not([type="hidden"]), select, textarea, a[href], [tabindex="0"]'))
+      .filter(field => !field.disabled && field.getClientRects().length);
     function openUserModal(modal) {
       if (!modal) return;
+      userModalTriggers.set(modal, document.activeElement);
+      // Dialog aus Tabellen-/Tabcontainern lösen; deren Feld- und Scrollregeln gelten hier nicht.
+      document.body.appendChild(modal);
+      activeUserModal = modal;
       modal.hidden = false;
       document.body.classList.add("modal-open");
-      const firstField = modal.querySelector("select, input:not([type='hidden']), button");
+      const firstField = modal.querySelector('.user-modal-form select:not(:disabled), .user-modal-form input:not([type="hidden"]):not(:disabled)') || userModalFields(modal)[0];
       if (firstField) firstField.focus();
     }
 
     function closeUserModal(modal) {
       if (!modal) return;
       modal.hidden = true;
+      activeUserModal = null;
       if (!document.querySelector("[data-attachment-modal]:not([hidden]), [data-user-modal]:not([hidden]), [data-template-modal]:not([hidden]), [data-pdf-modal]:not([hidden])")) {
         document.body.classList.remove("modal-open");
       }
+      const trigger = userModalTriggers.get(modal);
+      if (trigger?.isConnected) trigger.focus();
     }
 
     document.addEventListener("click", (event) => {
@@ -179,6 +203,23 @@ document.addEventListener("DOMContentLoaded", () => {
       const closeButton = event.target.closest("[data-user-modal-close]");
       if (closeButton) {
         closeUserModal(closeButton.closest("[data-user-modal]"));
+      }
+      if (event.target.matches(".user-modal-backdrop")) closeUserModal(event.target.closest("[data-user-modal]"));
+    });
+    document.addEventListener("keydown", event => {
+      if (!activeUserModal) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeUserModal(activeUserModal);
+      } else if (event.key === "Tab") {
+        const fields = userModalFields(activeUserModal);
+        const first = fields[0], last = fields.at(-1);
+        if (!first) return;
+        if (event.shiftKey && (document.activeElement === first || !activeUserModal.contains(document.activeElement))) {
+          event.preventDefault(); last.focus();
+        } else if (!event.shiftKey && (document.activeElement === last || !activeUserModal.contains(document.activeElement))) {
+          event.preventDefault(); first.focus();
+        }
       }
     });
   }
@@ -334,6 +375,11 @@ document.addEventListener("DOMContentLoaded", () => {
           const payload = await response.json();
           if (!response.ok || !payload.ok) {
             throw new Error(payload.error || "Speichern fehlgeschlagen");
+          }
+          if (payload.projectDataRevision) {
+            const meta=document.querySelector('meta[name="edoku-project-revision"]');
+            if(meta)meta.content=payload.projectDataRevision;
+            document.querySelectorAll('input[name="_projectRevision"]').forEach(input=>{input.value=payload.projectDataRevision;});
           }
           setAutosaveStatus("Gespeichert", "saved");
         } catch (error) {
@@ -581,6 +627,16 @@ document.addEventListener("DOMContentLoaded", () => {
         rootStyle.setProperty("--border", `color-mix(in srgb, ${border} 48%, transparent)`);
         rootStyle.setProperty("--line", `color-mix(in srgb, ${border} 48%, transparent)`);
       }
+      const primary = fieldValue("buttonPrimary");
+      if (primary) {
+        const hover = themeButtonHover(primary);
+        rootStyle.setProperty("--color-primary-hover", hover);
+        rootStyle.setProperty("--primary-strong", hover);
+        rootStyle.setProperty("--on-primary", themeContrastInk(primary));
+        rootStyle.setProperty("--on-primary-hover", themeContrastInk(hover));
+      }
+      const danger = fieldValue("danger");
+      if (danger) rootStyle.setProperty("--on-danger", themeContrastInk(danger));
     }
 
     function applyThemeInput(input) {

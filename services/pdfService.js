@@ -1124,7 +1124,7 @@ function resolvePdfImagePath(rootDir, candidatePath) {
 }
 
 // * INFO: Zeichnet Foto-Platzhalter oder vorhandene Bilder auf Brandschutzseiten.
-function drawImageSlot(doc, x, y, width, height, label, candidatePath, rootDir) {
+function drawImageSlot(doc, x, y, width, height, label, candidatePath, rootDir, missingFile = false) {
   doc.save();
   doc.strokeColor("#cbd5e1").lineWidth(0.65).rect(x, y, width, height).stroke();
   doc.fillColor("#6b7280").font("Helvetica-Bold").fontSize(8).text(label, x + 8, y + 8, {
@@ -1147,7 +1147,7 @@ function drawImageSlot(doc, x, y, width, height, label, candidatePath, rootDir) 
     }
   }
 
-  doc.fillColor("#9ca3af").font("Helvetica").fontSize(8).text(candidatePath || "Kein Bild hinterlegt", x + 8, y + height / 2 - 5, {
+  doc.fillColor(missingFile ? "#92400e" : "#9ca3af").font("Helvetica").fontSize(8).text(missingFile ? "Fotodatei fehlt - Dateiverweis prüfen" : candidatePath || "Kein Bild hinterlegt", x + 8, y + height / 2 - 5, {
     width: width - 16,
     align: "center"
   });
@@ -1306,10 +1306,15 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
 // * INFO: Generiert Brandschutzseiten: eine Seite pro aktiver Brandschottung mit Foto 1/2.
 async function generateBrandschutzPdf(rootDir, projekt, brandschutz, systemSettings = {}, matrix = [], geraetelisten = [], leistungsbereiche = {}, anhaenge = []) {
   brandschutz=normalizeBrandschutz(brandschutz);
-  for (const entry of brandschutz) for (const key of ["foto_vorher", "foto_nachher"]) {
+  for (const entry of brandschutz.filter(entry => entry.aktiv)) for (const key of ["foto_vorher", "foto_nachher"]) {
+    entry[key] = String(entry[key] || "").trim();
     if (entry[key]) {
       try { entry[key]=path.relative(rootDir,await resolveProjectSource(rootDir, projekt, entry[key])); }
-      catch(error) { if (error.code !== "ENOENT") throw error; entry[key]=""; }
+      catch(error) {
+        if (!["ENOENT", "ENOTDIR"].includes(error.code)) throw error;
+        entry._missingPhotoFields = { ...entry._missingPhotoFields, [key]: true };
+        entry[key]="";
+      }
     }
   }
   const paths = await createProjectFolder(rootDir, projekt);
@@ -1357,8 +1362,8 @@ async function generateBrandschutzPdf(rootDir, projekt, brandschutz, systemSetti
       const imageWidth = (contentWidth - imageGap) / 2;
       const maxImageHeight = doc.page.height - FOOTER_Y_OFFSET - imageY - 18;
       const imageHeight = Math.max(190, Math.min(300, maxImageHeight));
-      drawImageSlot(doc, contentX, imageY, imageWidth, imageHeight, "Foto 1", entry.foto_vorher, rootDir);
-      drawImageSlot(doc, contentX + imageWidth + imageGap, imageY, imageWidth, imageHeight, "Foto 2", entry.foto_nachher, rootDir);
+      drawImageSlot(doc, contentX, imageY, imageWidth, imageHeight, "Foto 1", entry.foto_vorher, rootDir, entry._missingPhotoFields?.foto_vorher);
+      drawImageSlot(doc, contentX + imageWidth + imageGap, imageY, imageWidth, imageHeight, "Foto 2", entry.foto_nachher, rootDir, entry._missingPhotoFields?.foto_nachher);
 
       doc.y = imageY + imageHeight + 10;
     });

@@ -10,6 +10,21 @@
   const shadow = theme.shadow || {};
   const spacing = theme.spacing || {};
   const typography = theme.typography || {};
+  function contrastInk(value) {
+    const hex = String(value || "").replace(/^#/, "");
+    if (!/^[a-f0-9]{6}$/i.test(hex)) return "#ffffff";
+    const channels = [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+    const luminance = channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+    return luminance > 0.179 ? "#000000" : "#ffffff";
+  }
+  function hoverShade(value) {
+    const hex = String(value || "").replace(/^#/, "");
+    if (!/^[a-f0-9]{6}$/i.test(hex)) return "#284eaa";
+    return "#" + [0, 2, 4].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * .82).toString(16).padStart(2, "0")).join("");
+  }
+  const buttonHover = hoverShade(colors.buttonPrimary || colors.accent || "#315fc5");
+  const buttonInk = contrastInk(colors.buttonPrimary || colors.accent || "#315fc5");
+  const dangerInk = contrastInk(colors.danger || "#b74949");
   const defaultMode = ["light", "dark"].includes(theme.mode) ? theme.mode : "light";
 %>
 <style id="edoku-theme-vars">
@@ -28,14 +43,15 @@
     --color-border: <%= colors.border || "#d0d7de" %>;
     --color-border-dark: <%= colors.borderDark || "#30363d" %>;
     --color-primary: <%= colors.accent || "#0969da" %>;
-    --color-primary-hover: color-mix(in srgb, var(--color-primary) 82%, #000);
+    --color-primary-hover: <%= buttonHover %>;
     --color-button-primary: <%= colors.buttonPrimary || colors.accent || "#1f883d" %>;
     --color-button-secondary: <%= colors.buttonSecondary || "#f6f8fa" %>;
     --color-success: <%= colors.success || "#1f883d" %>;
     --color-warning: <%= colors.warning || "#9a6700" %>;
     --color-danger: <%= colors.danger || "#cf222e" %>;
-    --on-primary: #ffffff;
-    --on-danger: #ffffff;
+    --on-primary: <%= buttonInk %>;
+    --on-primary-hover: <%= contrastInk(buttonHover) %>;
+    --on-danger: <%= dangerInk %>;
     --radius-sm: <%= shape.globalRadius || 14 %>px;
     --radius-md: <%= shape.inputRadius || 14 %>px;
     --radius-lg: <%= shape.cardRadius || 22 %>px;
@@ -96,7 +112,7 @@
     --color-text: var(--color-text-dark);
     --color-text-muted: var(--color-text-muted-dark);
     --color-border: var(--color-border-dark);
-    --color-primary-hover: color-mix(in srgb, var(--color-primary) 74%, #fff);
+    --color-primary-hover: <%= buttonHover %>;
     --surface: color-mix(in srgb, var(--color-surface) 82%, transparent);
     --surface-solid: var(--color-surface);
     --surface-muted: color-mix(in srgb, var(--color-surface-muted) 86%, transparent);
@@ -105,8 +121,9 @@
     --border: color-mix(in srgb, var(--color-border) 48%, transparent);
     --line: var(--border);
     --primary-strong: var(--color-primary-hover);
-    --on-primary: #07111f;
-    --on-danger: #07111f;
+    --on-primary: <%= buttonInk %>;
+    --on-primary-hover: <%= contrastInk(buttonHover) %>;
+    --on-danger: <%= dangerInk %>;
   }
 </style>
 <script>

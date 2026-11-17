@@ -13,8 +13,17 @@
     "test:backup": "python3 -m unittest discover -s scripts -p test_installation_backup.py",
     "test:e2e": "node --test scripts/local-beta.e2e.test.js",
     "check": "node scripts/check-source.js",
-    "test": "node --test scripts/export-counting.test.js scripts/update-preservation.test.js scripts/security-archive.test.js scripts/audit.test.js scripts/local-beta.e2e.test.js && npm run test:backup",
-    "backup": "python3 scripts/installation_backup.py"
+    "test": "node --test scripts/export-counting.test.js scripts/update-preservation.test.js scripts/security-archive.test.js scripts/audit.test.js scripts/local-beta.e2e.test.js scripts/brandschutz-photos.test.js scripts/theme-settings.test.js scripts/user-management.test.js scripts/project-storage.test.js scripts/deployment.test.js && npm run test:backup",
+    "backup": "python3 scripts/installation_backup.py",
+    "test:photos": "node --test scripts/brandschutz-photos.test.js",
+    "test:theme": "node --test scripts/theme-settings.test.js",
+    "test:users": "node --test scripts/user-management.test.js",
+    "storage:migrate": "node scripts/project-storage.js migrate",
+    "storage:status": "node scripts/project-storage.js status",
+    "storage:rollback": "node scripts/project-storage.js rollback-copy",
+    "test:storage": "node --test scripts/project-storage.test.js",
+    "storage:devices": "node scripts/project-storage.js devices-migrate",
+    "test:deployment": "node --test scripts/deployment.test.js"
   },
   "dependencies": {
     "better-sqlite3": "^11.9.1",
