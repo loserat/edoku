@@ -219,7 +219,7 @@ ausdrücklichen Benutzeraktion.
 
 `npm run test:preservation` prüft drei Fälle einschließlich Neustart und zwölf
 angemeldeter Seiten. Zusammen mit `npm run test:exports` bestanden damals 21 Prüfungen
-im zu diesem Zeitpunkt eingesetzten Node-20-Abbild. Der aktuelle Stand nutzt Node 22 und 103 Prüfungen; siehe [Tests](TESTS.md). Zusätzlich wurde die neue Version
+im zu diesem Zeitpunkt eingesetzten Node-20-Abbild. Der aktuelle Stand vom 17.11.2026 nutzt Node 22 und 109 Prüfungen; siehe [Tests](TESTS.md). Zusätzlich wurde die neue Version
 mit einer konsistenten Kopie der echten Daten vorab geprüft.
 
 Die Hauptinstanz wurde mit denselben fünf eingebundenen Laufzeitordnern

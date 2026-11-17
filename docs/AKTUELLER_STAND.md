@@ -1,10 +1,12 @@
 # Aktueller Stand edoku
 
-Stand: 17.11.2026. Paketversion: `0.1.0-beta.1`. Dieser Überblick beschreibt den lokalen Arbeits- und Prüfstand; er belegt keinen neuen Release-Tag oder GitHub-Push. Der datierte Verlauf bleibt im [Changelog](../CHANGELOG.md) erhalten.
+Stand: 17.11.2026. Paketversion: `0.1.0-beta.1`. Dieser Überblick beschreibt den geprüften Arbeitsstand und die getrennte Online-Testbereitstellung. Der Programmstand ist auf `gm/coolify-test-20261117` veröffentlicht; ein neuer Release-Tag wurde nicht erstellt. Der datierte Verlauf bleibt im [Changelog](../CHANGELOG.md) erhalten.
 
-## Coolify-Vorbereitung vom 17.11.2026
+## Online-Testbetrieb vom 17.11.2026
 
-Mehrstufiger Docker-Build, direkter Node-Start mit Bereitschaftsprüfung, eigener Online-Erstzugang und separate Compose-Datei mit fünf dauerhaften Volumes ergänzt. Alle 109 Prüfungen und eine getrennte Compose-Neuinstallation samt Containeraustausch bestanden. Die ältere lokale Übernahme vom 06.11.2026 bleibt als solche dokumentiert; Online-Deployment, Zertifikat und Anmeldung müssen am jeweiligen Ziel zusätzlich verifiziert werden. Anleitung: [Coolify](COOLIFY.md).
+Mehrstufiger Docker-Build, direkter Node-Start mit Bereitschaftsprüfung, eigener Online-Erstzugang und separate Compose-Datei mit fünf dauerhaften Volumes ergänzt. Alle 109 Prüfungen und eine getrennte Compose-Neuinstallation samt Containeraustausch bestanden. Die ältere lokale Übernahme vom 06.11.2026 bleibt als solche dokumentiert. Zusätzlich wurden HTTPS, Anmeldung, Speichern/Wiederladen und PDF-/ZIP-Erzeugung online am Programmcommit `a07104ba18c0cb1ea0d7958ebc32504c47bd002e` verifiziert. Das künstliche Testprojekt liefert 33 Einzel-PDFs mit 35 Seiten, meldet aber 15 fehlende PDF-Quellen; es ist kein vollständiger Export. Der konkrete Download wurde nicht unabhängig geprüft. [Online-Prüfstand und Grenzen](ONLINE_PRUEFSTAND.md), [technischer Betrieb](COOLIFY.md).
+
+Die [bebilderte Bedienungsanleitung](BEDIENUNGSANLEITUNG.md) beschreibt ausschließlich die App-Nutzung. Installation und Betrieb bleiben getrennt dokumentiert. Neue Screenshots zeigen nur künstliche Testdaten; ältere Aufnahmen bleiben als Verlauf erhalten.
 
 ## Ergebnis
 

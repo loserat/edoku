@@ -1,14 +1,20 @@
 # Projektupdate edoku
 
-Stand: 06.11.2026
+Stand: 17.11.2026
+
+## Ergänzung 17.11.2026
+
+Geprüften Programmstand auf `gm/coolify-test-20261117` veröffentlicht und getrennte Online-Testinstanz mit HTTPS, SQLite und fünf dauerhaften Datenordnern aktiviert. Anmeldung, Speichern/Wiederladen, Daten über einen Containerwechsel und PDF-/ZIP-Erzeugung geprüft. Lokale Originaldaten unverändert. Der konkrete Online-Export enthält wegen 15 fehlender PDF-Quellen nur einen Teilstand (33 Einzel-PDFs, 35 Seiten); der Download ist nicht unabhängig verifiziert. [Online-Prüfstand](ONLINE_PRUEFSTAND.md).
+
+README neu gegliedert, reine Anwender-Bedienungsanleitung mit aktuellen Screenshots ergänzt und technische Dokumentation abgeglichen. Installation und Serverbetrieb bleiben getrennt von der Nutzung beschrieben. [Bedienungsanleitung](BEDIENUNGSANLEITUNG.md), [Dokumentationsübersicht](README.md).
 
 ## Aktuelles Ergebnis
 
 Die geprüften SQLite-Stufen 1 und 2 sind nach ausdrücklicher Freigabe in der normalen lokalen Anwendung aktiv. Neun vollständige Projektdatensätze liegen in SQLite; Gerätelisten und Positionen haben zusätzliche, durch Trigger gemeinsam aktualisierte Tabellen. Der vollständige Datensatz bleibt führend. Bestehende Konten, Passwortdaten, Projektinhalte und historische Dateien wurden erhalten.
 
-103 automatisierte Prüfungen sowie technische Vergleiche mit acht bestehenden Projektkopien sind erfolgreich. Die Kopien lieferten dieselben Kapitel und Exportpositionen sowie 249 tatsächliche PDF-Seiten. ZIPs, Rückimporte und Rückwege sind geprüft. Nach Aktivierung wurden Originalbestand, Lesbarkeit, Konsistenz und Erreichbarkeit kontrolliert und der aktive Stand vollständig gesichert.
+109 automatisierte Prüfungen sowie technische Vergleiche mit acht bestehenden Projektkopien sind erfolgreich. Die Kopien lieferten dieselben Kapitel und Exportpositionen sowie 249 tatsächliche PDF-Seiten. ZIPs, Rückimporte und Rückwege sind geprüft. Nach Aktivierung wurden Originalbestand, Lesbarkeit, Konsistenz und Erreichbarkeit kontrolliert und der aktive Stand vollständig gesichert.
 
-Weitere aktuelle Änderungen: geschlossene Selbstregistrierung als Standard, gemeinsame neue Passwortprüfung, korrigierte Kontofehler/Rollen, klarere Dialoge, ruhige Hell-/Dunkelgestaltung und Warnungen bei fehlenden Brandschutzfotos. Paketversion bleibt `0.1.0-beta.1`; dies ist kein neuer Release-Tag oder Nachweis eines neuen GitHub-Pushs.
+Weitere aktuelle Änderungen: geschlossene Selbstregistrierung als Standard, gemeinsame neue Passwortprüfung, korrigierte Kontofehler/Rollen, klarere Dialoge, ruhige Hell-/Dunkelgestaltung und Warnungen bei fehlenden Brandschutzfotos. Paketversion bleibt `0.1.0-beta.1`; dies ist kein neuer Release-Tag. Der geprüfte Programmstand liegt auf dem oben genannten Branch; der ältere Hauptbranch erhält nur einen Dokumentationsverweis.
 
 Der maßgebliche Überblick steht unter [Aktueller Stand](AKTUELLER_STAND.md), alle Anleitungen unter [Dokumentation](README.md). Die nachfolgenden datierten Updates bewahren den Verlauf.
 

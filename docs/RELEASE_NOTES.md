@@ -1,5 +1,13 @@
 # Release Notes
 
+## Dokumentierter Stand 17.11.2026 – Online-Testbetrieb und Bedienung
+
+Paketversion weiterhin `0.1.0-beta.1`, kein neuer Release-Tag. Geprüfter Programmcommit `a07104ba18c0cb1ea0d7958ebc32504c47bd002e` auf `gm/coolify-test-20261117`. Mehrstufiger Docker-Build, echte Bereitschaftsprüfung, eigenes Erstkonto und fünf dauerhafte Laufzeitordner. Kompatible Paketkorrekturen; 109 automatisierte Prüfungen bestanden und null bekannte npm-Lücken zum Prüfzeitpunkt.
+
+HTTPS, Anmeldung, Projekt-/Gerätespeicherung und PDF-/ZIP-Erzeugung zusätzlich online geprüft. Das Testprojekt meldet 15 fehlende PDF-Quellen; angebotene Dateien sind ein Teilstand, keine fachliche Freigabe. Der Online-Download wurde nicht unabhängig geprüft. Lokale Originaldaten bleiben unverändert. [Online-Nachweis](ONLINE_PRUEFSTAND.md).
+
+README und Dokumentationsübersicht überarbeitet; [Bedienungsanleitung](BEDIENUNGSANLEITUNG.md) mit echten Aufnahmen eines künstlichen Projekts ergänzt. Servereinrichtung und Installation bleiben außerhalb der Anwenderanleitung.
+
 ## Arbeitsstand 06.11.2026 – lokal aktiviert, kein neuer Release-Tag
 
 Paketversion bleibt `0.1.0-beta.1`. Diese Hinweise beschreiben den aktuellen Arbeitsstand; Veröffentlichung und CI-Status sind am konkreten GitHub-Commit zu prüfen.
@@ -191,7 +199,7 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 
 - Noch keine produktive Server-Härtung
 - Rollen- und Rechteverwaltung ist Beta und muss vor produktiver Nutzung weiter geprüft werden
-- Zum damaligen Stand noch keine automatisierte Test-Suite; heute 103 Prüfungen, siehe [Tests](TESTS.md).
+- Zum damaligen Stand noch keine automatisierte Test-Suite; heute 109 Prüfungen, siehe [Tests](TESTS.md).
 - Gesamt-PDF, ZIP-Export und Trennstreifen müssen im Praxiseinsatz weiter visuell geprüft werden
 - Zum damaligen Stand grobe Ordnerrücken-Schätzung; inzwischen seitenbasierte Ablageschätzung umgesetzt, physische Kapazitätsprüfung bleibt offen.
 - Normtexte und erzeugte Formulartexte müssen fachlich weiter geprüft werden

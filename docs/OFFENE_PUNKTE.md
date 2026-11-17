@@ -1,12 +1,12 @@
 # Offene Punkte edoku
 
-Stand: 06.11.2026
+Stand: 17.11.2026
 
 Diese Datei sammelt offene Aufgaben, bekannte Beta-Einschränkungen und sinnvolle nächste Schritte. Sie dient als gemeinsame Arbeitsliste, damit Punkte aus Tests, GUI-Feedback und Exportprüfungen nicht im Chat verloren gehen.
 
 ## Bereits umgesetzt, weitere Abnahme getrennt
 
-SQLite-Stufen 1 und 2, korrigierte Benutzerverwaltung, Fotowarnungen und die ruhige technische Gestaltung sind umgesetzt und in der normalen lokalen Anwendung aktiviert. 103 automatisierte Prüfungen sowie technische Exportvergleiche mit acht bestehenden Projektkopien sind erfolgreich. Die lokale Aktivierung und der Datenerhalt wurden geprüft; fachliche Freigabe, Druckabnahme und externer Betrieb sind damit nicht erledigt. Details: [Aktueller Stand](AKTUELLER_STAND.md).
+SQLite-Stufen 1 und 2, korrigierte Benutzerverwaltung, Fotowarnungen und die ruhige technische Gestaltung sind umgesetzt und in der normalen lokalen Anwendung aktiviert. 109 automatisierte Prüfungen sowie technische Exportvergleiche mit acht bestehenden Projektkopien sind erfolgreich. Die lokale Aktivierung und der Datenerhalt wurden geprüft. Zusätzlich ist der getrennte Online-Testbetrieb technisch verifiziert; fachliche Freigabe, Druckabnahme und vollständige Betriebsabnahme bleiben offen. Details: [Aktueller Stand](AKTUELLER_STAND.md).
 
 ## Priorität A: Für eine belastbare Beta wichtig
 
@@ -53,7 +53,7 @@ Vollsicherung und getrennte Wiederherstellung sind umgesetzt, siehe [BETA_BETRIE
 
 Status: teilweise erledigt
 
-Die Einzel-PDFs werden erzeugt, die finale Gesamtlogik muss aber im Praxistest weiter geprüft werden. Wichtig sind insbesondere Reihenfolge, Kapitelnummerierung, Deckblätter, Inhaltsverzeichnis, importierte PDF-Anhänge und verknüpfte Bedienungsanleitungen.
+Die Gesamtlogik ist automatisiert und mit bestehenden Projektkopien technisch geprüft; der konkrete fachliche Inhalt und zusätzliche reale Fremd-PDFs müssen im Praxistest weiter geprüft werden. Wichtig sind insbesondere Reihenfolge, Kapitelnummerierung, Deckblätter, Inhaltsverzeichnis, importierte PDF-Anhänge und verknüpfte Bedienungsanleitungen.
 
 Erledigt:
 
@@ -159,7 +159,7 @@ Offen:
 
 Status: teilweise vorhanden
 
-Gerätepositionen können künftig optional eine Bedienungsanleitung erhalten. Diese Bedienungsanleitung soll im Inhaltsverzeichnis unter Bedienungsanleitungen auftauchen und in der Geräteliste mit Kapitelverweis referenziert werden.
+Gerätepositionen können optional eine importierte Bedienungsanleitung erhalten. Diese Bedienungsanleitung soll im Inhaltsverzeichnis unter Bedienungsanleitungen auftauchen und in der Geräteliste mit Kapitelverweis referenziert werden.
 
 Offen:
 
@@ -364,7 +364,7 @@ Offen:
 - Rechteprüfung über die bereits automatisierten Kernfälle hinaus erweitern.
 - Weitere Browser-/Proxy-Konstellationen für den umgesetzten CSRF-Schutz prüfen.
 - Verteilte Rate-Limits und spätere produktive API-Nutzung planen; Login-/Registrierungsgrenzen je Prozess sind umgesetzt.
-- Sichere Produktions-ENV dokumentieren.
+- Dokumentierte HTTPS-/Proxy-/Erstzugangsvariablen bei jeder Installation passend konfigurieren und prüfen; siehe [Coolify](COOLIFY.md).
 - Externe Aufbewahrung und regelmäßige Proben für das vorhandene Vollsicherungs-/Wiederherstellungswerkzeug einrichten.
 - Zentrale Ablage außerhalb des Anwendungsrechners sowie Rotation des vorhandenen lokalen Sicherheitsprotokolls planen.
 
@@ -384,9 +384,9 @@ Tags:
 
 ### Tests
 
-Status: 103 automatisierte Prüfungen und technische Vergleiche bestehender Projektkopien erfolgreich; weitere Abdeckung offen
+Status: 109 automatisierte Prüfungen und technische Vergleiche bestehender Projektkopien erfolgreich; weitere Abdeckung offen
 
-95 Node.js- und acht Python-Prüfungen decken die dokumentierten Kernfälle ab. Acht bestehende Projektkopien lieferten vor/nach Geräteumstellung gleiche Kapitel, Exportpositionen, Fotowarnungen und 249 tatsächliche PDF-Seiten; ZIPs und Rückimporte wurden geprüft. Die normale lokale Aktivierung wurde auf Datenerhalt, Lesbarkeit und Erreichbarkeit geprüft.
+101 Node.js- und acht Python-Prüfungen decken die dokumentierten Kernfälle ab. Acht bestehende Projektkopien lieferten vor/nach Geräteumstellung gleiche Kapitel, Exportpositionen, Fotowarnungen und 249 tatsächliche PDF-Seiten; ZIPs und Rückimporte wurden geprüft. Die normale lokale Aktivierung wurde auf Datenerhalt, Lesbarkeit und Erreichbarkeit geprüft.
 
 Anleitung und Grenzen: [Tests](TESTS.md). Die Workflow-Konfiguration führt Tests bei Push/PR aus; ein neuer erfolgreicher GitHub-Lauf ist nur am konkreten veröffentlichten Commit nachgewiesen. Zusätzliche Fachfälle, beliebige externe PDFs, Browser, physische Druckausgaben und Betriebsabnahme bleiben offen.
 
@@ -409,7 +409,7 @@ Manuelle Tests:
 
 ### GitHub-Auftritt
 
-Status: teilweise vorhanden
+Status: README und bebilderte Anwenderanleitung aktualisiert; weitere Pflege laufend
 
 README, technische Doku, Release Notes und Projektupdate sind vorhanden. Der GitHub-Auftritt soll für Beta-Tester verständlich bleiben.
 
@@ -419,25 +419,27 @@ Erledigt:
 - `docs/REPO_SICHERHEITSCHECK.md` ergänzt.
 - README, Installation, Technik, Betrieb, SQLite, Tests, Release Notes und Arbeitsliste auf den Arbeitsstand 06.11.2026 aktualisiert; zentrale Dokumentationsübersicht ergänzt.
 - Beta-Prüfanleitung sowie lokales Update-/Sicherungsvorgehen ergänzt.
-- Fünf Screenshots mit künstlichen Beispieldaten aus einer getrennten Demo-Installation im README eingebunden.
+- README neu gegliedert und [Anwender-Bedienungsanleitung](BEDIENUNGSANLEITUNG.md) mit 16 aktuellen Screenshots eines künstlichen Testprojekts ergänzt. Installation und Serverbetrieb bleiben getrennt.
+- Tatsächlichen [Online-Prüfstand](ONLINE_PRUEFSTAND.md) einschließlich unvollständigem Export dokumentiert; historische Screenshotserie erhalten.
+- Gesamttestzahlen und technische Anleitungen auf den Stand 17.11.2026 abgeglichen.
 
 Offen:
 
 - Screenshots bei größeren Oberflächenänderungen erneuern und ausschließlich neutrale Daten verwenden.
 - Bekannte Einschränkungen aktuell halten.
 - Release-Tags sauber pflegen.
-- Installationshinweise für Docker/Coolify weiter ausbauen.
+- Installationshinweise bei geänderten Bereitstellungswegen erneut prüfen.
 
-### Produktive Bereitstellung
+### Online-Testbetrieb und produktive Bereitstellung
 
-Status: offen
+Status: benannte Online-Testinstanz technisch geprüft; produktive Betriebsabnahme offen
 
-Coolify/GitHub-Deployment ist grundsätzlich möglich, muss aber sauber dokumentiert und getestet werden.
+Erledigt am 17.11.2026: Dockerfile-Build, gültiges HTTPS, HTTP-Weiterleitung, fünf persistente Volumes, passende Laufzeitvariablen, eigener Erstzugang ohne Demo-Konten und echte SQLite-Bereitschaft. Anmeldung, Projekt-/Geräteänderungen, Wiederladen und PDF-/ZIP-Erzeugung geprüft. Gespeicherter Testbestand überstand den Containerwechsel. [Einrichtung](COOLIFY.md), [Prüfumfang](ONLINE_PRUEFSTAND.md).
 
 Offen:
 
-- Reverse Proxy korrekt konfigurieren.
-- Persistente Volumes für `storage`, `data`, `config`, `output` und `templates` prüfen.
-- Umgebungsvariablen für Produktion definieren.
-- Default-Zugänge nach Installation ändern.
-- Backups für `storage/app.db` und projektbezogene Dateien planen.
+- Den konkreten Online-Download unabhängig auf Dateiinhalte und Seiten prüfen; die Browserfreigabe wurde in der bisherigen Runde abgelehnt.
+- Fachliche Quelllücken im Testprojekt beziehungsweise tatsächlichen Projekten klären; bereitstehende Dateien sind kein vollständiger Dokumentationsabschluss.
+- Externe Sicherung der vollständigen Laufzeitablage, Aufbewahrung und regelmäßige Wiederherstellungsproben organisieren.
+- Betriebsüberwachung, weitergehende Sicherheitsabnahme und Updates am festgesetzten Programmcommit bewusst planen.
+- Beim Einrichten weiterer Instanzen HTTPS, Volumes und eigene Erstzugänge jeweils neu prüfen; vorhandene Konten nicht durch Startvariablen zurücksetzen.

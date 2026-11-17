@@ -96,3 +96,10 @@ Die bestehenden Dokumentationen sind durch die technischen Kopientests nicht fac
 Die sechs zusätzlichen Fälle prüfen den eigenen Erstzugang nur bei neuer Datenbank, dessen Passwortprüfung vor Datenbankanlage, die echte Bereitschaft und den Containercheck. Das neue Abbild bestand alle 109 Prüfungen. Eine isolierte Compose-Probe startete mit fünf frischen Volumes und überstand den Austausch des Containers mit identischen Tabellenzeilen und Markerdateien. Das ist ein lokaler Bereitstellungsnachweis; die Online-Abnahme ist gesondert zu dokumentieren. Einrichtung: [Coolify](COOLIFY.md).
 
 Der abschließend korrigierte Paketstand vom 17.11.2026 bestand die vollständige Suite ebenfalls mit 109 Prüfungen. Die ergänzende Paketprüfung `npm audit --omit=dev` meldete 0 bekannte Lücken. Das ersetzt keine vollständige Sicherheitsabnahme.
+
+
+## Tatsächliche Online-Prüfung und Dokumentationspflege vom 17.11.2026
+
+Der lokal geprüfte Programmcommit wurde zusätzlich online aktiviert. HTTPS, `/ready`, Anmeldung, Stammdaten, Geräteänderungen, Wiederladen und Erhalt über einen Containerwechsel geprüft. Der finale Export erzeugte 33 vorhandene Einzel-PDFs mit 35 Seiten, Gesamt-PDF und ZIP, meldete aber 15 fehlende PDF-Quellen. Die Ausgabe ist fachlich unvollständig; der konkrete Download wurde nicht unabhängig geprüft. Der vollständige [Online-Prüfstand](ONLINE_PRUEFSTAND.md) trennt diese Befunde von den automatisierten Fällen.
+
+Die spätere README-/Handbuchpflege ändert keinen Anwendungscode und wiederholt deshalb nicht sämtliche schreibenden Anwendungstests. Dokumentationsprüfungen umfassen lokale Linkziele und Sprungmarken, eingebundene Screenshots, Trennung von Anwender-/Betreiberinformationen, Veröffentlichungsumfang sowie unveränderte geschützte Laufzeitdateien und Datenbankinhalte. Screenshots dokumentieren sichtbare Ansichten; sie sind keine neue End-to-End-Abnahme aller dargestellten Schaltflächen.

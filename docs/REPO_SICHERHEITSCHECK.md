@@ -1,10 +1,10 @@
 # Repository und private Daten
 
-Stand: 06.11.2026. Diese Anleitung beschreibt die Veröffentlichungskontrolle. Die aktuelle Dokumentationspflege ist kein Commit, Push, neuer Release oder vollständiger historischer Secret-Scan.
+Stand: 17.11.2026. Diese Anleitung beschreibt die Veröffentlichungskontrolle. Der geprüfte Programmstand liegt auf `gm/coolify-test-20261117`. Neue Dokumentationsdateien und Screenshots werden gesondert geprüft; eine Veröffentlichung ist kein neuer Release und kein vollständiger historischer Secret-Scan.
 
 ## Was veröffentlicht werden darf
 
-Quellcode, Tests, neutrale Grafiken, Beispielvorlagen und allgemeine Dokumentation. Die README-Screenshots stammen aus einer getrennten Demo-Installation mit künstlichen Daten. Den tatsächlichen Stand vor jedem Commit prüfen; Dateinamen und Ignore-Regeln allein sind kein Inhaltsnachweis.
+Quellcode, Tests, neutrale Grafiken, Beispielvorlagen und allgemeine Dokumentation. Die aktuellen Screenshots vom 17.11.2026 stammen ausschließlich aus einem künstlichen Projekt der getrennten Online-Testinstanz. Ältere Aufnahmen stammen aus einer getrennten lokalen Demo-Installation. Keine echten Projekte, Anmeldewerte oder Verwaltungsoberflächen veröffentlichen. Den tatsächlichen Stand vor jedem Commit prüfen; Dateinamen und Ignore-Regeln allein sind kein Inhaltsnachweis.
 
 Private Datenbanken, Passwortdaten, Sitzungen, echte Projektdateien, vorhandene Exporte, Sicherungen und detaillierte Prüfnachweise bleiben lokal. Das gilt auch für komprimierte Testkopien, Sicherungsmanifeste, Containerkonfigurationen und Programmabbilder. Sie können vertrauliche Inhalte enthalten.
 
@@ -14,7 +14,7 @@ Private Datenbanken, Passwortdaten, Sitzungen, echte Projektdateien, vorhandene 
 
 ## Startkonten
 
-[INSTALL.md](../INSTALL.md) nennt bewusst die vorgesehenen lokalen Startkonten. Sie sind keine produktiven Zugangsdaten. Bei öffentlich erreichbaren Installationen bekannte Startpasswörter ändern und nicht benötigte Konten sperren. Bestehende Konten werden beim Update weder zurückgesetzt noch automatisch entfernt. Die Selbstregistrierung ist standardmäßig geschlossen; sie ersetzt keine Prüfung der Startkonten.
+[INSTALL.md](../INSTALL.md) beschreibt die Einrichtung eines eigenen Erstzugangs. Klartext-Zugangslisten werden in der neuen Dokumentation nicht veröffentlicht. Das bisherige Demo-Verhalten bleibt im Programm kompatibel; die reine Dokumentationsänderung entfernt keine vorhandenen Konten. Bei öffentlich erreichbaren Installationen bekannte Startpasswörter ändern und nicht benötigte Konten sperren. Bestehende Konten werden beim Update weder zurückgesetzt noch automatisch entfernt. Die Selbstregistrierung ist standardmäßig geschlossen; sie ersetzt keine Prüfung der Startkonten.
 
 ## Ausgeschlossene Bereiche
 
