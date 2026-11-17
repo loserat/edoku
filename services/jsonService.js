@@ -1,10 +1,13 @@
 const fs = require("fs/promises");
 const path = require("path");
 const crypto = require("crypto");
+const projectStore = require("./projectDataStoreService");
 
 // * INFO: Robustes JSON-Lesen mit Fallback. Fehler werden protokolliert, damit eine
 // * INFO: fehlende oder defekte Projektdatei nicht sofort die ganze Anwendung stoppt.
 async function readJson(filePath, fallback) {
+  const stored = projectStore.readProjectDocument(filePath);
+  if (stored.handled) return stored.value;
   try {
     const content = await fs.readFile(filePath, "utf8");
     return JSON.parse(content);
@@ -17,6 +20,8 @@ async function readJson(filePath, fallback) {
 
 // * INFO: Schreibt JSON formatiert auf die Platte und legt den Zielordner bei Bedarf an.
 async function writeJson(filePath, data) {
+  const stored = projectStore.writeProjectDocument(filePath, data);
+  if (stored.handled) return { ok: true };
   let temporary;
   try {
     const content = `${JSON.stringify(data, null, 2)}\n`;

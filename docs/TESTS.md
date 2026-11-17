@@ -1,84 +1,68 @@
 # Tests und Beta-Abnahme
 
-Stand: 2026-10-30. Benötigt Node.js 22, Python 3.11 oder neuer und installierte Abhängigkeiten.
+Stand: 17.11.2026. Der geprüfte Stand verwendet Node.js 22 und Python 3.11 oder neuer. Die vollständige Suite besteht aus **109 Prüfungen: 101 Node.js und acht Python**. Die Zahlen beschreiben den lokal geprüften Arbeitsstand und keinen neu bestätigten GitHub-Lauf.
 
-## Automatisierte Prüfungen
+## Sicher ausführen
+
+Tests verwenden temporäre Ordner, künstliche Konten und Prüfprojekte. Einige Exporttests schreiben außerdem Nachweise unter `output/pdf/` und `output/counting-review/` des Testcheckouts. Deshalb ausschließlich in einem getrennten Checkout oder Container mit neutralen Startdaten ausführen. Niemals die normalen Laufzeitordner zum Testen einbinden.
 
 ```bash
 npm run check
 npm test
 ```
 
-Die Tests verwenden temporäre Verzeichnisse, synthetische Konten und
-Prüfprojekte. Sie überschreiben keine vorhandenen Projekte und starten
-Testserver auf freien Ports. Die Exporttests schreiben zusätzlich feste
-Nachweisdateien unter `output/pdf/` und `output/counting-review/` im
-Testcheckout. Tests deshalb in einem getrennten Checkout oder Container
-ausführen und keine realen Laufzeitordner einbinden.
-Für einen Containerlauf zuerst ein Prüfabbild in einem
-sauberen Checkout mit neutralen Startdaten bauen:
+Für einen Containerlauf das Prüfabbild in einem sauberen Checkout bauen:
 
 ```bash
 docker build -t edoku:pruefung .
+docker run --rm --network none edoku:pruefung npm run check
 docker run --rm --network none edoku:pruefung npm test
 ```
 
-Der Testcontainer benötigt keine eingebundenen Laufzeitordner. Bei lokalem
-`npm install` müssen die nativen Abhängigkeiten zu Node-Version und Plattform
-passen; die Prüfung im Node-22-Container vermeidet einen Plattformwechsel.
+Die fünf Laufzeitordner werden dabei nicht vom Host eingebunden. `better-sqlite3` muss zur Node-Version und Plattform passen; ein unter Linux gebauter `node_modules`-Ordner ist nicht direkt unter macOS nutzbar. Das Node-22-Abbild vermeidet diesen Plattformwechsel.
 
-### Kapitel und Export: 18 Prüfungen
+## Prüfumfang
 
-- Eindeutige Kapitel trotz gleicher Originalnummern, fehlender Eltern und abgewählter Dokumente.
-- Zusätzliche Gerätelisten und importierte PDFs folgen derselben Struktur.
-- Natürliche Stockwerksreihenfolge und im Projekt festgelegte Sortierung.
-- Unterscheidung von Gliederung, Einzel-PDFs und tatsächlichen Seiten; keine Doppelzählung von Sammelausgaben.
-- Mehrseitige Anhänge, beschädigte oder nicht zuordenbare PDFs und veraltete generierte PDFs.
-- Inhaltsverzeichnis mit gemessenen Linkflächen, mehrzeiligen Titeln und Seitenumbrüchen.
-- Finale Dateinummern ohne Lücken; Kapitelordner und ZIP-Zuordnung.
+| Befehl | Prüfungen | Wesentliche Fälle |
+| --- | ---: | --- |
+| `npm run test:exports` | 18 | Kapitelkollisionen, Elternkapitel, Reihenfolge, tatsächliche PDF-Seiten, interne Sprunglinks, Dateinummern und ZIP-Zuordnung |
+| `npm run test:preservation` | 3 | Bestehende Konten/Passwörter/Projekte bei Start und Seitenaufrufen, leere vorhandene Datenbank, echte Erstinstallation |
+| `npm run test:security` | 17 | Projektgrenzen, Dateitypen, Symlinks, Archive, Importpfade, Rechte, CSRF und Fehler beim Publizieren/Speichern |
+| `npm run test:audit` | 5 | Erlaubte Protokollmetadaten, parallele Einträge, beschädigte Ablage, HTTP-Ergebnisse und Fehlersperre |
+| `npm run test:e2e` | 1 | HTTP-Anmeldung, neues Projekt, Geräteformular, Anhang, PDF/ZIP und Paket-Rückimport |
+| `npm run test:photos` | 6 | Aktive fehlende Fotoverweise, leere optionale Felder, Dateigrenzen, frische Prüfung und sichtbarer unvollständiger Exportstatus |
+| `npm run test:theme` | 4 | Erhalt alter/eigener Themes, Spezialvorlagen und lesbare Schaltflächen |
+| `npm run test:users` | 13 | Neue Passwortregeln, alte Passwörter, Registrierung, Rollen-/Statusfehler, Sperren, Sitzungsentzug und letzter aktiver Systemadmin |
+| `npm run test:storage` | 28 | Vollständige Übernahme, Transaktionen, Konflikte, aktuelle Projektpakete, Rückweg und Geräteprojektion |
+| `npm run test:backup` | 8 | Vollsicherung, getrennte Wiederherstellung, Prüfsummen, Pfad-/Containergrenzen und Wiederanlauf |
+| `npm run test:deployment` | 6 | Eigener Erstzugang, HTTPS-Proxy/Cookies, Neustart, ungültige Erstangaben und echte Bereitschaft |
+| **Gesamt** | **109** | `npm test` führt alle aufgeführten Testgruppen aus |
 
-Das kleine Prüfprojekt erzeugt zwölf Einzel-PDFs mit zusammen 20 Seiten.
-Das lange Prüfprojekt hat 61 Seiten einschließlich eines dreiseitigen
-Inhaltsverzeichnisses; 56 interne Sprunglinks werden geprüft. Diese Werte
-beschreiben ausschließlich synthetische Prüffälle.
+`npm run check` prüft zusätzlich JavaScript-Syntax und EJS-Kompilierung; es ist nicht in der Zahl 109 enthalten. Die Workflow-Konfiguration in `.github/workflows/` führt Quellprüfung und Tests bei Push/PR aus. Ob der aktuelle Arbeitsstand veröffentlicht wurde und der zugehörige CI-Lauf bestanden hat, muss am konkreten Commit geprüft werden.
 
-### Datenerhalt: drei Prüfungen
+Das kleine künstliche Exportprojekt erzeugt zwölf Einzel-PDFs mit zusammen 20 Seiten. Ein längeres Prüfprojekt hat 61 Seiten einschließlich dreiseitigem Inhaltsverzeichnis mit 56 geprüften internen Sprunglinks. Der vollständige HTTP-Ablauf prüft sechs PDF-Seiten aus fünf Einzel-PDFs einschließlich eines zweiseitigen importierten Plans. Diese unterschiedlichen Werte gehören zu unterschiedlichen Testfällen.
 
-1. Bestehende Kontonamen, Passwort-Hashes, Rollen, Sperren, Sitzungen und Projekte bleiben bei Start, zwölf angemeldeten Seitenaufrufen und erneutem Start erhalten. Projektdateien und altes Register werden verglichen.
-2. Eine vorhandene leere Datenbank wird nicht mit Testkonten befüllt.
-3. Eine echte Erstinstallation ohne Datenbank legt die vorgesehenen Startkonten weiterhin an.
+## SQLite-Stufen
 
-### Sicherheit und Archive: 17 Prüfungen
+Stufe 1 wird unter anderem auf Erhalt aller Felder und Reihenfolgen, unveränderte Ausgangsdateien, fehlerhafte Quellen, idempotente Wiederholung, gemeinsame Speichertransaktionen, Projektversionen, parallele Anfragen und den Rückweg in einen neuen Ordner geprüft.
 
-`npm run test:security` prüft atomare JSON-Dateien, Projektanlage unter
-Parallelzugriff, gleiche Projektnamen, eindeutige und mehrdeutige Alt-Ausgaben,
-Symlinks, private Anhangsablage und Rückfalleordner. Weitere Fälle prüfen echte
-ZIP-Struktur, Paket-Rückimporte, beschädigte/manipulierte Dateien, absolute
-und fremde Dateiverweise sowie bereits fehlende Quellen.
+Die zehn zusätzlichen Fälle der Stufe 2 prüfen aktuelle SQLite-Quellen statt alter JSON-Dateien, individuelle Felder, doppelte IDs, ältere Formen, Reihenfolge, projektgetrennte Änderungen/Löschungen, atomaren Abbruch, veraltete Anfragen, Stufe-1-kompatible Trigger, erkennbare Tabellenabweichungen, Paket-Rückimport und aktuellen JSON-Rückweg. Eine abgebrochene Übernahme hinterlässt keine Teilaktivierung. Der HTTP-Ablauf prüft außerdem, dass ein im Geräteformular gespeicherter Wert tatsächlich in der Positionstabelle ankommt.
 
-Der tatsächliche HTTP-Server prüft CSRF einschließlich Multipart-Upload,
-Viewer-/Systemadmin-Grenzen, HTML-Dateien unter falscher MIME-Angabe,
-fehlerhafte Cookies, fehlgeschlagene Speicherziele, Kontosperren und
-Sitzungsentzug nach Passwortänderungen. Finale Exporte werden bei einem
-Publikationsfehler nicht ersetzt; erfolgreiche Vorgänger bleiben erhalten.
-Zusammen mit fünf Protokollprüfungen, acht Python-Sicherungsprüfungen und einem vollständigen HTTP-Ablauf bestehen 52 Prüfungen (44 Node.js, acht Python).
+Details zum führenden Datensatz und zur zusätzlichen Projektion: [SQLite-Projektdaten](SQLITE_PROJEKTDATEN.md).
 
-Zusätzlich wurden alle acht nicht gelöschten Projekte einer konsistenten
-Kopie der tatsächlichen Installation exportiert und mit neuen Kennungen
-rückimportiert. Alle ursprünglichen Projektdateien sowie bestehende Konto-,
-Sitzungs- und Projektzeilen blieben unverändert. Vorhandene fehlende Logos/
-Brandschutzbilder wurden ausdrücklich als Quelllücken dokumentiert;
-gemeinsame Alt-Ausgaben blieben separat. Diese Prüfung erfolgte nur in der
-Kopie, nicht durch neue Exporte in der normalen Anwendung.
+## Vergleich bestehender Projektkopien
 
-### Neue Prüfungen für den lokalen Beta-Betrieb
+Vor SQLite-Stufe 2 wurde die aktuelle Installation konsistent vollständig gesichert und in getrennte Prüfbereiche kopiert. Verglichen wurden acht nicht gelöschte Projekte mit dem aktuellen SQLite-Stand vor und nach Geräteübernahme. Ergebnis: 80 Vergleichsprüfungen bestanden, gleiche Kapitel, Exportpositionen, Fotowarnungen und insgesamt 249 tatsächliche PDF-Seiten. Gesamt-PDFs, ZIPs, Paketprüfung und Rückimporte wurden geprüft.
 
-- `npm run test:audit`: erlaubte Metadaten, parallele Einträge, beschädigte Protokolle, echte HTTP-Ergebnisse und Sperre bei unlesbarer Ablage.
-- `npm run test:backup`: vollständige Kopie und getrennte Wiederherstellung, Prüfsummenfehler, Pfadgrenzen, vorhandene Ziele, falsche Containeranbindungen, Neustart nach Kopierfehler und Erhalt bereits gestoppter Container.
-- `npm run test:e2e`: Anmeldung, neues Projekt, Gerät und zweiseitiger Anhang, Gesamt-PDF mit sechs Seiten aus fünf Einzel-PDFs, ZIP-Inhalte sowie Archiv-Rückimport ohne Änderung des Quellprojekts. Alle Daten sind künstlich.
-- GitHub Actions führt `npm ci`, `npm run check` und `npm test` bei Push auf `main` und Pull Requests aus. Echte Projekte oder Sicherungen werden dabei nicht übertragen.
+Eine zusätzliche Kopie wurde mit der tatsächlich bisherigen SQLite-Programmversion bearbeitet und mit dem neuen Programm gelesen. Die Geräteprojektion blieb aktuell. Eine aktuelle Kopie wurde vollständig gesichert, in einen neuen Ordner wiederhergestellt und auf den neuesten materialisierten JSON-Stand geprüft. Originaldaten und historischer Bestand wurden dafür nicht bearbeitet.
 
-### API-Smoke-Test
+## Prüfung nach lokaler Aktivierung
+
+Nach ausdrücklicher Freigabe wurde exakt das geprüfte Abbild in der normalen lokalen Anwendung aktiviert. Nachweise: bestehende Tabellenzeilen und Schemaobjekte erhalten; nur Gerätetabellen, Indizes und Trigger ergänzt. Konten, Passwortdaten, Projektinhalte und historische Dateien blieben unverändert. Alle erfassten Projektdatensätze wurden mit der aktiven Speicherlogik über eine schreibgeschützte Verbindung gelesen und verglichen. Datenbankintegrität, Fremdschlüssel, Dateiprüfsummen und Programmprüfsummen bestanden.
+
+Acht öffentliche HTTP-/Zugriffsschutzprüfungen und zwölf lesende API-Prüfungen waren erfolgreich. Vollsicherungen vor und nach Aktivierung sind geprüft; der Wiederanlauf nach der abschließenden Sicherung wurde kontrolliert. Schreibende Tests erfolgten mit Testkonten bzw. Projektkopien, nicht mit bestehenden Originalkonten oder Originalprojekten. Private Detailnachweise liegen lokal unter `intern/`, Sicherungen unter `backups/` und werden nicht veröffentlicht.
+
+## API-Smoke-Test
 
 Bei laufender Anwendung:
 
@@ -86,47 +70,36 @@ Bei laufender Anwendung:
 npm run smoke:api
 ```
 
-Im normalen Container alternativ:
+Im normalen Container:
 
 ```bash
 docker exec edoku_v1 node scripts/smoke-api.js
 ```
 
-Die zwölf lesenden API-Prüfungen kontrollieren HTTP-Status, JSON-Hülle und
-Fehlerantworten. Das API-Grundgerüst nutzt teilweise Demo-Daten. Ein
-erfolgreicher API-Test ist keine Prüfung der tatsächlichen Benutzerprojekte.
+Die zwölf lesenden Prüfungen kontrollieren Status, JSON-Hülle und Fehlerantworten. Das API-Grundgerüst nutzt teilweise neutrale Daten. Dieser Test allein belegt keine Lesbarkeit oder fachliche Richtigkeit tatsächlicher Benutzerprojekte.
 
-## Zusätzlicher Nachweis der lokalen Übernahme
+## Fachliche und manuelle Abnahme
 
-Am 30.10.2026 wurden vorab sechs öffentliche und zwölf angemeldete Seiten
-mit einer konsistenten Kopie der tatsächlichen Daten aufgerufen. Dateiinhalte
-und Datenbankinhalte blieben unverändert. Für die Umstellung wurde die normale
-Anwendung gestoppt und alle fünf Laufzeitordner vollständig gesichert.
-Anschließend wurden die Dateien, das Datenbankschema und alle Tabellenzeilen
-verglichen. Die eingesetzten 105 Programmdateien stimmten mit dem getesteten
-Abbild überein; Erreichbarkeit und API-Smoke-Test auf Port 3000 waren erfolgreich.
+Neue Exporte zunächst in einer getrennten Testinstallation mit neutralen Projekten oder konsistenten Kopien erzeugen. Ein Export in der normalen Anwendung ist eine bewusste schreibende Aktion.
 
-Die privaten Nachweise liegen in der lokalen Sicherung unter `backups/`.
-Datenbanken, Projektdateien, Sitzungen und private Prüfprotokolle werden nicht
-nach GitHub übertragen.
+1. Anmeldung, Projektwechsel, Rollen, gesperrte Konten und den sichtbaren aktuellen Projektstand prüfen.
+2. Mehrere Leistungsbereiche, Gerätelisten und mehrseitige Anhänge auswählen; Matrix, Vorschau und Dashboard auf dieselben Kapitel und Zähleinheiten vergleichen.
+3. Gesamt-PDF öffnen und Inhaltsverzeichnis einschließlich langer Titel und letzter Kapitel anklicken. Überschriften, Seitenzahlen und Geräte-/Anleitungsbezüge fachlich prüfen.
+4. ZIP entpacken; Reihenfolge, Kapitelordner, Dateien und Warnungen mit der Gesamt-PDF abgleichen. Tatsächlich fehlende Unterlagen und Fotos nachliefern und verantwortlich zuordnen.
+5. Tastatur, schmale/breite Fenster, interne Tabellenscroller, Dialoge und Hell/Dunkel prüfen. Die bisherigen Browserprüfungen sind keine vollständige Barrierefreiheits- oder physische Smartphone-Abnahme.
+6. Trennstreifen, Deckblätter und Ordnerrücken auf echten Bögen ausdrucken; Maße, Ausrichtung, Lesbarkeit und Ordnerkapazität prüfen.
 
-## Vollsicherungsprobe für das lokale Beta-Goal
+Die bestehenden Dokumentationen sind durch die technischen Kopientests nicht fachlich freigegeben. Norm-/Formulartexte, Unterlagenvollständigkeit, reale Druckausgaben, beliebige externe PDFs und öffentlicher Serverbetrieb bleiben gesondert abzunehmen. Weitere Aufgaben: [Offene Punkte](OFFENE_PUNKTE.md).
 
-Die fünf tatsächlichen Laufzeitordner einschließlich des historischen Bestands wurden mit dem neuen Werkzeug bei gestoppter Anwendung gesichert, einschließlich Docker-Abbild. Die Wiederherstellung in ein neues Verzeichnis bestand die Prüfsummen- und Datenbankprüfung. Sowohl die gesicherte alte Version als auch die neue Node-22-Version öffneten mit diesen kopierten Daten sechs öffentliche und zwölf angemeldete Seiten. 758 Dateien außerhalb der operativen SQLite-Dateien sowie sämtliche Datenbankschema-/Tabelleninhalte blieben unverändert. Private Nachweise bleiben ausschließlich lokal.
+## Coolify-Deploymentfälle vom 17.11.2026
 
-## Manuelle Beta-Abnahme
+Die sechs zusätzlichen Fälle prüfen den eigenen Erstzugang nur bei neuer Datenbank, dessen Passwortprüfung vor Datenbankanlage, die echte Bereitschaft und den Containercheck. Das neue Abbild bestand alle 109 Prüfungen. Eine isolierte Compose-Probe startete mit fünf frischen Volumes und überstand den Austausch des Containers mit identischen Tabellenzeilen und Markerdateien. Das ist ein lokaler Bereitstellungsnachweis; die Online-Abnahme ist gesondert zu dokumentieren. Einrichtung: [Coolify](COOLIFY.md).
 
-Neue Exporte zunächst in einer getrennten Testinstallation erzeugen. Dafür
-ein neutrales Prüfprojekt oder eine konsistente Kopie verwenden; einen Export
-mit echtem Projektbestand nur bewusst in der normalen Anwendung starten.
+Der abschließend korrigierte Paketstand vom 17.11.2026 bestand die vollständige Suite ebenfalls mit 109 Prüfungen. Die ergänzende Paketprüfung `npm audit --omit=dev` meldete 0 bekannte Lücken. Das ersetzt keine vollständige Sicherheitsabnahme.
 
-1. Login, Projektwechsel und Anzeige des aktuellen Projekts prüfen; Rollen und gesperrte Konten gesondert prüfen.
-2. Leistungsbereiche, mehrere Gerätelisten und ein mehrseitiges PDF auswählen. Matrix, Vorschau und Dashboard auf dieselben Kapitel und Zähleinheiten vergleichen.
-3. Finalen Export starten, Gesamt-PDF öffnen und Einträge des Inhaltsverzeichnisses einschließlich langer Titel und letzter Kapitel anklicken. Sichtbare Überschriften und gedruckte Seitenzahlen vergleichen.
-4. ZIP entpacken; Reihenfolge, Kapitelordner und Einzeldateien mit der Gesamt-PDF abgleichen. Warnungen zu fehlenden oder beschädigten PDFs gezielt prüfen.
-5. Oberfläche mit Tastatur sowie schmalem und breitem Fenster prüfen; Tabellen, Popups und helle/dunkle Themes berücksichtigen.
-6. Trennstreifen und Ordnerrücken auf echten Bögen ausdrucken und Maß, Ausrichtung und Lesbarkeit prüfen.
 
-Offen bleiben die fachliche Abnahme der Norm-/Formulartexte, vollständige
-Browser-/Betriebsabnahme, beliebige reale PDFs und physische Druckabnahme.
-Automatisierte Prüfergebnisse ersetzen diese Abnahmen nicht.
+## Tatsächliche Online-Prüfung und Dokumentationspflege vom 17.11.2026
+
+Der lokal geprüfte Programmcommit wurde zusätzlich online aktiviert. HTTPS, `/ready`, Anmeldung, Stammdaten, Geräteänderungen, Wiederladen und Erhalt über einen Containerwechsel geprüft. Der finale Export erzeugte 33 vorhandene Einzel-PDFs mit 35 Seiten, Gesamt-PDF und ZIP, meldete aber 15 fehlende PDF-Quellen. Die Ausgabe ist fachlich unvollständig; der konkrete Download wurde nicht unabhängig geprüft. Der vollständige [Online-Prüfstand](ONLINE_PRUEFSTAND.md) trennt diese Befunde von den automatisierten Fällen.
+
+Die spätere README-/Handbuchpflege ändert keinen Anwendungscode und wiederholt deshalb nicht sämtliche schreibenden Anwendungstests. Dokumentationsprüfungen umfassen lokale Linkziele und Sprungmarken, eingebundene Screenshots, Trennung von Anwender-/Betreiberinformationen, Veröffentlichungsumfang sowie unveränderte geschützte Laufzeitdateien und Datenbankinhalte. Screenshots dokumentieren sichtbare Ansichten; sie sind keine neue End-to-End-Abnahme aller dargestellten Schaltflächen.

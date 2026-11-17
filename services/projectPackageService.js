@@ -4,7 +4,8 @@ const path = require("path");
 const crypto = require("crypto");
 const { safeJoin, assertSafePath, accessError, sanitizeId, sanitizeFileName } = require("./pathService");
 const { readJson, writeJson } = require("./jsonService");
-const { getProject, getUserById, upsertProject } = require("./dbService");
+const { connection, getProject, getUserById, upsertProject } = require("./dbService");
+const projectStore = require("./projectDataStoreService");
 const { bindProjectScope, scopedProjectRoot, getProjectPaths, readableProjectPaths, legacyOutputStatus } = require("./projectService");
 const { writeZipFile } = require("./zipService");
 const api = () => require("./projectArchiveService");
@@ -68,14 +69,19 @@ async function resolveArchiveDownload(rootDir, userId, relativePath) {
 }
 
 async function exportProject(rootDir, projectId, userId, options = {}) {
+  return projectStore.withProjectDataTransaction(() => exportProjectSnapshot(rootDir,projectId,userId,options));
+}
+async function exportProjectSnapshot(rootDir, projectId, userId, options = {}) {
   projectAccess(userId, projectId);
+  const revision = projectStore.projectDataRevision(rootDir,userId,projectId);
   const flags = Object.fromEntries(["includeUploads", "includeGenerated", "includeFinal"].map(k => [k, options[k] !== false]));
   const data = {};
   const originals = new Map();
   const files = api().dataFilesForProject(rootDir, userId, projectId);
   for (const name of api().DATA_FILE_NAMES) {
-    const file = await assertSafePath(rootDir, path.join(files.dataDir, name), { type: "file" });
-    originals.set(file, await digest(file));
+    const target=path.join(files.dataDir,name);
+    const file = await assertSafePath(rootDir, target, { allowMissing: projectStore.readProjectDocument(target).handled });
+    if(await exists(file))originals.set(file, await digest(file));
     data[name] = await readJson(file);
   }
   const projekt = bindProjectScope(data["projekt.json"], userId, projectId);
@@ -155,6 +161,7 @@ async function exportProject(rootDir, projectId, userId, options = {}) {
       await writeZipFile(path.join(working,zipName),entries);
     }
     const exportRoot=path.join(base,stamp);
+    if(revision)projectStore.assertProjectRevision(rootDir,userId,projectId,revision);
     await fs.rename(working,exportRoot);
     return {exportRoot,packageRoot:path.join(exportRoot,"projekt_export"),manifestPath:path.join(exportRoot,"projekt_export/manifest.json"),zipPath:zipName?path.join(exportRoot,zipName):"",zipCreated:Boolean(zipName),separateHistoricalOutputs:separateLegacy,missingFiles:[...missingFiles],complete:manifest.complete};
   } catch(error) { await fs.rm(working,{recursive:true,force:true}); throw error; }
@@ -249,7 +256,10 @@ async function importProject(rootDir, name, userId) {
     }
     // Registrierung erst nach vollständiger, erneut geprüfter Kopie.
     const second=await validateProjectArchive(archivePath);if(!second.ok || JSON.stringify(second.manifest)!==JSON.stringify(manifest))throw invalid("Das Importpaket wurde zwischenzeitlich verändert.");
-    const now=new Date().toISOString();upsertProject({id,userId,status:"aktiv",createdAt:now,updatedAt:now,originalProjectId:manifest.project.id});
+    const now=new Date().toISOString();connection().transaction(()=>{
+      upsertProject({id,userId,status:"aktiv",createdAt:now,updatedAt:now,originalProjectId:manifest.project.id});
+      projectStore.enrollProject(rootDir,userId,id);
+    })();
     return {projectId:id,validation};
   }catch(error){await fs.rm(target,{recursive:true,force:true});throw error;}
 }

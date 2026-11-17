@@ -1,0 +1,10 @@
+<% if (photoWarnings && photoWarnings.length) { %>
+  <section class="notice warning" data-persistent role="alert" aria-label="Brandschutzfotos prüfen">
+    <strong><%= photoWarnings.length %> Brandschutz-Fotoverweis(e) führen zu fehlenden oder nicht zugreifbaren Dateien.</strong>
+    <p>Die Bilddokumentation ist damit unvollständig. Bitte die Dateiverweise prüfen und die Fotos erneut zuordnen. Die Prüfung bewertet die Verfügbarkeit der Dateien; ihre fachliche Eignung muss separat geprüft werden.</p>
+    <details>
+      <summary>Betroffene Schottungen und Fotos anzeigen</summary>
+      <ul><% photoWarnings.forEach(warning => { %><li><%= warning.message %></li><% }); %></ul>
+    </details>
+  </section>
+<% } %>

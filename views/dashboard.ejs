@@ -15,6 +15,7 @@
         <a class="button-link secondary" href="/projekt"><%- include("partials/icon", { name: "edit" }) %> Stammdaten</a>
       </div>
       <%- include("partials/flash", { flash }) %>
+      <%- include("partials/photoWarnings", { photoWarnings: stats.photoWarnings }) %>
 
       <div class="dashboard-overview">
         <section class="completion-panel" aria-label="Erfassungsstand der Dokumentation">
@@ -84,7 +85,7 @@
           </article>
           <%- include("partials/metricCard", { title: "Dokumente", icon: "documentation", href: "/export#matrix", rows: [{ label: "Aktive Matrixeinträge", value: stats.dokumente.aktiv }, { label: "Einzel-PDFs", value: stats.dokumente.export }, { label: "Pflichtdokumente", value: stats.dokumente.pflicht }, { label: "Pflicht fehlt", value: stats.dokumente.fehlendePflicht, tone: "warning" }] }) %>
           <%- include("partials/metricCard", { title: "Gerätelisten", icon: "list", href: "/geraetelisten", rows: [{ label: "Gesamt", value: stats.geraetelisten.gesamt }, { label: "Aktiv", value: stats.geraetelisten.aktiv }, { label: "Ohne Positionen", value: stats.geraetelisten.leer }] }) %>
-          <%- include("partials/metricCard", { title: "Brandschutz", icon: "shield", href: "/brandschutz", rows: [{ label: "Brandschottungen", value: stats.brandschutz.gesamt }, { label: "Unvollständig", value: stats.brandschutz.fehlendePflichtangaben, tone: "warning" }] }) %>
+          <%- include("partials/metricCard", { title: "Brandschutz", icon: "shield", href: "/brandschutz", rows: [{ label: "Brandschottungen", value: stats.brandschutz.gesamt }, { label: "Unvollständig", value: stats.brandschutz.unvollstaendig, tone: "warning" }] }) %>
           <%- include("partials/metricCard", { title: "Exportstatus", icon: "export", href: "/export", rows: [{ label: "Einzel-PDFs", value: stats.export.gesamt }, { label: "Vorhanden", value: stats.export.vorhanden, tone: "success" }, { label: "Offen / fehlerhaft", value: stats.export.fehlt, tone: "warning" }, { label: "PDF-Seiten vorhanden", value: stats.export.seiten }] }) %>
         </div>
       </section>
