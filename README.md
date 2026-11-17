@@ -1,5 +1,13 @@
 # edoku
 
+> **Aktuelle Anleitung und geprüfter App-Stand · 17.11.2026**
+>
+> Der geprüfte Programmstand und die neue Dokumentation liegen auf [`gm/coolify-test-20261117`](https://github.com/loserat/edoku/tree/gm/coolify-test-20261117). Dieser Hauptbranch enthält weiterhin den älteren Programmstand; es wurde hier kein Programmupdate zusammengeführt.
+>
+> **Für Anwender:** [Bebilderte Bedienungsanleitung](https://github.com/loserat/edoku/blob/gm/coolify-test-20261117/docs/BEDIENUNGSANLEITUNG.md) mit dem vollständigen Ablauf von der Projektanlage bis zur Ausgabe. Sie behandelt ausschließlich die Nutzung der App.
+>
+> **Für Betrieb und Entwicklung:** [Aktueller Projektstand](https://github.com/loserat/edoku/blob/gm/coolify-test-20261117/docs/AKTUELLER_STAND.md), [Dokumentationsübersicht](https://github.com/loserat/edoku/blob/gm/coolify-test-20261117/docs/README.md) und [Prüfumfang](https://github.com/loserat/edoku/blob/gm/coolify-test-20261117/docs/ONLINE_PRUEFSTAND.md). Die folgenden älteren Angaben beschreiben diesen Hauptbranch.
+
 <p><strong><span style="color:red;">Mitentwickler gesucht: Ich suche Menschen, die edoku kostenlos testen möchten. Feedback, Fehlerberichte und Ideen sind willkommen. Für Tester gibt es Support innerhalb von 48 Stunden.</span></strong></p>
 
 edoku ist eine lokale Web-Anwendung zur strukturierten Erstellung von Elektro-Bestandsdokumentationen. Die Anwendung verwaltet Projektstammdaten, Leistungsbereiche, Dokumentenmatrix, Gerätelisten, Brandschutzdokumentation, Anhänge, PDF-Erzeugung und Exportvorbereitung.
