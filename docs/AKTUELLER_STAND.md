@@ -1,100 +1,53 @@
 # Aktueller Stand edoku
 
-Stand: 2026-10-30
+Stand: 17.11.2026. Paketversion: `0.1.0-beta.1`. Dieser Überblick beschreibt den lokalen Arbeits- und Prüfstand; er belegt keinen neuen Release-Tag oder GitHub-Push. Der datierte Verlauf bleibt im [Changelog](../CHANGELOG.md) erhalten.
 
-Diese Datei fasst zusammen, wo das Projekt gerade steht und wo wir sinnvoll weiterarbeiten sollten.
+## Coolify-Vorbereitung vom 17.11.2026
 
-## Lokaler Beta-Betrieb
+Mehrstufiger Docker-Build, direkter Node-Start mit Bereitschaftsprüfung, eigener Online-Erstzugang und separate Compose-Datei mit fünf dauerhaften Volumes ergänzt. Alle 109 Prüfungen und eine getrennte Compose-Neuinstallation samt Containeraustausch bestanden. Die ältere lokale Übernahme vom 06.11.2026 bleibt als solche dokumentiert; Online-Deployment, Zertifikat und Anmeldung müssen am jeweiligen Ziel zusätzlich verifiziert werden. Anleitung: [Coolify](COOLIFY.md).
 
-Sicherheitsprotokoll mit Systemadmin-Ansicht, Vollsicherung einschließlich Docker-Abbild, getrennte Wiederherstellung und GitHub-Prüfungen sind ergänzt. Alle 52 automatisierten Prüfungen bestehen im Node-22-Abbild. Eine vollständige Sicherung einschließlich Abbild wurde getrennt wiederhergestellt; alte und neue Anwendung öffneten jeweils sechs öffentliche und zwölf angemeldete Seiten, ohne Projektdateien oder Datenbankinhalte zu ändern. Anleitungen und Grenzen: [BETA_BETRIEB.md](BETA_BETRIEB.md).
+## Ergebnis
 
-Die normale lokale Anwendung auf Port 3000 wurde nach geprüfter Vollsicherung auf diesen Stand umgestellt. Alle 761 vorhandenen Dateien einschließlich operativer SQLite-Dateien sind in der Sicherung enthalten; beim Vergleich nach der Übernahme blieben die 758 übrigen Dateien sowie Datenbankschema und alle Tabelleninhalte unverändert. 129 Programmdateien entsprachen dem vorbereiteten Abbild. Acht öffentliche Prüfungen, 13 angemeldete Seiten einschließlich Sicherheitsprotokoll und der API-Smoke-Test waren erfolgreich. Die [GitHub-Prüfung des Programmstands](https://github.com/loserat/edoku/actions/runs/41108350058) war erfolgreich. Private Sicherungen und Nachweise bleiben ausschließlich lokal.
+edoku ist eine lokal lauffähige Beta für Elektro-Bestandsdokumentationen. Die normale lokale Docker-Anwendung wurde nach Vollsicherung und ausdrücklicher Freigabe auf die geprüften SQLite-Stufen 1 und 2 umgestellt. Konten, Passwortdaten, bestehende Projektinhalte und historische Dateien sind dabei erhalten geblieben. Die aktuelle Ergänzung macht Gerätelisten und Positionen gezielt per SQL abfragbar.
 
-## Sicherheits- und Archivkorrekturen vom 30.10.2026
+## Umgesetzt und geprüft
 
-- Nach vollständiger geprüfter Sicherung in die normale lokale Anwendung auf Port 3000 übernommen; vorhandene Projektdateien, Einstellungen und Datenbankinhalte unverändert.
-- Begrenzte Archiv-/Anhangsdownloads, Prüfung tatsächlicher Dateitypen und Abweisung von Symlink-Umgehungen.
-- Neue Ausgabeablage nach Benutzer-/Projektkennung; alte gemeinsame Ausgaben bleiben auf ausdrücklichen Benutzerwunsch separat historisch erhalten.
-- Signierter CSRF-Schutz, Login-/Registrierungsbegrenzung und serverseitige Rollenprüfung für globale Änderungen.
-- Atomare JSON-Speicherung, Fehlerweitergabe und Erhalt vorheriger PDFs/finaler Exporte.
-- Echte Projekt-ZIPs, Prüfsummen, sichere Rückimporte mit umgesetzten Pfaden und Kennungsschutz.
-- 38 automatisierte Prüfungen erfolgreich. In einer konsistenten echten Datenkopie: alle acht nicht gelöschten Projekte erfolgreich exportiert und rückimportiert, ohne ursprüngliche Projektdateien oder bestehende Datenbankzeilen zu verändern.
-- Start, sechs öffentliche und zwölf angemeldete Seiten mit Datenkopie geprüft; Dateien und Datenbank unverändert. Private Nachweise und Vollsicherungen bleiben lokal unter `backups/`.
-- Bereits fehlende Logos/Fotos werden als Quelllücken dokumentiert; keine erfundenen Dateien und keine automatische Änderung bestehender Projekteinträge.
+| Bereich | Aktueller Umfang | Prüfung und Grenze |
+| --- | --- | --- |
+| Oberfläche | Ruhige technische Gestaltung, gemeinsame Formulare, Navigation, App-Icon, Hell/Dunkel und Erhalt eigener Themes | Browserprüfungen für die bearbeiteten Seiten; keine vollständige Barrierefreiheitsabnahme |
+| Kapitel und Exporte | Gemeinsamer Kapitelplan, tatsächliche PDF-Seiten, klickbares Inhaltsverzeichnis, finale Dateinummern, PDF und ZIP | Automatisierte Exportfälle und Vergleich bestehender Projektkopien; fachliche Freigabe und Druckabnahme offen |
+| Brandschutzfotos | Fehlende aktive Fotoverweise sichtbar in Fachseite, Dashboard, Export und Ausgabedokumentation | Unvollständiger Exportstatus; fehlende Bilder werden nicht erfunden oder aus Projekten entfernt |
+| Benutzerverwaltung | Geschlossene Selbstregistrierung als Standard, einheitliche neue Passwortregeln, klare Rollen, Kontofehler, Schutz des letzten aktiven Systemadmins | Testkonten und HTTP-/Dialogprüfungen; bestehende Passwörter und alte Rollen bleiben erhalten |
+| Sicherheit und Archive | Projektgrenzen, CSRF, Loginbegrenzung, geprüfte Dateitypen/Pfade, echte Projektpakete und konfliktfreie Rückimporte | Automatisierte Kernfälle; öffentlicher Mehrbenutzerbetrieb nicht vollständig abgenommen |
+| Sicherung | Vollsicherung aller fünf Laufzeitordner einschließlich Datenbank und Programmabbild, Prüfsummen, Wiederherstellung in neue Ordner | Lokale Sicherung und Rückwege geprüft; zusätzliche externe Sicherung und regelmäßige Proben bleiben Betriebsaufgaben |
+| SQLite-Stufe 1 | Neun vollständige Projektdatensätze in `storage/app.db`, gemeinsame Speichertransaktionen und Konflikterkennung | Ausgangs-JSON bleibt unverändert, ist aber kein aktueller Spiegel |
+| SQLite-Stufe 2 | Zusätzliche Tabellen für Gerätelisten und Positionen, atomar durch SQLite-Trigger synchronisiert | Vollständiger Projektdatensatz bleibt führend; keine unabhängig beschreibbare zweite Datenquelle |
 
-Details: [Zugriffsschutz](SICHERHEIT.md), [Projektarchive](PROJEKTARCHIVE.md), [Tests](TESTS.md).
+Details: [Gestaltung](GESTALTUNG.md), [Brandschutzfotos](BRANDSCHUTZFOTOS.md), [Benutzerverwaltung](BENUTZERVERWALTUNG.md), [SQLite-Projektdaten](SQLITE_PROJEKTDATEN.md).
 
-## Zuvor übernommene Gestaltung und Exportzählung
+## Nachgewiesener Prüfstand
 
-- Design, App-Icon und gemeinsame Ansichtsbausteine überarbeitet.
-- Kapitel- und Exportzählung vereinheitlicht; Details in `docs/TECHNIK.md`.
-- 18 gezielte Exporttests, ein 20-seitiges Prüfprojekt und 56 interne Links eines dreiseitigen Inhaltsverzeichnisses geprüft.
-- Am 30.10.2026 in die normale lokale Docker-Anwendung auf Port 3000 übernommen, nach vollständiger geprüfter Sicherung.
-- Vorher/Nachher: 761 Laufzeitdateien gesichert; Projektdateien, Einstellungen, Anhänge und vorhandene Exporte unverändert. Datenbankinhalt und Schema mit neun Projekten, fünf Konten und zwei Sitzungen unverändert.
-- 21 automatisierte Prüfungen bestanden: 18 Kapitel-/Exportprüfungen und drei Prüfungen zum Datenerhalt. Zusätzlich zwölf angemeldete Seiten mit einer konsistenten Kopie der echten Daten geprüft.
-- 105 Programmdateien der laufenden Hauptinstanz stimmen mit dem getesteten Abbild überein. Erreichbarkeit auf Port 3000 und API-Smoke-Test erfolgreich.
-- Bestehende Konten werden beim Neustart nicht zurückgesetzt; reine Seitenaufrufe ändern keine Projektzeitstempel und speichern keine Systemauswahl.
-- Sicherung und lokale Nachweise: `backups/2026-10-30_uebernahme-edoku-6hmt5og/UEBERNAHME.md` (von Git und Docker-Builds ausgeschlossen).
-- Paketversion bleibt `0.1.0-beta.1`; die Weiterentwicklung ist kein neuer getaggter Release.
-- Die anschließenden Sicherheits-/Archivkorrekturen stehen im oberen Abschnitt; die lokale Übernahme ist keine Freigabe für öffentlichen Serverbetrieb.
+- **109 automatisierte Prüfungen:** 101 Node.js und acht Python, erfolgreich im geprüften Node-22-Abbild. Anleitung: [Tests](TESTS.md).
+- **Bestehende Projektkopien:** acht nicht gelöschte Projekte vor/nach SQLite-Stufe 2 verglichen, 80 Vergleichsprüfungen, gleiche Kapitel, Exportpositionen, Fotowarnungen und insgesamt 249 tatsächliche PDF-Seiten. ZIP-Erzeugung, Paketprüfung und Rückimport erfolgreich.
+- **Rückwege:** bisherige SQLite-Programmversion kann die vollständigen Datensätze weiter bearbeiten und die Geräteprojektion bleibt aktuell. Rückweg zu JSON wurde ausschließlich in einer neuen Wiederherstellungskopie geprüft.
+- **Normale Anwendung nach Aktivierung:** bestehende Tabellenzeilen und bisherigen Schemaobjekte erhalten; Gerätetabellen, Indizes und Trigger ergänzt. Alle erfassten Projektdatensätze lesend mit der aktiven Speicherlogik geprüft. Dateiprüfsummen, Datenbankintegrität, Fremdschlüssel, Programmabbild, Einbindungen und Einstellungen geprüft. Acht öffentliche HTTP-/Zugriffsschutzprüfungen und zwölf lesende API-Prüfungen erfolgreich.
+- **Sicherungen:** geprüfte Vollsicherungen vor und nach Aktivierung vorhanden. Private Detailnachweise bleiben lokal; sie enthalten keine für GitHub geeigneten Demodaten.
 
-## Kurzstatus
+Die zwölf API-Smoke-Prüfungen allein belegen keine Benutzerprojektfunktion: Das additive API-Grundgerüst nutzt teilweise neutrale Daten. Schreibende Abläufe wurden mit Testkonten bzw. Projektkopien geprüft, nicht an bestehenden Originalprojekten. Die fachliche Abnahme der bestehenden Dokumentationen bleibt offen.
 
-edoku ist aktuell eine lauffähige Beta-Anwendung für lokale und Docker-basierte Tests. Die Grundmodule für Projektverwaltung, Leistungsbereiche, Anhänge, Gerätelisten, Brandschutz, PDF-Erzeugung, Exportvorbereitung, Benutzerrollen, Themes und ein erstes API-Grundgerüst sind vorhanden.
+## Datenhaltung und Bestandsschutz
 
-Der aktuelle Stand ist noch nicht als final gehärtete Produktivversion zu bewerten. Für einen bezahlten Webserverbetrieb fehlen vor allem Sicherheits-, Rollen-, Backup-, Deployment- und Testhärtung.
+SQLite ist eingebettet: Es wird kein zusätzlicher Datenbankserver benötigt. Docker liefert die benötigte Laufzeitbibliothek mit; die Anwendung legt bei einer echten Neuinstallation `storage/app.db` an. Neuinstallationen verwenden beide SQLite-Stufen. Vorhandene Installationen wechseln nur durch eine ausdrückliche, zuvor auf Kopien geprüfte Aktivierung.
 
-## Bestehende technische Grundlage
+Die vollständigen Projektdatensätze bleiben in SQLite in ihren bisherigen Objekt-/Listenstrukturen erhalten. Fotos, Anhänge, PDFs und ZIPs bleiben Dateien. Globale Einstellungen und Vorlagen bleiben dateibasiert. Neue Ausgaben gehören über stabile Benutzer-/Projektkennungen zu ihrem Projekt. Gemeinsam genutzte historische Ausgaben werden weder neu zugeordnet noch automatisch migriert.
 
-- Das API-/Backend-Grundgerüst wurde in `main` übernommen.
-- Die API liefert einheitliche JSON-Antworten für Healthcheck, Projekte, Leistungsbereiche, Gerätelisten, Dokumente und Exportstatus.
-- Session-Cookies wurden für lokalen Betrieb und Reverse-Proxy-/HTTPS-Betrieb gehärtet.
-- `config/geraetelistenVorlagen.json` und `config/systemEinstellungen.json` sind lokale Laufzeit-Konfigurationen und sollten nicht ungeprüft committed werden.
+## Was noch offen ist
 
-## Aktuell vorhandene Hauptbereiche
+1. Bestehende Unterlagen, Brandschutzfotos, Objekt-/Geräteangaben und Formulartexte fachlich vervollständigen und verantwortlich freigeben. Technisch erzeugbare PDFs sind keine fachlich vollständige Dokumentation.
+2. Externe Sicherung, Aufbewahrung und regelmäßige Wiederherstellungsproben im tatsächlichen Betrieb einrichten.
+3. Physische Druckprüfung von Ordnerrücken, Trennstreifen und Deckblättern sowie weitere Browser-/Barrierefreiheitsprüfung.
+4. Eigenen Passwortwechsel, verpflichtenden Wechsel nach Reset und gegebenenfalls weitere Kontoschutzfunktionen planen; vorhandene Konten nicht automatisch verändern.
+5. Weitere SQLite-Ausbaustufen gesondert planen: führende Speicherung einzelner Gerätefelder, anschließend gegebenenfalls Brandschutz- und Anhangsmetadaten. Aktuell ist Stufe 2 eine relationale Projektion.
+6. Echte API-Anbindung, öffentlicher Serverbetrieb, Betriebsüberwachung und Lizenzentscheidung. Liegenschaften/Gebäude weiterhin additiv vorbereiten.
 
-- Projekte
-- Übersicht / Dashboard
-- Anhänge
-- Brandschutz
-- Gerätelisten
-- Export
-- System
-
-## Wichtige vorhandene Funktionen
-
-- Login, Registrierung und Session-Verwaltung
-- Rollenmodell mit `viewer`, `user`, `admin` und `systemadmin`
-- projektbezogene Datenablage je Benutzer
-- Projektmanager mit aktuellem Projekt
-- Projektstammdaten inklusive Objektstruktur und Stockwerken
-- Leistungsbereiche mit Formularvorgaben
-- Dokumentenmatrix im Exportbereich
-- Gerätelisten mit Vorlagenfunktion
-- Brandschutzabschottungen mit Foto-1-/Foto-2-Zuordnung
-- Anhänge als kategoriebezogene Kacheln
-- Bedienungsanleitungen als vorbereitete Anhangskategorie mit Gerätebezug
-- PDF-Erzeugung inklusive Deckblättern, Listen, Brandschutzseiten, Trennstreifen und Ordnerrücken
-- Theme-System mit GitHub-/VS-Code-orientierten Presets
-- Systembereich mit Version und GitHub-Update-Prüfung
-- API-Grundgerüst unter `/api/*`
-
-## Nächste Arbeitspakete
-
-1. Externe Sicherung und regelmäßige Proben einrichten; lokales Sicherheitsprotokoll sowie Vollsicherung und getrennte Wiederherstellung sind umgesetzt. Historische Dateibestände bleiben unverändert erhalten.
-2. Neue Kapitel-/Seitenzählung und Inhaltsverzeichnis mit echten Anhängen fachlich und visuell abnehmen; ZIP-Inhalte und Druckvorlagen praktisch prüfen.
-3. Browser-/Proxy- und Fachtestabdeckung über die umgesetzten Rechte-, CSRF- und Login-Kernfälle hinaus erweitern.
-4. Liegenschaften und Gebäude additiv einführen. Die spätere Objektstruktur vorbereiten, ohne bestehende Projektdaten automatisch umzubauen.
-
-Klickbare Inhaltsverzeichnisse und das Einrechnen externer PDF-Seiten sind
-bereits umgesetzt und automatisiert geprüft. Die offene Aufgabe ist deren
-Abnahme mit realen Dokumentationen.
-
-## Einstieg in die Dokumentation
-
-- [Technik und gemeinsame Exportstruktur](TECHNIK.md)
-- [Gestaltung, CSS-Aufteilung und Icons](THEME.md)
-- [Automatisierte Prüfungen und manuelle Beta-Abnahme](TESTS.md)
-- [Lokales Update, Sicherung und Wiederherstellung](UPDATE.md)
-- [Priorisierte offene Punkte](OFFENE_PUNKTE.md)
-- [Release Notes](RELEASE_NOTES.md)
+Die vollständige Arbeitsliste einschließlich fachlicher Detailaufgaben steht in [Offene Punkte](OFFENE_PUNKTE.md). Einstieg in alle Anleitungen: [Dokumentationsübersicht](README.md).

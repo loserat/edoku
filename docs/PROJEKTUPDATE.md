@@ -1,6 +1,16 @@
 # Projektupdate edoku
 
-Stand: 2026-07-25
+Stand: 06.11.2026
+
+## Aktuelles Ergebnis
+
+Die geprüften SQLite-Stufen 1 und 2 sind nach ausdrücklicher Freigabe in der normalen lokalen Anwendung aktiv. Neun vollständige Projektdatensätze liegen in SQLite; Gerätelisten und Positionen haben zusätzliche, durch Trigger gemeinsam aktualisierte Tabellen. Der vollständige Datensatz bleibt führend. Bestehende Konten, Passwortdaten, Projektinhalte und historische Dateien wurden erhalten.
+
+103 automatisierte Prüfungen sowie technische Vergleiche mit acht bestehenden Projektkopien sind erfolgreich. Die Kopien lieferten dieselben Kapitel und Exportpositionen sowie 249 tatsächliche PDF-Seiten. ZIPs, Rückimporte und Rückwege sind geprüft. Nach Aktivierung wurden Originalbestand, Lesbarkeit, Konsistenz und Erreichbarkeit kontrolliert und der aktive Stand vollständig gesichert.
+
+Weitere aktuelle Änderungen: geschlossene Selbstregistrierung als Standard, gemeinsame neue Passwortprüfung, korrigierte Kontofehler/Rollen, klarere Dialoge, ruhige Hell-/Dunkelgestaltung und Warnungen bei fehlenden Brandschutzfotos. Paketversion bleibt `0.1.0-beta.1`; dies ist kein neuer Release-Tag oder Nachweis eines neuen GitHub-Pushs.
+
+Der maßgebliche Überblick steht unter [Aktueller Stand](AKTUELLER_STAND.md), alle Anleitungen unter [Dokumentation](README.md). Die nachfolgenden datierten Updates bewahren den Verlauf.
 
 ## Beta-Status
 
@@ -8,7 +18,7 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 
 ## Enthaltene Module
 
-- Benutzerregistrierung und Login
+- Login und administrativ freigebbare Selbstregistrierung
 - projektbezogener Zugriff mit stabiler `userId`
 - Rollenmodell mit `viewer`, `user`, `admin` und `systemadmin`
 - mehrere Projekte je Benutzer
@@ -37,8 +47,8 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Templates: EJS
 - Frontend: Vanilla JavaScript
 - Styling: eigenes CSS
-- Projektinhalte: JSON-Dateien
-- Benutzer/Sessions/Projektübersicht: SQLite
+- Aktivierte strukturierte Projektinhalte: vollständige Datensätze in SQLite; zusätzliche Geräteprojektion
+- Benutzer/Sessions/Projektübersicht: SQLite; globale Einstellungen und Medien bleiben Dateien
 - PDF-Erzeugung: `pdfkit`
 - Containerisierung: Docker Compose
 - Zielumgebung: Node.js 22 im Docker-Container
@@ -163,28 +173,14 @@ edoku ist als Beta-Version für lokale Testläufe und die weitere Entwicklung vo
 - Importierte PDF-Anhänge erzwingen jetzt ihre Elternkapitel im Inhaltsverzeichnis.
 - `CHANGELOG.md` und `docs/REPO_SICHERHEITSCHECK.md` wurden ergänzt.
 
-## Wichtige Beta-Einschränkungen
+## Aktuelle Beta-Grenzen und nächste Schritte
 
-- Rollen- und Rechteverwaltung ist als Beta-Funktion vorhanden und muss weiter produktionsreif gehärtet werden
-- keine produktive Server-Härtung
-- keine automatisierte Test-Suite
-- PDF-Gesamtdatei und ZIP-Export sind als Beta-Funktionen vorhanden und müssen weiter im Praxiseinsatz geprüft werden
-- Normtexte und fachliche Formulare müssen weiter geprüft werden
-- Default-Zugang ist nur für lokale Entwicklung gedacht
+- Fachliche Vollständigkeit bestehender Dokumentationen, Norm-/Formulartexte und die BK-01-/BK-02-Festlegungen verantwortlich klären; technische Exportprüfungen sind keine fachliche Freigabe.
+- Fehlende Unterlagen und Fotos nachliefern; die Warnlücke ist behoben, die tatsächlichen Quelllücken bleiben bestehen.
+- Physische Druckabnahme sowie zusätzliche Browser-/Barrierefreiheitsfälle prüfen.
+- Externe Sicherung, Aufbewahrung und regelmäßige Wiederherstellungsproben im Betrieb einrichten.
+- Weiteren SQLite-Ausbau gesondert planen; die Geräteprojektion ist noch kein führender Speicher einzelner Felder.
+- Eigenen Passwortwechsel und gegebenenfalls weitere Kontoschutzfunktionen ergänzen; vorhandene Konten nicht automatisch ändern.
+- Echte API-Anbindung, öffentlicher Serverbetrieb, Lizenzentscheidung und additive Liegenschafts-/Gebäudestruktur weiter planen.
 
-## Nächste sinnvolle Schritte
-
-- PDF-Layout final visuell prüfen
-- PDF-Gesamtzusammenführung im Praxistest prüfen
-- ZIP-Export und Projektarchive im Praxistest prüfen
-- Anhänge/Pläne weiter fachlich ausbauen
-- Datei-Popup für Anhänge weiter visuell prüfen und bei Bedarf verfeinern
-- Bedienungsanleitungen in Inhaltsverzeichnis, Gerätelisten und PDF-Gesamtexport im Praxistest prüfen
-- BK 01 und BK 02 definieren
-- automatisierte Tests ergänzen
-- Lizenzentscheidung treffen
-- Better-Comments-Kommentierung für `server.js`, `public/js/app.js` und `public/css/style.css` nachziehen
-- Klickbare Kapitel-Sprungmarken im finalen Gesamt-PDF prüfen und umsetzen
-- Ordnerrücken-Auto-Berechnung später mit echten PDF-Seitenzahlen über `pdf-lib` präzisieren
-- Benutzerverwaltung weiter ausbauen: eigene Passwortänderung, optionale 2FA und Audit-Log prüfen
-- `Liegenschaften > Gebäude` als neuen Strukturpunkt vorbereiten
+Vollständige Aufgabenliste: [Offene Punkte](OFFENE_PUNKTE.md). Öffentlich nutzbare Screenshots zeigen weiterhin ausschließlich synthetische Daten; private Sicherungen und Prüfnachweise werden nicht veröffentlicht.

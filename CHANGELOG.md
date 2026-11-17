@@ -1,5 +1,48 @@
 # Changelog
 
+## Coolify-Testbetrieb – 17.11.2026
+
+- Mehrstufiges Node-22-Abbild ohne Compiler in der Laufzeit; Python für Sicherungswerkzeuge erhalten. Direkter Node-Start und echter Healthcheck.
+- Öffentliche Bereitschaftsprüfung `/ready` liest tatsächliche Datenbanktabellen und prüft Laufzeitordner und SQLite-Stufen.
+- Optionaler eigener Erstzugang statt bekannter Demo-Konten bei Neuinstallation; bestehende Konten/Passwörter bleiben bei Neustart führend.
+- Separate Coolify-Compose-Datei mit fünf Volumes, ohne feste Containernamen und öffentliche Host-Ports.
+- Sechs neue Deploymentfälle; 109 Prüfungen erfolgreich. Isolierte Container-Neuerstellung mit gleichen Datenbankzeilen und allen fünf Datenordnern geprüft.
+- Einrichtung und Grenzen: [Coolify-Testbetrieb](docs/COOLIFY.md). Online-Abnahme ist vom lokalen Nachweis zu unterscheiden.
+
+Dokumentierter Arbeitsstand: 06.11.2026, Paketversion `0.1.0-beta.1`. Datierte Einträge bewahren den jeweiligen damaligen Prüfstand; die aktuelle Gesamtsuite umfasst 109 Prüfungen. Lokale Aktivierung ist kein neuer Release-Tag.
+
+## SQLite-Gerätetabellen – 06.11.2026
+
+Nach Kopientests und ausdrücklicher Freigabe in der normalen lokalen Anwendung aktiviert; vollständige Sicherungen vor und nach Übernahme geprüft. Bestehende Konten, Passwortdaten, Projektinhalte und historische Dateien erhalten. 103 automatische Prüfungen, acht technische Projektkopienvergleiche mit 249 PDF-Seiten sowie lesende Prüfungen nach Aktivierung erfolgreich.
+
+Gerätelisten und Positionen als projektgebundene Tabellen ergänzt. SQLite-Trigger halten die relationale Projektion und den vollständigen Datensatz atomar synchron; individuelle Felder und Reihenfolgen bleiben erhalten. Bestehende Installationen aktivieren die Stufe ausdrücklich nach Kopientests. Neue Installationen nutzen beide Stufen. Details: [SQLite-Projektdaten](docs/SQLITE_PROJEKTDATEN.md).
+
+## SQLite-Projektdaten – 06.11.2026
+
+Projektbezogene strukturierte Daten schrittweise auf eine versionierte SQLite-Ablage umgestellt; vollständiger Erhalt der bisherigen Strukturen und JSON-Ausgangskopien. Transaktionales Speichern, Konflikterkennung, aktuelle Projektpakete und geprüfter Rückweg ergänzt. Details: [SQLite-Projektdaten](docs/SQLITE_PROJEKTDATEN.md).
+
+## Benutzerverwaltung – 06.11.2026
+
+- Einheitliche Prüfung neuer Passwörter; bestehende Konten und Passwörter bleiben erhalten.
+- Selbstregistrierung standardmäßig geschlossen und für Systemadmins steuerbar.
+- Fehlende Konten und ungültige Rollen/Statuswerte melden Fehler; letzter aktiver Systemadmin geschützt.
+- Verständliche Rollen ohne Berechtigungsänderung bestehender Konten; klare Dialogfelder, Escape und Tastaturfokus.
+- 13 neue Prüfungen, insgesamt 75 erfolgreich. Details: [Benutzerverwaltung](docs/BENUTZERVERWALTUNG.md).
+
+## Einheitliche Gestaltung – 03.11.2026
+
+- Ruhige Standardfarben in Hell und Dunkel, einheitliche Navigation, Flächen, Formulare und Tabellen.
+- Mobile Auswahlkarten und Archivformulare umbrechend; breite Tabellen scrollen im eigenen Bereich.
+- Bestehende Standardthemes ohne Dateimigration lesend verfeinert; individuelle Werte bleiben erhalten. Dynamisch lesbare Schaltflächenbeschriftung auch bei eigenen Farben.
+- Vier Theme-Prüfungen ergänzt. Beschreibung: [Gestaltung](docs/GESTALTUNG.md).
+
+## Fehlende Brandschutzfotos – 03.11.2026
+
+- Sichtbare Warnung mit Schottung und Fotofeld in Brandschutz, Dashboard und Export.
+- Fehlende Dateiverweise stehen im PDF und im ZIP-Protokoll; sie verhindern einen vollständigen Exportstatus, ohne PDF-Datei-/Seitenzähler zu verändern.
+- Optionale leere Felder und inaktive Schottungen erzeugen keine Fehlwarnung; vorhandene Daten werden nicht migriert.
+- Sechs Regressionstests ergänzt, insgesamt 58 Prüfungen. Anleitung: [Brandschutzfotos](docs/BRANDSCHUTZFOTOS.md).
+
 ## Lokaler Beta-Betrieb – 30.10.2026
 
 - Sicherheitsprotokoll für kritische Verwaltungsaktionen mit Versuchs-/Ergebnisdatensätzen, Hash-Verkettung und Systemadmin-Ansicht; keine Formularinhalte oder Zugangsdaten.

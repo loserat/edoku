@@ -21,14 +21,18 @@ const {
   updateUserPassword,
   updateUserRole,
   updateUserStatus,
-  USER_ROLES
+  USER_ROLES,
+  USER_ROLE_LABELS
 } = require("./services/dbService");
 const { attachUser, blockViewerWrites, endSession, loginUser, parseCookies, registerUser, requireAuth, requireSystemAdmin, startSession } = require("./services/authService");
+const { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH, validateNewPassword } = require("./services/passwordPolicyService");
+const projectStore = require("./services/projectDataStoreService");
+const { initialAdminFromEnvironment, readiness } = require("./services/deploymentService");
 const {
   createProject,
   ensureCurrentProject,
   exportProject,
-  getCurrentDataFiles,
+  dataFilesForProject,
   importProject,
   listExports,
   listProjects,
@@ -42,6 +46,7 @@ const { createProjectFolder, fileSafeName, bindProjectScope, legacyOutputStatus,
 const { installAsyncHandlers, createCsrfProtection, createAuthLimiter } = require("./services/requestSecurityService");
 const { createAuditService } = require("./services/auditService");
 const { buildDashboardStats } = require("./services/dashboardService");
+const { brandschutzPhotosRelevant, inspectBrandschutzPhotos } = require("./services/brandschutzPhotoService");
 const { buildExportPreview } = require("./services/exportPreviewService");
 const { listPdfPreviewFiles, listFinalExportFiles, resolvePdfPreviewFile, resolveExportDownloadFile } = require("./services/pdfPreviewService");
 const { buildExportliste, prepareFinalExport } = require("./services/exportService");
@@ -118,16 +123,31 @@ const DEFAULT_STOCKWERKE = ["UG", "EG", "1. OG", "2. OG", "3. OG", "4. OG", "5. 
 // ! WICHTIG: Bestehende Datenbanken werden beim Update weder neu befüllt noch migriert.
 // * INFO: Startkonten und das alte JSON-Projektregister gelten nur für die Erstinstallation.
 const existingDatabase = fs.existsSync(path.join(STORAGE_DIR, "app.db"));
+// Ungültige Startzugänge vor dem Anlegen einer Datenbank ablehnen.
+const initialAdmin = existingDatabase ? null : initialAdminFromEnvironment();
 bootstrapStorage({ ROOT_DIR, DATA_DIR, CONFIG_DIR, OUTPUT_DIR, TEMPLATES_DIR, STORAGE_DIR });
 initDatabase(STORAGE_DIR);
 if (!existingDatabase) {
   ensureDefaultUser();
   migrateProjectsJson(ROOT_DIR);
+  projectStore.migrateProjectData(ROOT_DIR, connection(), { newInstallation: true });
+  require("./services/deviceDataStoreService").migrateDeviceData(connection());
 }
+projectStore.configureProjectDataStore(ROOT_DIR, connection());
 
 const app = express();
 installAsyncHandlers(app);
 app.disable("x-powered-by");
+app.get("/ready", (_req, res) => {
+  res.set("Cache-Control", "no-store");
+  try {
+    const state = readiness(ROOT_DIR, connection(), { requireSQLite: process.env.EDOKU_REQUIRE_SQLITE === "true" });
+    return res.json({ ...state, version: packageInfo.version });
+  } catch (error) {
+    console.error("Bereitschaftsprüfung fehlgeschlagen:", error.message);
+    return res.status(503).json({ status: "unavailable" });
+  }
+});
 const authLimiter = createAuthLimiter();
 const audit = createAuditService(ROOT_DIR, { resolveTarget: req => {
   if (req.params?.userId && getUserById(req.params.userId)) return req.params.userId;
@@ -141,6 +161,8 @@ app.set("view engine", "ejs");
 app.set("views", path.join(ROOT_DIR, "views"));
 app.set("query parser", "extended");
 Object.assign(app.locals, {
+  passwordMinLength: PASSWORD_MIN_LENGTH, passwordMaxLength: PASSWORD_MAX_LENGTH,
+  projectDataRevision: "",
   csrfToken: "", user: null, currentProjectId: "", currentProjectName: "", currentProjectNumber: "",
   projectSidebarProjects: [], showBrandschutzNavigation: false, storageWarning: "", deleteConfirmDialogs: true,
   systemSettings: mergeSystemSettings(DEFAULT_SYSTEM_SETTINGS)
@@ -172,6 +194,7 @@ app.use((req,res,next) => {
 });
 app.use(createCsrfProtection());
 app.use("/api", apiRoutes);
+app.use(projectStore.projectDataRequest(ROOT_DIR));
 
 // * INFO: Gemeinsamer Template-Kontext für eingeloggte Benutzer. Die Views nutzen diese
 // * INFO: Werte für Flash-Meldungen, Projektanzeige und die Projektliste in der Sidebar.
@@ -199,6 +222,7 @@ app.use(async (req, res, next) => {
   try {
     const current = await ensureCurrentProject(ROOT_DIR, DATA_DIR, req.user.id);
     res.locals.currentProjectId = current.projectId;
+    res.locals.projectDataRevision = projectStore.projectDataRevision(ROOT_DIR,req.user.id,current.projectId);
     res.locals.projectSidebarProjects = await listProjects(ROOT_DIR, req.user.id);
     const currentProject = res.locals.projectSidebarProjects.find((project) => project.id === current.projectId);
     if (currentProject && legacyOutputStatus(ROOT_DIR, bindProjectScope(currentProject, req.user.id, current.projectId)) === "ambiguous") {
@@ -214,6 +238,18 @@ app.use(async (req, res, next) => {
   }
 
   next();
+});
+
+// Veraltete Formulare dürfen neuere Daten und ein inzwischen gewechseltes Projekt nicht überschreiben.
+app.use((req,res,next) => {
+  const token=req.get("X-Project-Revision") || req.multipartUpload?.fields?._projectRevision || req.body?._projectRevision;
+  if(req.body && !Buffer.isBuffer(req.body))delete req.body._projectRevision;
+  if(req.multipartUpload?.fields)delete req.multipartUpload.fields._projectRevision;
+  if(req.method!=="POST" || !req.user || !/^\/(projekt(?:$|\/)|leistungsbereiche(?:$|\/)|systemauswahl(?:$|\/)|dokumente(?:$|\/)|geraetelisten(?:$|\/)|brandschutz(?:$|\/)|anhaenge(?:$|\/)|export(?:$|\/))/.test(req.path))return next();
+  try {
+    if(res.locals.projectDataRevision)projectStore.assertProjectRevision(ROOT_DIR,req.user.id,res.locals.currentProjectId,token);
+    next();
+  } catch(error) { next(error); }
 });
 
 // * INFO: Startkonten werden ausschließlich für eine neue Installation angelegt.
@@ -245,6 +281,7 @@ function ensureSeedUser({ id, email, name, password, role = "user", status = "ac
 
 function ensureDefaultUser() {
   if (listUsers().length) return;
+  if (initialAdmin) { ensureSeedUser(initialAdmin); return; }
   [
     { id: "user_demo", email: "admin", name: "admin", password: "admin", role: "systemadmin" },
     { id: "user_marx", email: "marx", name: "Marx", password: "marx" },
@@ -453,7 +490,9 @@ function buildBrandschutzPreviewUrl(pdfPreviewFiles) {
 }
 
 async function currentFiles(req) {
-  return getCurrentDataFiles(ROOT_DIR, DATA_DIR, req.user.id);
+  // Der zu Beginn geprüfte Projektkontext bleibt für die gesamte Anfrage stabil.
+  if(!req.res.locals.currentProjectId)throw Object.assign(new Error("Der Projektkontext konnte nicht sicher geladen werden. Bitte die gespeicherten Dateien prüfen."),{status:500});
+  return dataFilesForProject(ROOT_DIR,req.user.id,req.res.locals.currentProjectId);
 }
 
 // * INFO: Lädt den vollständigen Projektzustand aus JSON/Config-Dateien und normalisiert
@@ -511,7 +550,7 @@ async function loadCurrent(req) {
 
 // Dateistatus und Seitenzahlen werden gelesen, ohne Projektdaten zu verändern.
 async function currentExportEntries(data) {
-  return buildExportliste(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche, { persist: false });
+  return buildExportliste(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche, { persist: false, brandschutz: data.brandschutz });
 }
 
 // * INFO: Leitet aus aktiven Leistungsbereichen und Systemzuordnungen ab,
@@ -624,6 +663,9 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", authLimiter.registration, (req, res) => {
+  if (!res.locals.systemSettings.selfRegistrationEnabled) {
+    return res.status(403).render("register", { flash: { error: "Die Selbstregistrierung ist geschlossen. Bitte wende dich an einen Systemadmin." } });
+  }
   try {
     const user = registerUser(req.body);
     res.locals.auditIdentity = { actorId: user.id, actorRole: user.role };
@@ -935,6 +977,7 @@ app.get("/brandschutz", requireAuth, async (req, res, next) => {
     res.render("brandschutz", {
       active: "brandschutz",
       brandschutz: data.brandschutz,
+      photoWarnings: await inspectBrandschutzPhotos(ROOT_DIR, data.projekt, data.brandschutz),
       brandschutzPreviewUrl: buildBrandschutzPreviewUrl(pdfPreviewFiles),
       stockwerke: mergeStockwerkOptions(
         data.projekt.stockwerke,
@@ -1056,6 +1099,11 @@ async function deletePdfFilesRecursive(folderPath) {
   return deleted;
 }
 
+async function projectPhotoWarnings(data) {
+  return brandschutzPhotosRelevant(data.matrix, data.leistungsbereiche)
+    ? inspectBrandschutzPhotos(ROOT_DIR, data.projekt, data.brandschutz) : [];
+}
+
 async function generateCompleteDocumentation(rootDir, data) {
   const generated = [];
   await createProjectFolder(rootDir, data.projekt);
@@ -1064,7 +1112,7 @@ async function generateCompleteDocumentation(rootDir, data) {
   generated.push(...await generateDeckblaetter(rootDir, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche));
   generated.push(...await generateGeraetelisten(rootDir, data.projekt, data.geraetelisten, data.systemSettings, data.matrix, data.leistungsbereiche, data.anhaenge));
   generated.push(...await generateBrandschutzPdf(rootDir, data.projekt, data.brandschutz, data.systemSettings, data.matrix, data.geraetelisten, data.leistungsbereiche, data.anhaenge));
-  await buildExportliste(rootDir, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche);
+  await buildExportliste(rootDir, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche, { brandschutz: data.brandschutz });
   return generated;
 }
 
@@ -1082,7 +1130,8 @@ app.post("/export/dokumentation", requireAuth, async (req, res) => {
   try {
     const data = await loadCurrent(req);
     const generated = await generateCompleteDocumentation(ROOT_DIR, data);
-    redirectWithFlash(res, "/export", "success", `Dokumentation wurde generiert (${generated.length} PDFs).`);
+    const photoWarnings = await projectPhotoWarnings(data);
+    redirectWithFlash(res, "/export", photoWarnings.length ? "warning" : "success", `Dokumentation wurde generiert (${generated.length} PDFs).${photoWarnings.length ? ` ${photoWarnings.length} Brandschutz-Fotoverweis(e) führen zu fehlenden oder nicht zugreifbaren Dateien.` : ""}`);
   } catch (error) {
     fail(req, res, "/export", error);
   }
@@ -1093,7 +1142,7 @@ app.post("/export/pdfs-loeschen", requireAuth, async (req, res) => {
     const data = await loadCurrent(req);
     const paths = await createProjectFolder(ROOT_DIR, data.projekt);
     const deleted = await deletePdfFilesRecursive(paths.generatedPath) + await deletePdfFilesRecursive(paths.finalPath);
-    await buildExportliste(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche);
+    await buildExportliste(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche, { brandschutz: data.brandschutz });
     redirectWithFlash(res, "/export", "success", `${deleted} PDF-Datei(en) wurden gelöscht.`);
   } catch (error) {
     fail(req, res, "/export", error);
@@ -1121,7 +1170,8 @@ app.post("/export/geraetelisten", requireAuth, async (req, res) => {
 app.post("/export/brandschutz", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
   await generateBrandschutzPdf(ROOT_DIR, data.projekt, data.brandschutz, data.systemSettings, data.matrix, data.geraetelisten, data.leistungsbereiche, data.anhaenge);
-  redirectWithFlash(res, "/export", "success", "Brandschutzdokumentation wurde generiert.");
+  const photoWarnings = await inspectBrandschutzPhotos(ROOT_DIR, data.projekt, data.brandschutz);
+  redirectWithFlash(res, "/export", photoWarnings.length ? "warning" : "success", `Brandschutzdokumentation wurde generiert.${photoWarnings.length ? ` ${photoWarnings.length} Fotoverweis(e) führen zu fehlenden oder nicht zugreifbaren Dateien.` : ""}`);
 });
 
 app.post("/export/trennstreifen", requireAuth, async (req, res) => {
@@ -1186,7 +1236,7 @@ app.post("/export/ordnerruecken", requireAuth, async (req, res) => {
 
 app.post("/export/exportliste", requireAuth, async (req, res) => {
   const data = await loadCurrent(req);
-  await buildExportliste(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche);
+  await buildExportliste(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche, { brandschutz: data.brandschutz });
   redirectWithFlash(res, "/export", "success", "Exportliste wurde aktualisiert.");
 });
 
@@ -1194,9 +1244,14 @@ app.post("/export/final", requireAuth, async (req, res) => {
   try {
     const data = await loadCurrent(req);
     await generateCompleteDocumentation(ROOT_DIR, data);
-    const result = await prepareFinalExport(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, { systemSettings: data.systemSettings });
-    const warnings = result.missingFiles.length + result.skippedMergeFiles.length + result.unassignedFiles.length;
-    const message = `${warnings ? "Unvollständiger Export" : "Export erstellt"}: Gesamt-PDF mit ${result.completePdfPages} Seiten, ${result.summary.present} Einzel-PDFs. ${warnings ? `${warnings} Datei(en) fehlen oder konnten nicht übernommen werden. Details in der Reihenfolge-Datei.` : ""}`;
+    const result = await prepareFinalExport(ROOT_DIR, data.projekt, data.matrix, data.files.exportliste, { systemSettings: data.systemSettings, brandschutz: data.brandschutz, leistungsbereiche: data.leistungsbereiche });
+    const missingPdfs = result.missingFiles.length + result.skippedMergeFiles.length + result.unassignedFiles.length;
+    const warnings = missingPdfs + result.photoWarnings.length;
+    const notes = [missingPdfs ? `${missingPdfs} PDF-Datei(en) fehlen oder konnten nicht übernommen werden.` : "",
+      result.photoWarnings.length ? `${result.photoWarnings.length} Brandschutz-Fotoverweis(e) führen zu fehlenden oder nicht zugreifbaren Dateien.` : ""].filter(Boolean);
+    const message = `${warnings ? "Unvollständiger Export" : "Export erstellt"}: Gesamt-PDF mit ${result.completePdfPages} Seiten, ${result.summary.present} Einzel-PDFs.${notes.length ? ` ${notes.join(" ")} Details in der Reihenfolge-Datei.` : ""}`;
+    // Die vollständige Indexberechnung bleibt auch bei fachlich unvollständiger Ausgabe gültig.
+    res.locals.projectDataCommitOnWarning = true;
     redirectWithFlash(res, "/export", warnings ? "error" : "success", message.trim());
   } catch (error) {
     fail(req, res, "/export", error);
@@ -1220,6 +1275,7 @@ app.get("/einstellungen", requireAuth, async (req, res, next) => {
       isSystemAdmin,
       users: isSystemAdmin ? listUsers() : [],
       userRoles: USER_ROLES,
+      userRoleLabels: USER_ROLE_LABELS,
       appVersion: APP_VERSION,
       appName: APP_NAME,
       releaseNotes: await readReleaseNotes()
@@ -1311,14 +1367,23 @@ app.post("/einstellungen/system", requireAuth, async (req, res) => {
   }
 });
 
+app.post("/einstellungen/registrierung", requireSystemAdmin, async (req, res) => {
+  try {
+    const file = path.join(CONFIG_DIR, "systemEinstellungen.json");
+    const current = await readJson(file, {});
+    await writeJson(file, { ...current, selfRegistrationEnabled: req.body.selfRegistrationEnabled === "on" });
+    okOrRedirect(req, res, "/einstellungen#benutzer", "Registrierungseinstellung wurde gespeichert.");
+  } catch (error) { fail(req, res, "/einstellungen#benutzer", error); }
+});
+
 app.post("/einstellungen/benutzer", requireSystemAdmin, async (req, res) => {
   try {
     const email = String(req.body.email || "").trim().toLowerCase();
     const name = String(req.body.name || "").trim() || email;
-    const password = String(req.body.password || "");
-    if (!email) throw new Error("Bitte eine Loginkennung angeben.");
-    if (getUserByEmail(email)) throw new Error("Dieser Benutzer existiert bereits.");
-    if (!password.trim()) throw new Error("Bitte ein Passwort angeben.");
+    const password = validateNewPassword(req.body.password);
+    if (!email) throw Object.assign(new Error("Bitte eine Loginkennung angeben."), { status: 400 });
+    if (getUserByEmail(email)) throw Object.assign(new Error("Dieser Benutzer existiert bereits."), { status: 409 });
+    if (!USER_ROLES.includes(req.body.role)) throw Object.assign(new Error("Ungültige Benutzerrolle."), { status: 400 });
     const { passwordHash, salt } = hashSeedPassword(password);
     const now = new Date().toISOString();
     createUser({
@@ -1341,7 +1406,7 @@ app.post("/einstellungen/benutzer", requireSystemAdmin, async (req, res) => {
 
 app.post("/einstellungen/benutzer/:userId/rolle", requireSystemAdmin, async (req, res) => {
   try {
-    const nextRole = normalizeUserRole(req.body.role);
+    const nextRole = req.body.role;
     if (req.params.userId === req.user.id && nextRole !== "systemadmin") {
       throw new Error("Du kannst deinem eigenen Konto nicht die Systemadmin-Rolle entziehen.");
     }
@@ -1354,10 +1419,8 @@ app.post("/einstellungen/benutzer/:userId/rolle", requireSystemAdmin, async (req
 
 app.post("/einstellungen/benutzer/:userId/passwort", requireSystemAdmin, async (req, res) => {
   try {
-    const password = String(req.body.password || "");
-    if (password.length < 4) {
-      throw new Error("Das neue Passwort muss mindestens 4 Zeichen lang sein.");
-    }
+    if (!getUserById(req.params.userId)) throw Object.assign(new Error("Das Benutzerkonto wurde nicht gefunden. Bitte die Benutzerliste neu laden."), { status: 404 });
+    const password = validateNewPassword(req.body.password);
     const { passwordHash, salt } = hashSeedPassword(password);
     updateUserPassword(req.params.userId, passwordHash, salt);
     deleteSessionsForUser(req.params.userId);
@@ -1369,7 +1432,7 @@ app.post("/einstellungen/benutzer/:userId/passwort", requireSystemAdmin, async (
 
 app.post("/einstellungen/benutzer/:userId/status", requireSystemAdmin, async (req, res) => {
   try {
-    const nextStatus = req.body.status === "disabled" ? "disabled" : "active";
+    const nextStatus = req.body.status;
     if (req.params.userId === req.user.id && nextStatus === "disabled") {
       throw new Error("Du kannst dein eigenes Konto nicht sperren.");
     }

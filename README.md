@@ -10,21 +10,23 @@ Version 1 ist bewusst leichtgewichtig aufgebaut:
 - EJS-Templates
 - Vanilla JavaScript
 - eigenes CSS ohne Frontend-Framework
-- JSON-Dateien für fachliche Projektdaten
-- SQLite für Benutzer, Sessions und Projektübersicht
+- Vollständige Projektdatensätze in SQLite; JSON für globale Vorgaben und den kompatiblen Altmodus
+- SQLite für Benutzer, Sessions, Projektübersicht und strukturierte Projektdaten
 - Docker-fähig
 
 ## Status
 
 edoku ist aktuell als **Beta-Version** vorgesehen. Die Anwendung ist lokal und per Docker lauffähig und kann bereits für Testläufe, Demo-Projekte und die Weiterentwicklung der Elektro-Bestandsdokumentation genutzt werden.
 
-Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. Sicherheitsprotokoll und vollständige Sicherung mit getrennter Wiederherstellung sind vorhanden. Eine zusätzliche Sicherung auf einem anderen Datenträger sowie die fachliche Abnahme mit echten Dokumentationen bleiben offen. 52 automatisierte Prüfungen decken Export, Datenerhalt, Zugriffsgrenzen, Archive, Protokoll und Sicherung ab.
+Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. Sicherheitsprotokoll und vollständige Sicherung mit getrennter Wiederherstellung sind vorhanden. Eine zusätzliche Sicherung auf einem anderen Datenträger sowie die fachliche Abnahme mit echten Dokumentationen bleiben offen. 109 automatisierte Prüfungen decken Export, Datenerhalt, Zugriffsgrenzen, Archive, Protokoll, Benutzerverwaltung und SQLite-Speicherung ab.
 
 Die aktuelle Arbeitsliste mit offenen Punkten steht in [docs/OFFENE_PUNKTE.md](docs/OFFENE_PUNKTE.md).
 Der kompakte aktuelle Projektstand steht in [docs/AKTUELLER_STAND.md](docs/AKTUELLER_STAND.md).
 Änderungen werden zusätzlich im [CHANGELOG.md](CHANGELOG.md) gepflegt.
 
-### Stand 30. Oktober 2026
+### Arbeitsstand 6. November 2026
+
+Die geprüften SQLite-Stufen 1 und 2 sind in der normalen lokalen Anwendung aktiviert. Neun strukturierte Projektdatensätze liegen in SQLite; Gerätelisten und Positionen erhalten zusätzlich eigene, atomar synchronisierte Tabellen. Bestehende Konten, Passwörter, Projektinhalte und historische Dateien blieben erhalten. Eine Neuinstallation benötigt keinen separaten Datenbankserver. Dieser Arbeitsstand ist kein neuer Release-Tag.
 
 Sicherheits- und Archivkorrekturen: getrennte Ausgabeablagen je Benutzer und Projekt, begrenzte Dateizugriffe, Schutz schreibender Formulare, zuverlässige Speicherfehler und echte geprüfte Projekt-ZIPs. Gemeinsam genutzte Alt-Ausgaben bleiben als historischer Bestand erhalten. Siehe [Zugriffsschutz](docs/SICHERHEIT.md) und [Projektarchive](docs/PROJEKTARCHIVE.md).
 
@@ -36,6 +38,10 @@ Sicherheits- und Archivkorrekturen: getrennte Ausgabeablagen je Benutzer und Pro
 - Bestehende Konten und Projektdaten bleiben bei Neustarts erhalten; die lokale Hauptanwendung wurde mit vollständiger Sicherung aktualisiert.
 
 Details: [Release Notes](docs/RELEASE_NOTES.md), [Tests und Beta-Abnahme](docs/TESTS.md) und [sicheres lokales Update](docs/UPDATE.md).
+
+### Coolify-Arbeitsstand 17. November 2026
+
+Geprüfte Docker-Laufzeit mit mehrstufigem Build, echtem Bereitschaftscheck unter `/ready`, optionalem eigenem Erstzugang und separater Coolify-Compose-Datei. 109 automatische Prüfungen sowie ein Containeraustausch mit fünf erhaltenen Testvolumes sind erfolgreich. Die tatsächliche Online-Aktivierung und HTTPS müssen zusätzlich am jeweiligen Coolify-Ziel geprüft werden. Einrichtung: [Coolify-Testbetrieb](docs/COOLIFY.md).
 
 ## Einblick in die Anwendung
 
@@ -70,7 +76,7 @@ bleiben in der schmalen Ansicht horizontal bedienbar.
 
 ## Funktionen
 
-- Registrierung, Login und Logout
+- Login und Logout; Selbstregistrierung standardmäßig geschlossen und nur durch Systemadmins freigebbar
 - benutzerbezogene Projektverwaltung
 - mehrere Projekte pro Benutzer
 - aktuelles Projekt als Arbeitskontext
@@ -182,7 +188,7 @@ Die Demo-Zugänge werden ausschließlich bei einer Erstinstallation ohne vorhand
 
 ## Datenhaltung
 
-Fachliche Projektinhalte bleiben in Version 1 JSON-basiert. Benutzer, Sessions und Projekt-Metadaten werden in SQLite gespeichert.
+Nach geprüfter Aktivierung liegen auch die neun strukturierten Projektdatensätze in SQLite. Gerätelisten und Positionen werden zusätzlich in eigenen, automatisch synchronisierten Tabellen abgebildet. Medien und Ausgabedateien bleiben Dateien. Ältere Installationen ohne Aktivierung behalten zunächst ihre JSON-Ablage. Details: [SQLite-Projektdaten](docs/SQLITE_PROJEKTDATEN.md).
 
 Lokale Laufzeitdaten werden unter `storage/` erzeugt:
 
@@ -232,20 +238,22 @@ Systemadmins können unter `System > System` das sichtbare edoku-/nickgm-Brandin
 
 Systemadmins finden das Sicherheitsprotokoll unter **System → Sicherheitsprotokoll**. Eine vollständige Sicherung enthält alle fünf Laufzeitordner, die Datenbank und standardmäßig das passende Docker-Abbild. Die Wiederherstellung erfolgt ausschließlich in einen neuen Ordner. Anleitung und Grenzen: [Lokaler Beta-Betrieb](docs/BETA_BETRIEB.md).
 
+## Brandschutzfotos
+
+Fehlende referenzierte Fotos werden in Brandschutz, Dashboard, Export sowie im ZIP-Protokoll angezeigt. Ein Export mit Fotowarnungen gilt nicht als vollständig; vorhandene Projekte und Dateiverweise werden dabei nicht verändert. Details: [Brandschutzfotos prüfen](docs/BRANDSCHUTZFOTOS.md).
+
 ## Tests
 
-Nach Installation der Abhängigkeiten:
+Die vollständige Suite im getrennten Testcheckout oder Container mit neutralen Startdaten ausführen:
 
 ```bash
-npm run test:exports
-npm run test:preservation
-npm run test:security
-npm run test:audit
-npm run test:backup
-npm run test:e2e
+npm run check
+npm test
 ```
 
-Die 52 Prüfungen arbeiten mit temporären Prüfprojekten. Sie prüfen unter anderem Kapitelkollisionen, PDF-Seitenzahlen, Inhaltsverzeichnis-Sprunglinks und Datenerhalt über Neustarts. Die Exporttests schreiben zusätzlich eigene Nachweise unter `output/pdf/` und `output/counting-review/`; Tests deshalb in einem getrennten Checkout oder Container ausführen. Vorhandene Benutzerprojekte werden nicht bearbeitet. Eine Anleitung zur zusätzlichen manuellen Abnahme steht in [docs/TESTS.md](docs/TESTS.md).
+109 Prüfungen (101 Node.js, acht Python) sind im geprüften Node-22-Abbild erfolgreich. Sie umfassen unter anderem Kapitel-/Seitenzählung, Inhaltsverzeichnis-Links, Benutzerrechte, Archiv-Rückimport, SQLite-Transaktionen, paralleles Speichern und Wiederherstellung. Tests nicht mit den normalen Laufzeitordnern verbinden: Einige Exporttests schreiben eigene PDF-Nachweise.
+
+Zusätzlich wurden acht bestehende Projekte ausschließlich auf Kopien vor/nach der Geräteumstellung verglichen: gleiche Exporte mit 249 tatsächlichen PDF-Seiten. Das ist eine technische Prüfung, keine fachliche Freigabe. Alle Einzelbefehle und Grenzen stehen unter [Tests und Beta-Abnahme](docs/TESTS.md).
 
 ## Theme-System
 
@@ -286,8 +294,14 @@ Diese Inhalte sollen nicht ins Repository:
 
 Siehe auch:
 
+- [Dokumentationsübersicht](docs/README.md)
 - [Technische Dokumentation](docs/TECHNIK.md)
+- [SQLite-Stufen, Datenmodell und Rückweg](docs/SQLITE_PROJEKTDATEN.md)
+- [Benutzerverwaltung](docs/BENUTZERVERWALTUNG.md)
+- [Gestaltung](docs/GESTALTUNG.md)
+- [Brandschutzfotos und Exportwarnungen](docs/BRANDSCHUTZFOTOS.md)
 - [Installation](INSTALL.md)
+- [Coolify-Testbetrieb](docs/COOLIFY.md)
 - [Aktueller Stand](docs/AKTUELLER_STAND.md)
 - [Changelog](CHANGELOG.md)
 - [Repo-Sicherheitscheck](docs/REPO_SICHERHEITSCHECK.md)
@@ -300,7 +314,7 @@ Siehe auch:
 
 ## Aktuelle Grenzen
 
-- keine externe Datenbank
+- eingebettetes SQLite, keine externe Datenbank; die Gerätezeilen sind derzeit eine Projektion des vollständigen Datensatzes
 - Rollenverwaltung ist als Beta-Funktion vorhanden und muss für produktiven Serverbetrieb weiter gehärtet werden
 - PDF-Gesamtdatei und ZIP-Export sind als Beta-Funktion vorhanden und müssen weiter visuell geprüft werden
 - automatisierte Prüfungen decken Exportzählung, Datenerhalt und zentrale Sicherheits-/Archivfälle ab; vollständige Browser-, Fach- und Betriebsabnahme bleibt offen
