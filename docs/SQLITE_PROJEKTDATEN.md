@@ -102,7 +102,7 @@ npm run check
 npm test
 ```
 
-Die vollständige Suite umfasst 103 Prüfungen (95 Node.js, acht Python); davon gehören 28 zur Speicherprüfung. Acht bestehende Projektkopien lieferten vor/nach Stufe 2 dieselben Kapitel, Exportpositionen, Fotowarnungen und 249 tatsächliche PDF-Seiten. Paketprüfung, Rückimporte, Schreiben mit der bisherigen SQLite-Version und JSON-Rückweg wurden geprüft. Nach lokaler Aktivierung wurden die Originaldaten lesend, auf Konsistenz und auf unveränderte bisherige Inhalte geprüft. Umfang und Grenzen: [Tests](TESTS.md).
+Die vollständige Suite vom 17.11.2026 umfasst 109 Prüfungen (101 Node.js, acht Python); davon gehören 28 zur Speicherprüfung. Acht bestehende Projektkopien lieferten vor/nach Stufe 2 dieselben Kapitel, Exportpositionen, Fotowarnungen und 249 tatsächliche PDF-Seiten. Paketprüfung, Rückimporte, Schreiben mit der bisherigen SQLite-Version und JSON-Rückweg wurden geprüft. Nach lokaler Aktivierung wurden die Originaldaten lesend, auf Konsistenz und auf unveränderte bisherige Inhalte geprüft. Umfang und Grenzen: [Tests](TESTS.md).
 
 Die Prüfungen verwenden künstliche Projekte oder getrennte echte Projektkopien. Sie umfassen vollständige Übernahme, unbekannte Felder, Wiederholung, fehlerhafte Quellen, transaktionalen Abbruch, parallele Änderungen, fehlende Versionen, aktuelle Archive, Rückimport und den Rückweg in eine neue Kopie. Die bisherigen Export-, Benutzer-, Sicherheits-, Archiv- und Datenerhalttests bleiben Teil der Suite. Fachlich fehlende Unterlagen oder Fotos werden durch eine Speicherumstellung nicht ergänzt.
 

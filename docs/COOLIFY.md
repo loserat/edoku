@@ -1,6 +1,6 @@
 # Coolify: reproduzierbarer Testbetrieb
 
-Stand: 17.11.2026. Diese Anleitung beschreibt die geprüfte Containerkonfiguration. Eine bestandene lokale Prüfung belegt erst nach zusätzlicher Kontrolle den tatsächlichen Online-Betrieb.
+Stand: 17.11.2026. Technische Anleitung für Betreiber. Die [Bedienungsanleitung](BEDIENUNGSANLEITUNG.md) richtet sich getrennt an Anwender. Die Containerkonfiguration ist lokal geprüft und auf der bezeichneten Online-Testinstanz verifiziert; andere Installationen benötigen eine eigene Zielprüfung.
 
 ## Dockerfile statt automatischer Erkennung
 
@@ -64,6 +64,16 @@ Zusätzlich wurde die Compose-Ressource mit fünf frischen Testvolumes gestartet
 
 Online separat prüfen: ausgewählter Git-Commit, gültiges HTTPS, HTTP-Umleitung, Docker-Status `healthy`, `/ready`, Anmeldung mit eigenem Konto, Projektanlage/-bearbeitung, PDF-/ZIP-Export und Wiederanlauf mit denselben Daten. Fehlende Fachunterlagen bleiben fachliche Lücken. Die Testdaten müssen klar von lokalen Originalprojekten getrennt sein.
 
+## Tatsächlich aktivierter Teststand
+
+Der Programmcommit `a07104ba18c0cb1ea0d7958ebc32504c47bd002e` aus `gm/coolify-test-20261117` wurde am 17.11.2026 erfolgreich aktiviert. HTTPS, Weiterleitung, `/ready`, Anmeldung, Projekt-/Gerätespeicherung und PDF-/ZIP-Erzeugung wurden geprüft. Fünf persistente Volumes sind eingebunden; gespeicherte Testdaten blieben über den nachfolgenden Containerwechsel erhalten. Die normale lokale Installation wurde dabei nicht neu bereitgestellt.
+
+Die Ressource verwendet den Dockerfile-Healthcheck. Wenn Coolify einen eigenen HTTP-Healthcheck aktiviert, kann dieser den Check des Abbilds ersetzen; nicht versehentlich einen abweichenden Demo-Endpunkt prüfen. Bei der geprüften Ressource war kein separater Coolify-HTTP-Check aktiv.
+
+Der Online-Testbestand ist fachlich unvollständig: 33 vorhandene Einzel-PDFs mit 35 Seiten, 15 fehlende PDF-Quellen. Die erzeugten Dateien wurden als Teilstand angeboten. Ein konkreter Download wurde nicht unabhängig geprüft. Vollständiger [Online-Prüfstand](ONLINE_PRUEFSTAND.md).
+
+Der Commit ist in der Testressource festgesetzt. Eine spätere Dokumentationsänderung im Branch aktualisiert das laufende Programm nicht automatisch. Künftige Programmupdates gezielt prüfen und den Commit-Pin bewusst ändern. Die Veröffentlichung der Anleitung löst hier keine neue Bereitstellung aus.
+
 ## Abhängigkeitsprüfung vom 17.11.2026
 
 Die im ersten Build gemeldeten Lücken wurden innerhalb der kompatiblen Versionsbereiche geschlossen: unter anderem Express 4.22.3, body-parser 1.20.9, proxy-addr 2.0.8, qs 6.16.2 und brace-expansion 2.1.8. Die Sperrdatei legt diese geprüften Versionen fest. `npm audit --omit=dev` meldete anschließend 0 bekannte Lücken; alle 109 Prüfungen bestanden mit dem korrigierten Abbild erneut. Das ist ein datierter Paketprüfstand, keine allgemeine Sicherheitsfreigabe.
@@ -72,6 +82,7 @@ Die im ersten Build gemeldeten Lücken wurden innerhalb der kompatiblen Versions
 
 - [Coolify: Docker Compose](https://coolify.io/docs/applications/builds/docker-compose)
 - [Coolify: Persistenter Speicher](https://coolify.io/docs/services/configuration/persistent-storage)
+- [Coolify: Healthchecks](https://coolify.io/docs/applications/configuration/health-checks)
 - [Docker: Mehrstufige Builds](https://docs.docker.com/build/building/multi-stage/)
 
 Weitere Anleitungen: [Installation](../INSTALL.md), [SQLite](SQLITE_PROJEKTDATEN.md), [Sicherung](BETA_BETRIEB.md), [Tests](TESTS.md).

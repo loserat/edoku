@@ -1,6 +1,6 @@
 # Installation
 
-Stand: 06.11.2026. Diese Anleitung beschreibt eine Neuinstallation des aktuellen Arbeitsstands für Entwicklung, Tests und lokalen Beta-Betrieb. Bei einer vorhandenen Installation zuerst [Update und Datenerhalt](docs/UPDATE.md) lesen. Ein bloßer GitHub-Download beweist nicht, dass ein noch unveröffentlichter Arbeitsstand bereits enthalten ist.
+Stand: 17.11.2026. Diese Anleitung beschreibt eine Neuinstallation des aktuellen Arbeitsstands für Entwicklung, Tests und lokalen Beta-Betrieb. Bei einer vorhandenen Installation zuerst [Update und Datenerhalt](docs/UPDATE.md) lesen. Der beschriebene geprüfte Programmstand liegt auf `gm/coolify-test-20261117`; `main` enthält einen älteren Programmstand. Den gewünschten Branch beziehungsweise Commit vor dem Bauen ausdrücklich auswählen. Die reine Nutzung erklärt die [Bedienungsanleitung](docs/BEDIENUNGSANLEITUNG.md).
 
 ## Online-Testinstanz mit Coolify
 
@@ -67,25 +67,31 @@ docker compose run --rm --no-deps edoku npm run storage:status -- --root /app
 
 Der Befehl zeigt den Projektmodus und die zusätzliche Geräteprojektion an. Er setzt voraus, dass das verwendete Abbild die aktuellen Speicherbefehle enthält.
 
-## Lokale Demo-Konten
+## Eigener Erstzugang und bestehende Konten
 
-Nur bei einer Erstinstallation ohne vorhandene `storage/app.db` werden lokale Demo-Konten vorbereitet. Eine vorhandene Datenbank wird beim Neustart weder mit Demo-Konten befüllt noch erneut aus dem alten JSON-Projektregister migriert. Eigene Konten, Passwortänderungen, Rollen und Sperren bleiben erhalten. Das gilt auch für eine vorhandene leere Datenbank; sie wird nicht automatisch mit Testkonten gefüllt.
+Vor einer echten Neuinstallation einen eigenen Erstzugang über die Laufzeitvariablen `EDOKU_INITIAL_ADMIN_LOGIN` und `EDOKU_INITIAL_ADMIN_PASSWORD` konfigurieren. Das Passwort benötigt 12 bis 256 Zeichen und darf nicht nur aus Leerzeichen bestehen. Beide Werte privat hinterlegen; keine Zugangsdaten in Git speichern. Bei einer so eingerichteten Neuinstallation entsteht genau ein eigener Systemadmin, ohne bekannte Demo-Konten.
 
-```text
-Benutzer: admin
-Passwort: admin
-Rolle: systemadmin
+Bei lokalem Docker Compose reicht eine `.env`-Datei allein nicht aus, da die normale Compose-Datei diese beiden Variablen nicht an den Container weitergibt. Eine **private** Zusatzdatei `compose.private.yml` anlegen:
 
-Benutzer: berg
-Passwort: berg
-Rolle: systemadmin
-
-Benutzer: marx
-Passwort: marx
-Rolle: user
+```yaml
+services:
+  edoku:
+    environment:
+      EDOKU_INITIAL_ADMIN_LOGIN: ${EDOKU_INITIAL_ADMIN_LOGIN:?Eigene Kennung setzen}
+      EDOKU_INITIAL_ADMIN_PASSWORD: ${EDOKU_INITIAL_ADMIN_PASSWORD:?Eigenes Passwort setzen}
 ```
 
-Diese Konten sind nur für lokale Entwicklung und Tests vorgesehen. Für öffentlich erreichbare Installationen müssen eigene Konten angelegt und bekannte Startpasswörter geändert oder nicht benötigte Konten gesperrt werden.
+Die beiden Werte vor dem Start in einer privaten `.env`-Datei festlegen. Das Passwort dort in einfachen Anführungszeichen notieren, damit etwa Dollarzeichen wörtlich erhalten bleiben. `.env` und `compose.private.yml` nicht veröffentlichen. Mit beiden Compose-Dateien starten:
+
+```bash
+docker compose -f docker-compose.yml -f compose.private.yml up -d --build
+```
+
+Für die jeweils eigene Bereitstellung die privaten Werte in der passenden Laufzeitkonfiguration erhalten. Für Online-Betrieb ist die [separate Betreiberanleitung](docs/COOLIFY.md) maßgeblich.
+
+Ohne beide Erstzugangsvariablen bleibt das bisherige Demo-Verhalten für lokale Tests kompatibel. Solche Konten sind kein geeigneter öffentlicher Erstzugang. Diese Dokumentation veröffentlicht keine Klartext-Zugangsliste.
+
+Eine vorhandene Datenbank hat Vorrang: Bei Neustarts werden eigene Konten, Passwortänderungen, Rollen und Sperren erhalten; auch eine leere vorhandene Datenbank wird nicht automatisch mit Startkonten befüllt. Die Erstzugangsvariablen sind **kein Passwortreset**. Bestehende Zugänge durch den zuständigen Systemadmin verwalten; die Datenbank niemals zum Zurücksetzen löschen.
 
 ## Persistente Daten
 

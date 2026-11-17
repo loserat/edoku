@@ -24,4 +24,4 @@ Es werden keine Fotos gelöscht, Dateiverweise automatisch entfernt oder histori
 
 `npm run test:photos` prüft aktive/inaktive Datensätze, leere Felder, unveränderte Quelldaten, Pfad-/Symlinkgrenzen, unveränderte PDF-Zähler, Exportstatus und ZIP-Hinweise, zwischenzeitlich verschwundene/wiederhergestellte Dateien sowie echte HTTP-Seiten und Exportmeldungen. Die HTML-Ausgabe maskiert freie Texte.
 
-Die aktuelle vollständige Testsuite enthält 95 Node.js- und acht Python-Prüfungen (103 insgesamt); sechs Fälle prüfen die Fotowarnungen. Tests ausschließlich in einem getrennten Testabbild ohne originale Laufzeitordner ausführen; siehe [TESTS.md](TESTS.md). Private Prüfberichte und Projektkopien bleiben unter `intern/` bzw. `backups/` und werden nicht veröffentlicht.
+Die aktuelle vollständige Testsuite vom 17.11.2026 enthält 101 Node.js- und acht Python-Prüfungen (109 insgesamt); sechs Fälle prüfen die Fotowarnungen. Tests ausschließlich in einem getrennten Testabbild ohne originale Laufzeitordner ausführen; siehe [TESTS.md](TESTS.md). Private Prüfberichte und Projektkopien bleiben unter `intern/` bzw. `backups/` und werden nicht veröffentlicht.

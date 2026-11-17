@@ -1,5 +1,14 @@
 # Changelog
 
+## Dokumentation und Online-Nachweis – 17.11.2026
+
+- README auf einen schnellen Produktüberblick mit klar getrennten Anwender- und Betreiber-Einstiegen umgestellt.
+- Bebilderte [Bedienungsanleitung](docs/BEDIENUNGSANLEITUNG.md) für den vollständigen Nutzerablauf ergänzt; keine Servereinrichtung in der Anwenderanleitung.
+- Neue Aufnahmen ausschließlich mit künstlichen Testdaten; frühere Screenshots erhalten und datiert abgegrenzt.
+- [Tatsächlichen Online-Prüfstand](docs/ONLINE_PRUEFSTAND.md) dokumentiert: HTTPS, SQLite, Anmeldung, Speichern/Wiederladen und PDF-/ZIP-Erzeugung; 15 fehlende PDF-Quellen im Testbestand ausdrücklich als unvollständigen Export abgegrenzt.
+- Aktuelle Gesamttestzahlen und Bereitstellungsangaben in den technischen Anleitungen abgeglichen; historische Prüfstände erhalten.
+- Reine Dokumentationspflege: keine Änderung von Anwendungscode, Konten, Projekten oder historischem Altbestand, keine neue Bereitstellung.
+
 ## Coolify-Testbetrieb – 17.11.2026
 
 - Mehrstufiges Node-22-Abbild ohne Compiler in der Laufzeit; Python für Sicherungswerkzeuge erhalten. Direkter Node-Start und echter Healthcheck.
