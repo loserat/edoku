@@ -1,6 +1,6 @@
 # Zugriffsschutz und Datenerhalt
 
-Stand: 30.10.2026. Diese Maßnahmen sichern die lokale Beta ab. Sie sind keine
+Stand: 06.11.2026. Diese Maßnahmen sichern die lokale Beta ab. Sie sind keine
 Freigabe für einen öffentlichen Mehrbenutzer- oder SaaS-Betrieb.
 
 ## Umgesetzte Grenzen
@@ -51,7 +51,9 @@ Der CSRF-Ansatz orientiert sich an den
 
 ### Zuverlässiges Schreiben
 
-JSON-Dateien werden über eine temporäre Datei im selben Ordner geschrieben,
+Bei aktiviertem SQLite werden Änderungen der erfassten Projektdatensätze pro Arbeitsvorgang gesammelt und gemeinsam gespeichert. Die Projektversion verhindert stilles Überschreiben durch veraltete Seiten oder einen zwischenzeitlichen Projektwechsel (HTTP 409). Die Geräteprojektion wird durch SQLite-Trigger in derselben Transaktion aktualisiert. Originale JSON-Ausgangskopien werden nicht überschrieben; Fehler führen nicht zu einem stillen Rückfall. Die Projektversion ersetzt weder Rollenprüfung noch CSRF. Details: [SQLite-Projektdaten](SQLITE_PROJEKTDATEN.md).
+
+Weiterhin dateibasierte JSON-Daten werden über eine temporäre Datei im selben Ordner geschrieben,
 vor dem Austausch synchronisiert und anschließend ersetzt. Schreibfehler
 werden bis zur HTML-/Auto-Save-Antwort weitergereicht. Eine beschädigte
 vorhandene JSON-Datei wird beim Lesen nicht still durch einen leeren Standard
@@ -66,8 +68,8 @@ Diese Rückfallebenen ersetzen keine vollständige externe Sicherung.
 
 Das Verfahren verwendet die Dateioperationen der
 [Node.js-Dateisystem-API](https://nodejs.org/docs/latest-v20.x/api/fs.html).
-Es ist keine gemeinsame Transaktion über sämtliche JSON-Dateien, SQLite und
-Dateien. Speicherplatz und Aufbewahrung der Historien müssen weiterhin überwacht werden.
+Die gemeinsame SQLite-Projekttransaktion umfasst nicht zusätzlich sämtliche
+globalen JSON-Dateien, Fotos, Uploads oder PDF-Dateioperationen. Speicherplatz und Aufbewahrung der Historien müssen weiterhin überwacht werden.
 
 ## Nachweise und verbleibende Grenzen
 
@@ -81,3 +83,7 @@ Rate-Limits, systematische Prüfung aller Browser-/Uploadvarianten, ein
 automatisiertes externes Backup-/Restore-System und die vollständige Härtung
 eines öffentlichen Serverbetriebs. Vorhandene lokale Demo-Zugänge wurden
 nicht automatisch verändert oder entfernt.
+
+## Benutzerverwaltung vom 06.11.2026
+
+Neue Passwörter werden bei Anlage, Registrierung und Reset einheitlich mit 12–256 Zeichen und ohne reine Leerzeichen geprüft. Alte Hashes und Passwörter bleiben beim Update unverändert. Selbstregistrierung ist standardmäßig geschlossen und kann nur durch Systemadmins freigegeben werden. Fehlende Konten erzeugen keine Erfolgsmeldung; ungültige Rollen/Statuswerte werden abgewiesen, der letzte aktive Systemadmin bleibt geschützt. Die alte Rolle Admin bleibt als Benutzerrolle kompatibel. Bedienung, Grenzen und Prüfungen: [Benutzerverwaltung](BENUTZERVERWALTUNG.md).

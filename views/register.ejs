@@ -12,13 +12,14 @@
           <img class="auth-logo" src="/img/icons/edoku-app-icon.svg?v=2" alt="" width="48" height="48">
           <div>
             <p class="eyebrow">edoku</p>
-            <h1>Registrieren</h1>
+            <h1><%= systemSettings.selfRegistrationEnabled ? "Registrieren" : "Registrierung geschlossen" %></h1>
           </div>
         </div>
-        <p class="auth-subtitle">Erstelle dein Konto und beginne mit deiner Dokumentation.</p>
+        <p class="auth-subtitle"><%= systemSettings.selfRegistrationEnabled ? "Erstelle dein Konto und beginne mit deiner Dokumentation." : "Neue Konten werden durch einen Systemadmin angelegt. Bestehende Konten können sich weiterhin anmelden." %></p>
         <%- include("partials/flash", { flash }) %>
+        <% if (systemSettings.selfRegistrationEnabled) { %>
         <form action="/register" method="post" class="stack-form">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
           <label>
             <span>Name</span>
             <input type="text" name="name" autocomplete="name" required>
@@ -29,10 +30,12 @@
           </label>
           <label>
             <span>Passwort</span>
-            <input type="password" name="password" autocomplete="new-password" minlength="8" required>
+            <input type="password" name="password" autocomplete="new-password" minlength="<%= passwordMinLength %>" maxlength="<%= passwordMaxLength %>" aria-describedby="register-password-hint" required>
+            <small id="register-password-hint" class="field-hint">Mindestens <%= passwordMinLength %> Zeichen; keine reinen Leerzeichen.</small>
           </label>
           <button type="submit">Konto erstellen</button>
         </form>
+        <% } %>
         <p class="meta-line">Bereits registriert? <a href="/login">Anmelden</a></p>
       </section>
     </main>

@@ -1,0 +1,32 @@
+services:
+  edoku:
+    build:
+      context: .
+    init: true
+    expose:
+      - "3000"
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      TRUST_PROXY: "true"
+      COOKIE_SECURE: "true"
+      COOKIE_SAME_SITE: lax
+      APP_ORIGIN: "${APP_ORIGIN:?Bitte den oeffentlichen HTTPS-Ursprung setzen}"
+      EDOKU_REQUIRE_SQLITE: "true"
+      EDOKU_INITIAL_ADMIN_LOGIN: "${EDOKU_INITIAL_ADMIN_LOGIN:?Bitte den ersten Admin-Login setzen}"
+      EDOKU_INITIAL_ADMIN_PASSWORD: "${EDOKU_INITIAL_ADMIN_PASSWORD:?Bitte ein eigenes Startpasswort setzen}"
+    volumes:
+      - edoku-data:/app/data
+      - edoku-config:/app/config
+      - edoku-storage:/app/storage
+      - edoku-output:/app/output
+      - edoku-templates:/app/templates
+    restart: unless-stopped
+    stop_grace_period: 30s
+
+volumes:
+  edoku-data:
+  edoku-config:
+  edoku-storage:
+  edoku-output:
+  edoku-templates:

@@ -1,5 +1,33 @@
 # Release Notes
 
+## Übernahme des geprüften Stands in main – 17.11.2026
+
+Programmstand, Tests, Docker-Konfiguration, Bedienungsanleitung und 16 Screenshots gemeinsam in `main` übernommen. README und Installation zeigen auf den Hauptbranch. Paketversion bleibt `0.1.0-beta.1`; kein neuer Release-Tag und keine automatische Aktivierung in bestehenden Installationen. Konten, Projekte, Daten, Sicherungen und historischer Altbestand bleiben unverändert. Die fachlichen Exportlücken und Betriebsgrenzen bleiben dokumentiert.
+
+## Dokumentierter Stand 17.11.2026 – Online-Testbetrieb und Bedienung
+
+Paketversion weiterhin `0.1.0-beta.1`, kein neuer Release-Tag. Geprüfter Programmcommit `a07104ba18c0cb1ea0d7958ebc32504c47bd002e` auf `gm/coolify-test-20261117`. Mehrstufiger Docker-Build, echte Bereitschaftsprüfung, eigenes Erstkonto und fünf dauerhafte Laufzeitordner. Kompatible Paketkorrekturen; 109 automatisierte Prüfungen bestanden und null bekannte npm-Lücken zum Prüfzeitpunkt.
+
+HTTPS, Anmeldung, Projekt-/Gerätespeicherung und PDF-/ZIP-Erzeugung zusätzlich online geprüft. Das Testprojekt meldet 15 fehlende PDF-Quellen; angebotene Dateien sind ein Teilstand, keine fachliche Freigabe. Der Online-Download wurde nicht unabhängig geprüft. Lokale Originaldaten bleiben unverändert. [Online-Nachweis](ONLINE_PRUEFSTAND.md).
+
+README und Dokumentationsübersicht überarbeitet; [Bedienungsanleitung](BEDIENUNGSANLEITUNG.md) mit echten Aufnahmen eines künstlichen Projekts ergänzt. Servereinrichtung und Installation bleiben außerhalb der Anwenderanleitung.
+
+## Arbeitsstand 06.11.2026 – lokal aktiviert, kein neuer Release-Tag
+
+Paketversion bleibt `0.1.0-beta.1`. Diese Hinweise beschreiben den aktuellen Arbeitsstand; Veröffentlichung und CI-Status sind am konkreten GitHub-Commit zu prüfen.
+
+- **SQLite-Stufe 1:** neun vollständige Projektdatensätze in SQLite, gemeinsame Speichertransaktionen, Erhalt individueller Daten und alter JSON-Ausgangskopien. Projektversionen erkennen veraltete Seiten und parallele Änderungen mit HTTP 409.
+- **SQLite-Stufe 2:** eigene Tabellen für Gerätelisten und Positionen. SQLite-Trigger synchronisieren die zusätzliche Projektion in derselben Transaktion. Der vollständige Datensatz bleibt führend; bestehende Konten, Passwörter und Projektinhalte werden bei der Übernahme nicht umgeschrieben.
+- **Installation und Rückweg:** kein zusätzlicher Datenbankserver. Neuinstallationen nutzen beide Stufen, vorhandene Installationen aktivieren sie ausdrücklich nach Vollsicherung und Kopientests. Projektpakete enthalten aktuelle SQLite-Inhalte; Rückweg zu JSON ausschließlich in einer neuen Wiederherstellungskopie.
+- **Benutzerverwaltung:** einheitliche Prüfung neuer Passwörter, Selbstregistrierung standardmäßig geschlossen, klare Rollen, korrekte Kontofehler und Schutz des letzten aktiven Systemadmins. Dialogbedienung und Tastaturführung verbessert.
+- **Gestaltung und Fotowarnungen:** ruhige technische Oberfläche in Hell/Dunkel; eigene Themes bleiben erhalten. Fehlende aktive Brandschutzfotos werden in Oberfläche und Export sichtbar und verhindern einen vollständigen Exportstatus.
+- **Prüfstand:** 103 automatische Prüfungen erfolgreich. Zusätzlich acht bestehende Projektkopien vor/nach Geräteumstellung verglichen: gleiche Kapitel und Exportpositionen, 249 tatsächliche PDF-Seiten, ZIPs und Rückimporte geprüft. Fachliche Abnahme und physische Druckprüfung bleiben offen.
+- **Lokale Aktivierung:** nach ausdrücklicher Freigabe exakt das geprüfte Abbild übernommen, unveränderte bisherige Daten/Dateien, Lesbarkeit, Datenbankintegrität und Erreichbarkeit nachgewiesen. Vollsicherungen vor und nach Aktivierung geprüft. Private Originaldaten und Nachweise bleiben lokal.
+
+Anleitungen: [Dokumentationsübersicht](README.md), [SQLite](SQLITE_PROJEKTDATEN.md), [Update](UPDATE.md), [Tests](TESTS.md), [offene Punkte](OFFENE_PUNKTE.md).
+
+Die folgenden datierten Abschnitte beschreiben frühere Entwicklungsstände. Dort genannte Testzahlen und damalige Einschränkungen sind keine aktuelle Gesamtaussage.
+
 ## Lokaler Beta-Betrieb – 30.10.2026
 
 - Sicherheitsprotokoll für kritische Verwaltungsaktionen mit Versuchs-/Ergebnisdatensätzen, Hash-Verkettung und Systemadmin-Ansicht; keine Formularinhalte oder Zugangsdaten.
@@ -175,7 +203,7 @@ Erste öffentliche Beta-Vorbereitung für `edoku`.
 
 - Noch keine produktive Server-Härtung
 - Rollen- und Rechteverwaltung ist Beta und muss vor produktiver Nutzung weiter geprüft werden
-- Noch keine automatisierte Test-Suite
+- Zum damaligen Stand noch keine automatisierte Test-Suite; heute 109 Prüfungen, siehe [Tests](TESTS.md).
 - Gesamt-PDF, ZIP-Export und Trennstreifen müssen im Praxiseinsatz weiter visuell geprüft werden
-- Ordnerrücken-Auto-Berechnung nutzt aktuell eine grobe Schätzung und noch keine echten PDF-Seitenzahlen
+- Zum damaligen Stand grobe Ordnerrücken-Schätzung; inzwischen seitenbasierte Ablageschätzung umgesetzt, physische Kapazitätsprüfung bleibt offen.
 - Normtexte und erzeugte Formulartexte müssen fachlich weiter geprüft werden

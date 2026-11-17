@@ -38,7 +38,7 @@
               <p>Schnellprüfung vor Export und PDF-Erzeugung.</p>
             </div>
             <form action="/dokumente/aktualisieren" method="post">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
               <button type="submit">Aus Leistungsbereichen aktualisieren</button>
             </form>
           </div>
@@ -57,7 +57,7 @@
             </div>
           </div>
           <form action="/dokumente" method="post" data-autosave>
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
             <div class="table-wrap">
               <table class="matrix-table">
                 <thead>

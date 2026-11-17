@@ -46,7 +46,7 @@
             <a href="/einstellungen#benutzer" role="menuitem">Benutzerverwaltung</a>
           <% } %>
           <form action="/logout" method="post">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("formSecurity") %>
             <button type="submit" role="menuitem">Abmelden</button>
           </form>
         </div>

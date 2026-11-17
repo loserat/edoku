@@ -3,6 +3,7 @@ const path = require("path");
 const syncFs = require("fs");
 const { assertSafePath, ensureInsideBase, accessError, sanitizeId } = require("./pathService");
 const scopes = new WeakMap();
+const { initialProjectDocument } = require("./projectDataStoreService");
 
 function bindProjectScope(projekt, userId, projectId) {
   scopes.set(projekt, { userId, projectId });
@@ -17,15 +18,17 @@ function scopedProjectRoot(rootDir, userId, projectId) {
 // Alte gemeinsame Ausgaben dürfen nur bei eindeutigem Eigentümer gelesen werden.
 function legacyOutputStatus(rootDir, projekt) {
   if (!projectScope(projekt)) return "standalone";
-  const legacy = path.join(rootDir, "output", "projekte", projectFolderName(projekt));
+  const ownScope = projectScope(projekt);
+  const original = initialProjectDocument(rootDir,ownScope.userId,ownScope.projectId,"projekt.json") || projekt;
+  const legacy = path.join(rootDir, "output", "projekte", projectFolderName(original));
   if (!syncFs.existsSync(legacy)) return "none";
   const { connection } = require("./dbService");
   const owners = [];
   try {
     for (const row of connection().prepare("SELECT id,user_id FROM projects").all()) {
       const file = path.join(scopedProjectRoot(rootDir, row.user_id, row.id), "data", "projekt.json");
-      const value = JSON.parse(syncFs.readFileSync(file, "utf8"));
-      if (projectFolderName(value) === projectFolderName(projekt)) owners.push(row);
+      const value = initialProjectDocument(rootDir,row.user_id,row.id,"projekt.json") || JSON.parse(syncFs.readFileSync(file, "utf8"));
+      if (projectFolderName(value) === projectFolderName(original)) owners.push(row);
     }
   } catch { return "ambiguous"; }
   const scope = projectScope(projekt);
@@ -35,7 +38,9 @@ function legacyOutputStatus(rootDir, projekt) {
 function readableProjectPaths(rootDir, projekt) {
   const current = getProjectPaths(rootDir, projekt);
   if (legacyOutputStatus(rootDir, projekt) !== "available") return [current];
-  return [current, pathsForRoot(path.join(rootDir, "output", "projekte", projectFolderName(projekt)))];
+  const scope=projectScope(projekt);
+  const original=initialProjectDocument(rootDir,scope.userId,scope.projectId,"projekt.json") || projekt;
+  return [current, pathsForRoot(path.join(rootDir, "output", "projekte", projectFolderName(original)))];
 }
 
 async function resolveProjectSource(rootDir, projekt, relativePath, { allowPublicImage = false } = {}) {

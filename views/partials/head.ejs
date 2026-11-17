@@ -2,6 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="csrf-token" content="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+<meta name="edoku-project-revision" content="<%= typeof projectDataRevision === 'string' ? projectDataRevision : '' %>">
 <meta name="edoku-user-role" content="<%= typeof user !== 'undefined' && user ? user.role : '' %>">
 <title><%= pageTitle ? pageTitle + " | edoku" : "edoku" %></title>
 <%- include("headIcons") %>

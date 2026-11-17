@@ -1,8 +1,14 @@
 # Projektarchive: Paketformat und Wiederherstellung
 
-Stand: 30.10.2026. Projektpakete sichern ein Benutzerprojekt. Für die gesamte
+Stand: 06.11.2026. Projektpakete sichern ein Benutzerprojekt. Für die gesamte
 Installation einschließlich Konten, Sitzungen, Einstellungen und historischer
 gemeinsamer Ausgaben bleibt die [Vollsicherung](UPDATE.md) erforderlich.
+
+## Aktueller Projektspeicher
+
+Bei aktivem SQLite entstehen die portablen JSON-Dateien des Pakets aus den aktuellen vollständigen Datenbank-Datensätzen. Die alten JSON-Ausgangskopien werden dafür nicht als aktueller Inhalt verwendet. Stufe 2 verändert das Paketformat nicht: Die Geräteprojektion wird durch den vollständigen Gerätelistendatensatz verlustfrei mitgeführt.
+
+Ein Rückimport legt die Daten unter der Zielkennung ab und erfasst sie im aktiven SQLite-Modus. Bei aktivierter Stufe 2 entstehen dabei automatisch die passenden Listen-/Positionszeilen. Konten, Passwortdaten, Sitzungen und globale Einstellungen sind weiterhin nicht Bestandteil eines einzelnen Projektpakets. Details: [SQLite-Projektdaten](SQLITE_PROJEKTDATEN.md).
 
 ## Paket erzeugen
 
