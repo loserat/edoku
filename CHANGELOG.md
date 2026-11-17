@@ -6,6 +6,7 @@
 - Öffentliche Bereitschaftsprüfung `/ready` liest tatsächliche Datenbanktabellen und prüft Laufzeitordner und SQLite-Stufen.
 - Optionaler eigener Erstzugang statt bekannter Demo-Konten bei Neuinstallation; bestehende Konten/Passwörter bleiben bei Neustart führend.
 - Separate Coolify-Compose-Datei mit fünf Volumes, ohne feste Containernamen und öffentliche Host-Ports.
+- Kompatible Sicherheitsaktualisierungen der gesperrten Abhängigkeiten; nach Korrektur 0 bekannte Paketlücken und erneut alle 109 Prüfungen erfolgreich.
 - Sechs neue Deploymentfälle; 109 Prüfungen erfolgreich. Isolierte Container-Neuerstellung mit gleichen Datenbankzeilen und allen fünf Datenordnern geprüft.
 - Einrichtung und Grenzen: [Coolify-Testbetrieb](docs/COOLIFY.md). Online-Abnahme ist vom lokalen Nachweis zu unterscheiden.
 

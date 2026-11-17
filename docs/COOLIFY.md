@@ -64,6 +64,10 @@ Zusätzlich wurde die Compose-Ressource mit fünf frischen Testvolumes gestartet
 
 Online separat prüfen: ausgewählter Git-Commit, gültiges HTTPS, HTTP-Umleitung, Docker-Status `healthy`, `/ready`, Anmeldung mit eigenem Konto, Projektanlage/-bearbeitung, PDF-/ZIP-Export und Wiederanlauf mit denselben Daten. Fehlende Fachunterlagen bleiben fachliche Lücken. Die Testdaten müssen klar von lokalen Originalprojekten getrennt sein.
 
+## Abhängigkeitsprüfung vom 17.11.2026
+
+Die im ersten Build gemeldeten Lücken wurden innerhalb der kompatiblen Versionsbereiche geschlossen: unter anderem Express 4.22.3, body-parser 1.20.9, proxy-addr 2.0.8, qs 6.16.2 und brace-expansion 2.1.8. Die Sperrdatei legt diese geprüften Versionen fest. `npm audit --omit=dev` meldete anschließend 0 bekannte Lücken; alle 109 Prüfungen bestanden mit dem korrigierten Abbild erneut. Das ist ein datierter Paketprüfstand, keine allgemeine Sicherheitsfreigabe.
+
 ## Quellen
 
 - [Coolify: Docker Compose](https://coolify.io/docs/applications/builds/docker-compose)
