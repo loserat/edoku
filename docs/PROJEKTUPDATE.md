@@ -2,6 +2,10 @@
 
 Stand: 17.11.2026
 
+## Tagesabschluss
+
+Programm und Dokumentation sind in main übernommen; Pull Request und tatsächlicher Merge-Commit bestanden die GitHub-Prüfung mit 109 Tests. Das Handbuch ist direkt auf GitHub mit allen 16 Bildern geprüft. Gesamter Abschluss einschließlich Bestandsschutz, Grenzen des Testexports und nächstem Schritt: [Tagesabschluss 17.11.2026](TAGESABSCHLUSS_2026-11-17.md).
+
 ## Ergänzung 17.11.2026
 
 Geprüften Programmstand auf `gm/coolify-test-20261117` veröffentlicht und getrennte Online-Testinstanz mit HTTPS, SQLite und fünf dauerhaften Datenordnern aktiviert. Anmeldung, Speichern/Wiederladen, Daten über einen Containerwechsel und PDF-/ZIP-Erzeugung geprüft. Lokale Originaldaten unverändert. Der konkrete Online-Export enthält wegen 15 fehlender PDF-Quellen nur einen Teilstand (33 Einzel-PDFs, 35 Seiten); der Download ist nicht unabhängig verifiziert. [Online-Prüfstand](ONLINE_PRUEFSTAND.md).

@@ -1,5 +1,12 @@
 # Changelog
 
+## Tagesabschluss dokumentiert – 17.11.2026
+
+- [Tagesabschluss](docs/TAGESABSCHLUSS_2026-11-17.md) mit getrenntem Quell-, Online- und lokalem Installationsstand ergänzt.
+- Erfolgreiche GitHub-Prüfungen des Pull Requests und tatsächlichen main-Merge-Commits mit 109 bestandenen Tests verlinkt.
+- Handbuchprüfung mit 16 vollständig geladenen Bildern und gültigen Kapitelzielen sowie Bestandsschutz und offene Exportlücken festgehalten.
+- Reine Dokumentationspflege; Anwendungscode, Konten und Projektdaten bleiben unverändert.
+
 ## Geprüften Stand in main übernommen – 17.11.2026
 
 - Geprüften Programmstand aus `gm/coolify-test-20261117` einschließlich Tests, Grafiken und Anwenderdokumentation zusammengeführt.

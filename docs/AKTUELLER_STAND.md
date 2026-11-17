@@ -2,6 +2,12 @@
 
 Stand: 17.11.2026. Paketversion: `0.1.0-beta.1`. Dieser Überblick beschreibt den geprüften Arbeitsstand und die getrennte Online-Testbereitstellung. Der zuvor auf `gm/coolify-test-20261117` geprüfte Programmstand ist einschließlich Bedienungsanleitung und Screenshots in `main` übernommen; ein neuer Release-Tag wurde nicht erstellt. Die Übernahme im Repository ersetzt keine bestehende Installation und startet keine Datenmigration. Der datierte Verlauf bleibt im [Changelog](../CHANGELOG.md) erhalten.
 
+## Tagesabschluss und main-Übernahme
+
+Der geprüfte Stand ist über [Pull Request #1](https://github.com/loserat/edoku/pull/1) in main übernommen. Der tatsächliche Programm-Merge-Commit `4b4caaa156b894cf0d661f37ffddf7dbe118715a` bestand [alle 109 GitHub-Prüfungen](https://github.com/loserat/edoku/actions/runs/44144405963). Die erneute GitHub-Vorschau des Handbuchs zeigt alle 16 Screenshots und gültige Kapitelziele. Lokale Bestandsdaten und die laufende lokale Installation bleiben erhalten.
+
+Der [Tagesabschluss 17.11.2026](TAGESABSCHLUSS_2026-11-17.md) bündelt Umsetzung, tatsächliche Nachweise, getrennte Bereitstellungsstände, Bestandsschutz und die nächsten Aufgaben. Fachliche Quelllücken und die nicht unabhängig geprüfte Online-Downloadrunde bleiben ausdrücklich offen.
+
 ## Online-Testbetrieb vom 17.11.2026
 
 Mehrstufiger Docker-Build, direkter Node-Start mit Bereitschaftsprüfung, eigener Online-Erstzugang und separate Compose-Datei mit fünf dauerhaften Volumes ergänzt. Alle 109 Prüfungen und eine getrennte Compose-Neuinstallation samt Containeraustausch bestanden. Die ältere lokale Übernahme vom 06.11.2026 bleibt als solche dokumentiert. Zusätzlich wurden HTTPS, Anmeldung, Speichern/Wiederladen und PDF-/ZIP-Erzeugung online am Programmcommit `a07104ba18c0cb1ea0d7958ebc32504c47bd002e` verifiziert. Das künstliche Testprojekt liefert 33 Einzel-PDFs mit 35 Seiten, meldet aber 15 fehlende PDF-Quellen; es ist kein vollständiger Export. Der konkrete Download wurde nicht unabhängig geprüft. [Online-Prüfstand und Grenzen](ONLINE_PRUEFSTAND.md), [technischer Betrieb](COOLIFY.md).

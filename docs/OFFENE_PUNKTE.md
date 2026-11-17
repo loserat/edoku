@@ -388,7 +388,7 @@ Status: 109 automatisierte Prüfungen und technische Vergleiche bestehender Proj
 
 101 Node.js- und acht Python-Prüfungen decken die dokumentierten Kernfälle ab. Acht bestehende Projektkopien lieferten vor/nach Geräteumstellung gleiche Kapitel, Exportpositionen, Fotowarnungen und 249 tatsächliche PDF-Seiten; ZIPs und Rückimporte wurden geprüft. Die normale lokale Aktivierung wurde auf Datenerhalt, Lesbarkeit und Erreichbarkeit geprüft.
 
-Anleitung und Grenzen: [Tests](TESTS.md). Die Workflow-Konfiguration führt Tests bei Push/PR aus; ein neuer erfolgreicher GitHub-Lauf ist nur am konkreten veröffentlichten Commit nachgewiesen. Zusätzliche Fachfälle, beliebige externe PDFs, Browser, physische Druckausgaben und Betriebsabnahme bleiben offen.
+Anleitung und Grenzen: [Tests](TESTS.md). Die GitHub-Prüfungen des Pull Requests und des tatsächlichen main-Merge-Commits `4b4caaa` waren am 17.11.2026 erfolgreich: [109 bestandene Prüfungen](https://github.com/loserat/edoku/actions/runs/44144405963). Vollständiger [Tagesabschluss](TAGESABSCHLUSS_2026-11-17.md). Zusätzliche Fachfälle, beliebige externe PDFs, Browser, physische Druckausgaben und Betriebsabnahme bleiben offen.
 
 Manuelle Tests:
 
