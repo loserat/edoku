@@ -1,6 +1,6 @@
 # Tests und Beta-Abnahme
 
-Stand: 17.11.2026. Der geprüfte Stand verwendet Node.js 22 und Python 3.11 oder neuer. Die vollständige Suite besteht aus **109 Prüfungen: 101 Node.js und acht Python**. Die Zahlen beschreiben den lokal geprüften Arbeitsstand und keinen neu bestätigten GitHub-Lauf.
+Stand: 17.11.2026. Der geprüfte Stand verwendet Node.js 22 und Python 3.11 oder neuer. Die vollständige Suite besteht aus **109 Prüfungen: 101 Node.js und acht Python**. Die aktuelle GitHub-Prüfung des übernommenen Programmstands ist unten mit konkretem Commit und Lauf verlinkt; ältere datierte Abschnitte behalten ihre damalige Aussage.
 
 ## Sicher ausführen
 
@@ -103,3 +103,12 @@ Der abschließend korrigierte Paketstand vom 17.11.2026 bestand die vollständig
 Der lokal geprüfte Programmcommit wurde zusätzlich online aktiviert. HTTPS, `/ready`, Anmeldung, Stammdaten, Geräteänderungen, Wiederladen und Erhalt über einen Containerwechsel geprüft. Der finale Export erzeugte 33 vorhandene Einzel-PDFs mit 35 Seiten, Gesamt-PDF und ZIP, meldete aber 15 fehlende PDF-Quellen. Die Ausgabe ist fachlich unvollständig; der konkrete Download wurde nicht unabhängig geprüft. Der vollständige [Online-Prüfstand](ONLINE_PRUEFSTAND.md) trennt diese Befunde von den automatisierten Fällen.
 
 Die spätere README-/Handbuchpflege ändert keinen Anwendungscode und wiederholt deshalb nicht sämtliche schreibenden Anwendungstests. Dokumentationsprüfungen umfassen lokale Linkziele und Sprungmarken, eingebundene Screenshots, Trennung von Anwender-/Betreiberinformationen, Veröffentlichungsumfang sowie unveränderte geschützte Laufzeitdateien und Datenbankinhalte. Screenshots dokumentieren sichtbare Ansichten; sie sind keine neue End-to-End-Abnahme aller dargestellten Schaltflächen.
+
+
+## Nachgewiesene GitHub-Prüfungen des main-Übergangs
+
+Am 17.11.2026 waren sowohl [Pull Request #1](https://github.com/loserat/edoku/actions/runs/44144263505) als auch der tatsächliche [main-Merge-Commit `4b4caaa`](https://github.com/loserat/edoku/actions/runs/44144405963) erfolgreich. Die Protokolle des Hauptbranch-Laufs bestätigen 101 bestandene Node.js-Tests, null Fehler und acht erfolgreiche Python-Tests: **109 insgesamt**. Der Git-Baum des Merge-Commits entsprach exakt der vorbereiteten Übernahme; gegenüber dem bisherigen geprüften Branch änderten sich nur neun Dokumente.
+
+Zusätzlich wurde die GitHub-Vorschau der Anwenderanleitung erneut live geprüft: alle 16 Screenshots mit positiver Bildgröße vollständig geladen, alle 16 Inhaltsverzeichnisziele vorhanden, ein Kapitelsprung samt Bild sichtbar bestätigt. Der zuvor beobachtete GitHub-Dateiansichtsfehler trat dabei nicht mehr auf.
+
+Der anschließende Tagesabschluss verändert nur Dokumentation. Er wird durch Link-, Umfangs- und Bestandsschutzprüfungen validiert; die Belege oben gehören ausdrücklich zum genannten Programmcommit. Neue Dokumentationscommits sind daran und an ihren eigenen CI-Läufen zu unterscheiden. Vollständiger [Tagesabschluss](TAGESABSCHLUSS_2026-11-17.md).

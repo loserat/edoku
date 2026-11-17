@@ -2,6 +2,10 @@
 
 Stand: **17.11.2026**, Paketversion `0.1.0-beta.1`. Die Dokumentation und der zuvor geprüfte Programmstand sind in `main` übernommen. Historische datierte Einträge bleiben erhalten; ein Dokumentationsupdate ist kein neuer Release.
 
+## Aktueller Abschluss
+
+[Tagesabschluss 17.11.2026](TAGESABSCHLUSS_2026-11-17.md): main-Übernahme, erfolgreiche GitHub-Prüfungen, Handbuchnachweis, erhaltener Bestand und offene Aufgaben.
+
 ## Für Anwender
 
 | Du möchtest … | Hier anfangen |
