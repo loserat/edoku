@@ -22,14 +22,14 @@ test("Lokale Beta Ende-zu-Ende: Anmeldung, Projekt, Gerät, Anhänge, Gesamt-PDF
   await json("data/dokumentenmatrix.json",[doc("devices","6","Gerätelisten",{dokumenttyp:"Kapitel"}),doc("group","6.4","Elektroinstallation",{quelle:"data/geraetelisten.json"}),doc("plans","12","Bestandspläne",{dokumenttyp:"Kapitel"}),doc("plan-group","12.1","Stromlaufpläne",{dokumenttyp:"Plan",formularart:"Dateiliste"})]);
   const socket=net.createServer();await new Promise(r=>socket.listen(0,"127.0.0.1",r));const port=socket.address().port;await new Promise(r=>socket.close(r));
   const child=spawn(process.execPath,[path.join(root,"server.js")],{cwd:root,env:{...process.env,PORT:String(port)},stdio:["ignore","pipe","pipe"]});let logs="";child.stdout.on("data",d=>logs+=d);child.stderr.on("data",d=>logs+=d);
-  const base="http://127.0.0.1:"+port,cookies=new Map();let token="",db;
+  const base="http://127.0.0.1:"+port,cookies=new Map();let token="",revision="",db;
   async function request(route,options={}){
     const response=await fetch(base+route,{redirect:"manual",...options,headers:{Cookie:[...cookies].map(([k,v])=>k+"="+v).join("; "),...options.headers}});
     for(const line of response.headers.getSetCookie()){const pair=line.split(";")[0],sep=pair.indexOf("=");cookies.set(pair.slice(0,sep),pair.slice(sep+1));}
     return response;
   }
-  async function page(route){const response=await request(route);assert.equal(response.status,200,route);const html=await response.text();const match=html.match(/name="csrf-token" content="([a-f0-9]+)"/);if(match)token=match[1];return html;}
-  async function post(route,fields={}){const body=new URLSearchParams({_csrf:token,...fields});const response=await request(route,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});await response.arrayBuffer();assert.equal(response.status,302,route);assert.ok(!response.headers.get("location")?.includes("error="),route+": "+response.headers.get("location"));return response;}
+  async function page(route){const response=await request(route);assert.equal(response.status,200,route);const html=await response.text();const match=html.match(/name="csrf-token" content="([a-f0-9]+)"/);if(match)token=match[1];revision=html.match(/name="edoku-project-revision" content="([^"]*)"/)?.[1]||"";return html;}
+  async function post(route,fields={}){if(revision)await page("/dashboard");const body=new URLSearchParams({_csrf:token,_projectRevision:revision,...fields});const response=await request(route,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});await response.arrayBuffer();assert.equal(response.status,302,route);assert.ok(!response.headers.get("location")?.includes("error="),route+": "+response.headers.get("location"));return response;}
   try{
     let ready=false;for(let i=0;i<120;i++){try{if((await request("/api/health")).status===200){ready=true;break;}}catch{}if(child.exitCode!==null)throw Error(logs);await new Promise(r=>setTimeout(r,50));}assert.equal(ready,true,logs);
     await page("/login");await post("/login",{email:"admin",password:"admin"});await page("/dashboard");
@@ -39,13 +39,14 @@ test("Lokale Beta Ende-zu-Ende: Anmeldung, Projekt, Gerät, Anhänge, Gesamt-PDF
     db=new Database(path.join(root,"storage/app.db"),{readonly:true});const project=db.prepare("SELECT current_project_id FROM users WHERE id='user_demo'").get().current_project_id;
     const owner=path.join(root,"storage/users/user_demo/projects",project),data=path.join(owner,"data");
     assert.equal(Object.hasOwn(JSON.parse(await fs.readFile(path.join(data,"projekt.json"),"utf8")),"_csrf"),false);
-    const lists=JSON.parse(await fs.readFile(path.join(data,"geraetelisten.json"),"utf8"));const active=lists.filter(row=>row.aktiv);assert.equal(active.length,1);
+    const lists=JSON.parse(db.prepare("SELECT payload FROM project_documents WHERE user_id=? AND project_id=? AND name=?").get("user_demo",project,"geraetelisten.json").payload);const active=lists.filter(row=>row.aktiv);assert.equal(active.length,1);
     const list=active[0];await post("/geraetelisten",{ "geraetelisten[0][id]":list.id,"geraetelisten[0][kapitel]":list.kapitel,"geraetelisten[0][titel]":list.titel,"geraetelisten[0][leistungsbereich]":list.leistungsbereich,"geraetelisten[0][aktiv]":"on","geraetelisten[0][export]":"on","geraetelisten[0][positionen][0][hersteller]":"Beispiel","geraetelisten[0][positionen][0][system]":"Installation","geraetelisten[0][positionen][0][typ]":"LS B16","geraetelisten[0][positionen][0][beschreibung]":"Neutrales Prüfgerät","geraetelisten[0][positionen][0][menge]":"2","geraetelisten[0][positionen][0][einheit]":"Stk" });
+    assert.deepEqual(db.prepare("SELECT hersteller,typ FROM project_device_positions WHERE user_id=? AND project_id=? AND typ=?").all("user_demo",project,"LS B16"),[{hersteller:"Beispiel",typ:"LS B16"}]);
     const pdf=await PDFDocument.create();pdf.addPage().drawText("Synthetischer Stromlaufplan EG");pdf.addPage().drawText("Synthetischer Stromlaufplan EG - Seite 2");const sourcePdf=Buffer.from(await pdf.save());
-    const upload=new FormData();upload.set("_csrf",token);upload.set("title","Stromlaufplan Erdgeschoss");upload.set("stockwerk","EG");upload.set("file",new Blob([sourcePdf],{type:"application/pdf"}),"Beispielplan.pdf");
+    await page("/anhaenge");const upload=new FormData();upload.set("_csrf",token);upload.set("_projectRevision",revision);upload.set("title","Stromlaufplan Erdgeschoss");upload.set("stockwerk","EG");upload.set("file",new Blob([sourcePdf],{type:"application/pdf"}),"Beispielplan.pdf");
     const uploaded=await request("/anhaenge/upload?kategorie=Stromlaufpläne",{method:"POST",body:upload});await uploaded.arrayBuffer();assert.equal(uploaded.status,302);assert.ok(!uploaded.headers.get("location").includes("error="));
     await page("/export");await post("/export/final");
-    const entries=JSON.parse(await fs.readFile(path.join(data,"exportliste.json"),"utf8"));assert.equal(entries.filter(e=>e.requiresFile!==false&&e.status!=="vorhanden").length,0,JSON.stringify(entries.filter(e=>e.requiresFile!==false&&e.status!=="vorhanden").map(e=>({id:e.id,status:e.status,kapitel:e.kapitel}))));
+    const entries=JSON.parse(db.prepare("SELECT payload FROM project_documents WHERE user_id=? AND project_id=? AND name=?").get("user_demo",project,"exportliste.json").payload);assert.equal(entries.filter(e=>e.requiresFile!==false&&e.status!=="vorhanden").length,0,JSON.stringify(entries.filter(e=>e.requiresFile!==false&&e.status!=="vorhanden").map(e=>({id:e.id,status:e.status,kapitel:e.kapitel}))));
     const plannedPages=entries.reduce((sum,e)=>sum+(e.requiresFile!==false&&e.status==="vorhanden"?e.seiten:0),0);assert.equal(entries.find(e=>e.attachmentId).seiten,2);
     const final=path.join(owner,"output/06_Final"),names=await fs.readdir(final),complete=names.find(n=>n.endsWith("Gesamtdokumentation.pdf")),zipName=names.find(n=>n.endsWith(".zip"));
     const full=await PDFDocument.load(await fs.readFile(path.join(final,complete)));assert.equal(full.getPageCount(),plannedPages);

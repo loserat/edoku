@@ -13,11 +13,13 @@
         <p class="page-subtitle">Brandschottungen erfassen, Kernangaben kontrollieren und Bild-/Zulassungspfade dokumentieren.</p>
       </div>
       <%- include("partials/flash", { flash }) %>
+      <%- include("partials/photoWarnings", { photoWarnings }) %>
       <%- include("partials/sectionTabs", { active }) %>
 
       <%# Statuswerte werden direkt aus den Pflichtfeldern berechnet und in der Tabelle angezeigt. %>
       <% const aktiveBrandschutz = brandschutz.filter((entry) => entry.aktiv); %>
-      <% const unvollstaendig = brandschutz.filter((entry) => entry.aktiv && requiredBrandschutzFields.some((field) => !String(entry[field] || "").trim())); %>
+      <% const missingPhotoIds = new Set(photoWarnings.map(warning => warning.id)); %>
+      <% const unvollstaendig = brandschutz.filter((entry) => entry.aktiv && (missingPhotoIds.has(entry.id) || requiredBrandschutzFields.some((field) => !String(entry[field] || "").trim()))); %>
       <datalist id="projekt-stockwerke">
         <% (stockwerke || []).forEach((stockwerk) => { %>
           <option value="<%= stockwerk %>"></option>
@@ -42,7 +44,7 @@
               </button>
             <% } %>
             <form action="/brandschutz/hinzufuegen" method="post">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
               <button type="submit">Brandschottung hinzufügen</button>
             </form>
           </div>
@@ -50,7 +52,7 @@
 
         <%# Auto-Save-Formular: Änderungen an Schottungen werden ohne Speichern-Button geschrieben. %>
         <form action="/brandschutz" method="post" data-autosave>
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
           <div class="table-wrap brandschutz-list-wrap">
             <table class="editable-table brandschutz-table" data-sortable-table>
                     <thead>
@@ -79,7 +81,7 @@
                     <tbody>
                       <% const bauteilOptionen = ["Bauteil", "Wand", "Decke"]; %>
                       <% brandschutz.forEach((entry, index) => { %>
-                        <% const missingRequired = entry.aktiv && requiredBrandschutzFields.some((field) => !String(entry[field] || "").trim()); %>
+                        <% const missingRequired = entry.aktiv && (missingPhotoIds.has(entry.id) || requiredBrandschutzFields.some((field) => !String(entry[field] || "").trim())); %>
                         <tr id="brandschottung-<%= entry.id %>">
                           <td data-col="pos" data-sort-value="<%= index + 1 %>">
                             <input type="hidden" name="brandschutz[<%= index %>][id]" value="<%= entry.id %>">

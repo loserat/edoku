@@ -1,18 +1,46 @@
 # Offene Punkte edoku
 
-Stand: 2026-10-30
+Stand: 17.11.2026
 
 Diese Datei sammelt offene Aufgaben, bekannte Beta-Einschränkungen und sinnvolle nächste Schritte. Sie dient als gemeinsame Arbeitsliste, damit Punkte aus Tests, GUI-Feedback und Exportprüfungen nicht im Chat verloren gehen.
 
+## Bereits umgesetzt, weitere Abnahme getrennt
+
+SQLite-Stufen 1 und 2, korrigierte Benutzerverwaltung, Fotowarnungen und die ruhige technische Gestaltung sind umgesetzt und in der normalen lokalen Anwendung aktiviert. 109 automatisierte Prüfungen sowie technische Exportvergleiche mit acht bestehenden Projektkopien sind erfolgreich. Die lokale Aktivierung und der Datenerhalt wurden geprüft. Zusätzlich ist der getrennte Online-Testbetrieb technisch verifiziert; fachliche Freigabe, Druckabnahme und vollständige Betriebsabnahme bleiben offen. Details: [Aktueller Stand](AKTUELLER_STAND.md).
+
 ## Priorität A: Für eine belastbare Beta wichtig
+
+### SQLite weiter ausbauen
+
+Status: Stufen 1 und 2 umgesetzt, auf Kopien geprüft und lokal aktiviert; weitere Normalisierung offen
+
+- Neun vollständige Projektdatensätze sind führend in SQLite gespeichert.
+- Gerätelisten/Positionen sind zusätzliche, durch Trigger atomar synchronisierte Tabellen. Die vollständigen Datensätze bleiben führend.
+- Originale JSON-Ausgangskopien, Konten und historische Dateien sind erhalten; aktueller Export/Rückimport und Rückweg wurden geprüft.
+- Offen: gezielte führende Speicherung einzelner Gerätefelder planen; weitere Bereiche wie Brandschutz-/Anhangsmetadaten nur nach gesondertem Entwurf und Kopientests normalisieren. Sie liegen schon jetzt in SQLite, aber noch als vollständige Datensätze.
+
+Details: [SQLite-Projektdaten](SQLITE_PROJEKTDATEN.md).
+
+### Fehlende Unterlagen und Brandschutzfotos
+
+Status: Warnlücke behoben; tatsächliche fachliche Quelllücken weiterhin offen
+
+Fehlende aktive Fotodateien werden in Fachseite, Dashboard, Export und Ausgabedokumentation gemeldet. Der Export gilt dadurch nicht als vollständig. Die fehlenden Bilder, Logos oder Nachweise müssen fachlich nachgeliefert und verantwortlich zugeordnet werden; historische Daten werden nicht automatisch bereinigt.
+
+### Externe Sicherung und regelmäßige Proben
+
+Status: lokale Vollsicherung und getrennte Wiederherstellung umgesetzt; externe Betriebsorganisation offen
+
+Zusätzlichen Datenträger/Zielort, Schutz vertraulicher Sicherungen, Aufbewahrung und regelmäßige Wiederherstellungsproben festlegen. Vorhandene Sicherungen und historische Bestände nicht im Rahmen allgemeiner Cache-Bereinigung löschen.
+
 
 ### Datenzugriff und zuverlässiges Speichern absichern
 
-Status: umgesetzt und getestet am 30.10.2026
+Status: umgesetzt und erweitert geprüft bis 06.11.2026
 
 - Archivdownloads sind auf Manifest/ZIP des eigenen Benutzerprojekts beschränkt; Pfad- und Symlinkprüfungen greifen serverseitig.
 - Neue Ausgaben liegen unter stabilen Benutzer-/Projektkennungen. Gemeinsam genutzte Alt-Ausgaben bleiben entsprechend der Benutzerentscheidung separat historisch erhalten.
-- JSON-Speicherung erfolgt atomar je Datei; Fehler werden bis zur Oberfläche weitergereicht. Beschädigte bestehende Dateien werden nicht still durch leere Werte ersetzt.
+- Aktivierte Projektdaten werden gemeinsam in SQLite gespeichert; Projektversionen erkennen veraltete Änderungen. Übrige JSON-Dateien werden atomar ersetzt. Fehler werden nicht still als leere Daten übernommen.
 - Projektpakete erfassen die tatsächliche Anhangsablage und erstellen echte ZIPs mit Dateiinventar und Prüfsummen. Rückimporte prüfen Kopien und setzen Zielpfade um, ohne bestehende Projekte zu überschreiben.
 - Fehlende ursprüngliche Quelldateien und ausgelassene historische Bereiche werden ausdrücklich als Hinweise dokumentiert.
 - PDF-Vorgänger und letzte fertige Exporte bleiben erhalten; fehlerhafte finale Ausgaben ersetzen keine fertige Dokumentation.
@@ -25,7 +53,7 @@ Vollsicherung und getrennte Wiederherstellung sind umgesetzt, siehe [BETA_BETRIE
 
 Status: teilweise erledigt
 
-Die Einzel-PDFs werden erzeugt, die finale Gesamtlogik muss aber im Praxistest weiter geprüft werden. Wichtig sind insbesondere Reihenfolge, Kapitelnummerierung, Deckblätter, Inhaltsverzeichnis, importierte PDF-Anhänge und verknüpfte Bedienungsanleitungen.
+Die Gesamtlogik ist automatisiert und mit bestehenden Projektkopien technisch geprüft; der konkrete fachliche Inhalt und zusätzliche reale Fremd-PDFs müssen im Praxistest weiter geprüft werden. Wichtig sind insbesondere Reihenfolge, Kapitelnummerierung, Deckblätter, Inhaltsverzeichnis, importierte PDF-Anhänge und verknüpfte Bedienungsanleitungen.
 
 Erledigt:
 
@@ -42,7 +70,7 @@ Prüfen:
 
 ### Klickbares Inhaltsverzeichnis im Gesamt-PDF
 
-Status: umgesetzt und mit Prüfprojekten getestet; Abnahme mit realen Projektdaten offen
+Status: automatisiert und technisch auf bestehenden Projektkopien geprüft; fachliche bzw. physische Abnahme offen
 
 Das Inhaltsverzeichnis enthält jetzt klickbare Einträge, die im zusammengeführten Gesamt-PDF direkt zum passenden Kapitel springen. Das ist vor allem wichtig, sobald importierte PDF-Dateien, Bedienungsanleitungen und längere Anhänge eingebunden werden.
 
@@ -55,7 +83,7 @@ Wichtig:
 
 ### PDF-Merge und importierte PDFs
 
-Status: umgesetzt und mit Prüfprojekten getestet; Abnahme mit realen Projektdaten offen
+Status: automatisiert und technisch auf bestehenden Projektkopien geprüft; fachliche bzw. physische Abnahme offen
 
 Importierte PDFs sollen nicht nur in der Matrix und im Inhaltsverzeichnis auftauchen, sondern an der richtigen Stelle in die finale Dokumentation eingefügt werden.
 
@@ -68,7 +96,7 @@ Prüfen:
 
 ### ZIP-Export mit Ordnerstruktur
 
-Status: umgesetzt und mit Prüfprojekten getestet; Abnahme mit realen Projektdaten offen
+Status: automatisiert und technisch auf bestehenden Projektkopien geprüft; fachliche bzw. physische Abnahme offen
 
 Neben PDF-Ausgaben soll ein ZIP-Export erzeugt werden, der eine einfache Ordnerstruktur passend zum Inhaltsverzeichnis enthält. Ziel ist eine saubere Übergabe der Dokumentation ohne zu viele Unterordner.
 
@@ -79,19 +107,18 @@ Umgesetzt, mit Prüfprojekten getestet:
 - Dateinamen nach Kapitelnummer und Titel aufbauen.
 - ZIP-Datei im Exportbereich bereitstellen.
 
-### Rechte- und Benutzerverwaltung härten
+### Rechte- und Benutzerverwaltung weiterführen
 
-Status: zentrale Grenzen umgesetzt und automatisiert geprüft; weitere Abdeckung offen
+Status: bisherige offene Kernpunkte behoben und mit Testkonten geprüft; weitere Funktionen offen
 
-Das Rollenmodell mit `viewer`, `user`, `admin` und `systemadmin` ist vorhanden. Für produktivere Nutzung muss die Rechteprüfung weiter systematisch getestet und gehärtet werden.
+Erledigt: geschlossene Selbstregistrierung als Standard, einheitliche neue Passwortregeln, Erhalt alter Passwörter, klare Rollen, Kontofehler, Schutz des letzten aktiven Systemadmins, Sperren/Reaktivieren, Sitzungsentzug und serverseitige Schreibgrenzen. Details: [Benutzerverwaltung](BENUTZERVERWALTUNG.md).
 
-Prüfen:
+Offen:
 
-- Viewer darf keine Schreibzugriffe ausführen.
-- User sieht nur eigene Projekte.
-- Admin/Systemadmin-Funktionen sind korrekt begrenzt.
-- Gesperrte Benutzer können sich nicht anmelden.
-- Passwortänderungen beenden alte Sessions.
+- Eigener Passwortwechsel für Benutzer.
+- Verpflichtender Passwortwechsel nach Admin-Reset, sofern fachlich/organisatorisch gewünscht.
+- Zusätzliche Kontoschutzfunktionen wie 2FA zunächst planen und gesondert testen.
+- Rechte-/Proxy-/Browserfälle über die vorhandenen Tests hinaus erweitern; keine automatische Änderung bestehender Konten.
 
 ## Priorität B: Fachliche Funktionen weiter ausbauen
 
@@ -132,7 +159,7 @@ Offen:
 
 Status: teilweise vorhanden
 
-Gerätepositionen können künftig optional eine Bedienungsanleitung erhalten. Diese Bedienungsanleitung soll im Inhaltsverzeichnis unter Bedienungsanleitungen auftauchen und in der Geräteliste mit Kapitelverweis referenziert werden.
+Gerätepositionen können optional eine importierte Bedienungsanleitung erhalten. Diese Bedienungsanleitung soll im Inhaltsverzeichnis unter Bedienungsanleitungen auftauchen und in der Geräteliste mit Kapitelverweis referenziert werden.
 
 Offen:
 
@@ -235,7 +262,7 @@ Offen:
 
 Status: teilweise erledigt
 
-Dark/Light und Theme-Presets sind vorhanden. Die GUI soll weiterhin ruhiger, konsistenter und weniger sprunghaft wirken.
+Dark/Light, ruhige Standardpaletten und konsistente Formular-/Tabellenflächen sind umgesetzt. Eigene Farbwerte bleiben erhalten. Weitere Themes, Browser und lange Inhalte bleiben zu prüfen.
 
 Erledigt:
 
@@ -249,19 +276,19 @@ Erledigt:
 
 Offen:
 
-- Buttonfarben und Größen in Light/Dark im Browser final prüfen.
+- Kontraste und Größen bei neuen Komponenten oder zusätzlichen individuellen Farbkombinationen erneut prüfen.
 - Löschen-Buttons einheitlich mit Papierkorb-Icon und roter Warnwirkung.
 - Vorschau-Buttons kompakt und neutral halten.
 - Radien und Abstände in allen Themes stabil halten.
-- Farben an GitHub-/VS-Code-Themes orientieren.
+- Weitere Presets bei Erweiterungen mit dem bestehenden ruhigen Farbsystem abgleichen.
 
-### Responsive Layout prüfen
+### Responsive Layout weiter prüfen
 
-Status: offen
+Status: bearbeitete Seiten und Dialoge im dokumentierten Raster geprüft; weitere Browser/Geräte offen
 
 Die Oberfläche soll auf verschiedenen Bildschirmgrößen stabil nutzbar sein.
 
-Prüfen:
+Bei weiteren Änderungen erneut prüfen:
 
 - Header verschiebt sich nicht bei breiten Tabellen.
 - Tabellen scrollen horizontal innerhalb ihres Containers.
@@ -287,22 +314,11 @@ Offen:
 - Inhaltsbaum im Browser mit echten Projektdaten visuell prüfen.
 - Prüfen, ob die Baumstruktur alle später gemergten Dokumente exakt abbildet.
 
-### Benutzerverwaltung optisch verbessern
+### Benutzerverwaltung weiter visuell prüfen
 
-Status: teilweise erledigt
+Status: überarbeitet und für das dokumentierte Raster geprüft; vollständige Barrierefreiheit offen
 
-Die Benutzerverwaltung wurde verdichtet, kann aber weiter optimiert werden.
-
-Erledigt:
-
-- Bearbeitung erfolgt über Popup statt über viele Inline-Aktionen.
-- Rollen, Status und Passwortänderung sind im Popup gruppiert.
-- Lange Logins und Projektnamen werden in der Tabelle gekürzt.
-
-Offen:
-
-- Benutzerverwaltung in Light/Dark visuell prüfen.
-- Optional weitere Verdichtung für sehr kleine Bildschirme.
+Rollenbeschriftungen, Dialogfelder, Fokusführung, Escape/Schließen, Fokus-Rückgabe und interne Scrollbarkeit sind umgesetzt. Benutzerliste und Dialog wurden bei 320, 390, 768 und 1280 Pixeln in Hell/Dunkel geprüft. Weitere lange Inhalte, Browser und Barrierefreiheitsfälle bleiben prüfenswert.
 
 ### Projektbereich und Archiv
 
@@ -348,7 +364,7 @@ Offen:
 - Rechteprüfung über die bereits automatisierten Kernfälle hinaus erweitern.
 - Weitere Browser-/Proxy-Konstellationen für den umgesetzten CSRF-Schutz prüfen.
 - Verteilte Rate-Limits und spätere produktive API-Nutzung planen; Login-/Registrierungsgrenzen je Prozess sind umgesetzt.
-- Sichere Produktions-ENV dokumentieren.
+- Dokumentierte HTTPS-/Proxy-/Erstzugangsvariablen bei jeder Installation passend konfigurieren und prüfen; siehe [Coolify](COOLIFY.md).
 - Externe Aufbewahrung und regelmäßige Proben für das vorhandene Vollsicherungs-/Wiederherstellungswerkzeug einrichten.
 - Zentrale Ablage außerhalb des Anwendungsrechners sowie Rotation des vorhandenen lokalen Sicherheitsprotokolls planen.
 
@@ -368,15 +384,11 @@ Tags:
 
 ### Tests
 
-Status: gezielte Export- und Datenerhalt-Prüfungen vorhanden; weitere Abdeckung offen
+Status: 109 automatisierte Prüfungen und technische Vergleiche bestehender Projektkopien erfolgreich; weitere Abdeckung offen
 
-18 gezielte Kapitel-/Exporttests sind über `npm run test:exports` vorhanden,
-drei weitere Datenerhalt-Prüfungen über `npm run test:preservation`.
-Weitere 17 Sicherheits-/Archivprüfungen sind über `npm run test:security` vorhanden.
-Zusätzlich bestehen fünf Protokolltests, acht Sicherungstests und ein vollständiger HTTP-Ablauf. Alle 52 Prüfungen sind im Node-22-Abbild erfolgreich; GitHub Actions führt sie automatisch aus.
-In einer echten Datenkopie wurden alle acht nicht gelöschten Projekte exportiert und unter neuer Kennung rückimportiert; bestehende Projektdateien und Datenbankzeilen blieben unverändert.
-Anleitung, Prüfumfang und Grenzen stehen in [TESTS.md](TESTS.md).
-Eine vollständige Test-Suite für alle Fachbereiche fehlt weiterhin.
+101 Node.js- und acht Python-Prüfungen decken die dokumentierten Kernfälle ab. Acht bestehende Projektkopien lieferten vor/nach Geräteumstellung gleiche Kapitel, Exportpositionen, Fotowarnungen und 249 tatsächliche PDF-Seiten; ZIPs und Rückimporte wurden geprüft. Die normale lokale Aktivierung wurde auf Datenerhalt, Lesbarkeit und Erreichbarkeit geprüft.
+
+Anleitung und Grenzen: [Tests](TESTS.md). Die Workflow-Konfiguration führt Tests bei Push/PR aus; ein neuer erfolgreicher GitHub-Lauf ist nur am konkreten veröffentlichten Commit nachgewiesen. Zusätzliche Fachfälle, beliebige externe PDFs, Browser, physische Druckausgaben und Betriebsabnahme bleiben offen.
 
 Manuelle Tests:
 
@@ -397,7 +409,7 @@ Manuelle Tests:
 
 ### GitHub-Auftritt
 
-Status: teilweise vorhanden
+Status: README und bebilderte Anwenderanleitung aktualisiert; weitere Pflege laufend
 
 README, technische Doku, Release Notes und Projektupdate sind vorhanden. Der GitHub-Auftritt soll für Beta-Tester verständlich bleiben.
 
@@ -405,27 +417,29 @@ Erledigt:
 
 - `CHANGELOG.md` angelegt.
 - `docs/REPO_SICHERHEITSCHECK.md` ergänzt.
-- README, Release Notes, technische Doku und Arbeitsstand auf den 30.10.2026 aktualisiert.
+- README, Installation, Technik, Betrieb, SQLite, Tests, Release Notes und Arbeitsliste auf den Arbeitsstand 06.11.2026 aktualisiert; zentrale Dokumentationsübersicht ergänzt.
 - Beta-Prüfanleitung sowie lokales Update-/Sicherungsvorgehen ergänzt.
-- Fünf Screenshots mit künstlichen Beispieldaten aus einer getrennten Demo-Installation im README eingebunden.
+- README neu gegliedert und [Anwender-Bedienungsanleitung](BEDIENUNGSANLEITUNG.md) mit 16 aktuellen Screenshots eines künstlichen Testprojekts ergänzt. Installation und Serverbetrieb bleiben getrennt.
+- Tatsächlichen [Online-Prüfstand](ONLINE_PRUEFSTAND.md) einschließlich unvollständigem Export dokumentiert; historische Screenshotserie erhalten.
+- Gesamttestzahlen und technische Anleitungen auf den Stand 17.11.2026 abgeglichen.
 
 Offen:
 
 - Screenshots bei größeren Oberflächenänderungen erneuern und ausschließlich neutrale Daten verwenden.
 - Bekannte Einschränkungen aktuell halten.
 - Release-Tags sauber pflegen.
-- Installationshinweise für Docker/Coolify weiter ausbauen.
+- Installationshinweise bei geänderten Bereitstellungswegen erneut prüfen.
 
-### Produktive Bereitstellung
+### Online-Testbetrieb und produktive Bereitstellung
 
-Status: offen
+Status: benannte Online-Testinstanz technisch geprüft; produktive Betriebsabnahme offen
 
-Coolify/GitHub-Deployment ist grundsätzlich möglich, muss aber sauber dokumentiert und getestet werden.
+Erledigt am 17.11.2026: Dockerfile-Build, gültiges HTTPS, HTTP-Weiterleitung, fünf persistente Volumes, passende Laufzeitvariablen, eigener Erstzugang ohne Demo-Konten und echte SQLite-Bereitschaft. Anmeldung, Projekt-/Geräteänderungen, Wiederladen und PDF-/ZIP-Erzeugung geprüft. Gespeicherter Testbestand überstand den Containerwechsel. [Einrichtung](COOLIFY.md), [Prüfumfang](ONLINE_PRUEFSTAND.md).
 
 Offen:
 
-- Reverse Proxy korrekt konfigurieren.
-- Persistente Volumes für `storage`, `data`, `config`, `output` und `templates` prüfen.
-- Umgebungsvariablen für Produktion definieren.
-- Default-Zugänge nach Installation ändern.
-- Backups für `storage/app.db` und projektbezogene Dateien planen.
+- Den konkreten Online-Download unabhängig auf Dateiinhalte und Seiten prüfen; die Browserfreigabe wurde in der bisherigen Runde abgelehnt.
+- Fachliche Quelllücken im Testprojekt beziehungsweise tatsächlichen Projekten klären; bereitstehende Dateien sind kein vollständiger Dokumentationsabschluss.
+- Externe Sicherung der vollständigen Laufzeitablage, Aufbewahrung und regelmäßige Wiederherstellungsproben organisieren.
+- Betriebsüberwachung, weitergehende Sicherheitsabnahme und Updates am festgesetzten Programmcommit bewusst planen.
+- Beim Einrichten weiterer Instanzen HTTPS, Volumes und eigene Erstzugänge jeweils neu prüfen; vorhandene Konten nicht durch Startvariablen zurücksetzen.

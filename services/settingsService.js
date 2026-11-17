@@ -208,6 +208,38 @@ const THEME_PRESETS = {
   }
 };
 
+// Die bisherigen Standardwerte bleiben erkennbar, ohne gespeicherte Einstellungen umzuschreiben.
+const PREVIOUS_STANDARD_THEMES = Object.fromEntries(["github-light", "github-dark"].map(key => [key, structuredClone(THEME_PRESETS[key])]));
+const PROFESSIONAL_COLORS = {
+  bgLight: "#f4f6f9", bgDark: "#101620", surface: "#ffffff", surfaceMuted: "#f8fafc",
+  surfaceDark: "#17202d", surfaceMutedDark: "#1e2938", text: "#1e293b", textMuted: "#5e6c80",
+  textDark: "#e7edf6", textMutedDark: "#aab7c8", accent: "#315fc5", border: "#dbe2eb",
+  borderDark: "#344155", buttonPrimary: "#315fc5", buttonSecondary: "#f8fafc",
+  warning: "#9a6b24", danger: "#b74949", success: "#287653"
+};
+for (const [key, name] of [["github-light", "edoku Hell"], ["github-dark", "edoku Dunkel"]]) {
+  THEME_PRESETS[key] = { ...THEME_PRESETS[key], name, colors: { ...PROFESSIONAL_COLORS },
+    shape: { globalRadius: 8, cardRadius: 12, buttonRadius: 8, inputRadius: 8, borderWidth: 1 },
+    shadow: { strength: 4, softness: 14 }, spacing: { global: 12, page: 24, card: 20, form: 14, tableRowHeight: 44 },
+    typography: { base: 14, heading: 26, label: 12, button: 13, lineHeight: 1.55 }
+  };
+}
+
+function refineUnchangedStandardTheme(theme, presetKey) {
+  const previous = PREVIOUS_STANDARD_THEMES[presetKey];
+  if (!previous) return theme;
+  const refined = { ...theme };
+  for (const group of ["colors", "shape", "shadow", "spacing", "typography"]) {
+    const values = theme[group];
+    if (values && Object.entries(values).every(([key, value]) =>
+      typeof value === "string" ? value.toLowerCase() === String(previous[group][key]).toLowerCase() : value === previous[group][key])) {
+      refined[group] = { ...THEME_PRESETS[presetKey][group] };
+    }
+  }
+  if (!theme.name || /^GitHub (Light|Dark)( Default)?$/.test(theme.name)) refined.name = THEME_PRESETS[presetKey].name;
+  return refined;
+}
+
 const LEGACY_THEME_PRESET_MAP = {
   "apple-light": "github-light",
   "sage-copper": "github-light",
@@ -225,6 +257,7 @@ const DEFAULT_THEME_SETTINGS = THEME_PRESETS["github-light"];
 
 // * INFO: Globale Systemeinstellungen. Projektbezogene Daten bleiben in den Projekt-JSON-Dateien.
 const DEFAULT_SYSTEM_SETTINGS = {
+  selfRegistrationEnabled: false,
   appTitel: "edoku",
   standardGewerk: "Elektrotechnik",
   standardEinheit: "Stk",
@@ -294,7 +327,7 @@ function mergeThemeSettings(theme = {}) {
   const isLegacyPreset = requestedPreset && !THEME_PRESETS[requestedPreset] && LEGACY_THEME_PRESET_MAP[requestedPreset];
   const themeOverrides = isLegacyPreset
     ? { ...(theme || {}), preset: presetKey, name: preset.name, colors: {}, shape: {}, shadow: {}, spacing: {}, typography: {} }
-    : (theme || {});
+    : refineUnchangedStandardTheme(theme || {}, presetKey);
   return {
     ...DEFAULT_THEME_SETTINGS,
     ...preset,
@@ -333,6 +366,7 @@ function mergeSystemSettings(settings = {}) {
   return {
     ...DEFAULT_SYSTEM_SETTINGS,
     ...(settings || {}),
+    selfRegistrationEnabled: settings?.selfRegistrationEnabled === true,
     ersteller: {
       ...DEFAULT_SYSTEM_SETTINGS.ersteller,
       ...((settings || {}).ersteller || {})

@@ -4,6 +4,7 @@ const Database = require("better-sqlite3");
 
 let db;
 const USER_ROLES = ["viewer", "user", "admin", "systemadmin"];
+const USER_ROLE_LABELS = { viewer: "Nur lesen", user: "Benutzer", admin: "Benutzer (bisher Admin)", systemadmin: "Systemadmin" };
 
 // * INFO: Einheitliches ISO-Zeitformat für Datenbank-Metadaten.
 function nowIso() {
@@ -12,8 +13,8 @@ function nowIso() {
 
 /**
  * * INFO: Initialisiert die lokale SQLite-Datenbank.
- * ? WARUM: Enthält nur Benutzer, Sessions und Projektregister; fachliche Projektdaten
- * ? WARUM: bleiben weiterhin dateibasiert in JSON-Dateien.
+ * ? WARUM: Basisschema für Benutzer, Sessions und Projektregister. Der Projektspeicher
+ * ? WARUM: ergänzt bei geprüfter Aktivierung seine eigenen versionierten Tabellen.
  */
 function initDatabase(storageDir) {
   fs.mkdirSync(storageDir, { recursive: true });
@@ -132,27 +133,39 @@ function listUsers() {
 }
 
 function updateUserRole(userId, role) {
-  connection().prepare(`
-    UPDATE users
-    SET role = ?, updated_at = ?
-    WHERE id = ?
-  `).run(normalizeUserRole(role), nowIso(), userId);
+  if (!USER_ROLES.includes(role)) throw Object.assign(new Error("Ungültige Benutzerrolle."), { status: 400 });
+  return connection().transaction(() => {
+    assertManagedUser(userId, role !== "systemadmin");
+    return connection().prepare("UPDATE users SET role = ?, updated_at = ? WHERE id = ?").run(role, nowIso(), userId);
+  })();
 }
 
 function updateUserStatus(userId, status) {
-  connection().prepare(`
-    UPDATE users
-    SET status = ?, updated_at = ?
-    WHERE id = ?
-  `).run(normalizeUserStatus(status), nowIso(), userId);
+  if (!["active", "disabled"].includes(status)) throw Object.assign(new Error("Ungültiger Kontostatus."), { status: 400 });
+  return connection().transaction(() => {
+    assertManagedUser(userId, status === "disabled");
+    return connection().prepare("UPDATE users SET status = ?, updated_at = ? WHERE id = ?").run(status, nowIso(), userId);
+  })();
+}
+
+function assertManagedUser(userId, removesAdmin = false) {
+  const user = getUserById(userId);
+  if (!user) throw Object.assign(new Error("Das Benutzerkonto wurde nicht gefunden. Bitte die Benutzerliste neu laden."), { status: 404 });
+  if (removesAdmin && user.role === "systemadmin" && user.status === "active"
+      && connection().prepare("SELECT count(*) AS total FROM users WHERE role = 'systemadmin' AND status = 'active'").get().total <= 1) {
+    throw Object.assign(new Error("Mindestens ein aktiver Systemadmin muss erhalten bleiben."), { status: 409 });
+  }
+  return user;
 }
 
 function updateUserPassword(userId, passwordHash, passwordSalt) {
-  connection().prepare(`
+  const result = connection().prepare(`
     UPDATE users
     SET password_hash = ?, password_salt = ?, updated_at = ?
     WHERE id = ?
   `).run(passwordHash, passwordSalt, nowIso(), userId);
+  if (!result.changes) throw Object.assign(new Error("Das Benutzerkonto wurde nicht gefunden. Bitte die Benutzerliste neu laden."), { status: 404 });
+  return result;
 }
 
 function deleteSession(token) {
@@ -288,5 +301,6 @@ module.exports = {
   updateUserStatus,
   updateProjectStatus,
   upsertProject,
-  USER_ROLES
+  USER_ROLES,
+  USER_ROLE_LABELS
 };

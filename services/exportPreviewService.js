@@ -1,4 +1,5 @@
 const { buildDocumentationPlan, summarizeExportEntries } = require("./documentationPlanService");
+const { photoWarningsFromEntries } = require("./brandschutzPhotoService");
 function valueOrDash(value) { return value && String(value).trim() ? value : "-"; }
 function buildExportPreview({ projekt = {}, matrix = [], exportliste = [], projektSysteme = [], geraetelisten = [], anhaenge = [], leistungsbereiche = {} }) {
   const documents = exportliste.length ? exportliste : buildDocumentationPlan(matrix, geraetelisten, anhaenge, leistungsbereiche, projekt).map((entry) => ({ ...entry, kapitel: entry.displayKapitel, status: entry.requiresFile ? "nicht geprüft" : "struktur" }));
@@ -17,6 +18,7 @@ function buildExportPreview({ projekt = {}, matrix = [], exportliste = [], proje
   }
   const count = summarizeExportEntries(documents);
   return {
+    photoWarnings: photoWarningsFromEntries(documents),
     projekt: Object.fromEntries(["projektname", "projektnummer", "auftraggeber", "liegenschaft", "baumassnahme"].map((key) => [key, valueOrDash(projekt[key])])),
     stats: { dokumente: count.files, kapitel: groups.filter((group) => group.kapitel !== "0").length, struktur: documents.filter((entry) => entry.requiresFile === false).length, vorhandeneDateien: count.present, fehlendeDateien: count.missing, fehlerhafteDateien: count.invalid, nichtZugeordnet: exportliste.find((entry) => entry.isToc)?.unzugeordneteDateien || [], ungeprueft: count.unchecked, pflichtdokumente: count.required, fehlendePflicht: count.requiredMissing, seiten: count.pages },
     groups

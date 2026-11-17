@@ -1,318 +1,106 @@
 # edoku
 
-> **Aktuelle Anleitung und geprüfter App-Stand · 17.11.2026**
+**Elektro-Bestandsdokumentationen strukturiert erfassen, prüfen und als PDF oder ZIP ausgeben.**
+
+edoku verbindet Projektstammdaten, Gerätelisten, Brandschutzfotos und technische Unterlagen zu einer geordneten Dokumentation. Die Weboberfläche läuft lokal mit Docker oder als eigene Serverinstallation mit Coolify. SQLite ist bereits eingebaut; ein zusätzlicher Datenbankserver ist nicht erforderlich.
+
+**Für Anwender:** [Bedienungsanleitung](docs/BEDIENUNGSANLEITUNG.md) · [Funktionsüberblick](#funktionen)
+
+**Für Betrieb und Entwicklung:** [Installation](INSTALL.md) · [Coolify](docs/COOLIFY.md) · [Aktueller Stand](docs/AKTUELLER_STAND.md) · [Dokumentationsübersicht](docs/README.md)
+
+> **Beta · Stand 17.11.2026 · `0.1.0-beta.1`**
 >
-> Der geprüfte Programmstand und die neue Dokumentation liegen auf [`gm/coolify-test-20261117`](https://github.com/loserat/edoku/tree/gm/coolify-test-20261117). Dieser Hauptbranch enthält weiterhin den älteren Programmstand; es wurde hier kein Programmupdate zusammengeführt.
->
-> **Für Anwender:** [Bebilderte Bedienungsanleitung](https://github.com/loserat/edoku/blob/gm/coolify-test-20261117/docs/BEDIENUNGSANLEITUNG.md) mit dem vollständigen Ablauf von der Projektanlage bis zur Ausgabe. Sie behandelt ausschließlich die Nutzung der App.
->
-> **Für Betrieb und Entwicklung:** [Aktueller Projektstand](https://github.com/loserat/edoku/blob/gm/coolify-test-20261117/docs/AKTUELLER_STAND.md), [Dokumentationsübersicht](https://github.com/loserat/edoku/blob/gm/coolify-test-20261117/docs/README.md) und [Prüfumfang](https://github.com/loserat/edoku/blob/gm/coolify-test-20261117/docs/ONLINE_PRUEFSTAND.md). Die folgenden älteren Angaben beschreiben diesen Hauptbranch.
+> Der geprüfte Programmstand und diese Dokumentation sind in `main` übernommen. Der ursprüngliche Prüfbranch bleibt als Verlauf erhalten. Die Online-Testinstanz verwendet den Programmcommit [`a07104b`](https://github.com/loserat/edoku/commit/a07104ba18c0cb1ea0d7958ebc32504c47bd002e). Das ist kein neuer Release und keine fachliche Freigabe. Einschränkungen stehen unter [Offene Punkte](docs/OFFENE_PUNKTE.md).
 
-<p><strong><span style="color:red;">Mitentwickler gesucht: Ich suche Menschen, die edoku kostenlos testen möchten. Feedback, Fehlerberichte und Ideen sind willkommen. Für Tester gibt es Support innerhalb von 48 Stunden.</span></strong></p>
+## Einblick
 
-edoku ist eine lokale Web-Anwendung zur strukturierten Erstellung von Elektro-Bestandsdokumentationen. Die Anwendung verwaltet Projektstammdaten, Leistungsbereiche, Dokumentenmatrix, Gerätelisten, Brandschutzdokumentation, Anhänge, PDF-Erzeugung und Exportvorbereitung.
-
-Version 1 ist bewusst leichtgewichtig aufgebaut:
-
-- Node.js und Express
-- EJS-Templates
-- Vanilla JavaScript
-- eigenes CSS ohne Frontend-Framework
-- JSON-Dateien für fachliche Projektdaten
-- SQLite für Benutzer, Sessions und Projektübersicht
-- Docker-fähig
-
-## Status
-
-edoku ist aktuell als **Beta-Version** vorgesehen. Die Anwendung ist lokal und per Docker lauffähig und kann bereits für Testläufe, Demo-Projekte und die Weiterentwicklung der Elektro-Bestandsdokumentation genutzt werden.
-
-Die Beta ist noch nicht als produktiv abgesicherte Webserver-Anwendung gedacht. Sicherheitsprotokoll und vollständige Sicherung mit getrennter Wiederherstellung sind vorhanden. Eine zusätzliche Sicherung auf einem anderen Datenträger sowie die fachliche Abnahme mit echten Dokumentationen bleiben offen. 52 automatisierte Prüfungen decken Export, Datenerhalt, Zugriffsgrenzen, Archive, Protokoll und Sicherung ab.
-
-Die aktuelle Arbeitsliste mit offenen Punkten steht in [docs/OFFENE_PUNKTE.md](docs/OFFENE_PUNKTE.md).
-Der kompakte aktuelle Projektstand steht in [docs/AKTUELLER_STAND.md](docs/AKTUELLER_STAND.md).
-Änderungen werden zusätzlich im [CHANGELOG.md](CHANGELOG.md) gepflegt.
-
-### Stand 30. Oktober 2026
-
-Sicherheits- und Archivkorrekturen: getrennte Ausgabeablagen je Benutzer und Projekt, begrenzte Dateizugriffe, Schutz schreibender Formulare, zuverlässige Speicherfehler und echte geprüfte Projekt-ZIPs. Gemeinsam genutzte Alt-Ausgaben bleiben als historischer Bestand erhalten. Siehe [Zugriffsschutz](docs/SICHERHEIT.md) und [Projektarchive](docs/PROJEKTARCHIVE.md).
-
-- Ruhige technische Oberfläche mit gemeinsamen Seitenköpfen, Kennzahlenkarten und klarer Navigation.
-- Einheitliches Dokument-/Prüfhaken-Icon für Browser, App und Startbildschirm.
-- Gemeinsamer Kapitelplan für Matrix, Gerätelisten, importierte PDFs, Inhaltsverzeichnis und Export.
-- Tatsächliche PDF-Seitenzahlen, klickbares Inhaltsverzeichnis und fortlaufende finale Dateinummern.
-- Dashboard und Export unterscheiden geplante, vorhandene, fehlende und veraltete Dateien sowie Strukturüberschriften.
-- Bestehende Konten und Projektdaten bleiben bei Neustarts erhalten; die lokale Hauptanwendung wurde mit vollständiger Sicherung aktualisiert.
-
-Details: [Release Notes](docs/RELEASE_NOTES.md), [Tests und Beta-Abnahme](docs/TESTS.md) und [sicheres lokales Update](docs/UPDATE.md).
-
-## Einblick in die Anwendung
-
-Aufnahmen vom 30.10.2026 in einem schmalen Browserfenster. Alle sichtbaren
-Projektangaben sind künstliche Beispieldaten aus einer getrennten
-Demo-Installation. Das gezeigte Musterprojekt enthält zwölf Einzel-PDFs mit
-20 Seiten; der Erfassungsstand ersetzt keine fachliche Prüfung.
-
-| Projektübersicht | Gesamt-PDF und ZIP-Export |
+| Projekt und nächster Arbeitsschritt | Export prüfen, bevor er versendet wird |
 | --- | --- |
-| [![Projektübersicht mit Erfassungsstand und nächstem Arbeitsschritt](docs/screenshots/uebersicht.jpg)](docs/screenshots/uebersicht.jpg) | [![Finaler Export mit Gesamt-PDF, ZIP und Reihenfolgeprotokoll](docs/screenshots/zip-export.jpg)](docs/screenshots/zip-export.jpg) |
+| [![Projektübersicht mit Erfassungsstand und Arbeitsschritten](docs/screenshots/2026-11-17/02-uebersicht.jpg)](docs/screenshots/2026-11-17/02-uebersicht.jpg) | [![Exportprüfung mit getrennten Datei- und Seitenzählern sowie fehlenden Unterlagen](docs/screenshots/2026-11-17/09b-exportpruefung.jpg)](docs/screenshots/2026-11-17/09b-exportpruefung.jpg) |
 
-<details>
-<summary>Weitere Screenshots: Anmeldung, Dokumentenmatrix und PDF-Inhaltsbaum</summary>
+Echte Aufnahmen der Anwendung vom 17.11.2026, ausschließlich mit künstlichen Testdaten. Das Beispiel enthält bewusst fehlende Unterlagen: **33 vorhandene von 48 geplanten Einzel-PDFs, 35 tatsächliche Seiten**. Ein erstellter Export ersetzt keine Vollständigkeitsprüfung. [Screenshots und Herkunft](docs/screenshots/README.md).
 
-### Anmeldung
+## Vom Projekt zur Dokumentation
 
-![Anmeldemaske ohne eingetragene Zugangsdaten](docs/screenshots/anmeldung.jpg)
+1. **Projekt auswählen oder anlegen:** Stammdaten, Auftraggeber und Objektstruktur erfassen.
+2. **Leistungsbereiche festlegen:** Passende Gerätelisten und Dokumentvorgaben auswählen.
+3. **Inhalte ergänzen:** Geräte erfassen, Pläne und Nachweise importieren, Brandschutzfotos zuordnen.
+4. **Matrix und PDFs prüfen:** Ausgabeumfang, Kapitel, Pflichtunterlagen und Vorschau kontrollieren.
+5. **Export erstellen und freigeben:** Gesamt-PDF, Kapitel-ZIP und Reihenfolgeprotokoll prüfen; fehlende Quellen ergänzen und erneut erzeugen.
 
-### Dokumentenmatrix
-
-Auswahl der Dokumente mit Original- und Ausgabekapiteln. Breite Tabellen
-bleiben in der schmalen Ansicht horizontal bedienbar.
-
-![Dokumentenmatrix mit Kapitelnummern und Ausgabeauswahl](docs/screenshots/dokumentenmatrix.jpg)
-
-### PDF-Erzeugung und Inhaltsbaum
-
-![Aktionen zur PDF-Erzeugung und hierarchischer Inhaltsbaum](docs/screenshots/pdf-dokumentation.jpg)
-
-</details>
+Die [bebilderte Bedienungsanleitung](docs/BEDIENUNGSANLEITUNG.md) erklärt jeden Schritt, die Zähler, häufige Fehler und den Unterschied zwischen Dokumentations-ZIP, Projektpaket und Vollsicherung.
 
 ## Funktionen
 
-- Registrierung, Login und Logout
-- benutzerbezogene Projektverwaltung
-- mehrere Projekte pro Benutzer
-- aktuelles Projekt als Arbeitskontext
-- Dashboard mit Fortschritt und Kennzahlen
-- Projektstammdaten mit Objektstruktur und Stockwerken
-- Leistungsbereiche mit Formularvorgaben und Projektzuordnung
-- Dokumentenmatrix mit logischer Kapitelnummerierung
-- Gerätelisten je Leistungsbereich
-- Brandschutzabschottungen mit Foto-Zuordnung über Anhänge
-- Anhänge und importierte PDF-Dateien
-- Plan-/Messprotokoll-Kategorien für PDF-Importe
-- PDF-Erzeugung mit Projektkopf, Logo und optionalem nickgm.de-Branding
-- Inhaltsverzeichnis, Formular-PDFs, Gerätelisten und Brandschutz-PDFs
-- separate PDF-Trennstreifen im Maß 24 x 10,5 cm
-- separate Ordnerrücken für Avery-Zweckform-Formate `61x192-R` und `38x192-R`
-- Deckblätter für Hauptkategorien
-- Exportliste und finaler Exportordner
-- Tag-/Nacht-Theme
-- Theme-Editor mit Presets
-- Versionsanzeige und GitHub-Update-Prüfung im Systembereich
-- schwebende Statusmeldungen, die die Oberfläche nicht verschieben
-- Docker-Start
-- GitHub-/VS-Code-inspirierte Theme-Presets mit stabilen Layoutgrößen
+| Bereich | Was edoku unterstützt |
+| --- | --- |
+| Projekte | Mehrere eigene Projekte, Arbeitskontext, Stammdaten, Stockwerke und Archivstatus |
+| Dokumentenmatrix | Ausgabeauswahl, Pflichtkennzeichnung und gemeinsame Kapitelstruktur |
+| Gerätelisten | Positionen je Leistungsbereich, Hersteller/System/Typ, Vorlagen und Zuordnung von Bedienungsanleitungen |
+| Anhänge | Pläne, Messprotokolle, Nachweise, PDFs und Bilder nach Kategorien |
+| Brandschutz | Schottungen, Foto-1-/Foto-2-Zuordnung und Warnungen bei fehlenden referenzierten Dateien |
+| PDF und ZIP | Inhaltsverzeichnis, Deckblätter, Formulare, Listen, Gesamt-PDF, Kapitelordner und Reihenfolgeprotokoll |
+| Druckhilfen | Separate Trennstreifen sowie Ordnerrücken für `61x192-R` und `38x192-R` |
+| Konten | Eigene Projektbereiche, Rollen, Kontosperre und standardmäßig geschlossene Registrierung |
+| Oberfläche | Helle/dunkle Darstellung, gemeinsame Navigation und konfigurierbare Themes |
+| Betrieb | Eingebettetes SQLite, fünf dauerhafte Datenordner, Sicherheitsprotokoll und geprüfte Sicherungswerkzeuge |
 
-## Screens und Bedienkonzept
+## Lokal mit Docker starten
 
-Die Hauptnavigation ist kompakt gehalten:
-
-- Projekte
-- Übersicht / aktuelles Projekt
-- Anhänge
-- Brandschutz
-- Gerätelisten
-- Export
-- System-Icon rechts im Header
-
-Je Hauptbereich werden die Unterpunkte links in der Seitenleiste oder als kompakte Bereichstabs geführt. Links oben im Header steht der Name des aktuell geöffneten Projekts.
-
-## Start mit Docker
+Für eine **neue lokale Testinstallation in einem neuen Verzeichnis**. Vor dem ersten Start bei Bedarf den [eigenen Erstzugang](INSTALL.md#eigener-erstzugang-und-bestehende-konten) einrichten; der einfache Standardstart verwendet sonst das lokale Demo-Verhalten:
 
 ```bash
-docker compose up --build
+git clone --branch main https://github.com/loserat/edoku.git edoku-test
+cd edoku-test
+docker compose up -d --build
 ```
 
-Danach im Browser öffnen:
+Danach [http://localhost:3000](http://localhost:3000) öffnen. Der Port muss frei sein. Die Einrichtung eines eigenen Erstkontos und die Alternative ohne Docker stehen in [INSTALL.md](INSTALL.md). Öffentlich erreichbare Neuinstallationen mit einem eigenen Erstkonto einrichten; Anleitung: [Coolify](docs/COOLIFY.md).
 
-```text
-http://localhost:3000
-```
+**Vorhandene Installation?** Zuerst [Update und Datenerhalt](docs/UPDATE.md) lesen und vollständig sichern. Ein neuer Checkout darf die bestehende Datenablage nicht ersetzen. Keine Volumes oder Datenbankdateien zum Zurücksetzen löschen.
 
-Im Hintergrund starten:
+## Coolify und Datenbank
+
+Der mehrstufige Docker-Build enthält Node.js 22, die SQLite-Anbindung und Python für Sicherungswerkzeuge. Beim ersten Start einer echten Neuinstallation entsteht `storage/app.db`. Beide SQLite-Stufen werden für neue Installationen aktiviert; bestehende Installationen wechseln nach geprüfter Sicherung ausdrücklich.
+
+Für Coolify **Dockerfile** mit internem Port `3000` oder die separate `docker-compose.coolify.yml` verwenden. HTTPS, eigene Erstzugangsvariablen und dauerhafte Volumes einrichten. Der Healthcheck `/ready` prüft die tatsächliche SQLite-Bereitschaft. Das additive `/api/*`-Grundgerüst ist noch keine vollständige API für Benutzerprojekte.
+
+[Coolify einrichten](docs/COOLIFY.md) · [SQLite verstehen](docs/SQLITE_PROJEKTDATEN.md) · [API-Grenzen](docs/API.md)
+
+## Daten erhalten und sichern
+
+Strukturierte Projektdaten, Konten und Sitzungen liegen in SQLite. Fotos, Anhänge und Ausgabedateien bleiben Dateien; globale Vorgaben und Vorlagen bleiben dateibasiert. Zusammen gehören **`data/`, `config/`, `storage/`, `output/` und `templates/`** zur Sicherung. Historische gemeinsame Ausgaben bleiben separat erhalten. Alte Projekt-JSON-Dateien sind nach SQLite-Aktivierung kein aktueller Spiegel.
+
+| Zweck | Richtiger Weg |
+| --- | --- |
+| Fertige Unterlagen weitergeben | [Gesamt-PDF und Dokumentations-ZIP](docs/BEDIENUNGSANLEITUNG.md#10-gesamt-pdf-und-zip-erstellen) |
+| Ein Projekt zur Weiterbearbeitung übertragen | [Projektpaket mit Manifest und Prüfsummen](docs/PROJEKTARCHIVE.md) |
+| Ganze Installation einschließlich Konten und Altbestand absichern | [Vollsicherung und getrennte Wiederherstellung](docs/BETA_BETRIEB.md) |
+
+Eine Kopie auf einem weiteren Datenträger und regelmäßige Wiederherstellungsproben bleiben erforderlich. Private Projekte, Kontodaten, Sicherungen und Laufzeitdateien gehören nicht ins Repository.
+
+## Geprüft und noch offen
+
+- **Automatisiert:** 109 Prüfungen im Node-22-Testabbild bestanden: 101 Node.js- und acht Python-Prüfungen. Paketprüfung am 17.11.2026: keine bekannten npm-Lücken im geprüften Stand.
+- **Mit Projektkopien:** Acht bestehende Projekte vor/nach SQLite-Stufe 2 technisch verglichen, einschließlich 249 tatsächlicher PDF-Seiten, Projektpaketen und Rückimporten. Originalbestand erhalten.
+- **Online:** HTTPS, Anmeldung, Speichern/Wiederladen, Erhalt über einen Containerwechsel sowie PDF-/ZIP-Erzeugung auf der Testinstanz geprüft. Das künstliche Projekt meldet 15 fehlende PDF-Quellen; der Export ist fachlich unvollständig. Der Download wurde in dieser Runde nicht unabhängig geprüft.
+- **Offen:** Fachliche Abnahme, externe Sicherungsorganisation, physische Druckprüfung, weitere Browser-/Barrierefreiheitsfälle, eigener Benutzer-Passwortwechsel und eine vollständige Betriebs-/Sicherheitsabnahme.
+
+Die Nachweise sind datiert. Ein lokaler Testlauf ist kein GitHub-CI-Lauf. [Prüfumfang](docs/TESTS.md) · [Online-Prüfstand](docs/ONLINE_PRUEFSTAND.md) · [Offene Punkte](docs/OFFENE_PUNKTE.md)
+
+## Entwickeln und mitmachen
+
+Node.js/Express, EJS, Vanilla JavaScript und CSS bilden die Anwendung. Details stehen in [Technik](docs/TECHNIK.md). Tests in einer getrennten Umgebung mit neutralen Startdaten ausführen, da Exporttests Dateien erzeugen:
 
 ```bash
-docker compose up -d
+npm run check
+npm test
 ```
 
-Stoppen:
+Tester und Mitentwickler sind willkommen. Bei Fehlern bitte Schritte, erwartetes Ergebnis, tatsächliche Meldung und Programmstand in einem [Issue](https://github.com/loserat/edoku/issues) angeben. Screenshots vorher auf private Daten prüfen; keine Passwörter oder echten Projektarchive hochladen.
 
-```bash
-docker compose down
-```
+## Weiterführende Dokumentation
 
-Logs anzeigen:
+[Bedienung](docs/BEDIENUNGSANLEITUNG.md) · [Dokumentationsübersicht](docs/README.md) · [Benutzerverwaltung](docs/BENUTZERVERWALTUNG.md) · [Sicherheit](docs/SICHERHEIT.md) · [Brandschutzfotos](docs/BRANDSCHUTZFOTOS.md) · [Changelog](CHANGELOG.md)
 
-```bash
-docker compose logs -f
-```
-
-## Start ohne Docker
-
-Voraussetzung: Node.js 22 und Python 3.11 oder neuer für Sicherungswerkzeuge und deren Tests. Docker nutzt Node.js 22.
-
-```bash
-npm install
-npm start
-```
-
-Danach im Browser öffnen:
-
-```text
-http://localhost:3000
-```
-
-## Installation und lokale Defaults
-
-Die Installationsschritte, Hinweise zu lokalen Demo-Konten und erste Setup-Schritte stehen in [INSTALL.md](INSTALL.md).
-
-Die Demo-Zugänge werden ausschließlich bei einer Erstinstallation ohne vorhandene Datenbank angelegt. Ihre Passwörter werden gehasht in SQLite abgelegt. Bestehende Konten, Passwörter, Rollen und Sperren werden bei Neustarts nicht zurückgesetzt.
-
-## Projektstruktur
-
-```text
-.
-├── config/              # System- und Formular-Konfiguration
-├── backups/             # private lokale Sicherungen, nicht für Git oder Docker-Images
-├── data/                # globale Startdaten und JSON-Defaults
-├── docs/                # technische Doku, Projektupdate und Release Notes
-├── intern/              # lokale interne Notizen, größtenteils ignoriert
-├── public/              # CSS, JavaScript, Logo
-├── services/            # Backend-Services
-├── storage/             # lokaler Runtime-Speicher, nicht für Git
-├── templates/           # spätere Dokumentvorlagen
-├── views/               # EJS-Templates
-├── Dockerfile
-├── docker-compose.yml
-├── package.json
-└── server.js
-```
-
-## Datenhaltung
-
-Fachliche Projektinhalte bleiben in Version 1 JSON-basiert. Benutzer, Sessions und Projekt-Metadaten werden in SQLite gespeichert.
-
-Lokale Laufzeitdaten werden unter `storage/` erzeugt:
-
-```text
-storage/app.db
-storage/users/[userId]/projects/[projectId]/
-storage/exports/
-storage/imports/
-```
-
-Diese Daten sind in `.gitignore` ausgeschlossen und gehören nicht ins öffentliche Repository.
-
-## Export und PDFs
-
-edoku erzeugt aktuell:
-
-- Inhaltsverzeichnis
-- Anlagenbeschreibung unter Kapitel `3.1`
-- Deckblätter für Hauptkategorien
-- separate Trennstreifen für Unterkategorien
-- separate Ordnerrücken für Dokumentationsordner
-- Konformitätserklärungen
-- CE-Bestätigungen
-- DGUV-/Errichterbestätigungen
-- Gerätelisten
-- Brandschutzseiten mit Platz für Fotos
-- Exportliste
-- finalen Exportordner
-
-Importierte PDF-Anhänge können über Kategorien wie Stromlaufpläne, Schaltpläne, Installationspläne, Schemata und Messprotokolle in Inhaltsverzeichnis und Exportliste aufgenommen werden.
-
-Anhänge werden kategoriebezogen als Kacheln verwaltet. Datei-Metadaten, Vorschau und Brandschutz-Fotozuordnung laufen über ein Bearbeiten-Popup. Bedienungsanleitungen können optional mit Gerätepositionen in Gerätelisten verknüpft werden.
-
-Trennstreifen werden separat erzeugt und bewusst ohne Footer-Branding gedruckt. Der Standarddruck ist tintensparend: schwarze Kapitelnummer am Registerrand, keine blaue Fläche und kein zusätzlicher Projekttext.
-
-Ordnerrücken werden unter `Export > Ordnerrücken` als separate PDF erzeugt. Unterstützt sind Avery-Zweckform-Bögen `61x192-R` mit 4 Rücken je A4-Seite und `38x192-R` mit 7 Rücken je A4-Seite. Der Text wird gedreht, zentriert im Rücken angeordnet und kann Projektname, Projektnummer, Auftraggeber, Liegenschaft, Baumaßnahme und Ordnernummer enthalten. Die Ordneranzahl kann manuell gesetzt oder aus den tatsächlichen vorhandenen PDF-Seiten und der einstellbaren Kapazität geschätzt werden (Standard: 80 Seiten pro Ordner). Der physische Ausdruck und die Ordnerkapazität müssen praktisch geprüft werden.
-
-Der finale Export aktualisiert interne PDFs und erstellt eine Gesamt-PDF mit klickbarem Inhaltsverzeichnis sowie ein ZIP mit Kapitelordnern. Mehrseitige Anhänge zählen mit ihrer tatsächlichen Seitenzahl. Überschriften ohne eigene Datei, die Gesamt-PDF und separate Druckvorlagen erhöhen die Anzahl der Einzel-PDFs nicht. Fehlende, unlesbare oder veraltete Dateien werden ausgewiesen.
-
-Das Softwareupdate selbst verändert vorhandene PDFs nicht. Ältere generierte PDFs können als veraltet erscheinen; die neue Struktur greift beim nächsten bewusst gestarteten Export.
-
-Gerätelisten können über das Drei-Punkte-Menü als systemweite Vorlage gespeichert werden. Die Verwaltung erfolgt unter `System > Gerätelisten`; passende Vorlagen können später wieder in Gerätelisten geladen werden.
-
-Systemadmins können unter `System > System` das sichtbare edoku-/nickgm-Branding für Oberfläche und PDF-Exporte deaktivieren. Das ist als Vollversions-/Lizenzoption vorbereitet; projektbezogene Logos und Erstellerlogos bleiben davon unabhängig.
-
-## Sicherung und Sicherheitsprotokoll
-
-Systemadmins finden das Sicherheitsprotokoll unter **System → Sicherheitsprotokoll**. Eine vollständige Sicherung enthält alle fünf Laufzeitordner, die Datenbank und standardmäßig das passende Docker-Abbild. Die Wiederherstellung erfolgt ausschließlich in einen neuen Ordner. Anleitung und Grenzen: [Lokaler Beta-Betrieb](docs/BETA_BETRIEB.md).
-
-## Tests
-
-Nach Installation der Abhängigkeiten:
-
-```bash
-npm run test:exports
-npm run test:preservation
-npm run test:security
-npm run test:audit
-npm run test:backup
-npm run test:e2e
-```
-
-Die 52 Prüfungen arbeiten mit temporären Prüfprojekten. Sie prüfen unter anderem Kapitelkollisionen, PDF-Seitenzahlen, Inhaltsverzeichnis-Sprunglinks und Datenerhalt über Neustarts. Die Exporttests schreiben zusätzlich eigene Nachweise unter `output/pdf/` und `output/counting-review/`; Tests deshalb in einem getrennten Checkout oder Container ausführen. Vorhandene Benutzerprojekte werden nicht bearbeitet. Eine Anleitung zur zusätzlichen manuellen Abnahme steht in [docs/TESTS.md](docs/TESTS.md).
-
-## Theme-System
-
-Das Theme-System nutzt zentrale CSS-Variablen für Farben, Radien, Schatten, Abstände und Typografie. Der Editor ist bewusst auf die wichtigsten Werte begrenzt und orientiert sich farblich an GitHub-/VS-Code-Themes. Die Presets verwenden identische Radius-, Spacing- und Typografiewerte, damit beim Wechsel keine sichtbaren Layoutsprünge entstehen.
-
-Aktuelle Presets:
-
-- GitHub Light Default
-- GitHub Light High Contrast
-- GitHub Light Colorblind
-- GitHub Dark Default
-- GitHub Dark High Contrast
-- GitHub Dark Colorblind
-- GitHub Dark Dimmed
-
-## GitHub-Hinweise
-
-Diese Inhalte sollen ins Repository:
-
-- Quellcode
-- Views
-- CSS und Frontend-JS
-- Konfigurationsdateien
-- JSON-Startdaten
-- Dokumentation
-- Docker-Dateien
-
-Diese Inhalte sollen nicht ins Repository:
-
-- `node_modules/`
-- `output/`
-- `storage/` außer `storage/README.md`
-- `backups/`
-- lokale Änderungen an `config/systemEinstellungen.json` und `config/geraetelistenVorlagen.json`
-- `.env`
-- `.DS_Store`
-- interne Tagesupdates und lokale Arbeitsnotizen
-
-Siehe auch:
-
-- [Technische Dokumentation](docs/TECHNIK.md)
-- [Installation](INSTALL.md)
-- [Aktueller Stand](docs/AKTUELLER_STAND.md)
-- [Changelog](CHANGELOG.md)
-- [Repo-Sicherheitscheck](docs/REPO_SICHERHEITSCHECK.md)
-- [Projektupdate](docs/PROJEKTUPDATE.md)
-- [Release Notes](docs/RELEASE_NOTES.md)
-- [Tests und Beta-Abnahme](docs/TESTS.md)
-- [Lokales Update und Datensicherung](docs/UPDATE.md)
-- [Zugriffsschutz und Datenerhalt](docs/SICHERHEIT.md)
-- [Projektarchive und Wiederherstellung](docs/PROJEKTARCHIVE.md)
-
-## Aktuelle Grenzen
-
-- keine externe Datenbank
-- Rollenverwaltung ist als Beta-Funktion vorhanden und muss für produktiven Serverbetrieb weiter gehärtet werden
-- PDF-Gesamtdatei und ZIP-Export sind als Beta-Funktion vorhanden und müssen weiter visuell geprüft werden
-- automatisierte Prüfungen decken Exportzählung, Datenerhalt und zentrale Sicherheits-/Archivfälle ab; vollständige Browser-, Fach- und Betriebsabnahme bleibt offen
-
-## Lizenz
-
-Noch nicht festgelegt.
+**Lizenz:** Noch nicht festgelegt.

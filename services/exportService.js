@@ -4,9 +4,10 @@ const { writeZipFile } = require("./zipService");
 const { assertSafePath } = require("./pathService");
 const { PDFDocument, PDFName } = require("pdf-lib");
 const { chapterFolderForKapitel, createProjectFolder, fileSafeName, getProjectPaths, readableProjectPaths, resolveProjectSource } = require("./projectService");
-const { writeJson } = require("./jsonService");
+const { readJson, writeJson } = require("./jsonService");
 const { buildDocumentationPlan, summarizeExportEntries } = require("./documentationPlanService");
 const { generateInhaltsverzeichnis } = require("./pdfService");
+const { brandschutzPhotosRelevant, inspectBrandschutzPhotos, photoWarningsFromEntries } = require("./brandschutzPhotoService");
 
 // * INFO: Sucht rekursiv alle PDF-Dateien in einem Ordner. Fehlende Ordner liefern eine leere Liste.
 async function listPdfFiles(dir) {
@@ -217,6 +218,8 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
   const toc = { id: "inhaltsverzeichnis", isToc: true, requiresFile: true, kapitel: "0", originalKapitel: "0", ebene: 1, titel: "Inhaltsverzeichnis", dateipfad: relative(rootDir, tocPath), quelle: "intern", pflicht: true, ...await inspect(tocPath) };
   if (toc.status === "vorhanden" && (toc.pdfDocumentId !== "inhaltsverzeichnis" || toc.pdfChapter !== "0")) Object.assign(toc, { status: "veraltet", seiten: 0, fehler: "Inhaltsverzeichnis neu erzeugen." });
   entries.push(toc);
+  toc.photoWarnings = brandschutzPhotosRelevant(matrix, leistungsbereiche)
+    ? await inspectBrandschutzPhotos(rootDir, projekt, options.brandschutz || []) : [];
   for (const node of plan) {
     let source = node.dateipfad ? path.join(rootDir, node.dateipfad) : "";
     let quelle = node.attachmentId ? "import" : "manuell";
@@ -272,10 +275,14 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
 
 async function buildFinalExport(rootDir, projekt, matrix, exportlistePath, options = {}) {
   const paths = { ...await createProjectFolder(rootDir, projekt), finalPath: options.finalPath };
-  const entries = JSON.parse(await fs.readFile(exportlistePath, "utf8"));
+  const entries = await readJson(exportlistePath);
   const ordered = entries.sort((a, b) => Number(a.position || a.reihenfolge) - Number(b.position || b.reihenfolge));
   const toc = ordered.find((entry) => entry.isToc || entry.kapitel === "0");
   if (!toc) throw new Error("Exportliste ohne Inhaltsverzeichnis. Bitte Dokumentation neu erzeugen.");
+  if (options.brandschutz) {
+    toc.photoWarnings = brandschutzPhotosRelevant(matrix, options.leistungsbereiche || {})
+      ? await inspectBrandschutzPhotos(rootDir, projekt, options.brandschutz) : [];
+  }
   // Vor dem Zusammenführen werden Seiten und Zeilen aus demselben Exportplan gesetzt.
   for (const entry of ordered.filter((item) => item.requiresFile !== false)) {
     if (entry.dateipfad) Object.assign(entry, await inspectPdf(await resolveProjectSource(rootDir, projekt, entry.dateipfad)));
@@ -310,13 +317,15 @@ async function buildFinalExport(rootDir, projekt, matrix, exportlistePath, optio
   const lines = ordered.map((entry) => `${entry.exportReihenfolge ? String(entry.exportReihenfolge).padStart(3, "0") : "---"} | ${entry.kapitel} | ${entry.titel} | ${entry.status} | Seite ${entry.startSeite || "-"} | ${entry.seiten || 0} Seite(n) | ${entry.dateipfad || "-"}`);
   if (missing.length) lines.push("", "NICHT ENTHALTENE DATEIEN:", ...missing.map((entry) => `- ${entry.kapitel} ${entry.titel}: ${entry.fehler || entry.status}`));
   if (toc.unzugeordneteDateien?.length) lines.push("", "NICHT ZUGEORDNETE EXTERNE PDFS:", ...toc.unzugeordneteDateien.map((file) => `- ${file}`));
+  const photoWarnings = photoWarningsFromEntries(ordered);
+  if (photoWarnings.length) lines.push("", "FEHLENDE ODER NICHT ZUGREIFBARE BRANDSCHUTZFOTOS:", ...photoWarnings.map(warning => `- ${warning.message} Dateiverweis: ${warning.relativePath}`));
   const orderFile = path.join(paths.finalPath, "EXPORT_REIHENFOLGE.txt");
   await fs.writeFile(orderFile, lines.join("\n") + "\n");
   zipFiles.push({ sourcePath: orderFile, zipPath: "00_Inhaltsverzeichnis/EXPORT_REIHENFOLGE.txt" });
   if (merged.targetPath) zipFiles.unshift({ sourcePath: merged.targetPath, zipPath: `00_Inhaltsverzeichnis/${path.basename(merged.targetPath)}` });
   const zipPath = path.join(paths.finalPath, `${fileSafeName(projekt.projektnummer || "Projekt")}_${fileSafeName(projekt.projektname || "edoku")}_Export.zip`);
   await writeZipFile(zipPath, zipFiles);
-  return { ordered, completePdfPath: merged.targetPath, completePdfPages: merged.pages, skippedMergeFiles: merged.skipped, unassignedFiles: toc.unzugeordneteDateien || [], orderFile, zipPath, missingRequired: missing.filter((entry) => entry.pflicht).map((entry) => `${entry.kapitel} ${entry.titel}`), missingFiles: missing, summary: summarizeExportEntries(ordered) };
+  return { ordered, completePdfPath: merged.targetPath, completePdfPages: merged.pages, skippedMergeFiles: merged.skipped, unassignedFiles: toc.unzugeordneteDateien || [], orderFile, zipPath, missingRequired: missing.filter((entry) => entry.pflicht).map((entry) => `${entry.kapitel} ${entry.titel}`), missingFiles: missing, photoWarnings, summary: summarizeExportEntries(ordered) };
 }
 
 // Ein gescheiterter Export darf die letzte fertige Ausgabe nicht zerstören.
