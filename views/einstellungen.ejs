@@ -39,7 +39,7 @@
       <section class="settings-grid">
         <%# Allgemeine Systemwerte für Oberfläche, Export und PDF-Grunddaten. %>
         <form id="system" action="/einstellungen/system" method="post" data-autosave class="settings-panel" data-settings-panel="system">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
           <div class="panel-head">
             <div>
               <h2>System-Grundeinstellungen</h2>
@@ -118,11 +118,11 @@
 
         <%# Theme-Editor: zentrale Designwerte werden in systemEinstellungen.json gespeichert. %>
         <form id="theme-editor" action="/einstellungen/theme" method="post" class="settings-panel theme-editor" data-theme-editor data-settings-panel="theme" hidden>
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
           <div class="panel-head">
             <div>
               <h2>Theme-Editor</h2>
-              <p>GitHub-orientierte Presets und wenige zentrale Designwerte steuern.</p>
+              <p>Farben, Formen und Schriftgrößen zentral anpassen. Eigene Einstellungen bleiben erhalten.</p>
             </div>
             <div class="panel-actions">
               <button type="submit">Theme speichern</button>
@@ -222,7 +222,7 @@
             </div>
           </div>
           <form action="/einstellungen/ersteller" method="post" data-autosave class="stack-form">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
             <div class="form-grid compact">
               <label>
                 <span>Name</span>
@@ -261,7 +261,7 @@
                 <img src="/einstellungen/ersteller-logo" alt="Erstellerlogo">
                 <span><%= systemSettings.ersteller.logoPfad %></span>
                 <form action="/einstellungen/ersteller-logo/loeschen" method="post" data-confirm="Zentrales Logo wirklich löschen?">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
                   <button class="danger icon-only-button" type="submit" aria-label="Logo löschen"><%- include("partials/icon", { name: "trash" }) %></button>
                 </form>
               <% } else { %>
@@ -270,7 +270,7 @@
               <% } %>
             </div>
             <form action="/einstellungen/ersteller-logo" method="post" enctype="multipart/form-data" class="logo-upload-form">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
               <label>
                 <span>Zentrales Logo</span>
                 <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" required>
@@ -281,7 +281,7 @@
         </section>
 
         <form id="ordnerstruktur" action="/einstellungen/ordnerstruktur" method="post" data-autosave class="settings-panel" data-settings-panel="ordnerstruktur" hidden>
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
           <div class="panel-head">
             <div>
               <h2>Projektordner</h2>
@@ -307,11 +307,23 @@
               </div>
             </div>
 
+            <form action="/einstellungen/registrierung" method="post" class="registration-settings">
+              <%- include("partials/formSecurity") %>
+              <label class="switch-control">
+                <input type="checkbox" name="selfRegistrationEnabled" <%= systemSettings.selfRegistrationEnabled ? "checked" : "" %>>
+                <span class="switch-track" aria-hidden="true"></span>
+                <span>Selbstregistrierung erlauben</span>
+              </label>
+              <p class="field-hint">Wenn aktiviert, kann jede Person mit Zugriff auf die App selbst ein aktives Benutzerkonto anlegen.</p>
+              <button type="submit" class="secondary compact-button">Registrierungseinstellung speichern</button>
+            </form>
+            <p class="field-hint user-role-help">Nur lesen: eigene Projekte ansehen. Benutzer: eigene Projekte bearbeiten. Systemadmin: zusätzlich Konten und globale Einstellungen verwalten. Die bisherige Rolle „Admin“ hat dieselben Rechte wie „Benutzer“.</p>
+
             <form action="/einstellungen/benutzer" method="post" class="form-grid compact user-create-form">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
               <label>
                 <span>Login</span>
-                <input type="text" name="email" placeholder="z. B. neuer_user">
+                <input type="text" name="email" placeholder="z. B. neuer_user" autocomplete="off" required>
               </label>
               <label>
                 <span>Name</span>
@@ -319,13 +331,14 @@
               </label>
               <label>
                 <span>Passwort</span>
-                <input type="password" name="password" autocomplete="new-password">
+                <input type="password" name="password" autocomplete="new-password" minlength="<%= passwordMinLength %>" maxlength="<%= passwordMaxLength %>" aria-describedby="create-password-hint" required>
+                <small id="create-password-hint" class="field-hint">Mindestens <%= passwordMinLength %> Zeichen; keine reinen Leerzeichen.</small>
               </label>
               <label>
                 <span>Rolle</span>
                 <select name="role">
-                  <% (userRoles || []).forEach((role) => { %>
-                    <option value="<%= role %>" <%= role === "user" ? "selected" : "" %>><%= role %></option>
+                  <% (userRoles || []).filter(role => role !== "admin").forEach((role) => { %>
+                    <option value="<%= role %>" <%= role === "user" ? "selected" : "" %>><%= userRoleLabels[role] || role %></option>
                   <% }) %>
                 </select>
               </label>
@@ -356,7 +369,7 @@
                       <td><strong class="user-text-clip"><%= account.email %></strong></td>
                       <td><span class="user-text-clip"><%= account.name %></span></td>
                       <td><span class="badge <%= account.status === "disabled" ? "off" : "on" %>"><%= account.status === "disabled" ? "gesperrt" : "aktiv" %></span></td>
-                      <td><span class="badge <%= account.role === "systemadmin" ? "current" : account.role === "viewer" ? "off" : "on" %>"><%= account.role %></span></td>
+                      <td><span class="badge <%= account.role === "systemadmin" ? "current" : account.role === "viewer" ? "off" : "on" %>"><%= userRoleLabels[account.role] || account.role %></span></td>
                       <td><span class="user-text-clip"><%= account.currentProjectId || "-" %></span></td>
                       <td><%= updatedLabel %></td>
                       <td class="user-actions-cell">
@@ -372,33 +385,34 @@
                               <button class="secondary icon-only-button" type="button" data-user-modal-close aria-label="Schließen">×</button>
                             </header>
                             <div class="user-modal-summary">
-                              <span>Rolle: <strong><%= account.role %></strong></span>
+                              <span>Rolle: <strong><%= userRoleLabels[account.role] || account.role %></strong></span>
                               <span>Projekt: <strong><%= account.currentProjectId || "-" %></strong></span>
                               <span>Aktualisiert: <strong><%= updatedLabel %></strong></span>
                             </div>
                             <form action="/einstellungen/benutzer/<%= account.id %>/rolle" method="post" class="user-modal-form">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
                               <label>
                                 <span>Rolle</span>
                                 <select name="role" <%= account.id === user.id ? "disabled" : "" %>>
-                                  <% (userRoles || []).forEach((role) => { %>
-                                    <option value="<%= role %>" <%= role === account.role ? "selected" : "" %>><%= role %></option>
+                                  <% (userRoles || []).filter(role => role !== "admin" || account.role === "admin").forEach((role) => { %>
+                                    <option value="<%= role %>" <%= role === account.role ? "selected" : "" %>><%= userRoleLabels[role] || role %></option>
                                   <% }) %>
                                 </select>
                               </label>
                               <button class="secondary compact-button" type="submit" <%= account.id === user.id ? "disabled" : "" %>>Rolle speichern</button>
                             </form>
                             <form action="/einstellungen/benutzer/<%= account.id %>/passwort" method="post" class="user-modal-form" data-confirm="Passwort für <%= account.email %> wirklich zurücksetzen? Bestehende Sessions werden beendet.">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
                               <label>
                                 <span>Neues Passwort</span>
-                                <input type="password" name="password" placeholder="neues Passwort" autocomplete="new-password">
+                                <input type="password" name="password" placeholder="Neues Passwort" autocomplete="new-password" minlength="<%= passwordMinLength %>" maxlength="<%= passwordMaxLength %>" aria-describedby="reset-hint-<%= account.id %>" required>
+                                <small id="reset-hint-<%= account.id %>" class="field-hint">Mindestens <%= passwordMinLength %> Zeichen; bestehende Anmeldungen werden beendet.</small>
                               </label>
                               <button class="secondary compact-button" type="submit">Passwort setzen</button>
                             </form>
                             <footer class="user-modal-actions">
                               <form action="/einstellungen/benutzer/<%= account.id %>/status" method="post" data-confirm="<%= account.status === "disabled" ? "Benutzer wirklich aktivieren?" : "Benutzer wirklich sperren? Bestehende Sessions werden beendet." %>">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
                                 <input type="hidden" name="status" value="<%= account.status === "disabled" ? "active" : "disabled" %>">
                                 <button class="secondary compact-button <%= account.status === "disabled" ? "" : "danger" %>" type="submit" <%= account.id === user.id ? "disabled" : "" %>>
                                   <%= account.status === "disabled" ? "Aktivieren" : "Sperren" %>
@@ -419,7 +433,7 @@
       </section>
 
       <form id="leistungsbereiche-admin" action="/einstellungen/leistungsbereiche-formulare" method="post" data-autosave class="settings-panel" data-settings-panel="leistungsbereiche" hidden>
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
         <div class="panel-head">
           <div>
             <h2>Leistungsbereiche</h2>
@@ -537,7 +551,7 @@
       </form>
 
       <form id="geraetelisten-vorlagen" action="/einstellungen/geraetelisten-vorlagen" method="post" data-autosave class="settings-panel" data-settings-panel="geraetelisten-vorlagen" hidden>
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
         <div class="panel-head">
           <div>
             <h2>Gerätelisten-Vorlagen</h2>

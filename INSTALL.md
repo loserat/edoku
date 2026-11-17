@@ -1,6 +1,10 @@
 # Installation
 
-Diese Anleitung beschreibt den lokalen Start von `edoku` für Entwicklung, Tests und Beta-Prüfungen.
+Stand: 17.11.2026. Diese Anleitung beschreibt eine Neuinstallation des aktuellen Arbeitsstands für Entwicklung, Tests und lokalen Beta-Betrieb. Bei einer vorhandenen Installation zuerst [Update und Datenerhalt](docs/UPDATE.md) lesen. Der geprüfte Programmstand ist in `main` übernommen. Den gewünschten Branch beziehungsweise Commit vor dem Bauen ausdrücklich auswählen. Die reine Nutzung erklärt die [Bedienungsanleitung](docs/BEDIENUNGSANLEITUNG.md).
+
+## Online-Testinstanz mit Coolify
+
+Für Coolify gibt es eine separate [Einrichtungsanleitung](docs/COOLIFY.md) und `docker-compose.coolify.yml`. Das Docker-Abbild prüft die echte Betriebsbereitschaft unter `/ready`. Bei einer neuen Online-Installation beide Variablen `EDOKU_INITIAL_ADMIN_LOGIN` und `EDOKU_INITIAL_ADMIN_PASSWORD` als Laufzeitwerte setzen: Dann entsteht genau ein eigener Systemadmin und keine bekannten Demo-Konten. Vorhandene Konten bleiben bei späteren Starts unverändert. Ohne diese Variablen gilt weiterhin das unten beschriebene lokale Demo-Verhalten.
 
 ## Start mit Docker
 
@@ -34,7 +38,7 @@ docker compose logs -f
 
 ## Start ohne Docker
 
-Voraussetzung: Node.js 22.
+Voraussetzungen: Node.js 22 und installierte Abhängigkeiten; Python 3.11 oder neuer für die Sicherungswerkzeuge. `better-sqlite3` enthält ein zur jeweiligen Plattform passendes natives Modul. Abhängigkeiten zwischen macOS und Linux nicht als fertigen `node_modules`-Ordner austauschen; bei Bedarf im Zielsystem neu installieren. Docker liefert eine passende Node-/SQLite-Laufzeit mit.
 
 ```bash
 npm install
@@ -47,25 +51,47 @@ Danach im Browser öffnen:
 http://localhost:3000
 ```
 
-## Lokale Demo-Konten
+## Wird die Datenbank mit installiert?
 
-Nur bei einer Erstinstallation ohne vorhandene `storage/app.db` werden lokale Demo-Konten vorbereitet. Eine vorhandene Datenbank wird beim Neustart weder mit Demo-Konten befüllt noch erneut aus dem alten JSON-Projektregister migriert. Eigene Konten, Passwortänderungen, Rollen und Sperren bleiben erhalten. Das gilt auch für eine vorhandene leere Datenbank; sie wird nicht automatisch mit Testkonten gefüllt.
+Ja. SQLite ist eine eingebettete Datenbank und benötigt keinen eigenen Server und keinen zweiten Docker-Dienst. Das Programmabbild enthält die benötigte SQLite-Anbindung (`better-sqlite3`). Die Datenbankdatei `storage/app.db` entsteht beim ersten Anwendungsstart, wenn noch keine Datenbank vorhanden ist.
 
-```text
-Benutzer: admin
-Passwort: admin
-Rolle: systemadmin
+Eine echte Neuinstallation aktiviert die beiden aktuellen Speicherstufen: vollständige strukturierte Projektdatensätze in SQLite sowie synchronisierte Tabellen für Gerätelisten und Positionen. Beim ersten Einrichten eines Projekts werden dessen Datensätze erfasst. Fotos, Anhänge, PDFs und ZIPs bleiben Dateien; globale Einstellungen und Vorlagen ebenfalls.
 
-Benutzer: berg
-Passwort: berg
-Rolle: systemadmin
+Compose bindet `storage/` vom Rechner nach `/app/storage/` ein. Datenbank und Projekte überstehen deshalb einen Austausch des Containers, solange dieselben fünf Laufzeitordner erhalten bleiben. Die Datenbank ist nicht als vorgefüllte Datei Teil des GitHub-Repositories. Eine vorhandene Datenbank wird nicht durch eine neue ersetzt; eine vorhandene leere Datenbank wird auch nicht automatisch mit Startkonten gefüllt. `storage/app.db` niemals löschen, um ein Konto oder eine Installation vermeintlich zurückzusetzen.
 
-Benutzer: marx
-Passwort: marx
-Rolle: user
+Bestehende Installationen wechseln nicht allein durch einen Programmneustart in einen neuen Speicherstand. Zunächst Vollsicherung und Projektkopien prüfen, danach gegebenenfalls [SQLite ausdrücklich aktivieren](docs/SQLITE_PROJEKTDATEN.md). Status im passenden Programmabbild prüfen:
+
+```bash
+docker compose run --rm --no-deps edoku npm run storage:status -- --root /app
 ```
 
-Diese Konten sind nur für lokale Entwicklung und Tests vorgesehen. Für öffentlich erreichbare Installationen müssen eigene Konten angelegt und Demo-Zugänge entfernt oder geändert werden.
+Der Befehl zeigt den Projektmodus und die zusätzliche Geräteprojektion an. Er setzt voraus, dass das verwendete Abbild die aktuellen Speicherbefehle enthält.
+
+## Eigener Erstzugang und bestehende Konten
+
+Vor einer echten Neuinstallation einen eigenen Erstzugang über die Laufzeitvariablen `EDOKU_INITIAL_ADMIN_LOGIN` und `EDOKU_INITIAL_ADMIN_PASSWORD` konfigurieren. Das Passwort benötigt 12 bis 256 Zeichen und darf nicht nur aus Leerzeichen bestehen. Beide Werte privat hinterlegen; keine Zugangsdaten in Git speichern. Bei einer so eingerichteten Neuinstallation entsteht genau ein eigener Systemadmin, ohne bekannte Demo-Konten.
+
+Bei lokalem Docker Compose reicht eine `.env`-Datei allein nicht aus, da die normale Compose-Datei diese beiden Variablen nicht an den Container weitergibt. Eine **private** Zusatzdatei `compose.private.yml` anlegen:
+
+```yaml
+services:
+  edoku:
+    environment:
+      EDOKU_INITIAL_ADMIN_LOGIN: ${EDOKU_INITIAL_ADMIN_LOGIN:?Eigene Kennung setzen}
+      EDOKU_INITIAL_ADMIN_PASSWORD: ${EDOKU_INITIAL_ADMIN_PASSWORD:?Eigenes Passwort setzen}
+```
+
+Die beiden Werte vor dem Start in einer privaten `.env`-Datei festlegen. Das Passwort dort in einfachen Anführungszeichen notieren, damit etwa Dollarzeichen wörtlich erhalten bleiben. `.env` und `compose.private.yml` nicht veröffentlichen. Mit beiden Compose-Dateien starten:
+
+```bash
+docker compose -f docker-compose.yml -f compose.private.yml up -d --build
+```
+
+Für die jeweils eigene Bereitstellung die privaten Werte in der passenden Laufzeitkonfiguration erhalten. Für Online-Betrieb ist die [separate Betreiberanleitung](docs/COOLIFY.md) maßgeblich.
+
+Ohne beide Erstzugangsvariablen bleibt das bisherige Demo-Verhalten für lokale Tests kompatibel. Solche Konten sind kein geeigneter öffentlicher Erstzugang. Diese Dokumentation veröffentlicht keine Klartext-Zugangsliste.
+
+Eine vorhandene Datenbank hat Vorrang: Bei Neustarts werden eigene Konten, Passwortänderungen, Rollen und Sperren erhalten; auch eine leere vorhandene Datenbank wird nicht automatisch mit Startkonten befüllt. Die Erstzugangsvariablen sind **kein Passwortreset**. Bestehende Zugänge durch den zuständigen Systemadmin verwalten; die Datenbank niemals zum Zurücksetzen löschen.
 
 ## Persistente Daten
 
@@ -79,7 +105,7 @@ storage/imports/
 output/
 ```
 
-Diese Daten werden nicht in Git versioniert.
+Die gesamten fünf Laufzeitordner müssen gemeinsam gesichert werden. Insbesondere enthält `storage/app.db` nach SQLite-Aktivierung auch die aktuellen Projektinhalte. Alte Projekt-JSON-Dateien sind dann nur Ausgangskopien. Details: [SQLite-Projektdaten](docs/SQLITE_PROJEKTDATEN.md). Die privaten Inhalte unter `storage/` und `output/` werden nicht in Git versioniert.
 
 ## Docker-Volumes
 
@@ -106,7 +132,7 @@ Die automatisierten Prüfungen werden in [docs/TESTS.md](docs/TESTS.md) beschrie
 
 Die aktuelle Version ist eine Beta. Für produktiven Serverbetrieb müssen unter anderem HTTPS, sichere Secrets, Härtung der Sessions, Benutzerrollen, Backups und Reverse-Proxy-Konfiguration geprüft werden.
 
-Systemadmins können Benutzer in der Anwendung sperren, wieder aktivieren, Rollen ändern und Passwörter zurücksetzen. Für öffentliche Installationen sollten die lokalen Demo-Konten direkt nach dem ersten Start angepasst oder ersetzt werden.
+Selbstregistrierung ist standardmäßig geschlossen. Neue Passwörter müssen 12 bis 256 Zeichen enthalten und dürfen nicht nur aus Leerzeichen bestehen; vorhandene Passwörter werden beim Update nicht geändert. Systemadmins können Benutzer in der Anwendung sperren, wieder aktivieren, Rollen ändern und Passwörter zurücksetzen. Details: [Benutzerverwaltung](docs/BENUTZERVERWALTUNG.md). Für öffentliche Installationen sollten die bekannten Startpasswörter direkt nach dem ersten Start geändert und nicht benötigte Konten gesperrt werden.
 
 ## Serverbetrieb: Cookie-Optionen
 

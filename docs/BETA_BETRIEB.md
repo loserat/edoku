@@ -1,6 +1,6 @@
 # Lokaler Beta-Betrieb
 
-Stand: 30.10.2026. Diese Anleitung gilt für die lokale Docker-Installation mit den fünf eingebundenen Ordnern `data`, `config`, `storage`, `output` und `templates`. Sie ersetzt keine Freigabe für öffentlichen Serverbetrieb.
+Stand: 06.11.2026. Diese Anleitung gilt für die lokale Docker-Installation mit den fünf eingebundenen Ordnern `data`, `config`, `storage`, `output` und `templates`. Sie ersetzt keine Freigabe für öffentlichen Serverbetrieb.
 
 ## Vollständige Sicherung
 
@@ -41,6 +41,14 @@ docker compose -f compose.restore.json up -d
 
 Danach `http://localhost:3104` öffnen und die kopierten Projekte prüfen. Bei belegtem Prüfport die Portangabe in dieser neuen Prüfkonfiguration ändern. Den Originalcontainer dabei nicht ersetzen. Die technische Integritätsprüfung allein belegt noch keinen erfolgreichen Anwendungsstart; beides getrennt prüfen. Eine bewusste Rückkehr der Hauptanwendung auf eine ältere Sicherung braucht einen eigenen Plan, damit neuere Daten erhalten bleiben.
 
+## SQLite beim Sichern und Zurückkehren
+
+Nach Aktivierung liegen die aktuellen strukturierten Projektdaten zusätzlich zu Konten und Sitzungen in `storage/app.db`. Die alten Projekt-JSON-Dateien sind Ausgangskopien und kein aktueller Spiegel. Eine Sicherung nur dieser JSON-Dateien reicht nicht aus. Das Vollsicherungswerkzeug erfasst die Datenbank samt vorhandener Betriebsdateien und alle übrigen Inhalte gemeinsam bei angehaltener Anwendung.
+
+Eine normale Wiederherstellung bringt den gesicherten Speicherstand mit dem zugehörigen Programmabbild zurück. Der gesonderte Rückweg zu einem älteren JSON-Programm muss dagegen die aktuellen SQLite-Inhalte in einer neuen Kopie als JSON materialisieren; erst dort darf SQLite deaktiviert werden. Nicht eigenständig auf alte Ausgangsdateien umschalten. Anleitung: [SQLite-Projektdaten](SQLITE_PROJEKTDATEN.md).
+
+`--no-image` ist nur sinnvoll, wenn das exakt passende Programmabbild anderweitig erhalten bleibt. Eine Sicherung auf demselben Mac ist keine externe Sicherung. Nach Wiederherstellung zusätzlich Anwendungsstart, eigene Anmeldung, Projektzuordnung und Dateien prüfen; eine bestandene Prüfsumme ersetzt diese Bedienprüfung nicht.
+
 ## Sicherheitsprotokoll
 
 Systemadmins erreichen **System → Sicherheitsprotokoll**. Gespeichert werden Zeitpunkt, Aktion, Konto-/Projekt-/Zielkennungen, Versuch, Ergebnis und HTTP-Status. Konto-Namen werden erst für die Anzeige aufgelöst. Passwörter, Sitzungswerte, Formularinhalte, Dateien und vollständige URLs werden nicht protokolliert.
@@ -51,6 +59,6 @@ Hash-Verkettung erkennt beschädigte oder nachträglich einzeln veränderte Date
 
 ## Prüfungen und Grenzen
 
-52 automatische Prüfungen laufen in einem getrennten Testabbild: 44 für die Anwendung und acht für Sicherung/Wiederherstellung. Der vollständige Ablauf arbeitet mit künstlichen Daten und kontrolliert sechs PDF-Seiten, fünf Einzel-PDFs, die Originalbytes des importierten Plans und einen Archiv-Rückimport ohne Änderung des Quellprojekts. GitHub Actions führt die Prüfungen bei Änderungen automatisch aus. Siehe [TESTS.md](TESTS.md).
+103 automatische Prüfungen laufen in einem getrennten Testabbild: 95 Node.js-Prüfungen und acht Python-Prüfungen für Sicherung/Wiederherstellung. Der vollständige Ablauf arbeitet mit künstlichen Daten und kontrolliert sechs PDF-Seiten, fünf Einzel-PDFs, die Originalbytes des importierten Plans und einen Archiv-Rückimport ohne Änderung des Quellprojekts. Die GitHub-Actions-Konfiguration führt diese Prüfungen bei Push/PR aus; ein erfolgreicher Lauf muss am jeweiligen veröffentlichten Commit bestätigt werden. Siehe [TESTS.md](TESTS.md).
 
 Bestehende Projekte werden durch ein Programmupdate weder neu exportiert noch automatisch zugeordnet. Gemeinsam genutzte historische Ausgaben bleiben separat erhalten. Fachliche Vollständigkeit echter Dokumentationen, Druckabnahme, alle Browservarianten und öffentlicher Mehrbenutzerbetrieb bleiben gesondert zu prüfen.

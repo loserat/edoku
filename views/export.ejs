@@ -14,6 +14,7 @@
       </div>
 
       <%- include("partials/flash", { flash }) %>
+      <%- include("partials/photoWarnings", { photoWarnings: preview.photoWarnings }) %>
 
       <%# Kleine Statuszählung für die kompakten Export-Kennzahlen. %>
       <% const finalFiles = finalExportFiles || []; %>
@@ -58,7 +59,7 @@
           </div>
 
           <form action="/export/matrix" method="post" data-autosave>
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
             <div class="table-wrap matrix-nowrap-wrap">
               <table class="matrix-table matrix-nowrap-table" data-resizable-table data-resize-key="export-matrix">
                 <thead>
@@ -112,35 +113,35 @@
 
           <section class="export-actions export-actions-compact">
             <form class="export-action-primary" action="/export/dokumentation" method="post">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
               <button type="submit">
                 <span>Alles generieren</span>
                 <small>Inhaltsverzeichnis, Deckblätter, Formulare, Listen und Brandschutz neu erzeugen</small>
               </button>
             </form>
             <form action="/export/inhaltsverzeichnis" method="post">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
               <button class="secondary" type="submit">
                 <span>Inhaltsverzeichnis</span>
                 <small>Nur Inhaltsverzeichnis neu erzeugen</small>
               </button>
             </form>
             <form action="/export/formulare" method="post">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
               <button class="secondary" type="submit">
                 <span>Formulare</span>
                 <small>Konformität, CE, DGUV und Errichterbestätigung</small>
               </button>
             </form>
             <form action="/export/geraetelisten" method="post">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
               <button class="secondary" type="submit">
                 <span>Gerätelisten</span>
                 <small>Tabellen-PDFs für aktive Gerätelisten erzeugen</small>
               </button>
             </form>
             <form action="/export/brandschutz" method="post">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
               <button class="secondary" type="submit">
                 <span>Brandschutz</span>
                 <small>Brandschottungen als Bilddokumentation erzeugen</small>
@@ -280,7 +281,7 @@
               <div class="export-artifact-actions">
                 <%# * INFO: Diese Optionen beeinflussen nur das Layout der separat erzeugten Registerstreifen. %>
                 <form class="separator-options-form" action="/export/trennstreifen" method="post">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
                   <label class="switch-control compact-toggle">
                     <input type="checkbox" name="showInnenText" value="1" <%= separatorSettings.showInnenText ? "checked" : "" %>>
                     <span class="switch-track" aria-hidden="true"></span>
@@ -328,7 +329,7 @@
               <p>Formate: Avery Zweckform 38x192-R und 61x192-R auf A4. Die bedruckten Bereiche können separat gewählt werden.</p>
               <div class="export-artifact-actions">
                 <form class="separator-options-form binder-spine-form" action="/export/ordnerruecken" method="post">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
                   <label>
                     <span>Format</span>
                     <select name="format">
@@ -470,7 +471,7 @@
 
           <section class="export-actions export-actions-compact">
             <form class="export-action-primary" action="/export/final" method="post">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
               <button type="submit">
                 <span>Finalen Export vorbereiten</span>
                 <small>Aktuelle Dokumentation erzeugen, Seiten zählen und Gesamt-PDF / ZIP erstellen</small>
@@ -490,14 +491,14 @@
 
           <section class="export-actions export-actions-compact">
             <form action="/export/exportliste" method="post">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
               <button type="submit">
                 <span>Exportliste prüfen</span>
                 <small>Reihenfolge, Anhänge und Dateistatus aktualisieren</small>
               </button>
             </form>
             <form action="/export/pdfs-loeschen" method="post" data-confirm="Alle generierten und finalen PDFs dieses Projekts löschen?">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
               <button class="danger" type="submit">
                 <span>PDFs löschen</span>
                 <small>Generierte und finale Dateien entfernen</small>

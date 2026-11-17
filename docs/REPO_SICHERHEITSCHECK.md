@@ -1,75 +1,39 @@
-# Repo-Sicherheitscheck
+# Repository und private Daten
 
-Stand: 2026-10-30
+Stand: 17.11.2026. Diese Anleitung beschreibt die Veröffentlichungskontrolle. Der geprüfte Programmstand ist aus `gm/coolify-test-20261117` in `main` übernommen. Private Laufzeitdaten und lokale Konfigurationsänderungen sind nicht Teil dieser Übernahme. Neue Dokumentationsdateien und Screenshots werden gesondert geprüft; eine Veröffentlichung ist kein neuer Release und kein vollständiger historischer Secret-Scan.
 
-Diese Notiz dokumentiert den aktuellen Check, ob versehentlich sensible oder lokale Laufzeitdaten im Git-Repository landen.
+## Was veröffentlicht werden darf
 
-## Ergebnis
+Quellcode, Tests, neutrale Grafiken, Beispielvorlagen und allgemeine Dokumentation. Die aktuellen Screenshots vom 17.11.2026 stammen ausschließlich aus einem künstlichen Projekt der getrennten Online-Testinstanz. Ältere Aufnahmen stammen aus einer getrennten lokalen Demo-Installation. Keine echten Projekte, Anmeldewerte oder Verwaltungsoberflächen veröffentlichen. Den tatsächlichen Stand vor jedem Commit prüfen; Dateinamen und Ignore-Regeln allein sind kein Inhaltsnachweis.
 
-Die Veröffentlichung umfasst Quellcode, neutrale Grafiken, Tests und Dokumentation.
-Die beiden lokalen Änderungen an `config/systemEinstellungen.json` und
-`config/geraetelistenVorlagen.json` bleiben außerhalb des Commits. Private
-Sicherungen, Datenbanken, Sitzungen, Projektdateien und vorhandene Exporte werden
-nicht hinzugefügt. Die Prüfung des Commit-Inhalts ist kein vollständiger
-historischer Secret-Scan und keine Sicherheitsfreigabe der Anwendung.
+Private Datenbanken, Passwortdaten, Sitzungen, echte Projektdateien, vorhandene Exporte, Sicherungen und detaillierte Prüfnachweise bleiben lokal. Das gilt auch für komprimierte Testkopien, Sicherungsmanifeste, Containerkonfigurationen und Programmabbilder. Sie können vertrauliche Inhalte enthalten.
 
-## Geprüfte Risikobereiche
+## Versionierte Konfiguration
 
-- Secrets und Tokens
-- private Schlüssel
-- `.env`-Dateien
-- Runtime-Speicher unter `storage/`
-- Exportausgaben unter `output/`
-- interne Tagesupdates unter `intern/`
-- lokale Systemkonfigurationen unter `config/`
-- echte Namen beziehungsweise nicht neutrale Demo-Daten
+`config/systemEinstellungen.json` und `config/geraetelistenVorlagen.json` sind bereits versioniert und lokal geändert. Sie gehören deshalb nicht automatisch in einen Commit. Für öffentliche Ausgangswerte die neutralen Beispielvorlagen verwenden; lokale UI-, Logo-, Pfad- oder Vorlagenwerte vor Veröffentlichung gesondert prüfen. Ein Ignore-Eintrag entfernt bereits versionierte Dateien nicht.
 
-## Auffälligkeiten
+## Startkonten
 
-### Lokale Demo-Zugänge
+[INSTALL.md](../INSTALL.md) beschreibt die Einrichtung eines eigenen Erstzugangs. Klartext-Zugangslisten werden in der neuen Dokumentation nicht veröffentlicht. Das bisherige Demo-Verhalten bleibt im Programm kompatibel; die reine Dokumentationsänderung entfernt keine vorhandenen Konten. Bei öffentlich erreichbaren Installationen bekannte Startpasswörter ändern und nicht benötigte Konten sperren. Bestehende Konten werden beim Update weder zurückgesetzt noch automatisch entfernt. Die Selbstregistrierung ist standardmäßig geschlossen; sie ersetzt keine Prüfung der Startkonten.
 
-`INSTALL.md` enthält bewusst lokale Demo-Zugänge für Entwicklung und Beta-Tests. Diese Daten sind keine produktiven Passwörter, dürfen aber bei öffentlich erreichbaren Installationen nicht aktiv bleiben.
+## Ausgeschlossene Bereiche
 
-Empfehlung:
+Git schließt insbesondere `node_modules/`, private Inhalte von `storage/`, `output/`, `intern/`, `backups/`, `.env` und Logs aus. `storage/README.md` ist die vorgesehene Ausnahme. Docker schließt Datenbanken, Laufzeitablagen, `intern/`, `backups/` und Umgebungsdateien vom Build-Kontext aus.
 
-- Nach dem ersten Serverstart eigene Konten anlegen.
-- Demo-Zugänge ändern, sperren oder entfernen.
-- Installation nie mit unveränderten Demo-Zugängen öffentlich betreiben.
+Bereits versionierte `data/`, `config/` und `templates/` können trotzdem Teil eines Docker-Builds werden. Öffentliche Abbild- und Testbauten deshalb aus einem sauberen Checkout mit neutralen Ausgangsdaten erstellen; keine lokale Installation mit privaten Vorlagen blind als veröffentlichbares Abbild bauen.
 
-### Getrackte Konfigurationsdateien
-
-Folgende Dateien sind aktuell versioniert:
-
-- `config/systemEinstellungen.json`
-- `config/geraetelistenVorlagen.json`
-
-Diese Dateien enthalten derzeit keine erkannten Secrets. Sie können aber lokale UI-, Logo- oder Vorlagenwerte aufnehmen. Lokale Änderungen daran sollten vor einem Push immer geprüft werden.
-
-Empfehlung:
-
-- Für echte Installationen bevorzugt neutrale `.example.json`-Dateien als Vorlage verwenden.
-- Lokale Runtime-Anpassungen nicht ungeprüft committen.
-- Bei späterer Produktivisierung entscheiden, ob diese Dateien weiter versioniert bleiben oder als lokale Runtime-Konfiguration behandelt werden.
-
-## Gitignore-Stand
-
-Aktuell ausgeschlossen:
-
-- `node_modules/`
-- `.env`
-- `.env.*`
-- `output/`
-- `storage/*` mit Ausnahme von `storage/README.md`
-- `intern/`
-- `backups/` (auch vom Docker-Build ausgeschlossen)
-- Logs und temporäre Dateien
-
-## Vor Push prüfen
-
-Empfohlene Kurzprüfung:
+## Vor einem Commit oder Push
 
 ```bash
 git status --short
-git ls-files | rg '^(storage/|intern/|output/|\\.env)'
-rg -n "(PRIVATE KEY|BEGIN RSA|github_pat_|ghp_|sk-|API_KEY|SECRET|DATABASE_URL)" --glob '!node_modules/**' --glob '!storage/**' --glob '!output/**' --glob '!intern/**' --glob '!backups/**'
+git diff --cached --name-only
+git ls-files | rg '^(storage/|intern/|output/|backups/|\.env)'
 ```
+
+Die erwartete Ausnahme `storage/README.md` ist zulässig. Alle tatsächlich ausgewählten Dateien auf Inhalt prüfen. Eine ergänzende Suche kann zunächst nur Dateinamen ausgeben, ohne mögliche Geheimnisse in Logs zu drucken:
+
+```bash
+rg -l '(PRIVATE KEY|github_pat_|ghp_|sk-proj-|API_KEY|SECRET|DATABASE_URL)' --glob '!node_modules/**' --glob '!storage/**' --glob '!output/**' --glob '!intern/**' --glob '!backups/**' --glob '!config/**'
+```
+
+Treffer können Dokumentationsbeispiele oder Codebezeichner sein und müssen bewertet werden. Keine ungeprüfte automatische Löschung. Eine heuristische Suche ersetzt keinen vollständigen Secret-Scan. Nach einer Veröffentlichung den konkreten Commit, CI-Lauf und gegebenenfalls Release separat prüfen; ein lokal bestandener Test belegt keinen GitHub-Push.

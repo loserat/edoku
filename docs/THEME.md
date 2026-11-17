@@ -1,5 +1,7 @@
 # Theme-System
 
+Stand: 06.11.2026. Diese Datei beschreibt die CSS-/Preset-Anbindung. Die aktuelle ruhige Standardgestaltung, der lesende Abgleich alter Vorgaben und das Browser-Prüfraster stehen unter [Gestaltung](GESTALTUNG.md).
+
 Das Theme-System steuert die zentrale Optik von edoku über CSS-Variablen.
 Die Werte werden in `config/systemEinstellungen.json` im Objekt `theme` gespeichert.
 

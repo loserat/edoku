@@ -36,7 +36,7 @@
             </div>
           </div>
           <form action="/projektarchiv/exportieren" method="post" class="stack-form">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
             <input type="hidden" name="projectId" value="<%= currentProjectId %>">
             <label class="switch-control"><input type="checkbox" name="includeUploads" checked><span class="switch-track" aria-hidden="true"></span><span>Uploads einschließen</span></label>
             <label class="switch-control"><input type="checkbox" name="includeGenerated" checked><span class="switch-track" aria-hidden="true"></span><span>generierte PDFs einschließen</span></label>
@@ -54,7 +54,7 @@
             </div>
           </div>
           <form action="/projektarchiv/validieren" method="post" class="inline-form">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
             <label>
               Importordner
               <input type="text" name="importOrdner" value="<%= importOrdner %>" placeholder="projekt_export">
@@ -89,7 +89,7 @@
           <% } %>
 
           <form action="/projektarchiv/importieren" method="post" class="export-actions">
-            <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
+            <%- include("partials/formSecurity") %>
             <input type="hidden" name="importOrdner" value="<%= importOrdner %>">
             <button type="submit">Projekt importieren</button>
           </form>

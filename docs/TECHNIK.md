@@ -1,5 +1,7 @@
 # Technische Dokumentation
 
+Stand: 06.11.2026. Aktueller Arbeitsstand; datierte frühere Übernahmen weiter unten beschreiben den jeweiligen damaligen Prüfstand.
+
 ## Architektur
 
 edoku ist eine Node.js-Webanwendung mit Express und serverseitigem Rendering über EJS. Das Frontend verwendet Vanilla JavaScript und CSS ohne Framework.
@@ -10,51 +12,43 @@ Die Anwendung ist so aufgebaut, dass sie lokal auf einem Rechner laufen kann, ab
 
 - `server.js` enthält Express-App, Routen und zentrale Request-Flows.
 - `services/` enthält fachliche und technische Hilfsdienste.
-- JSON-Zugriffe laufen über robuste Lese-/Schreibfunktionen.
+- `jsonService.js` leitet erfasste Projektpfade an den aktiven SQLite-Projektspeicher weiter; globale und noch nicht aktivierte Daten bleiben dateibasiert.
 - Dateipfade werden mit `path.join` und kontrollierten Projektpfaden aufgebaut.
 - Projektdateien und neue Ausgaben werden über Benutzer-/Projektkennungen aufgelöst. Archivdownloads und Dateivorschauen prüfen Benutzergrenzen, Dateitypen und Symlinks; siehe `docs/SICHERHEIT.md`.
 
 ## Datenhaltung
 
-Fachliche Projektinhalte liegen in JSON-Dateien:
+SQLite ist eingebettet; es gibt keinen zusätzlichen Datenbankserver. `better-sqlite3` ist Teil der Laufzeit. `dbService.js` öffnet `storage/app.db` mit WAL und aktivierten Fremdschlüsseln. Bei einer echten Erstinstallation ohne Datenbank werden Startkonten und beide SQLite-Stufen vorbereitet. Eine vorhandene Datenbank wird nicht ersetzt oder erneut mit Startkonten befüllt.
 
-- `projekt.json`
-- `leistungsbereiche.json`
-- `dokumentenmatrix.json`
-- `projektSysteme.json`
-- `geraetelisten.json`
-- `brandschutz.json`
-- `anhaenge.json`
-- `exportliste.json`
+| Daten | Führender Speicher |
+| --- | --- |
+| Konten, Sitzungen, Projektregister | SQLite: `users`, `sessions`, `projects` |
+| Neun strukturierte Projektdatensätze nach Aktivierung | SQLite: `project_documents`, projektgebundene Versionen in `project_data_revisions` |
+| Gerätelisten und Positionen nach Stufe 2 | Zusätzliche relationale Projektion; vollständiges Projektdokument bleibt führend |
+| Globale Startdaten, Einstellungen und Vorlagen | Dateien in `data/`, `config/`, `templates/` |
+| Fotos, Anhänge, PDFs und ZIPs | Benutzer-/projektgebundene Dateien; historischer Bestand separat |
 
-Benutzer, Sessions und Projektübersicht liegen in SQLite:
+Die Dokumentnamen `projekt.json`, `leistungsbereiche.json`, `projektSysteme.json`, `dokumentenmatrix.json`, `geraetelisten.json`, `brandschutz.json`, `anhaenge.json`, `exportliste.json` und `files.json` bleiben als Schnittstelle erhalten. Im aktiven Modus werden sie in SQLite geführt. Ursprüngliche Dateien unter `storage/users/<Benutzer-ID>/projects/<Projekt-ID>/data/` bleiben Ausgangskopien, aber kein aktueller Spiegel. Der kompatible JSON-Altmodus gilt für Installationen ohne Aktivierung.
 
-```text
-storage/app.db
-```
-
-Benutzerprojekte liegen unter:
-
-```text
-storage/users/[userId]/projects/[projectId]/
-```
+Speicherversionen, Tabellen, Transaktionen, Projektversionsprüfung, Archive und Rückweg: [SQLite-Projektdaten](SQLITE_PROJEKTDATEN.md). Migrationen aktivieren sich bei vorhandenen Installationen nicht durch bloßes Starten einer neuen Programmversion.
 
 ## Benutzerverwaltung
 
-- Registrierung und Login sind vorhanden.
+- Login ist vorhanden; Selbstregistrierung ist standardmäßig geschlossen und nur durch Systemadmins freigebbar.
 - Passwörter werden mit `crypto.scrypt` und Salt gehasht.
 - Sessions werden als zufällige Tokens in SQLite gespeichert.
 - Session-Cookies sind `httpOnly`, nutzen standardmäßig `SameSite=Lax` und können für HTTPS-Betrieb per ENV auf `Secure` gehärtet werden.
 - Fachseiten sind nur nach Login erreichbar.
 - Projektzugriff erfolgt über die angemeldete `userId`.
-- Für lokale Tests werden Seed-Benutzer vorbereitet; konkrete lokale Defaults stehen in `INSTALL.md`.
+- Startkonten werden ausschließlich bei echter Neuinstallation ohne vorhandene Datenbank vorbereitet; konkrete lokale Defaults stehen in `INSTALL.md`.
 - Rollen sind als Beta-Funktion vorhanden: `viewer`, `user`, `admin`, `systemadmin`.
 - `systemadmin` kann Benutzer anlegen und Rollen verwalten.
 - `viewer` darf Fachseiten lesen, aber keine Schreiboperationen ausführen.
 - Benutzerkonten besitzen einen Status `active` oder `disabled`.
 - Gesperrte Konten können sich nicht anmelden; vorhandene Sessions werden beim Sperren entfernt.
 - Passwort-Reset durch Systemadmins schreibt neuen Hash/Salt und beendet vorhandene Sessions des Kontos.
-- Der bestehende Admin-Datensatz behält intern seine stabile ID, damit vorhandene Demo-Projekte nicht verloren gehen.
+- Bestehende IDs, Rollen und Passwortdaten bleiben bei Updates erhalten; die alte Rolle `admin` hat kompatible Benutzerrechte. Neue Passwörter werden einheitlich mit 12–256 Zeichen geprüft.
+- Kontofehler und ungültige Rollen/Statuswerte werden abgewiesen; der letzte aktive Systemadmin ist zusätzlich in der Datenbankschicht geschützt. Details: [Benutzerverwaltung](BENUTZERVERWALTUNG.md).
 
 ## Session-Cookies und Reverse Proxy
 
@@ -82,7 +76,7 @@ COOKIE_SECURE=true
 
 Ein Benutzer kann mehrere Projekte besitzen. Ein Projekt wird als aktueller Arbeitskontext geöffnet. Alle Fachseiten arbeiten mit diesem aktuellen Projekt.
 
-Globale Dateien in `data/` dienen als Startdaten und Defaults. Projektbezogene Daten werden beim Anlegen oder Öffnen eines Projekts in den jeweiligen Storage-Bereich kopiert beziehungsweise dort gelesen.
+Globale Dateien in `data/` dienen als Startdaten und Defaults. Neue Projekte erhalten zunächst ihre Ausgangsdateien und werden im aktiven Modus in SQLite erfasst. Bereits erfasste Projekte lesen aktuelle Daten aus SQLite und werden nicht aus alten JSON-Dateien zurückgesetzt. Der Projektkontext wird pro Anfrage festgehalten, damit ein paralleler Projektwechsel kein anderes Projekt überschreiben kann.
 
 ## Dokumentationslogik
 
@@ -224,8 +218,8 @@ Die GET-Systemauswahl gleicht ihre Anzeige ab, speichert aber erst nach einer
 ausdrücklichen Benutzeraktion.
 
 `npm run test:preservation` prüft drei Fälle einschließlich Neustart und zwölf
-angemeldeter Seiten. Zusammen mit `npm run test:exports` bestehen 21 Prüfungen
-im tatsächlich eingesetzten Node-20-Abbild. Zusätzlich wurde die neue Version
+angemeldeter Seiten. Zusammen mit `npm run test:exports` bestanden damals 21 Prüfungen
+im zu diesem Zeitpunkt eingesetzten Node-20-Abbild. Der aktuelle Stand vom 17.11.2026 nutzt Node 22 und 109 Prüfungen; siehe [Tests](TESTS.md). Zusätzlich wurde die neue Version
 mit einer konsistenten Kopie der echten Daten vorab geprüft.
 
 Die Hauptinstanz wurde mit denselben fünf eingebundenen Laufzeitordnern
@@ -253,10 +247,21 @@ Prüfprotokolle werden nicht veröffentlicht.
 - `pathService.js`: lexikalische Pfadgrenzen plus Prüfung der Dateisystemkomponenten auf Symlinks/Spezialdateien.
 - `projectPackageService.js`: Paketformat 2.0, tatsächliche Dateiinventare, Prüfsummen, benutzerbezogene Import-/Exportpfade und konfliktfreie Rückimporte.
 - `zipService.js`: Streaming-ZIP mit geprüften relativen Einträgen und Größenlimits, ohne neue Laufzeitabhängigkeit.
-- `jsonService.js`: synchronisierte temporäre Dateien und anschließender Austausch; Fehler statt stiller Erfolgsmeldung.
+- `jsonService.js`: Weiterleitung aktiver Projektpfade an SQLite; für übrige JSON-Dateien synchronisierte temporäre Dateien und anschließender Austausch.
+- `projectDataStoreService.js`: versionierte vollständige Projektdatensätze, Anfragenkontext, gemeinsame Transaktionen, Herkunftsdaten und Konflikterkennung.
+- `deviceDataStoreService.js`: versionierte Geräteprojektion, SQLite-Trigger und Prüfung gegen den vollständigen Datensatz.
+- `scripts/project-storage.js`: ausdrückliche Übernahme, Status und Materialisierung in einer neuen Rückwegkopie.
+- `brandschutzPhotoService.js`: Prüfung fehlender aktiver Fotoverweise für Oberfläche und Export.
+- `passwordPolicyService.js`: gemeinsame Prüfung neu gesetzter Passwörter.
 
 Neue Ausgaben liegen unter `storage/users/<Benutzer-ID>/projects/<Projekt-ID>/output/`.
 Bestehende Ordner werden weder umbenannt noch automatisch migriert. Historische
 Mehrfachzuordnungen werden nicht als neue Dateirechte verwendet. Originale
 abgeleiteter Exportindizes bleiben in Archiv-Begleitmetadaten erhalten;
 importierte aktive Indizes werden neu aufgebaut.
+
+## SQLite-Projektdaten ab 06.11.2026
+
+Die lokale Anwendung verwendet nach geprüfter Aktivierung beide SQLite-Stufen. Ausgangsdateien bleiben erhalten; neue Installationen verwenden beide Stufen ohne separaten Datenbankserver. Vorhandene andere Installationen benötigen eine ausdrückliche Migration. Datenmodell, Transaktionen, Projektversionen, Archive und Rückweg: [SQLite-Projektdaten](SQLITE_PROJEKTDATEN.md).
+
+Stufe 2 ergänzt die versionierte relationale Geräteprojektion (`project_device_storage`, `project_device_lists`, `project_device_positions`). Synchronisierung erfolgt durch SQLite-Trigger in der Dokumenttransaktion; das vollständige Projektdokument bleibt führend. Direkte Änderungen an der Projektion sind kein unterstützter Schreibweg. Benutzer- und Projektzuordnung sind über zusammengesetzte Fremdschlüssel abgesichert.

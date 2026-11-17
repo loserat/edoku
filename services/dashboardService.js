@@ -1,6 +1,7 @@
 const { hasMissingRequiredBrandschutzFields, normalizeBrandschutz } = require("./brandschutzService");
 const { isGeraetelisteComplete, normalizeGeraetelisten } = require("./geraetelistenService");
 const { buildDocumentationPlan, filterExportGeraetelisten, mergeExportStatus, summarizeExportEntries } = require("./documentationPlanService");
+const { photoWarningsFromEntries } = require("./brandschutzPhotoService");
 
 // * INFO: Begrenzt Fortschrittswerte auf gültige Prozentbereiche.
 function clampPercent(value) {
@@ -18,6 +19,7 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
   const exportEintraege = mergeExportStatus(plan, storedExports);
   exportEintraege.unshift(storedExports.find((entry) => entry.isToc) || { id: "inhaltsverzeichnis", isToc: true, requiresFile: true, pflicht: true, status: "nicht geprüft" });
   const exportCount = summarizeExportEntries(exportEintraege);
+  const photoWarnings = photoWarningsFromEntries(exportEintraege);
 
   const aktiveDokumente = dokumente.filter((dokument) => dokument.aktiv);
   const pflichtDokumente = exportEintraege.filter((entry) => entry.requiresFile && entry.pflicht);
@@ -29,7 +31,9 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
   const filledLists = activeLists.filter(isGeraetelisteComplete);
   const exportReady = exportCount.present > 0;
   const activeBrandschutz = aktiveLeistungsbereiche.includes("Brandschutzabschottungen") ? brandschutzEintraege.filter((entry) => entry.aktiv) : [];
-  const missingBrandschutz = activeBrandschutz.filter(hasMissingRequiredBrandschutzFields).length;
+  const missingBrandschutzFields = activeBrandschutz.filter(hasMissingRequiredBrandschutzFields).length;
+  const missingPhotoIds = new Set(photoWarnings.map(warning => warning.id));
+  const missingBrandschutz = activeBrandschutz.filter(entry => hasMissingRequiredBrandschutzFields(entry) || missingPhotoIds.has(entry.id)).length;
   const missingRequiredExport = exportCount.requiredMissing;
   const missingExportFiles = exportCount.missing + exportCount.invalid + exportCount.unchecked;
   const missingListContent = Math.max(0, activeLists.length - filledLists.length);
@@ -37,6 +41,7 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
   const requiredDocumentsCount = pflichtDokumente.length || 0;
 
   const completionChecks = [
+    ...(!aktiveLeistungsbereiche.includes("Brandschutzabschottungen") && photoWarnings.length ? [{ label: "Brandschutzfotos", total: 1, missing: 1, hint: `${photoWarnings.length} Fotoverweis(e) fehlerhaft` }] : []),
     {
       label: "Projektstammdaten",
       total: projectFields.length,
@@ -153,6 +158,7 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
   const nextStep = workflow.find((step) => step.status !== "fertig") || workflow[workflow.length - 1];
 
   return {
+    photoWarnings,
     projekt: {
       projektname: projekt.projektname || "-",
       projektnummer: projekt.projektnummer || "-",
@@ -177,7 +183,8 @@ function buildDashboardStats({ projekt, leistungsbereiche, matrix, geraetelisten
     },
     brandschutz: {
       gesamt: brandschutzEintraege.length,
-      fehlendePflichtangaben: missingBrandschutz
+      fehlendePflichtangaben: missingBrandschutzFields,
+      unvollstaendig: missingBrandschutz
     },
     export: {
       gesamt: exportCount.files,
