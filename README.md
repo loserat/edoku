@@ -4,11 +4,11 @@
 
 Mit edoku sammeln Elektrofachbetriebe und Projektteams Gerätelisten, Pläne, Messprotokolle und Brandschutzfotos zu einem Projekt. Die Anwendung ordnet die Unterlagen nach Kapiteln, zeigt fehlende Dateien und erstellt ein **Gesamt-PDF** sowie ein **ZIP mit einzelnen Dateien nach Kapiteln**.
 
-[**Bedienung mit Screenshots ansehen**](docs/BEDIENUNGSANLEITUNG.md) · [**Lokal ausprobieren**](#lokal-mit-docker-starten) · [**Projektstand ansehen**](docs/AKTUELLER_STAND.md)
+[**Beispiel-PDF ansehen (7 Seiten)**](docs/beispiele/edoku-beispieldokumentation.pdf) · [**Bedienung mit Screenshots ansehen**](docs/BEDIENUNGSANLEITUNG.md) · [**Lokal ausprobieren**](#lokal-mit-docker-starten) · [**Projektstand ansehen**](docs/AKTUELLER_STAND.md)
 
 ## Vom Projekt zur Dokumentation
 
-**Beispiel:** Du bereitest die Übergabe der Elektroinstallation in einem Bürogebäude vor.
+**Beispiel:** Du bereitest die Übergabe der Elektroinstallation im fiktiven Bürohaus Lindenbogen vor. Im Beispiel-PDF siehst du das klickbare Inhaltsverzeichnis, die Anlagenbeschreibung, eine Geräteliste und ein importiertes Muster-Messprotokoll.
 
 1. **Projekt anlegen.** Objekt und Auftrag erfassen und die benötigten Leistungsbereiche auswählen.
 2. **Unterlagen zusammenstellen.** Geräte eintragen, Stromlaufpläne und Messprotokolle hochladen und bei Bedarf Fotos den Brandschutzschottungen zuordnen.
