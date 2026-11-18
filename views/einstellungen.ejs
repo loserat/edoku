@@ -638,8 +638,8 @@
 
     </main>
     <%- include("partials/footer") %>
-    <script type="application/json" id="form-template-names-json"><%- JSON.stringify(Object.fromEntries(Object.entries(templates || {}).map(([key, template]) => [key, template.name]))) %></script>
-    <script type="application/json" id="theme-presets-json"><%- JSON.stringify(themePresets || {}) %></script>
+    <script type="application/json" id="form-template-names-json"><%- jsonForHtml(Object.fromEntries(Object.entries(templates || {}).map(([key, template]) => [key, template.name]))) %></script>
+    <script type="application/json" id="theme-presets-json"><%- jsonForHtml(themePresets || {}) %></script>
     <script src="/js/app.js"></script>
   </body>
 </html>

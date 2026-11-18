@@ -45,6 +45,7 @@ const {
 const { createProjectFolder, fileSafeName, bindProjectScope, legacyOutputStatus, resolveProjectSource } = require("./services/projectService");
 const { installAsyncHandlers, createCsrfProtection, createAuthLimiter } = require("./services/requestSecurityService");
 const { createAuditService } = require("./services/auditService");
+const { jsonForHtml } = require("./services/htmlDataService");
 const { buildDashboardStats } = require("./services/dashboardService");
 const { brandschutzPhotosRelevant, inspectBrandschutzPhotos } = require("./services/brandschutzPhotoService");
 const { buildExportPreview } = require("./services/exportPreviewService");
@@ -161,6 +162,7 @@ app.set("view engine", "ejs");
 app.set("views", path.join(ROOT_DIR, "views"));
 app.set("query parser", "extended");
 Object.assign(app.locals, {
+  jsonForHtml,
   passwordMinLength: PASSWORD_MIN_LENGTH, passwordMaxLength: PASSWORD_MAX_LENGTH,
   projectDataRevision: "",
   csrfToken: "", user: null, currentProjectId: "", currentProjectName: "", currentProjectNumber: "",
