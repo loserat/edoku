@@ -1,8 +1,15 @@
 # Aktueller Stand edoku
 
-Stand: 17.11.2026. Paketversion: `0.1.0-beta.1`. Dieser Überblick beschreibt den geprüften Arbeitsstand und die getrennte Online-Testbereitstellung. Der zuvor auf `gm/coolify-test-20261117` geprüfte Programmstand ist einschließlich Bedienungsanleitung und Screenshots in `main` übernommen; ein neuer Release-Tag wurde nicht erstellt. Die Übernahme im Repository ersetzt keine bestehende Installation und startet keine Datenmigration. Der datierte Verlauf bleibt im [Changelog](../CHANGELOG.md) erhalten.
+Stand **18.11.2026**, Paketversion `0.1.0-beta.1`. Der datierte Verlauf steht im [Changelog](../CHANGELOG.md).
 
-## Tagesabschluss und main-Übernahme
+## Veröffentlichung und Testbetrieb vom 18.11.2026
+
+- **GitHub**. Das überarbeitete README und die siebenseitige Beispieldokumentation für das fiktive Bürohaus Lindenbogen sind in `main`. Die PDF-Vorschau ließ sich aus dem veröffentlichten README öffnen. [Pull Request #2](https://github.com/loserat/edoku/pull/2) · [Beispiel-PDF](beispiele/edoku-beispieldokumentation.pdf)
+- **Oberfläche**. Die Einstellungsleiste hat abgerundete Tabs und bricht bei wenig Platz um. Der Menüknopf aktualisiert nach einer Vorlagenauswahl wieder die Vorschaufarben. Die Einstellungsansicht verwendet die sichere JSON-Ausgabe. [Pull Request #3](https://github.com/loserat/edoku/pull/3)
+- **Online-Testinstanz**. Coolify betreibt den geprüften Commit [2993893](https://github.com/loserat/edoku/commit/299389312d31e91752834fef33d47c722e5dad4b) aus `main`. HTTPS, Bereitschaft, die sieben Einstellungsbereiche und der Theme-Wechsel wurden live geprüft. Bestehende Anmeldung und Testprojekt waren nach dem Wechsel weiterhin verfügbar. [Online-Prüfstand](ONLINE_PRUEFSTAND.md) · [erfolgreicher GitHub-Prüflauf für `main`](https://github.com/loserat/edoku/actions/runs/44359775011)
+- **Lokaler Docker-Betrieb**. Die Einstellungsleiste und der Theme-Wechsel wurden separat lokal aktiviert. Der Vorher-Nachher-Vergleich bestätigte identische geschützte Dateien und Inhalte aller neun SQLite-Tabellen. Die Vorsicherung wurde getrennt wiederhergestellt.
+
+## Tagesabschluss und main-Übernahme vom 17.11.2026
 
 Der geprüfte Stand ist über [Pull Request #1](https://github.com/loserat/edoku/pull/1) in main übernommen. Der tatsächliche Programm-Merge-Commit `4b4caaa156b894cf0d661f37ffddf7dbe118715a` bestand [alle 109 GitHub-Prüfungen](https://github.com/loserat/edoku/actions/runs/44144405963). Die erneute GitHub-Vorschau des Handbuchs zeigt alle 16 Screenshots und gültige Kapitelziele. Lokale Bestandsdaten und die laufende lokale Installation bleiben erhalten.
 
@@ -16,7 +23,7 @@ Die [bebilderte Bedienungsanleitung](BEDIENUNGSANLEITUNG.md) beschreibt ausschli
 
 ## Ergebnis
 
-edoku ist eine lokal lauffähige Beta für Elektro-Bestandsdokumentationen. Die normale lokale Docker-Anwendung wurde nach Vollsicherung und ausdrücklicher Freigabe auf die geprüften SQLite-Stufen 1 und 2 umgestellt. Konten, Passwortdaten, bestehende Projektinhalte und historische Dateien sind dabei erhalten geblieben. Die aktuelle Ergänzung macht Gerätelisten und Positionen gezielt per SQL abfragbar.
+edoku ist eine lokal lauffähige Beta für Elektro-Bestandsdokumentationen. Die normale lokale Docker-Anwendung wurde nach Vollsicherung und ausdrücklicher Freigabe auf die geprüften SQLite-Stufen 1 und 2 umgestellt. Konten, Passwortdaten, bestehende Projektinhalte und historische Dateien sind dabei erhalten geblieben. Die zweite SQLite-Stufe macht Gerätelisten und Positionen gezielt per SQL abfragbar.
 
 ## Umgesetzt und geprüft
 

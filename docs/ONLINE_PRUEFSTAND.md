@@ -1,8 +1,27 @@
 # Technischer Online-Prüfstand
 
-Stand: **17.11.2026**. Diese Seite dokumentiert die tatsächlich geprüfte Testbereitstellung. Sie ist ein technischer Nachweis; die reine Nutzung erklärt die [Bedienungsanleitung](BEDIENUNGSANLEITUNG.md).
+Stand **18.11.2026**. Diese Seite dokumentiert die technische Prüfung der Online-Testinstanz. Die [Bedienungsanleitung](BEDIENUNGSANLEITUNG.md) erklärt die App-Nutzung.
 
-## Version und Veröffentlichung
+## Update und Prüfung vom 18.11.2026
+
+| Bereich | Beobachtung |
+| --- | --- |
+| Bereitstellung | Der [Coolify-Testbetrieb](COOLIFY.md) läuft mit festgesetztem Commit [2993893](https://github.com/loserat/edoku/commit/299389312d31e91752834fef33d47c722e5dad4b) aus `main`. Coolify meldete den Rollout als abgeschlossen und den neuen Container als `healthy`. |
+| Automatisierte Prüfung | [erfolgreicher GitHub-Prüflauf für `main`](https://github.com/loserat/edoku/actions/runs/44359775011) für genau diesen Programmcommit. Paketversion `0.1.0-beta.1`. |
+| HTTPS und SQLite | [`/ready`](https://edoku.nickgm.de/ready) lieferte HTTP 200, `status=ready`, `storage=sqlite` und `deviceProjection=true`. |
+| Bestand über den Containerwechsel | Dieselben fünf Datenvolumes blieben eingebunden. Die bestehende Anmeldung und das zuvor geöffnete künstliche Testprojekt waren im Browser weiterhin verfügbar. |
+| Einstellungsleiste | Alle sieben Bereiche ließen sich öffnen. Der aktive Tab war sichtbar markiert. Bei 390 Pixeln Breite brach die Leiste in drei Zeilen um, ohne horizontalen Überlauf. |
+| Theme-Wechsel | Nach Auswahl der dunklen Vorlage funktionierte Dunkel → Hell → Dunkel direkt über den Menüknopf. Modus, Hintergrund und Kartenfarben folgten dem Wechsel. |
+
+Die Theme-Prüfung nutzte die Vorschau. Der gespeicherte Standardmodus blieb erhalten und der ursprüngliche Browsermodus wurde wiederhergestellt. Der Exportbefund und die offene Downloadprüfung stammen aus der Erstprüfung unten. Die Runde vom 18.11. prüfte das Deployment und die Einstellungen.
+
+![Gerundete Einstellungsleiste der Testinstanz bei 390 Pixeln Breite](screenshots/2026-11-18/coolify-einstellungen-mobil.jpg)
+
+## Erstprüfung vom 17.11.2026
+
+Die folgenden Abschnitte dokumentieren den damaligen Stand mit Anmeldung, Projektspeicherung und Export.
+
+### Version und Veröffentlichung
 
 | Gegenstand | Stand |
 | --- | --- |
@@ -15,7 +34,7 @@ Stand: **17.11.2026**. Diese Seite dokumentiert die tatsächlich geprüfte Testb
 
 Die Online-Testinstanz durfte mit ausdrücklich freigegebenem frischem Bestand eingerichtet werden. Dies galt ausschließlich für diese Testinstanz. Lokale Originalprojekte, Konten, Passwortdaten, Sicherungen und historische Dateien wurden nicht ersetzt.
 
-## Tatsächlich verifiziert
+### Tatsächlich verifiziert
 
 | Bereich | Beobachtung | Grenze |
 | --- | --- | --- |
@@ -30,7 +49,7 @@ Die Online-Testinstanz durfte mit ausdrücklich freigegebenem frischem Bestand e
 | Finaler Export | Gesamt-PDF, ZIP und Reihenfolgeprotokoll erstellt und als bereit angezeigt | 15 geplante PDF-Dateien fehlen; kein vollständiger Dokumentationsabschluss |
 | Download | Nicht unabhängig verifiziert | Browserfreigabe für den ZIP-Download wurde abgelehnt; keine Umgehung |
 
-## Den Exportbefund richtig lesen
+### Den Exportbefund richtig lesen
 
 Das Testprojekt enthält **48 geplante Einzel-PDFs, 33 vorhandene Einzel-PDFs und 35 tatsächliche Seiten**. **15 PDF-Dateien fehlen oder konnten nicht übernommen werden**, darunter zwei als Pflicht markierte Dokumente. Die Anwendung meldete deshalb **Unvollständiger Export**. Gesamt-PDF und ZIP wurden als Teilstand erstellt.
 
@@ -38,9 +57,9 @@ Die Kennzeichnung **bereit** an der Dateikarte bedeutet lediglich, dass diese Da
 
 ![Exportprüfung mit getrennten Zählern und offenen Quellen](screenshots/2026-11-17/09b-exportpruefung.jpg)
 
-Die lokal automatisierten Exporttests prüfen Zählung, Zusammenführung und ZIP-Inhalte in kontrollierten Fällen. Der konkrete Online-Download wurde in dieser Runde nicht zusätzlich auf Dateiinhalte und Seitenzählung geprüft. Eine vollständige fachliche Abnahme folgt daraus nicht.
+Die lokal automatisierten Exporttests prüfen Zählung, Zusammenführung und ZIP-Inhalte in kontrollierten Fällen. Der konkrete Online-Download wurde in der Erstprüfung nicht zusätzlich auf Dateiinhalte und Seitenzählung geprüft. Eine vollständige fachliche Abnahme folgt daraus nicht.
 
-## Automatisierte und lokale Nachweise
+### Automatisierte und lokale Nachweise
 
 - **109 bestandene Prüfungen:** 101 Node.js und acht Python im neuen Node-22-Abbild; nach Paketkorrekturen erneut vollständig bestanden.
 - **Paketprüfung am 17.11.2026:** `npm audit --omit=dev` meldete null bekannte Lücken im gesperrten Paketstand. Keine allgemeine Sicherheitsgarantie.
@@ -50,11 +69,11 @@ Die lokal automatisierten Exporttests prüfen Zählung, Zusammenführung und ZIP
 
 Die privaten Detailnachweise, Laufzeitarchive und Datenbankprüfsummen bleiben außerhalb von GitHub. Ein lokaler Testlauf ist kein GitHub-CI-Lauf; für den genannten Programmcommit wird hier kein neuer erfolgreicher CI-Lauf behauptet.
 
-## Bedienungsanleitung auf GitHub geprüft
+### Bedienungsanleitung auf GitHub geprüft
 
 Die veröffentlichte Anleitung wurde am 17.11.2026 zusätzlich direkt in der GitHub-Vorschau geprüft: Alle 16 Screenshots vollständig geladen, alle 16 Kapitelziele des Inhaltsverzeichnisses vorhanden, Sprung zu einem Kapitel und dessen eingebettetes Bild visuell bestätigt. Der frühere GitHub-Dateiansichtsfehler trat dabei nicht mehr auf. Diese reine Dokumentationsprüfung änderte keine App-Daten.
 
-## Offen
+### Offen
 
 Fachliche Vollständigkeit der Unterlagen, konkrete Online-Downloadprüfung, physische Druckabnahme, externe Sicherungsorganisation und regelmäßige Wiederherstellungsproben sowie weitergehende Sicherheits-, Browser- und Barrierefreiheitsabnahme bleiben getrennte Aufgaben. Siehe [Offene Punkte](OFFENE_PUNKTE.md).
 
