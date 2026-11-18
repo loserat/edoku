@@ -1,8 +1,8 @@
 # Dokumentation edoku
 
-Stand: **17.11.2026**, Paketversion `0.1.0-beta.1`. Die Dokumentation und der zuvor geprüfte Programmstand sind in `main` übernommen. Historische datierte Einträge bleiben erhalten; ein Dokumentationsupdate ist kein neuer Release.
+Stand **18.11.2026**, Paketversion `0.1.0-beta.1`. Die Dokumentation und der zuvor geprüfte Programmstand sind in `main` übernommen. Historische datierte Einträge bleiben erhalten; ein Dokumentationsupdate ist kein neuer Release.
 
-## Aktueller Abschluss
+## Tagesabschluss vom 17.11.2026
 
 [Tagesabschluss 17.11.2026](TAGESABSCHLUSS_2026-11-17.md): main-Übernahme, erfolgreiche GitHub-Prüfungen, Handbuchnachweis, erhaltener Bestand und offene Aufgaben.
 
@@ -25,7 +25,7 @@ Die Bedienungsanleitung behandelt ausschließlich die App-Nutzung. Servereinrich
 | Anliegen | Anleitung |
 | --- | --- |
 | Neu installieren, Docker und SQLite verstehen | [Installation](../INSTALL.md) |
-| Online-Testinstanz mit HTTPS und dauerhaften Datenordnern betreiben | [Coolify](COOLIFY.md) |
+| Online-Testinstanz mit HTTPS und dauerhaften Datenordnern betreiben | [Coolify](COOLIFY.md) · [Online-Prüfung vom 18.11.2026](ONLINE_PRUEFSTAND.md#update-und-prüfung-vom-18112026) |
 | Bestehende Installation aktualisieren | [Update und Datenerhalt](UPDATE.md) |
 | Alle Daten einschließlich Konten und Altbestand sichern | [Lokaler Beta-Betrieb](BETA_BETRIEB.md) |
 | Sicherung in einen neuen Ordner wiederherstellen | [Getrennte Wiederherstellung](BETA_BETRIEB.md#getrennte-wiederherstellung) |
