@@ -103,16 +103,22 @@ document.addEventListener("DOMContentLoaded", () => {
     themeToggle.setAttribute("title", nextLabel);
   }
 
+  let refreshThemePreview;
+  function applyThemeMode(mode) {
+    const theme = resolveEdokuThemeMode(mode);
+    document.documentElement.setAttribute("data-theme", theme);
+    updateThemeButton(theme);
+    refreshThemePreview?.();
+    localStorage.setItem("dm-theme", theme);
+  }
+
   updateThemeButton(resolveEdokuThemeMode(savedTheme));
 
   // * INFO: Tag-/Nacht-Theme lokal im Browser speichern.
   if (themeToggle) {
     themeToggle.addEventListener("click", () => {
       const current = document.documentElement.getAttribute("data-theme") || "light";
-      const next = current === "dark" ? "light" : "dark";
-      document.documentElement.setAttribute("data-theme", next);
-      localStorage.setItem("dm-theme", next);
-      updateThemeButton(next);
+      applyThemeMode(current === "dark" ? "light" : "dark");
     });
   }
 
@@ -270,8 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       settingsTabs.forEach((tab) => {
         const isActive = tab.dataset.settingsTab === nextTabId;
-        tab.classList.toggle("is-active", isActive);
-        tab.setAttribute("aria-selected", isActive ? "true" : "false");
+        tab.setAttribute("aria-pressed", String(isActive));
       });
 
       settingsPanels.forEach((panel) => {
@@ -647,13 +652,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (input.dataset.themeVar === "--color-button-primary") {
         rootStyle.setProperty("--primary-strong", `color-mix(in srgb, ${input.value} 82%, #000)`);
       }
-      syncResolvedThemeAliases();
-    }
-
-    function applyThemeMode(mode) {
-      localStorage.setItem("dm-theme", mode);
-      document.documentElement.setAttribute("data-theme", resolveEdokuThemeMode(mode));
-      updateThemeButton(resolveEdokuThemeMode(mode));
+      // Die Vorschau setzt Inline-Farben, die bei jedem Moduswechsel neu aufgelöst werden müssen.
+      refreshThemePreview = syncResolvedThemeAliases;
       syncResolvedThemeAliases();
     }
 
