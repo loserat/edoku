@@ -1200,63 +1200,70 @@
 
 .settings-top-tabs {
   align-items: center;
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
-  backdrop-filter: var(--glass-blur);
-  border: var(--border-width) solid var(--line);
-  border-radius: min(var(--radius-lg), 22px);
-  box-shadow: var(--shadow-soft);
+  background: var(--surface-solid);
+  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  border-radius: 16px;
   display: flex;
-  gap: 6px;
-  height: auto;
-  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
   margin: 0 auto;
-  max-width: min(100%, 980px);
-  min-height: 44px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 5px;
+  max-width: 100%;
+  padding: 6px;
   position: sticky;
-  scrollbar-width: thin;
-  top: 64px;
+  top: 76px;
   width: fit-content;
   z-index: 12;
 }
 
 .settings-top-tabs button {
   align-items: center;
-  border-radius: var(--radius-button);
   background: transparent;
-  border: 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
   box-shadow: none;
   color: var(--muted);
   display: inline-flex;
-  flex: 0 0 auto;
-  font-size: 13px;
-  font-weight: 800;
-  gap: 7px;
-  height: 34px;
-  min-height: 34px;
-  padding: 0 12px;
+  flex: 0 1 auto;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 8px;
+  min-height: 38px;
+  min-width: 0;
+  padding: 8px 11px;
+  text-align: left;
 }
 
-.settings-top-tabs button:hover,
-.settings-top-tabs button:focus,
-.settings-top-tabs button.is-active {
-  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+.settings-top-tabs button:hover {
+  background: var(--ui-hover);
+  border-color: transparent;
   color: var(--text);
-  outline: none;
-  transform: none;
 }
 
-.settings-top-tabs button.is-active {
-  border: var(--border-width) solid color-mix(in srgb, var(--accent) 28%, var(--line));
-  box-shadow: var(--shadow-sm);
+.settings-top-tabs button[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 13%, var(--surface-solid));
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
   color: var(--accent-dark);
 }
 
+.settings-top-tabs button:focus-visible {
+  outline-offset: -2px;
+}
+
 .settings-top-tabs .icon {
-  height: 15px;
-  width: 15px;
+  flex: 0 0 16px;
+  height: 16px;
+  width: 16px;
+}
+
+@media (max-width: 700px) {
+  .settings-top-tabs {
+    position: static;
+    width: 100%;
+  }
+
+  .settings-top-tabs button {
+    min-height: 42px;
+  }
 }
 
 .settings-layout {

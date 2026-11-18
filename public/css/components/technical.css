@@ -138,10 +138,10 @@ button:disabled, .button-link[aria-disabled="true"] { opacity: .5; cursor: not-a
 .page .checkbox-card:hover { box-shadow: none; transform: none; }
 .page .switch-track { box-shadow: none; }
 .page .switch-control input:checked + .switch-track { background: var(--color-primary); border-color: var(--color-primary); box-shadow: none; }
-.page .tabs, .page .settings-top-tabs { background: transparent; border-bottom: 1px solid var(--line); border-radius: 0; box-shadow: none; gap: 4px; padding: 0 0 10px; max-width: 100%; overflow-x: auto; }
-.page .tab-button, .page .settings-top-tabs button { background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); box-shadow: none; color: var(--muted); font-size: 12px; font-weight: 550; min-height: 36px; padding: 8px 12px; white-space: nowrap; }
-.page .tab-button:hover, .page .settings-top-tabs button:hover { background: var(--surface-muted); color: var(--text); }
-.page .tab-button.active, .page .settings-top-tabs button.active { background: var(--ui-selected); border-color: color-mix(in srgb, var(--accent) 18%, var(--line)); color: var(--accent-dark); }
+.page .tabs { background: transparent; border-bottom: 1px solid var(--line); border-radius: 0; box-shadow: none; gap: 4px; padding: 0 0 10px; max-width: 100%; overflow-x: auto; }
+.page .tab-button { background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); box-shadow: none; color: var(--muted); font-size: 12px; font-weight: 550; min-height: 36px; padding: 8px 12px; white-space: nowrap; }
+.page .tab-button:hover { background: var(--surface-muted); color: var(--text); }
+.page .tab-button.active { background: var(--ui-selected); border-color: color-mix(in srgb, var(--accent) 18%, var(--line)); color: var(--accent-dark); }
 
 /* Tabellen dürfen intern scrollen, ohne die gesamte Seite zu verbreitern. */
 .page .table-wrap { width: 100%; max-width: 100%; min-width: 0; overflow: auto; border: 1px solid var(--line); border-radius: var(--radius-sm); box-shadow: none; }
