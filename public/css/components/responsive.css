@@ -109,12 +109,6 @@
     margin-left: 0;
   }
 
-  .settings-top-tabs {
-    justify-content: flex-start;
-    max-width: 100%;
-    width: 100%;
-  }
-
   .pdf-preview-layout {
     grid-template-columns: 1fr;
   }
