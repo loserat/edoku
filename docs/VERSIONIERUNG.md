@@ -4,16 +4,20 @@ Stand 25.11.2026. edoku verwendet getrennte Versionskennungen, weil Anwendung, S
 
 | Bereich | Kennung | Führende Stelle |
 | --- | --- | --- |
-| Anwendung / Quellpaket | `0.3.0-beta.1` | `package.json`; dieselbe Version in den beiden Wurzeleinträgen von `package-lock.json` |
-| HTTP-API | `3.9.0` | `src/api/openapi.js`, `info.version` |
-| MCP-Server | `3.9.0` | `services/mcpServerService.js` |
+| Anwendung / Quellpaket | `0.3.0-beta.2` | `package.json`; dieselbe Version in den beiden Wurzeleinträgen von `package-lock.json` |
+| HTTP-API | `3.9.0` | `services/interfaceVersions.js`, verwendet von OpenAPI |
+| MCP-Server | `3.9.0` | `services/interfaceVersions.js`, verwendet vom MCP-Server |
 | Schnittstellenumfang | 64 HTTP-Operationen, 55 Werkzeuge (22 Lesen, 33 Schreiben) | erzeugtes `docs/api/manifest.json` |
 | Agentenvertrag | `2.1` | kompakte Pläne, Belege, Versionsschutz und begrenzte Antworten |
 | Fachregeln | `material_dependencies_v1`, `autonomous_workflow_v1`, `evidence_dependencies_v1`, `firestop_documents_v1`, `fire_protection_workflow_v1`, `manufacturer_link_discovery_v1`, `manufacturer_pdf_article_variant_v7`, `documentation_material_exclusions_v1` | gemeinsame Fachservices; unabhängig von der App-Nummer |
 
 Die OpenAPI-Spezifikationskennung `openapi: 3.1.0` bezeichnet das Format der Vertragsdatei und bleibt unverändert. Sie ist nicht die edoku-API-Version. Datenbankspeicher- und Sicherungsformatversionen werden ebenfalls nicht durch einen App-Versionswechsel erhöht.
 
-## Aktuelle Erweiterung 0.3.0-beta.1
+## Aktuelle Erweiterung 0.3.0-beta.2
+
+[Versionsanzeige unter System](SYSTEMVERSIONEN.md) aus tatsächlichen Versionsquellen. API/MCP unverändert 3.9.0; keine Datenmigration, Rechteänderung oder neue Abhängigkeit. Seit 25.11.2026 nach geprüfter Sicherung/Wiederherstellung lokal aktiviert. GitHub-Stand und tatsächliches Online-Deployment separat nachweisen.
+
+## Historische Erweiterung 0.3.0-beta.1
 
 Bündelt den API-/MCP- und Doku-Assistenten-Ausbau für den nächsten öffentlichen Quellstand. App-Version 0.3.0-beta.1, API/MCP unverändert 3.9.0; keine Versionsanhebung der Schnittstelle ohne Vertragsänderung. Lokaler Betrieb beta.13 und tatsächliches Online-Deployment bleiben eigenständige Nachweise. Neue Dateien weiterhin nur manuell einzeln freigeben.
 

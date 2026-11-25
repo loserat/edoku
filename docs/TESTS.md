@@ -1,5 +1,9 @@
 # Prüfungen und Beta-Abnahme edoku
 
+## 0.3.0-beta.2 – Versionsanzeige und Aktivierung
+
+319 Anwendungstests, acht Sicherungs- und zwei Vertragsprüfungen im bereinigten Produktionsabbild bestanden. Syntax: 176 JS-Dateien/48 Vorlagen; API/MCP unverändert 3.9.0 (64 Operationen/55 Werkzeuge). Fünf Mac-/APFS-Wartungstests unter Linux übersprungen. Der neue Anzeigeabgleich verwendet Paketversion, echte HTTP-OpenAPI-Antwort und echten MCP-Handshake. Browser bei 1440/375/320 Pixeln ohne Überlauf/Abschneiden geprüft. Lokale Aktivierung nach frischer Vollsicherung und getrennter Startprobe alt/neu; 2.000 Dateien/16 Tabellen im Aktivierungsvergleich unverändert. [Bedienung](SYSTEMVERSIONEN.md). Die folgenden Prüfstände gehören zu früheren Paketen.
+
 ## Bereinigter Veröffentlichungsstand 0.3.0-beta.1 – 25.11.2026
 
 Vollständige Prüfung im frisch gebauten Produktionsabbild mit neutralen Ausgangseinstellungen: **319 Anwendungstests, acht Sicherungsprüfungen und zwei Vertragsprüfungen bestanden**. Syntax: 175 JS-Dateien/48 EJS-Vorlagen; erzeugter Vertrag 3.9.0, 64 Operationen/55 Werkzeuge. Fünf Mac-/APFS-Wartungstests unter Linux übersprungen. Kein echter Projektbestand eingebunden. Der GitHub-Prüflauf und tatsächliche Online-Rollout sind davon getrennte Nachweise. [Veröffentlichungsprüfung](GITHUB_STAND_2026-11-25.md).

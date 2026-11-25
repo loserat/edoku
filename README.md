@@ -4,7 +4,7 @@
 
 edoku verbindet Projektstammdaten, Gerätelisten, Brandschutz und technische Unterlagen zu einer geordneten PDF-/ZIP-Dokumentation. Du arbeitest in der Weboberfläche oder verbindest einen Agenten wie Codex über den integrierten **MCP-Server**. edoku gibt den Projektaufbau und die nächsten Aufgaben vor; der Agent ergänzt belegte Informationen und schlägt passende Herstellerunterlagen vor.
 
-**Version `0.3.0-beta.1`** · HTTP-API/MCP `3.9.0` · **55 MCP-Werkzeuge** · Docker und SQLite.
+**Version `0.3.0-beta.2`** · HTTP-API/MCP `3.9.0` · **55 MCP-Werkzeuge** · Docker und SQLite.
 
 [![Prüfung für main](https://github.com/loserat/edoku/actions/workflows/local-beta.yml/badge.svg?branch=main)](https://github.com/loserat/edoku/actions/workflows/local-beta.yml)
 
@@ -32,7 +32,7 @@ Der MCP-Adapter verwendet dieselbe geschützte HTTP-API wie andere Integrationen
 
 ## Geprüfter Umfang
 
-Der bereinigte 0.3.0-beta.1-Stand wurde mit **319 Anwendungstests, acht Sicherungsprüfungen und zwei Vertragsprüfungen** getestet. Die unveränderte vereinfachte GUI wurde zusätzlich mit 46 Browserprüfungen geprüft. Fünf Mac-/APFS-Wartungstests werden unter Linux übersprungen. Technische Tests ersetzen keine fachliche Abnahme und belegen kein Online-Deployment. [Tests und Grenzen](docs/TESTS.md).
+Der bereinigte 0.3.0-beta.2-Stand wurde mit **319 Anwendungstests, acht Sicherungsprüfungen und zwei Vertragsprüfungen** getestet. Die unveränderte vereinfachte GUI wurde zusätzlich mit 46 Browserprüfungen geprüft. Fünf Mac-/APFS-Wartungstests werden unter Linux übersprungen. Technische Tests ersetzen keine fachliche Abnahme und belegen kein Online-Deployment. [Tests und Grenzen](docs/TESTS.md).
 
 ## Einblick
 

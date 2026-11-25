@@ -2190,3 +2190,10 @@ body:has(#api-integrations:not([hidden])) .autosave-status { display: none; }
   height: 26px;
   width: 26px;
 }
+
+/* Reine Statusanzeige: Versionswerte sind keine speicherbaren Einstellungen. */
+.system-versions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:0 0 20px; padding:14px 16px; border:1px solid var(--line); border-radius:var(--radius-md); background:var(--surface-muted); }
+.system-versions > div { min-width:0; }
+.system-versions dt { color:var(--muted); font-size:12px; margin:0 0 4px; }
+.system-versions dd { margin:0; font-size:15px; font-weight:600; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+@media(max-width:480px) { .system-versions { gap:8px; padding:12px; } .system-versions dd { font-size:13px; } }

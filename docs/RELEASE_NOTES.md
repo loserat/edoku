@@ -1,5 +1,11 @@
 # Release Notes
 
+## 0.3.0-beta.2 – 25.11.2026
+
+Einstellungen → System zeigt Software-, MCP- und API-Version kompakt an. Die Softwareversion stammt aus dem installierten Paket; gemeinsame Schnittstellenkonstanten werden von Anzeige, OpenAPI und tatsächlichem MCP-Handshake verwendet. Keine editierbaren Versionsfelder oder zusätzliche Updateabfrage. API/MCP bleiben 3.9.0 mit 64 Operationen/55 Werkzeugen. Bestehende Daten und Freigaben erhalten, Dateien weiterhin ausschließlich manuell einzeln freigeben.
+
+Die Anzeige wurde mit 39 gezielten Integrations-/Vertrags-/Theme-/Startprüfungen und auf Desktop sowie Mobil bis 320 Pixel geprüft. Lokale Aktivierung, GitHub-Prüfung und Online-Deployment bleiben getrennte Nachweise. [Versionsanzeige](SYSTEMVERSIONEN.md).
+
 ## 0.3.0-beta.1 – 25.11.2026
 
 Gebündelter Ausbau für die nächste öffentliche Beta: integrierte HTTP-API und lokaler MCP-Adapter mit 55 Werkzeugen (22 Lesen/33 Schreiben), zentral berechnete Agentenaufgaben, Materialimport und Artikelzuordnung, Hersteller-PDF-/Variantenprüfung, dauerhafte Fakten und gebündelte Rückfragen. Vereinfachter Doku-Assistent, direkte Einzelprüfung und nächster Dateiwechsel, begründetes Zurückziehen sowie geschützte Lösch-/Wiederherstellungsfunktionen.

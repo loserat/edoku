@@ -167,6 +167,17 @@ test("Echte API und MCP: Benutzergrenzen, Schlüssel, Schreibschutz und Protokol
       const legacy = await browser("/integrationen"); assert.equal(legacy.status, 302); assert.equal(legacy.headers.get("location"), "/einstellungen#api");
       const page = await browser("/einstellungen"); assert.equal(page.status, 200);
       const html = await page.text(), token = html.match(/name="csrf-token" content="([a-f0-9]+)"/)[1];
+      // Anzeige muss tatsächliche Laufzeit-/Handshake-Versionen wiedergeben.
+      const systemHtml = html.match(/<form id="system"[\s\S]*?<\/form>/)[0];
+      const displayedVersion = component => systemHtml.match(new RegExp('data-component-version="' + component + '">([^<]+)</dd>'))[1];
+      assert.equal(displayedVersion('software'), require('../package.json').version);
+      const apiContract = await (await fetch(f.base + '/api/v1/openapi.json')).json();
+      assert.equal(displayedVersion('api'), apiContract.info.version);
+      const versionClient = mcpClient(f.base, f.key.token);
+      try {
+        const hello = await versionClient.rpc('initialize', { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'settings-version-check', version: '1' } });
+        assert.equal(displayedVersion('mcp'), hello.result.serverInfo.version);
+      } finally { await versionClient.close(); }
       assert.match(html, /API &amp; MCP/);
       assert.match(html, /data-settings-tab="api"/);
       assert.match(html, /data-settings-panel="api"/);

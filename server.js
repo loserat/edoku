@@ -127,6 +127,7 @@ const STORAGE_DIR = path.join(ROOT_DIR, "storage");
 const GERAETELISTEN_VORLAGEN_FILE = path.join(CONFIG_DIR, "geraetelistenVorlagen.json");
 const PORT = Number(process.env.PORT || 3000);
 const APP_VERSION = packageInfo.version || "0.0.0";
+const { HTTP_API_VERSION, MCP_VERSION } = require("./services/interfaceVersions");
 const APP_NAME = packageInfo.name || "edoku";
 const GITHUB_RELEASE_API = "https://api.github.com/repos/loserat/edoku/releases/latest";
 const DEFAULT_STOCKWERKE = ["UG", "EG", "1. OG", "2. OG", "3. OG", "4. OG", "5. OG", "DG", "Dach"];
@@ -1221,6 +1222,8 @@ async function renderSettings(req, res, { createdToken = null, integrationError 
       userRoles: USER_ROLES,
       userRoleLabels: USER_ROLE_LABELS,
       appVersion: APP_VERSION,
+      apiVersion: HTTP_API_VERSION,
+      mcpVersion: MCP_VERSION,
       appName: APP_NAME,
       releaseNotes: await readReleaseNotes()
     });
