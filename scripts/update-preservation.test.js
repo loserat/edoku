@@ -54,7 +54,7 @@ async function port() {
 }
 async function boot(root) {
   const number = await port();
-  const child = spawn(process.execPath, [path.join(root, "server.js")], { cwd: root, env: { ...process.env, PORT: String(number) }, stdio: ["ignore", "pipe", "pipe"] });
+  const child = spawn(process.execPath, [path.join(root, "server.js")], { cwd: root, env: { ...process.env, NODE_ENV: "test", PORT: String(number) }, stdio: ["ignore", "pipe", "pipe"] });
   let logs = "";
   child.stdout.on("data", (data) => { logs += data; });
   child.stderr.on("data", (data) => { logs += data; });

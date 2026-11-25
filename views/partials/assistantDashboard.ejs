@@ -1,0 +1,41 @@
+<% const sheetsOpen = dashboard.reduce((sum,entry) => sum + entry.datasheetCoverage.summary.articles - entry.datasheetCoverage.summary.approved,0); const totals = dashboard.reduce((sum, entry) => ({ open: sum.open + entry.openCount, pending: sum.pending + entry.pending.length, approved: sum.approved + entry.approved.length }), { open: 0, pending: 0, approved: 0 }); %>
+<div class="settings-panel assistant-update" data-assistant-updates data-status-url="/assistent/status" data-updated-at="<%= dashboardVersion %>" hidden><p data-assistant-update-text></p><a class="secondary" href="/assistent?ansicht=<%= section %>&amp;filter=<%= fileFilter %>">Neuen Stand laden</a></div>
+<div class="assistant-dashboard-toolbar">
+  <nav class="assistant-nav" aria-label="Assistentenübersicht">
+    <% [['uebersicht','Offen',totals.open], ['dateien','Dateien',totals.pending], ['datenblaetter','Datenblätter',sheetsOpen], ['auftraege','Aufträge',jobs.length]].forEach(([value,label,count]) => { %><a href="/assistent?ansicht=<%= value %>" <%- section === value ? 'aria-current="page"' : '' %>><%= label %><span><%= count %></span></a><% }) %>
+  </nav>
+  <a class="secondary" href="/einstellungen#api">MCP-Einstellungen</a>
+</div>
+<% if (section === 'auftraege') { %>
+  <%- include('assistantStart') %>
+<% } else { %>
+  <% if (section === 'datenblaetter') { %><%- include('assistantDatasheetControls', { base: '/assistent' }) %><% } %>
+  <% if (section === 'dateien') { %>
+    <div class="assistant-file-controls"><nav class="assistant-filters" aria-label="Dateistatus">
+      <% [['pending','Zu prüfen',totals.pending], ['approved','Übernommen',totals.approved], ['all','Alle',totals.pending + totals.approved]].forEach(([value,label,count]) => { %><a href="/assistent?ansicht=dateien&amp;filter=<%= value %>" <%- fileFilter === value ? 'aria-current="page"' : '' %>><%= label %> <span><%= count %></span></a><% }) %>
+    </nav><label class="assistant-search"><span class="sr-only">Dateien suchen</span><input type="search" placeholder="Datei suchen …" data-file-search></label></div>
+  <% } %>
+  <% if (!dashboard.length) { %><p class="assistant-empty">Kein offener Auftrag. Starte eine neue Dokumentation oder öffne einen bisherigen Auftrag.</p><% } %>
+  <% dashboard.forEach(entry => { const jobBase = '/assistent/auftraege/' + entry.job.id;
+    const files = [...entry.pending, ...entry.approved].filter(document => fileFilter === 'all' || document.state === fileFilter).sort((a,b) => (a.state === 'pending' ? 0 : 1) - (b.state === 'pending' ? 0 : 1) || compareReviewDocuments(a,b)); %>
+    <% if (section !== 'dateien' || files.length) { %>
+      <section class="assistant-dashboard-job" aria-label="<%= entry.project?.projektname || entry.job.projectId %>" <%- section === 'dateien' ? 'data-file-group' : '' %>>
+        <header class="assistant-dashboard-job-heading">
+          <div><h2><a href="<%= jobBase %>"><%= [entry.project?.projektname || entry.job.projectId, entry.project?.projektnummer].filter(Boolean).join(' · ') %></a><span class="badge"><%= section === 'dateien' ? files.length + ' Dateien' : entry.openCount + ' offen' %></span></h2><span class="field-hint"><%= statuses[entry.job.status] %></span></div>
+          <nav class="assistant-project-actions" aria-label="Funktionen für <%= entry.project?.projektname || entry.job.projectId %>"><a href="<%= jobBase %>?ansicht=datenblaetter">Datenblätter</a><a href="<%= jobBase %>?ansicht=angaben">Angaben</a><a href="<%= jobBase %>?ansicht=export">Ausgabe</a><a href="<%= jobBase %>?ansicht=verlauf">Verlauf</a></nav>
+        </header>
+        <% if (section === 'datenblaetter') { %>
+          <%- include('assistantDatasheets', { datasheetCoverage: entry.datasheetCoverage }) %>
+        <% } else if (section === 'dateien') { %>
+          <div class="assistant-file-rows"><% files.forEach(document => { %>
+            <a class="assistant-file-row" data-file-row href="<%= jobBase %>/dateien/<%= document.id %>"><span class="assistant-file-icon" aria-hidden="true"><%= document.mimeType === 'application/pdf' ? 'PDF' : 'BILD' %></span><span class="assistant-file-name"><strong><%= document.title %></strong><small><%= document.category %></small></span><span class="badge <%= document.state === 'pending' ? 'off' : 'on' %>"><%= document.state === 'pending' ? 'Prüfen' : document.projectDocument && document.projectDocument.scope !== 'documentation' ? 'Intern' : 'Übernommen' %></span><span aria-hidden="true">→</span></a>
+          <% }) %></div>
+        <% } else { %>
+          <%- include('assistantWorkflow', { selected: entry.job, base: jobBase, pending: entry.pending, approved: entry.approved, openQuestions: entry.openQuestions, agentIssues: entry.agentIssues, projectReadiness: entry.projectReadiness, datasheetCoverage: entry.datasheetCoverage, fromDashboard: true }) %>
+        <% } %>
+      </section>
+    <% } %>
+  <% }) %>
+  <% if (section === 'datenblaetter') { %><p data-file-empty hidden>Kein passender Artikel gefunden.</p><% } %>
+  <% if (section === 'dateien') { %><p data-file-empty class="assistant-empty" <%- dashboard.some(entry => (fileFilter === 'pending' ? entry.pending : fileFilter === 'approved' ? entry.approved : [...entry.pending,...entry.approved]).length) ? 'hidden' : '' %>>Keine passende Datei gefunden.</p><% } %>
+<% } %>

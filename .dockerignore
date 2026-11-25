@@ -20,6 +20,12 @@ intern/
 __pycache__/
 *.pyc
 test-results/
+mcp-documents/
+tmp/
 
 # Lokale Datensicherungen niemals veröffentlichen oder ins Image kopieren
 backups/
+
+# Private Compose-Anpassungen und Zugangsdaten
+docker-compose.override.yml
+compose.private.yml

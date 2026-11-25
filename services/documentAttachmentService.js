@@ -3,6 +3,11 @@ const { normalizeAttachments } = require("./attachmentService");
 // * INFO: Kategorien, die als importierte Dokumentations-PDFs im Inhaltsverzeichnis
 // * INFO: erscheinen. Andere Anhänge bleiben reine Dateien oder Bildzuordnungen.
 const DOCUMENT_ATTACHMENT_CATEGORIES = [
+  { category: "Anlagenbeschreibungen", kapitel: "3.1", title: "Anlagenbeschreibungen", sortierung: 3010 },
+  { category: "Betriebsanweisungen", kapitel: "4", title: "Betriebsanweisungen", sortierung: 4000 },
+  { category: "Nachweise", kapitel: "11", title: "Nachweise", sortierung: 11000 },
+  { category: "Allgemein", kapitel: "11", title: "Weitere Projektunterlagen", sortierung: 11900 },
+  { category: "Brandschutz", kapitel: "13", title: "Brandschutzunterlagen", sortierung: 13000 },
   {
     category: "Stromlaufpläne",
     kapitel: "12.1",
@@ -38,6 +43,12 @@ const DOCUMENT_ATTACHMENT_CATEGORIES = [
     kapitel: "3.2",
     title: "Bedienungsanleitungen",
     sortierung: 3020
+  },
+  {
+    category: "Datenblätter",
+    kapitel: "7",
+    title: "Produkt-Datenblätter",
+    sortierung: 7000
   }
 ];
 
@@ -127,11 +138,11 @@ function attachmentDisplayTitle(entry, categoryMeta, manualContext = null) {
 }
 
 // * INFO: Verknüpft Bedienungsanleitungs-Anhänge mit Gerätepositionen.
-// * INFO: Brandschutzabschottungen werden bewusst ausgeschlossen, weil sie eigene Bild-/Nachweislogik haben.
+// Produktunterlagen gelten auch für Brandschutzmaterial; Schottfotos bleiben separat.
 function manualContextByAttachmentId(geraetelisten = []) {
   const contexts = new Map();
   (geraetelisten || [])
-    .filter((liste) => liste && liste.leistungsbereich !== "Brandschutzabschottungen")
+    .filter((liste) => liste)
     .forEach((liste) => {
       (liste.positionen || []).forEach((position) => {
         const attachmentId = String(position.bedienungsanleitungId || "").trim();
@@ -190,6 +201,7 @@ function prepareDocumentationAttachmentEntries(matrix, rawAttachments, projekt =
       return {
         id: `attachment-${entry.id}`,
         attachmentId: entry.id,
+        matrixDocumentId: entry.matrixDocumentId || "",
         kapitel: originalKapitel,
         originalKapitel,
         parentKapitel: originalKapitel,

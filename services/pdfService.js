@@ -6,14 +6,14 @@ const { assertSafePath } = require("./pathService");
 const crypto = require("crypto");
 const { createProjectFolder, fileSafeName, resolveProjectSource } = require("./projectService");
 const { normalizeBrandschutz } = require("./brandschutzService");
-const { deviceListFieldsForLeistungsbereich, normalizeGeraetelisten } = require("./geraetelistenService");
+const { DEVICE_LIST_PDF_VERSION, deviceListFieldsForLeistungsbereich, normalizeGeraetelisten } = require("./geraetelistenService");
 const { getLeistungsbereichConfig, selectedHerstellerConfig } = require("./systemService");
 const { formEnabledForLeistungsbereiche, mergeFormTemplates, templateTitle, textForKonformitaet } = require("./formTemplateService");
 const { resolveCreatorLogo, resolveProjectLogo } = require("./logoService");
 const { buildDocumentationPlan, filterExportGeraetelisten } = require("./documentationPlanService");
+const { pdfBrandIcon } = require('./brandingAssetService');
 
 const BRAND_LINK_URL = "https://nickgm.de";
-const BRAND_ICON_PATH = "M10 2h4M11 2v6.5l-5.2 9.2C4.6 19.8 6.1 22 8.5 22h7c2.4 0 3.9-2.2 2.7-4.3L13 8.5V2M8.2 15h7.6M9.2 19h5.6";
 const PAGE_MARGIN = 48;
 const FOOTER_Y_OFFSET = 60;
 const BRAND_Y_OFFSET = 34;
@@ -438,8 +438,7 @@ function writeFooterBranding(doc, systemSettings = {}) {
   const y = doc.page.height - BRAND_Y_OFFSET - iconSize / 2;
 
   doc.save();
-  doc.translate(x, y).scale(iconSize / 24);
-  doc.path(BRAND_ICON_PATH).lineWidth(1.8).lineCap("round").lineJoin("round").stroke("#4b5563");
+  doc.image(pdfBrandIcon(),x,y,{width:iconSize,height:iconSize});
   doc.restore();
   doc.link(x - 2, y - 2, iconSize + 4, iconSize + 4, BRAND_LINK_URL);
 
@@ -485,7 +484,8 @@ async function writePdf(filePath, title, writer, options = {}) {
   });
   try {
     doc.info.Title = title;
-    if (options.documentId) doc.info.Subject = JSON.stringify({ edoku: 1, id: options.documentId, chapter: options.chapter });
+    if (options.documentId) doc.info.Subject = JSON.stringify({ edoku: 1, id: options.documentId, chapter: options.chapter,
+      ...(options.deviceListVersion ? { deviceListVersion: options.deviceListVersion } : {}) });
     doc._systemSettings = options.systemSettings || {};
     doc.pipe(stream);
     writer(doc, { title });
@@ -514,9 +514,15 @@ async function writePdf(filePath, title, writer, options = {}) {
 function selectedSystemNormen(leistungsbereich, leistungsbereiche, systeme, projektSysteme = []) {
   const entries = Array.isArray(leistungsbereich) ? leistungsbereich : [leistungsbereich];
   const normen = entries.flatMap((entryLeistungsbereich) => {
-    const projektSelection = (projektSysteme || []).find((entry) => entry.leistungsbereich === entryLeistungsbereich);
-    if (projektSelection && Array.isArray(projektSelection.normen) && projektSelection.normen.length) {
-      return projektSelection.normen;
+    const matching=(projektSysteme||[]).filter(entry=>entry.leistungsbereich===entryLeistungsbereich);
+    const projektSelection = require('./systemService').selectionByLeistungsbereich(projektSysteme).get(entryLeistungsbereich);
+    if(matching.length){
+      return matching.filter(entry=>entry.enabled!==false && entry.aktiv!==false).flatMap(entry=>{
+        if(entry.normen?.length)return entry.normen;
+        const config=getLeistungsbereichConfig(systeme,entryLeistungsbereich);
+        const maker=(config?.hersteller||[]).find(item=>item.name===entry.hersteller);
+        return maker?.normen||entry.dokumentarten||[];
+      });
     }
 
     if (systeme && Array.isArray(systeme.leistungsbereiche)) {
@@ -1230,7 +1236,7 @@ function drawCompactInfoGrid(doc, x, y, width, rows, columns = 3) {
 async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSettings = {}, matrix = [], leistungsbereiche = {}, anhaenge = []) {
   const paths = await createProjectFolder(rootDir, projekt);
   const generated = [];
-  const listen = filterExportGeraetelisten(geraetelisten, leistungsbereiche);
+  const listen = filterExportGeraetelisten(geraetelisten, leistungsbereiche, projekt);
   const logicalNumbers = logicalDeviceListNumbers(matrix, listen, leistungsbereiche, anhaenge, projekt);
   const manualNumbers = manualChapterNumbers(matrix, listen, anhaenge, leistungsbereiche, projekt);
   const generatedDir = path.join(paths.generatedPath, "Geraetelisten");
@@ -1261,9 +1267,9 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
     await writePdf(filePath, "Geräteliste", (doc) => {
       writeProjectHeader(doc, projekt, rootDir, systemSettings);
       writeDocumentTitle(doc, "Geräteliste", `Kapitel ${displayKapitel} - ${liste.titel} | ${liste.leistungsbereich}`);
-      const fields = deviceListFieldsForLeistungsbereich(liste.leistungsbereich);
-      const showManualColumn = liste.leistungsbereich !== "Brandschutzabschottungen"
-        && printableRows.some((row) => row.bedienungsanleitungId && manualNumbers.has(row.bedienungsanleitungId));
+      const fields = deviceListFieldsForLeistungsbereich(liste.leistungsbereich).filter(field => field.pdfExport !== false);
+      const showManualColumn = printableRows.some((row) => row.bedienungsanleitungId && manualNumbers.has(row.bedienungsanleitungId));
+      const showDatasheetColumn = printableRows.some(row => row.datenblattId && manualNumbers.has(row.datenblattId));
       const rawColumns = [
         { name: "pos", label: "Pos.", width: 26 },
         ...fields.map((field) => ({
@@ -1271,7 +1277,8 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
           label: field.pdfLabel || field.label.replace(" (optional)", ""),
           width: field.pdfWidth || 54
         })),
-        ...(showManualColumn ? [{ name: "bedienungsanleitungId", label: "Anleitung", width: 46 }] : [])
+        ...(showManualColumn ? [{ name: "bedienungsanleitungId", label: "Anleitung", width: 46 }] : []),
+        ...(showDatasheetColumn ? [{ name: "datenblattId", label: "Datenblatt", width: 46 }] : [])
       ];
       const columns = buildFullWidthColumns(doc, rawColumns);
       const tableBottom = doc.page.height - 78;
@@ -1280,7 +1287,8 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
         const values = [
           row.pos,
           ...fields.map((field) => row[field.name]),
-          ...(showManualColumn ? [row.bedienungsanleitungId ? `Kap. ${manualNumbers.get(row.bedienungsanleitungId) || "-"}` : ""] : [])
+          ...(showManualColumn ? [row.bedienungsanleitungId ? `Kap. ${manualNumbers.get(row.bedienungsanleitungId) || "-"}` : ""] : []),
+          ...(showDatasheetColumn ? [row.datenblattId ? `Kap. ${manualNumbers.get(row.datenblattId) || "-"}` : ""] : [])
         ];
         const estimatedHeight = Math.max(20, Math.ceil(Math.max(...columns.map((column, index) => doc.heightOfString(String(values[index] || ""), {
           width: column.width - 6
@@ -1296,7 +1304,7 @@ async function generateGeraetelisten(rootDir, projekt, geraetelisten, systemSett
       });
       doc.y = tableY + 8;
       writeFooter(doc, projekt);
-    }, { layout: "landscape", margin: 36, systemSettings, documentId: `device-list-${liste.id}`, chapter: displayKapitel });
+    }, { layout: "landscape", margin: 36, systemSettings, documentId: `device-list-${liste.id}`, chapter: displayKapitel, deviceListVersion: DEVICE_LIST_PDF_VERSION });
     generated.push(filePath);
   }
 

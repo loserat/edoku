@@ -2,6 +2,8 @@ services:
   edoku:
     build: .
     container_name: edoku_v1
+    # Bei vorhandenen Bind-Mounts an deren Eigentümer anpassen; keine Bestandsdaten umchownen.
+    user: "${EDOKU_UID:-1000}:${EDOKU_GID:-1000}"
     ports:
       - "3000:3000"
     volumes:

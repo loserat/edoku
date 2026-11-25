@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>nickgm – Globus</title>
+  <defs>
+    <linearGradient id="globe-fill" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#EDF4FF"/><stop offset="1" stop-color="#D7E4F8"/>
+    </linearGradient>
+    <clipPath id="globe-clip"><circle cx="32" cy="32" r="28"/></clipPath>
+  </defs>
+  <circle cx="32" cy="32" r="28" fill="url(#globe-fill)"/>
+  <g clip-path="url(#globe-clip)" fill="none" stroke="#91AFDE" stroke-width="1.1">
+    <ellipse cx="32" cy="32" rx="10" ry="28" transform="rotate(-20 32 32)"/>
+    <ellipse cx="32" cy="32" rx="22" ry="28" transform="rotate(-20 32 32)"/>
+    <ellipse cx="32" cy="19" rx="30" ry="9" transform="rotate(12 32 32)"/>
+    <ellipse cx="32" cy="45" rx="30" ry="9" transform="rotate(12 32 32)"/>
+  </g>
+  <circle cx="32" cy="32" r="28" fill="none" stroke="#4D82CD" stroke-width="1.5"/>
+</svg>

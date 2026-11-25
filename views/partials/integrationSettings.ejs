@@ -1,0 +1,120 @@
+<%
+  const scopeLabels = { "projects:read": "Projekte und Stammdaten lesen", "projects:write": "Projektstammdaten ändern", "devices:read": "Gerätelisten lesen", "devices:write": "Gerätepositionen anlegen und ändern", "documents:read": "Dokumente, Brandschutz und Anhangsmetadaten lesen", "assistant:read": "Assistentenaufträge und Entscheidungen lesen", "assistant:write": "Aufträge, Rückfragen und Dateivorschläge vorbereiten (keine Freigabe)", "exports:read": "Exportaufträge und freigegebene Ausgaben lesen", "exports:write": "Hintergrundexporte beauftragen und steuern" };
+  const keyStates = { active: "Aktiv", expired: "Abgelaufen", revoked: "Widerrufen", disabled: "Konto gesperrt", password_changed: "Durch Passwortwechsel ungültig" };
+  const projectNames = new Map(availableProjects.map(project => [project.id, project.projektname || project.id]));
+%>
+<section id="api-integrations" class="integration-settings" data-settings-panel="api" hidden>
+  <div class="settings-panel integration-summary">
+    <div class="panel-head"><div><h2>API &amp; MCP</h2><p>Externe Anwendungen und KI-Werkzeuge gezielt mit deinen Projekten verbinden.</p></div>
+      <span class="badge <%= integrationSettings.apiEnabled ? 'on' : 'off' %>"><%= !integrationSettings.apiEnabled ? 'API ausgeschaltet' : integrationSettings.allowWrites ? 'API aktiv' : 'API nur lesend' %></span>
+    </div>
+    <div class="settings-facts integration-facts">
+      <div><span>API-Adresse</span><strong><code><%= integrationOrigin %>/api/v1</code></strong></div>
+      <div><span>Deine aktiven Schlüssel</span><strong><%= apiKeys.filter(key => key.state === 'active').length %></strong></div>
+      <div><span>MCP-Verbindung</span><strong>Lokaler Adapter</strong></div>
+    </div>
+    <p class="field-hint">MCP verbindet einen KI-Client über einen lokalen Adapter mit dieser API. Der Adapter benötigt einen eigenen Schlüssel und wird auf deinem Computer eingerichtet.</p>
+    <div class="integration-actions"><a class="secondary compact-button" href="/api/v1/openapi.json" target="_blank" rel="noopener">API-Beschreibung öffnen</a><button type="button" class="secondary compact-button" data-copy-text="<%= integrationOrigin %>/api/v1">API-Adresse kopieren</button></div>
+    <p><a href="/assistent">Doku-Assistent mit manueller Dateifreigabe öffnen</a></p>
+  </div>
+
+  <% if (integrationError) { %><p class="notice error" data-persistent><%= integrationError %></p><% } %>
+  <% if (createdToken) { %>
+    <section class="settings-panel integration-new-key" data-created-key-panel>
+      <h3>Neuer Schlüssel: <%= createdToken.name %></h3><p>Jetzt kopieren. Der vollständige Schlüssel wird nur einmal angezeigt.</p>
+      <label><span>API-Schlüssel</span><textarea readonly rows="3" data-created-key autocomplete="off" spellcheck="false"><%= createdToken.token %></textarea></label>
+      <div class="integration-actions"><button type="button" class="secondary compact-button" data-copy-target="[data-created-key]">Schlüssel kopieren</button><button type="button" class="secondary compact-button" data-use-created-key>Für MCP-Einrichtung übernehmen</button></div>
+    </section>
+  <% } %>
+
+  <div class="integration-columns">
+    <section class="settings-panel">
+      <div class="panel-head"><div><h3>Serverzugang</h3><p>Diese Vorgaben gelten für alle API-Schlüssel und auch für Zugriffe über MCP.</p></div></div>
+      <% if (isSystemAdmin) { %>
+        <form action="/einstellungen/integrationen#api" method="post" class="stack-form">
+          <%- include("formSecurity") %>
+          <label class="switch-control"><input type="checkbox" name="apiEnabled"<%= integrationSettings.apiEnabled ? ' checked' : '' %>><span class="switch-track" aria-hidden="true"></span><span>API-Zugang aktivieren</span></label>
+          <label class="switch-control"><input type="checkbox" name="allowWrites"<%= integrationSettings.allowWrites ? ' checked' : '' %>><span class="switch-track" aria-hidden="true"></span><span>Änderungen über die API erlauben</span></label>
+          <p class="field-hint">Ohne Schreibzugriffe bleiben alle Schlüssel auf Lesen beschränkt. Ihre eigenen Rechte gelten zusätzlich. Beim Ausschalten werden Schlüssel erhalten und können weiterhin widerrufen werden.</p>
+          <div class="form-grid compact">
+            <label><span>Standardgültigkeit neuer Schlüssel</span><input name="defaultTokenDays" type="number" min="1" max="365" value="<%= integrationSettings.defaultTokenDays %>" required><small>Tage</small></label>
+            <label><span>Maximale Gültigkeit neuer Schlüssel</span><input name="maxTokenDays" type="number" min="1" max="365" value="<%= integrationSettings.maxTokenDays %>" required><small>Tage, höchstens 365</small></label>
+          </div>
+          <p class="field-hint">Eine neue Gültigkeitsvorgabe verändert keine bereits ausgegebenen Schlüssel.</p>
+          <div><button type="submit" class="success-button compact-button">API-Einstellungen speichern</button></div>
+        </form>
+      <% } else { %>
+        <p>Den Serverzugang und die Gültigkeitsvorgaben verwaltet ein Systemadmin. Du kannst unten deine eigenen Schlüssel verwalten.</p>
+        <p>Neue Schlüssel: standardmäßig <strong><%= integrationSettings.defaultTokenDays %> Tage</strong>, höchstens <strong><%= integrationSettings.maxTokenDays %> Tage</strong>.</p>
+      <% } %>
+    </section>
+
+    <section class="settings-panel">
+      <div class="panel-head"><div><h3>Eigenen API-Schlüssel anlegen</h3><p>Zum Beispiel für ein externes Programm oder deinen MCP-Client.</p></div></div>
+      <% if (user.role === "viewer") { %><p>Lesekonten können hier keine neuen Schlüssel anlegen.</p><% } else { %>
+        <form action="/integrationen/schluessel#api" method="post" class="stack-form" data-api-key-form>
+          <%- include("formSecurity") %>
+          <div class="form-grid compact">
+            <label><span>Name</span><input type="text" name="name" required maxlength="80" placeholder="Zum Beispiel: MCP am Arbeitsplatz"></label>
+            <label><span>Gültigkeit in Tagen</span><input name="days" type="number" min="1" max="<%= integrationSettings.maxTokenDays %>" value="<%= integrationSettings.defaultTokenDays %>" required></label>
+          </div>
+          <fieldset class="integration-options"><legend>Erlaubte Aktionen</legend>
+            <button type="button" class="secondary compact-button" data-assistant-key-preset>Agent vorbereiten, Dateien nur manuell freigeben</button>
+            <button type="button" class="secondary compact-button" data-assistant-key-preset="full">Vollständiger Doku-Agent mit Pflicht-Dateifreigabe</button>
+            <% apiScopes.forEach(scope => { %><label class="integration-choice"><input type="checkbox" name="scopes" value="<%= scope %>"<%= scope.endsWith(':read') ? ' checked' : '' %>><span><%= scopeLabels[scope] %></span></label><% }) %>
+          </fieldset>
+          <fieldset class="integration-options"><legend>Freigegebene Projekte</legend>
+            <label class="integration-choice"><input type="radio" name="projectMode" value="selected" checked><span>Nur ausgewählte Projekte</span></label>
+            <label class="integration-choice"><input type="radio" name="projectMode" value="all"><span>Alle eigenen Projekte, einschließlich zukünftiger</span></label>
+            <div class="integration-projects" data-key-projects>
+              <% if (!availableProjects.length) { %><p class="field-hint">Noch keine eigenen Projekte vorhanden.</p><% } %>
+              <% availableProjects.forEach(project => { %><label class="integration-choice"><input type="checkbox" name="projectIds" value="<%= project.id %>"><span><%= project.projektname || project.id %><small><%= project.projektnummer || project.id %></small></span></label><% }) %>
+            </div>
+          </fieldset>
+          <p class="field-hint">Zum Ändern auch das passende Leserecht auswählen. So kann das Programm den aktuellen Projektstand vor der Änderung prüfen.</p>
+          <div><button type="submit" class="success-button compact-button">API-Schlüssel anlegen</button></div>
+        </form>
+      <% } %>
+    </section>
+  </div>
+
+  <section class="settings-panel">
+    <div class="panel-head"><div><h3>Deine API-Schlüssel</h3><p>Ein Widerruf sperrt den Schlüssel sofort für weitere Anfragen. Passwortänderungen machen bisherige Schlüssel ungültig.</p></div></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Name</th><th>Rechte</th><th>Projekte</th><th>Gültig bis</th><th>Status</th><th>Aktion</th></tr></thead>
+      <tbody>
+        <% if (!apiKeys.length) { %><tr><td colspan="6">Noch keine API-Schlüssel vorhanden.</td></tr><% } %>
+        <% apiKeys.forEach(key => { %><tr>
+          <td><strong><%= key.name %></strong></td>
+          <td><%= key.scopes.map(scope => scopeLabels[scope] || scope).join(' · ') %></td>
+          <td><%= key.projectIds === null ? 'Alle eigenen Projekte' : key.projectIds.map(id => projectNames.get(id) || id).join(', ') %></td>
+          <td><%= new Date(key.expiresAt).toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' }) %></td>
+          <td><span class="badge <%= key.state === 'active' ? 'on' : 'off' %>"><%= keyStates[key.state] %></span></td>
+          <td><% if (!key.revokedAt && user.role !== 'viewer') { %><form method="post" action="/integrationen/schluessel/<%= key.id %>/widerrufen#api" data-confirm="API-Schlüssel wirklich widerrufen? Verbundene Programme verlieren damit den Zugriff."><%- include('formSecurity') %><button type="submit" class="secondary danger compact-button">Widerrufen</button></form><% } %></td>
+        </tr><% }) %>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="settings-panel" id="mcp-setup">
+    <div class="panel-head"><div><h3>MCP-Verbindung einrichten</h3><p>Erstelle eine Konfiguration für einen MCP-Client, der lokale Programme starten kann.</p></div></div>
+    <form class="stack-form" data-mcp-setup>
+      <div class="form-grid compact">
+        <label><span>edoku-Serveradresse</span><input type="url" data-mcp-url value="<%= integrationOrigin %>" required autocomplete="off"><small>Ohne /api/v1; bei entfernten Servern mit HTTPS.</small></label>
+        <label><span>Pfad zum MCP-Skript auf deinem Computer</span><input type="text" data-mcp-script placeholder="/Pfad/zu/edoku/scripts/edoku-mcp.js" required autocomplete="off" spellcheck="false"><small>Der vollständige Pfad auf dem Rechner, auf dem dein MCP-Client läuft.</small></label>
+      </div>
+      <label><span>API-Schlüssel für diese Verbindung</span><input type="password" data-mcp-token autocomplete="off" spellcheck="false" required placeholder="edoku_…"><small>Wird nur hier im Browser verwendet und weder gespeichert noch an den Server gesendet.</small></label>
+      <label class="integration-choice"><input type="checkbox" data-mcp-writes><span>Schreibwerkzeuge im MCP-Client anbieten</span></label>
+      <label><span>Lokaler Ordner für vorbereitete Agenten-Dateien (optional)</span><input type="text" data-mcp-document-root autocomplete="off" spellcheck="false" placeholder="/Pfad/zu/Agenten-Dokumenten"><small>Nur Dateien unter diesem Ordner darf der MCP-Adapter zur Prüfung einreichen. Ohne Ordner ist kein Datei-Upload über MCP möglich.</small></label>
+      <p class="field-hint">Zusätzlich müssen Serverzugang und API-Schlüssel Änderungen erlauben. Diese Einrichtung startet keinen MCP-Prozess und öffnet keinen öffentlichen MCP-Zugang.</p>
+      <div class="integration-actions"><button type="submit" class="secondary compact-button">MCP-Konfiguration erstellen</button></div>
+      <p data-mcp-status role="status" aria-live="polite"></p>
+      <div data-mcp-result hidden>
+        <label><span>Konfiguration für deinen MCP-Client</span><textarea readonly rows="16" data-mcp-config spellcheck="false" autocomplete="off"></textarea></label>
+        <div class="integration-actions"><button type="button" class="secondary compact-button" data-copy-target="[data-mcp-config]">Konfiguration kopieren</button><button type="button" class="secondary compact-button" data-clear-mcp>Schlüssel und Konfiguration ausblenden</button></div>
+        <p class="field-hint">Die Konfiguration enthält deinen Schlüssel. Füge sie in deinen lokalen MCP-Client ein und bewahre sie wie ein Passwort auf. Node.js und die edoku-Abhängigkeiten müssen dort installiert sein.</p>
+      </div>
+    </form>
+  </section>
+  <p data-integration-copy-status role="status" aria-live="polite"></p>
+</section>

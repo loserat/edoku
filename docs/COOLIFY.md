@@ -1,5 +1,7 @@
 # Coolify: reproduzierbarer Testbetrieb
 
+> **Separater lokaler Sicherheitsstand vom 17.11.2026:** Das lokal aktivierte Abbild läuft ohne Root-Rechte. Bei einer späteren Übernahme dieses Abbilds müssen die Schreibrechte der fünf vorhandenen Volumes auf einer Kopie mit der geplanten Benutzerkennung geprüft werden. [Lokaler Sicherheitsstand und Bestandsschutz](SICHERHEITSUPDATE_2026-11-17.md).
+
 Stand **18.11.2026**. Technische Anleitung für Betreiber. Die [Bedienungsanleitung](BEDIENUNGSANLEITUNG.md) richtet sich getrennt an Anwender. Die Containerkonfiguration ist lokal geprüft und auf der bezeichneten Online-Testinstanz verifiziert; andere Installationen benötigen eine eigene Zielprüfung.
 
 ## Dockerfile statt automatischer Erkennung

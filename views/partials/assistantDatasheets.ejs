@@ -1,0 +1,25 @@
+<% const labels = { research:'Recherche offen', blocked:'Technische Prüfung offen', needs_identity:'Artikel klären', pending:'Datei prüfen', approved:'Freigegeben', ready_to_link:'Zuordnung ergänzen', assignment_conflict:'Zuordnung prüfen', rejected:'Abgelehnt', not_found:'Bisher nicht gefunden', unsupported:'Struktur klären' };
+   const shown = datasheetCoverage.items.filter(item => coverageFilter === 'all' || (coverageFilter === 'open' ? item.status !== 'approved' : item.status === coverageFilter)); %>
+<section class="assistant-datasheets" aria-label="Datenblattabdeckung" data-file-group>
+  <div class="panel-head"><h2>Datenblätter <span class="badge"><%= datasheetCoverage.summary.approved %> / <%= datasheetCoverage.summary.articles %></span></h2><span class="field-hint"><%= datasheetCoverage.summary.positions %> Gerätepositionen · <%= datasheetCoverage.summary.pending %> Artikel zur Prüfung</span></div>
+  <ul class="assistant-check-items">
+    <% shown.forEach(item => { %><li data-file-row id="artikel-<%= item.id %>"><details class="assistant-check-detail"><summary class="assistant-check-row assistant-datasheet-row"><span class="assistant-item-name"><strong><%= [item.manufacturer,item.model].filter(Boolean).join(' · ') || 'Artikelangabe fehlt' %></strong><% if (item.references.length > 1) { %><small><%= item.references.length %> Gerätepositionen</small><% } %></span><span class="badge <%= item.status === 'approved' ? 'on' : 'off' %>"><%= labels[item.status] %></span></summary>
+      <div class="assistant-datasheet-body">
+        <% if (item.description) { %><p><%= item.description %></p><% } %>
+        <% if (item.variant) { %><p class="field-hint"><%= item.variant %></p><% } %>
+        <% if (item.status === 'research') { %><p>Der verbundene Agent recherchiert eine passende Herstellerunterlage und reicht sie zur Prüfung ein.</p><% } %>
+        <% if (item.status === 'needs_identity') { %><p>Hersteller, Artikel oder Variante im Agentenchat klären.</p><% } %>
+        <% if (item.status === 'ready_to_link') { %><p>Ein passendes Original ist bereits vorhanden. Der Agent kann die bestätigten Geräte zuordnen.</p><% } %>
+        <% if (item.status === 'assignment_conflict') { %><p>Vorhandene Zuordnung oder Datei passt nicht mehr. In der Geräteliste prüfen; bestehende Dateien bleiben erhalten.</p><% } %>
+        <% if (item.status === 'unsupported') { %><p>Die Gerätezuordnung für diesen Bereich muss zuerst geklärt werden.</p><% } %>
+        <% if (item.status === 'rejected') { %><p>Eine frühere Unterlage wurde abgelehnt. Eine passende Alternative bleibt offen.</p><% } %>
+        <% if (item.search) { %><p><%= item.search.reason %></p>
+          <p class="field-hint">Zuletzt geprüft: <time datetime="<%= item.search.recordedAt %>"><%= new Date(item.search.recordedAt).toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' }) %></time></p>
+          <div class="assistant-project-actions"><% item.search.sources.filter(url => /^https?:\/\//i.test(url)).forEach((url, index) => { %><a href="<%= url %>" target="_blank" rel="noopener noreferrer">Quelle <%= index + 1 %> ↗</a><% }) %></div>
+        <% } %>
+        <div class="assistant-project-actions"><% item.documents.forEach(document => { if(document.url) { %><a href="<%= document.url %>"><%= document.title %> →</a><% } }) %></div>
+      </div>
+    </details></li><% }) %>
+  </ul>
+  <% if (!shown.length) { %><p class="assistant-empty">Keine Artikel in dieser Auswahl.</p><% } %>
+</section>

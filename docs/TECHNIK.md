@@ -1,6 +1,6 @@
 # Technische Dokumentation
 
-Stand: 06.11.2026. Aktueller Arbeitsstand; datierte frühere Übernahmen weiter unten beschreiben den jeweiligen damaligen Prüfstand.
+Die aktuelle API-/MCP-Karte mit Zuständigkeiten, Transaktionen, Vertragsprüfung und Refactoring-Regeln steht in [API_MCP_REFACTORING.md](API_MCP_REFACTORING.md). Die folgende technische Grundbeschreibung stammt überwiegend vom 06.11.2026; datierte frühere Übernahmen beschreiben ihren jeweiligen damaligen Prüfstand.
 
 ## Architektur
 

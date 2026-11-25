@@ -1,0 +1,25 @@
+<%
+  const sections = [
+    { key: "system", panel: "system", label: "System", icon: "system" },
+    { key: "theme", panel: "theme-editor", label: "Theme", icon: "sun" },
+    { key: "ersteller", panel: "ersteller", label: "Ersteller", icon: "project" },
+    { key: "ordnerstruktur", panel: "ordnerstruktur", label: "Projektordner", icon: "folder-tree" },
+    { key: "leistungsbereiche", panel: "leistungsbereiche-admin", label: "Leistungsbereiche", icon: "grid", alias: "formulare" },
+    { key: "geraetelisten-vorlagen", panel: "geraetelisten-vorlagen", label: "Gerätelisten", icon: "list" },
+    { key: "updates", panel: "updates", label: "Updates", icon: "download" },
+    { key: "api", panel: "api-integrations", label: "API & MCP", icon: "system" }
+  ];
+  if (isSystemAdmin) sections.push({ key: "benutzer", panel: "benutzerverwaltung", label: "Benutzer", icon: "user" });
+%>
+<nav class="settings-top-tabs" aria-label="Einstellungsbereiche">
+  <% for (const section of sections) { %>
+    <% if (auditActive) { %>
+      <a href="/einstellungen#<%= section.key %>"><%- include("icon", { name: section.icon }) %><span><%= section.label %></span></a>
+    <% } else { %>
+      <button type="button" data-settings-tab="<%= section.key %>" aria-controls="<%= section.panel %>" aria-pressed="<%= section.key === "system" %>"<% if (section.alias) { %> data-settings-alias="<%= section.alias %>"<% } %>><%- include("icon", { name: section.icon }) %><span><%= section.label %></span></button>
+    <% } %>
+  <% } %>
+  <% if (isSystemAdmin) { %>
+    <a href="/einstellungen/protokoll"<% if (auditActive) { %> aria-current="page"<% } %>><%- include("icon", { name: "shield" }) %><span>Sicherheitsprotokoll</span></a>
+  <% } %>
+</nav>

@@ -28,3 +28,8 @@ backups/
 __pycache__/
 *.pyc
 test-results/
+mcp-documents/
+
+# Private Compose-Anpassungen und Zugangsdaten
+docker-compose.override.yml
+compose.private.yml

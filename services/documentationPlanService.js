@@ -9,9 +9,9 @@ function isImportedDocumentPlaceholder(entry) {
 function isDeviceContainer(entry) {
   return String(entry.quelle || "").includes("geraetelisten.json");
 }
-function filterExportGeraetelisten(lists = [], areas = {}) {
+function filterExportGeraetelisten(lists = [], areas = {}, project = {}) {
   const selected = Array.isArray(areas.aktiv) ? new Set(areas.aktiv) : null;
-  return normalizeGeraetelisten(lists).filter((list) => list.aktiv && list.export && (!selected || selected.has(list.leistungsbereich)));
+  return require("./documentationMaterialPolicy").projectLists(normalizeGeraetelisten(lists),project).filter((list) => list.aktiv && list.export && (!selected || selected.has(list.leistungsbereich)));
 }
 function chapterSortValue(chapter) {
   return String(chapter).split(".").reduce((sum, part, index) => sum + (Number(part) || 0) * (index ? 10 ** Math.max(0, 2 - index) : 1000), 0);
@@ -19,8 +19,9 @@ function chapterSortValue(chapter) {
 
 // Eine gemeinsame Struktur für Dateinamen, Inhaltsverzeichnis, Matrix und Export.
 function buildDocumentationPlan(matrix = [], lists = [], attachments = [], areas = {}, project = {}) {
-  const activeLists = filterExportGeraetelisten(lists, areas);
+  const activeLists = filterExportGeraetelisten(lists, areas, project);
   const imports = prepareDocumentationAttachmentEntries(matrix, attachments, project, activeLists);
+  const replacementTargets = new Set(imports.map(entry => entry.matrixDocumentId).filter(Boolean));
   const originals = new Map();
   sortDocuments(matrix).forEach((entry) => {
     const key = String(entry.originalKapitel || entry.kapitel || "");
@@ -40,6 +41,7 @@ function buildDocumentationPlan(matrix = [], lists = [], attachments = [], areas
     return node;
   }
   sortDocuments(matrix).filter((entry) => entry.aktiv && entry.export && !isImportedDocumentPlaceholder(entry))
+    .filter(entry => !replacementTargets.has(entry.id))
     .filter((entry) => !isDeviceContainer(entry) || activeLists.some((list) => String(list.kapitel) === String(entry.kapitel)))
     .forEach((entry, index) => add({ ...entry, id: entry.id || `matrix-${index}` }));
   function ensureParent(chapter, fallbackTitle = "Dokumentation") {
@@ -66,6 +68,13 @@ function buildDocumentationPlan(matrix = [], lists = [], attachments = [], areas
     });
   });
   imports.forEach((entry, index) => {
+    if (entry.matrixDocumentId) {
+      const target = matrix.find(item => item.id === entry.matrixDocumentId);
+      if (!target || !target.aktiv || !target.export) return;
+      const parent = ensureParent(String(target.kapitel).split(".").slice(0, -1).join("."));
+      add({ ...entry, kapitel: target.kapitel, originalKapitel: target.kapitel, titel: target.titel }, { matrixId: target.id, parentId: parent?.id, sortierung: target.sortierung, pflicht: Boolean(target.pflicht), requiresFile: true, isCover: false });
+      return;
+    }
     const category = defaultDocumentMetaForCategory(entry.dokumenttyp);
     const parent = ensureParent(entry.parentKapitel, category.title);
     add(entry, { matrixId: null, parentId: parent && parent.id, sortierung: 200000 + index, requiresFile: true, isCover: false });

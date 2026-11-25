@@ -1,0 +1,11 @@
+<section class="settings-panel"><div class="panel-head"><h2>Deine Aufträge</h2><span class="field-hint"><%= jobs.length %> Auftrag / Aufträge</span></div>
+  <% if (!jobs.length) { %><p>Noch keine Dokumentation beauftragt. Wähle unten ein Projekt und beschreibe dein Ziel.</p><% } %>
+  <div class="assistant-job-list"><% jobs.forEach(job => { const project = projects.find(project => project.id === job.projectId); %><a class="assistant-job" href="/assistent/auftraege/<%= job.id %>"><span><strong><%= project?.projektname || job.projectId %></strong><span><%= project?.projektnummer || '' %></span></span><span class="badge <%= job.status === 'needs_info' ? 'off' : 'on' %>"><%= statuses[job.status] %></span></a><% }) %></div>
+</section>
+<details id="neuer-auftrag" class="settings-panel" <%- !jobs.length || newJob ? 'open' : '' %>><summary>Neue Dokumentation beauftragen</summary>
+  <form action="/assistent/auftraege" method="post" class="stack-form"><%- include('formSecurity') %>
+    <input type="hidden" name="projectId" value="<%= activeProject.id %>"><p class="field-hint">Für <%= [activeProject.projektname || activeProject.id, activeProject.projektnummer].filter(Boolean).join(' · ') %></p>
+    <label><span>Was soll dokumentiert werden?</span><textarea name="instruction" rows="3" minlength="10" maxlength="10000" required placeholder="Erstelle die Dokumentation aus meiner Materialliste. Frage mich nur nach fehlenden Angaben."></textarea></label>
+    <div><button type="submit" class="success-button">Auftrag vorbereiten</button></div>
+  </form><p class="field-hint">Der verbundene MCP-Agent bearbeitet den Auftrag. Jede Datei wird erst nach deiner Einzelprüfung übernommen.</p>
+</details>

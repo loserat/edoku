@@ -63,7 +63,7 @@ test("Schaltflächen bleiben bei Standard- und eigenen Farben auch beim Überfah
   const context = vm.createContext({}); vm.runInContext(client, context);
   for (const color of ["#315fc5", "#e0c350", "#8a8a8a", "#ffffff", "#010409", "#0349b4", "#238636", "#58a6ff"]) {
     const theme = mergeThemeSettings({ colors: { buttonPrimary: color, danger: color } });
-    const html = ejs.render(template, { systemSettings: { theme } });
+    const html = ejs.render(template, { cspNonce: "synthetic-theme-nonce", systemSettings: { theme } });
     const tokens = Object.fromEntries([...html.matchAll(/(--[a-z-]+):\s*(#[a-f0-9]{6})/ig)].map(m => [m[1], m[2]]));
     assert.ok(contrast(color, tokens["--on-primary"]) >= 4.5, color);
     assert.ok(contrast(tokens["--color-primary-hover"], tokens["--on-primary-hover"]) >= 4.5, color + " hover");

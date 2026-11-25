@@ -1,0 +1,16 @@
+<% if (typeof materialPolicy !== 'undefined') { %>
+<details class="settings-panel assistant-material-policy">
+  <summary>Dokumentationsumfang · <%= materialPolicy.excludedGroups.length %> Materialgruppen ausgenommen</summary>
+  <form action="/assistent/materialregeln" method="post" class="stack-form">
+    <%- include('formSecurity') %>
+    <input type="hidden" name="projectId" value="<%= activeProject.id %>">
+    <input type="hidden" name="revision" value='"<%= materialPolicyRevision %>"'>
+    <% Object.entries(materialPolicyLabels).forEach(([key,label])=>{ %>
+      <label class="integration-choice"><input type="checkbox" name="<%= key %>"<%= materialPolicy.exclusions[key] ? ' checked' : '' %>><span><%= label %> nicht dokumentieren</span></label>
+    <% }) %>
+    <p class="field-hint">Für neue Materialübernahme, Recherche und erzeugte Gerätelisten. Gespeicherte Positionen und Dateifreigaben bleiben erhalten. Vorhandene Anhänge behalten ihre Exportzuordnung.</p>
+    <% if (materialPolicy.origin === 'legacy_defaults') { %><p class="field-hint">Für die Gerätelisten diese Auswahl einmal speichern.</p><% } %>
+    <button type="submit" class="secondary">Auswahl speichern</button>
+  </form>
+</details>
+<% } %>

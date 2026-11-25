@@ -85,7 +85,7 @@
           <div class="panel-head">
             <div>
               <h2>Geräteliste bearbeiten</h2>
-              <p>Geräteliste oben im Haupttab auswählen und Positionen direkt pflegen.</p>
+              <p>Geräteliste oben im Haupttab auswählen und Positionen direkt pflegen. Bemerkungen und Quellenhinweise bleiben intern und erscheinen nicht im Geräte-PDF.</p>
             </div>
           </div>
           <form action="/geraetelisten" method="post" data-autosave>
@@ -96,9 +96,10 @@
 
             <% geraetelisten.forEach((liste, listenIndex) => { %>
               <% const listSuggestions = suggestions[liste.leistungsbereich] || { alleHersteller: [], alleSysteme: [], alleTypen: [] }; %>
-              <% const listFields = fieldProfiles[liste.leistungsbereich] || []; %>
+              <% const listFields = (fieldProfiles[liste.leistungsbereich] || []).filter(field => field.guiVisible !== false); %>
+              <% const retainedFields = (fieldProfiles[liste.leistungsbereich] || []).filter(field => field.guiVisible === false); %>
               <% const previewUrl = previewByListId && previewByListId[liste.id] ? previewByListId[liste.id] : ""; %>
-              <% const allowManualLinks = liste.leistungsbereich !== "Brandschutzabschottungen"; %>
+              <% const allowManualLinks = true; %>
               <% const passendeVorlagen = (geraetelistenVorlagen || []).filter((vorlage) => vorlage.leistungsbereich === liste.leistungsbereich); %>
               <section class="edit-section <%= liste.aktiv ? "" : "is-inactive" %>" data-device-list-panel="<%= liste.id %>" data-suggestion-leistungsbereich="<%= liste.leistungsbereich %>">
                 <div class="edit-section-head">
@@ -201,6 +202,7 @@
                         <% }) %>
                         <% if (allowManualLinks) { %>
                           <th data-col="bedienungsanleitungId" data-sortable-column>Bedienungsanleitung</th>
+                          <th data-col="datenblattId" data-sortable-column>Datenblatt</th>
                         <% } %>
                         <th data-col="delete">Entfernen</th>
                       </tr>
@@ -208,7 +210,7 @@
                     <tbody data-position-body="<%= listenIndex %>">
                       <% liste.positionen.forEach((position, posIndex) => { %>
                         <tr>
-                          <td data-col="pos"><input type="text" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][pos]" value="<%= position.pos %>"></td>
+                          <td data-col="pos"><input type="text" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][pos]" value="<%= position.pos %>"><% retainedFields.forEach(field => { %><input type="hidden" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][<%= field.name %>]" value="<%= position[field.name] || '' %>"><% }) %></td>
                           <% listFields.forEach((field) => { %>
                             <% const listAttr = field.suggest === "hersteller" ? `list="geraeteliste-hersteller-${listenIndex}" data-device-suggest="hersteller"` : field.suggest === "system" ? `list="geraeteliste-system-${listenIndex}" data-device-suggest="system"` : field.suggest === "typ" ? `list="geraeteliste-typ-${listenIndex}" data-device-suggest="typ"` : ""; %>
                             <td data-col="<%= field.name %>"><input type="text" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][<%= field.name %>]" value="<%= position[field.name] || "" %>" <%- listAttr %>></td>
@@ -223,6 +225,15 @@
                                   <% }) %>
                                 </select>
                                 <a class="button-link compact-icon-link" href="/anhaenge?kategorie=Bedienungsanleitungen" title="Bedienungsanleitung hochladen">+</a>
+                              </div>
+                            </td>
+                            <td data-col="datenblattId">
+                              <div class="manual-link-control">
+                                <select name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][datenblattId]">
+                                  <option value="">Kein Datenblatt</option>
+                                  <% (datenblaetter || []).forEach(document => { %><option value="<%= document.id %>" <%= position.datenblattId === document.id ? 'selected' : '' %>><%= document.title || document.originalName %></option><% }) %>
+                                </select>
+                                <a class="button-link compact-icon-link" href="/anhaenge?kategorie=Datenblätter" title="Datenblatt hochladen">+</a>
                               </div>
                             </td>
                           <% } %>
@@ -260,9 +271,10 @@
       </div>
     </main>
     <%- include("partials/footer") %>
-    <script type="application/json" id="device-suggestions-json"><%- JSON.stringify(suggestions || {}) %></script>
-    <script type="application/json" id="device-field-profiles-json"><%- JSON.stringify(fieldProfiles || {}) %></script>
-    <script type="application/json" id="device-manuals-json"><%- JSON.stringify(bedienungsanleitungen || []) %></script>
+    <script type="application/json" id="device-suggestions-json"><%- jsonForHtml(suggestions || {}) %></script>
+    <script type="application/json" id="device-field-profiles-json"><%- jsonForHtml(fieldProfiles || {}) %></script>
+    <script type="application/json" id="device-manuals-json"><%- jsonForHtml(bedienungsanleitungen || []) %></script>
+    <script type="application/json" id="device-datasheets-json"><%- jsonForHtml(datenblaetter || []) %></script>
     <datalist id="device-filtered-suggestions"></datalist>
     <script src="/js/app.js"></script>
   </body>

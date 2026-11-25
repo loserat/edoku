@@ -1,5 +1,16 @@
 # Screenshots für README und Bedienungsanleitung
 
+## Geprüfte Oberfläche vom 18.11.2026
+
+| Aufnahme | Herkunft |
+| --- | --- |
+| [Projekt anlegen](2026-11-18/projekt-anlegen-hell.jpg) | Lokale Docker-Vorschau, mittig ausgerichtetes Plus im Hellmodus |
+| [Globus-Logo](2026-11-18/nickgm-globus-in-edoku.jpg) | Lokale Docker-Vorschau, originales Website-Logo als Link in edoku |
+| [Einstellungsnavigation](2026-11-18/einstellungen-direktlinks.jpg) | Lokale Docker-Vorschau, Projektordner aktiv und Admin-Link zum Protokoll sichtbar |
+| [Einstellungsleiste mobil](2026-11-18/coolify-einstellungen-mobil.jpg) | Getrennte Online-Prüfung des Programmcommits `2993893` bei 390 Pixeln |
+
+Die Ausschnitte zeigen nur die betroffenen Bedienelemente. [Arbeitsstand und Prüfung](../TAGESABSCHLUSS_2026-11-18.md)
+
 ## Aktuelle Aufnahmen vom 17.11.2026
 
 16 echte Browseraufnahmen der Online-Testinstanz mit dem geprüften Programmcommit `a07104ba18c0cb1ea0d7958ebc32504c47bd002e`. Ausschließlich künstliches Projekt „Coolify Funktionstest 17.11.2026“, Nummer `COOLIFY-TEST-20261117`, mit neutralen Musterangaben. Der Projektname bezeichnet nur das Testprojekt; die [Bedienungsanleitung](../BEDIENUNGSANLEITUNG.md) enthält keine Servereinrichtung.

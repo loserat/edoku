@@ -1,5 +1,9 @@
 # Zugriffsschutz und Datenerhalt
 
+## Sicherheitskorrekturen vom 17.11.2026
+
+Sichere JSON-Ausgabe in HTML, CSP mit individuellen Script-Freigaben, konsistente Groß-/Kleinschreibung und Pfade, frühe Anfragelimits, begrenzte gleichzeitige Schreib- und Exportarbeiten sowie Speicherbudgets sind ergänzt. Das Auditprotokoll prüft seine Kette und rotiert ohne Einträge zu löschen. Produktions-Neuinstallationen verlangen eigene Erstzugangsdaten; Docker läuft ohne Root-Rechte. [Umfang, Vorgaben und Grenzen](SICHERHEITSUPDATE_2026-11-17.md). Bestehende Benutzer, Passwörter und Daten werden dadurch nicht migriert.
+
 Stand: 06.11.2026. Diese Maßnahmen sichern die lokale Beta ab. Sie sind keine
 Freigabe für einen öffentlichen Mehrbenutzer- oder SaaS-Betrieb.
 

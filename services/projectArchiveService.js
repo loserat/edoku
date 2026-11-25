@@ -187,12 +187,18 @@ async function uniqueProjectId(rootDir, userId, requestedId) {
 }
 
 // * INFO: Legt ein neues Projekt mit eigenen JSON-Dateien im Benutzer-Storage an.
-async function createProject(rootDir, dataDir, userId, input = {}) {
+async function createProject(rootDir, dataDir, userId, input = {}, { projectId: fixedId = null, makeCurrent = true, projectData = null } = {}) {
   const projektname = String(input.projektname || "").trim() || "Neues Projekt";
   const projektnummer = String(input.projektnummer || "").trim();
   const baseId = sanitizeId(`${projektnummer || "projekt"}_${projektname}`, "projekt");
   let projectId;
-  for (;;) {
+  if (fixedId) {
+    if (sanitizeId(fixedId, "") !== fixedId) throw accessError("Ungültige Projektkennung.");
+    projectId = fixedId;
+    if (getProject(userId, projectId)) return { projectId, dataDir: dataFilesForProject(rootDir, userId, projectId).dataDir };
+    const target = await assertSafePath(rootDir, projectRootDir(rootDir, userId, projectId), { allowMissing: true });
+    await fs.mkdir(target, { recursive: true });
+  } else for (;;) {
     projectId = await uniqueProjectId(rootDir, userId, baseId);
     const target = await assertSafePath(rootDir, projectRootDir(rootDir,userId,projectId), { allowMissing: true });
     await fs.mkdir(path.dirname(target), { recursive: true });
@@ -202,43 +208,19 @@ async function createProject(rootDir, dataDir, userId, input = {}) {
 
   await fs.mkdir(files.dataDir, { recursive: true });
 
+  const initial = await require('./emptyProjectService').emptyProjectDocuments(dataDir, { ...input, ...(projectData || {}), projektname, projektnummer });
   for (const fileName of DATA_FILE_NAMES) {
     const target = path.join(files.dataDir, fileName);
-    const globalSource = path.join(dataDir, fileName);
-
-    if (fileName === "exportliste.json" || fileName === "anhaenge.json" || fileName === "files.json" || fileName === "projektSysteme.json") {
-      await writeJson(target, []);
-    } else if (fileName === "projekt.json") {
-      const defaultProjekt = await readJson(globalSource, {});
-      await writeJson(target, {
-        ...defaultProjekt,
-        projektname,
-        projektnummer,
-        auftraggeber: input.auftraggeber || "",
-        liegenschaft: input.liegenschaft || "",
-        baumassnahme: input.baumassnahme || "",
-        massnahmeNr: "",
-        auftragsNr: "",
-        auftragGewerk: input.auftragGewerk || defaultProjekt.auftragGewerk || "Elektrotechnik",
-        ortDerAusfuehrung: "",
-        ausfuehrendeFirma: "",
-        firmenanschrift: "",
-        bearbeiter: "",
-        ortDatum: "",
-        logoPfad: ""
-      });
-    } else if (await exists(globalSource)) {
-      await copyIfExists(globalSource, target);
-    } else {
-      await writeJson(target, fileName.endsWith("liste.json") ? [] : {});
-    }
+    // Preserve interrupted idempotent creation; never rewrite retained files.
+    if (fixedId && await exists(target)) { await assertSafePath(rootDir, target, { type: "file" }); await readJson(target); continue; }
+    await writeJson(target, initial[fileName]);
   }
 
   const now = new Date().toISOString();
   connection().transaction(() => {
     upsertProject({ id: projectId, userId, status: "aktiv", createdAt: now, updatedAt: now });
     projectStore.enrollProject(rootDir, userId, projectId);
-    setCurrentProjectId(userId, projectId);
+    if (makeCurrent) setCurrentProjectId(userId, projectId);
   })();
 
   return { projectId, dataDir: files.dataDir };

@@ -1,3 +1,4 @@
+const {selectionByLeistungsbereich}=require('./systemService');
 const { buildDocumentationPlan, summarizeExportEntries } = require("./documentationPlanService");
 const { photoWarningsFromEntries } = require("./brandschutzPhotoService");
 function valueOrDash(value) { return value && String(value).trim() ? value : "-"; }
@@ -13,7 +14,7 @@ function buildExportPreview({ projekt = {}, matrix = [], exportliste = [], proje
       const group = { kapitel: top, titel: heading?.titel || `Kapitel ${top}`, dokumente: [] };
       byTop.set(top, group); groups.push(group);
     }
-    const system = projektSysteme.find((entry) => entry.leistungsbereich === document.leistungsbereich) || {};
+    const system = selectionByLeistungsbereich(projektSysteme).get(document.leistungsbereich) || {};
     byTop.get(top).dokumente.push({ ...document, kapitel: chapter, ebene: document.ebene || chapter.split(".").length, status: document.status || "nicht geprüft", statusClass: document.status === "vorhanden" ? "on" : ["fehlt", "fehlerhaft", "veraltet"].includes(document.status) ? "off" : "", hersteller: document.hersteller || system.hersteller || "", systemart: document.systemart || system.systemart || "" });
   }
   const count = summarizeExportEntries(documents);

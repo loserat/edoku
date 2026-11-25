@@ -4,6 +4,8 @@ const fsp = require("fs/promises");
 const path = require("path");
 const express = require("express");
 const packageInfo = require("./package.json");
+const { jsonForHtml } = require("./services/htmlDataService");
+const { createStorageBudget } = require("./services/storageBudgetService");
 
 const { bootstrapStorage, DEFAULT_LEISTUNGSBEREICHE } = require("./services/bootstrapService");
 const { readJson, writeJson } = require("./services/jsonService");
@@ -43,9 +45,8 @@ const {
   upsertProjectFromData
 } = require("./services/projectArchiveService");
 const { createProjectFolder, fileSafeName, bindProjectScope, legacyOutputStatus, resolveProjectSource } = require("./services/projectService");
-const { installAsyncHandlers, createCsrfProtection, createAuthLimiter } = require("./services/requestSecurityService");
+const { installAsyncHandlers, createCsrfProtection, createAuthLimiter, createRequestLimiter, createResourceGuard, createBodyLimiter } = require("./services/requestSecurityService");
 const { createAuditService } = require("./services/auditService");
-const { jsonForHtml } = require("./services/htmlDataService");
 const { buildDashboardStats } = require("./services/dashboardService");
 const { brandschutzPhotosRelevant, inspectBrandschutzPhotos } = require("./services/brandschutzPhotoService");
 const { buildExportPreview } = require("./services/exportPreviewService");
@@ -105,6 +106,15 @@ const {
 } = require("./services/documentAttachmentService");
 const { buildDocumentationAttachmentEntries, numberMatrixForExport, estimateBinderCount: countBinders } = require("./services/documentationPlanService");
 const apiRoutes = require("./src/routes/api.routes");
+const { createIntegrationRouter } = require("./src/routes/integration.routes");
+const { createApiTokenService } = require("./services/apiTokenService");
+const { prepareResponse: prepareApiResponse, apiError } = require("./src/api/http");
+const { scopes: apiScopes } = require("./src/api/schemas");
+const { createIntegrationSettingsService } = require("./services/integrationSettingsService");
+const { createDocumentAssistantRouter } = require("./src/routes/documentAssistant.routes");
+const workspace = require("./services/projectWorkspaceService");
+const { generateCompleteDocumentation } = workspace;
+const { createExportJobService } = require("./services/exportJobService");
 
 // ! WICHTIG: Zentrale Pfade der Anwendung. Alle Dateioperationen werden relativ zu
 // ! WICHTIG: diesen Ordnern aufgebaut, damit lokaler Start und Docker-Start gleich laufen.
@@ -137,7 +147,11 @@ if (!existingDatabase) {
 projectStore.configureProjectDataStore(ROOT_DIR, connection());
 
 const app = express();
-installAsyncHandlers(app);
+// Routen und ihre Sicherheitsregeln müssen denselben Pfad vergleichen.
+// Varianten mit anderer Schreibweise oder zusätzlichem Slash sind keine zweite Route.
+app.enable("case sensitive routing");
+app.enable("strict routing");
+installAsyncHandlers(app, { runHeavy: createResourceGuard({ checkStorage: createStorageBudget(ROOT_DIR) }) });
 app.disable("x-powered-by");
 app.get("/ready", (_req, res) => {
   res.set("Cache-Control", "no-store");
@@ -150,11 +164,14 @@ app.get("/ready", (_req, res) => {
   }
 });
 const authLimiter = createAuthLimiter();
+const apiTokens = createApiTokenService(connection());
+const integrationSettings = createIntegrationSettingsService(ROOT_DIR);
 const audit = createAuditService(ROOT_DIR, { resolveTarget: req => {
   if (req.params?.userId && getUserById(req.params.userId)) return req.params.userId;
   if (req.params?.projectId && req.user && getProject(req.user.id,req.params.projectId)) return req.params.projectId;
   return null;
 } });
+const exportJobs = createExportJobService(ROOT_DIR, { audit, checkStorage: createStorageBudget(ROOT_DIR) });
 if (["1", "true", "yes", "on"].includes(String(process.env.TRUST_PROXY || "").trim().toLowerCase())) {
   app.set("trust proxy", 1);
 }
@@ -170,11 +187,26 @@ Object.assign(app.locals, {
   systemSettings: mergeSystemSettings(DEFAULT_SYSTEM_SETTINGS)
 });
 
+app.use((req, res, next) => {
+  const nonce = crypto.randomBytes(18).toString("base64");
+  res.locals.cspNonce = nonce;
+  res.set("Content-Security-Policy", `default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'`);
+  res.set("X-Content-Type-Options", "nosniff");
+  res.set("X-Frame-Options", "SAMEORIGIN");
+  res.set("Referrer-Policy", "same-origin");
+  next();
+});
+app.use("/api/v1", prepareApiResponse);
+app.use(createRequestLimiter());
+app.use(createBodyLimiter());
 app.use(express.static(path.join(ROOT_DIR, "public")));
-app.use(express.urlencoded({ extended: true, limit: "25mb" }));
-app.use(express.json({ limit: "25mb" }));
+app.use(express.urlencoded({ extended: true, limit: "2mb", parameterLimit: 10000, depth: 16 }));
+app.use(express.json({ limit: "2mb" }));
 app.use(parseCookies);
 app.use(attachUser);
+// Nur dieser getrennte Bearer-Zugang wird vor der Formular-CSRF-Prüfung bedient.
+// Browser-Cookies werden hier nicht als API-Anmeldung akzeptiert.
+app.use("/api/v1", createIntegrationRouter({ root: ROOT_DIR, tokens: apiTokens, audit, exportJobs, checkStorage: createStorageBudget(ROOT_DIR) }));
 app.use((req,res,next) => {
   res.set("X-Content-Type-Options", "nosniff");
   res.set("X-Frame-Options", "SAMEORIGIN");
@@ -182,7 +214,6 @@ app.use((req,res,next) => {
   if (req.user) res.set("Cache-Control", "no-store");
   next();
 });
-app.use(audit.middleware);
 // Uploads werden einmal begrenzt gelesen; derselbe Parser liefert den CSRF-Token und die Datei.
 app.use((req,res,next) => {
   if (!req.is("multipart/form-data")) return next();
@@ -195,6 +226,15 @@ app.use((req,res,next) => {
   });
 });
 app.use(createCsrfProtection());
+app.use((req, res, next) => {
+  if (req.method === "POST" && req.path === "/login") return authLimiter.check(req, res, next);
+  if (req.method === "POST" && req.path === "/register") return authLimiter.registration(req, res, next);
+  next();
+});
+app.use(audit.middleware);
+// Der Prüfbereich bindet Aufträge und Freigaben an das aktuell geöffnete Projekt.
+// Die Einzelprüfung läuft weiterhin in einer eigenen geschützten Speichertransaktion.
+app.use("/assistent", createDocumentAssistantRouter({ root: ROOT_DIR, audit, exportJobs, checkStorage: createStorageBudget(ROOT_DIR) }));
 app.use("/api", apiRoutes);
 app.use(projectStore.projectDataRequest(ROOT_DIR));
 
@@ -430,8 +470,10 @@ async function buildAttachmentViewModel(attachments, brandschutz, matrix, projek
       sizeKb: Math.max(1, Math.round(entry.size / 1024)),
       uploadedLabel: entry.uploadedAt ? new Date(entry.uploadedAt).toLocaleString("de-DE") : "-",
       tocEntry,
-      documentStatus: isPdf && tocEntry
-        ? `Kapitel ${tocEntry.displayKapitel || tocEntry.kapitel}`
+      documentStatus: entry.assistantProvenance?.projectDocument && entry.export === false
+        ? "Interner Projekttext · nicht im Kundenexport"
+        : isPdf && tocEntry
+          ? `Kapitel ${tocEntry.displayKapitel || tocEntry.kapitel}`
         : isPdf
           ? "Nicht als Dokumentations-PDF einsortiert"
           : "Bildanhang",
@@ -501,53 +543,7 @@ async function currentFiles(req) {
 // * INFO: die Daten für Views, Services und PDF-Ausgabe.
 async function loadCurrent(req) {
   const files = await currentFiles(req);
-  const [
-    projekt,
-    leistungsbereiche,
-    matrix,
-    systemConfigRaw,
-    projektSysteme,
-    geraetelisten,
-    brandschutz,
-    exportliste,
-    anhaenge,
-    ordnerstruktur,
-    formTemplatesRaw,
-    systemSettingsRaw
-  ] = await Promise.all([
-    readJson(files.projekt, {}),
-    readJson(files.leistungsbereiche, { optionen: DEFAULT_LEISTUNGSBEREICHE, aktiv: [], systemAuswahl: {} }),
-    readJson(files.dokumentenmatrix, []),
-    readJson(path.join(DATA_DIR, "systeme.json"), { leistungsbereiche: [] }),
-    readJson(files.projektSysteme, []),
-    readJson(files.geraetelisten, []),
-    readJson(files.brandschutz, []),
-    readJson(files.exportliste, []),
-    readJson(files.anhaenge, []),
-    readJson(path.join(CONFIG_DIR, "ordnerstruktur.json"), {}),
-    readJson(path.join(CONFIG_DIR, "formularTemplates.json"), {}),
-    readJson(path.join(CONFIG_DIR, "systemEinstellungen.json"), DEFAULT_SYSTEM_SETTINGS)
-  ]);
-
-  return {
-    files,
-    projekt: bindProjectScope(projekt, req.user.id, files.projectId),
-    leistungsbereiche: {
-      optionen: leistungsbereiche.optionen || DEFAULT_LEISTUNGSBEREICHE,
-      aktiv: leistungsbereiche.aktiv || [],
-      systemAuswahl: leistungsbereiche.systemAuswahl || {}
-    },
-    matrix: Array.isArray(matrix) ? matrix : [],
-    systemConfig: normalizeSystemConfig(systemConfigRaw),
-    projektSysteme: Array.isArray(projektSysteme) ? projektSysteme : [],
-    geraetelisten: normalizeGeraetelisten(geraetelisten),
-    brandschutz: normalizeBrandschutz(brandschutz),
-    anhaenge: normalizeAttachments(anhaenge),
-    exportliste: Array.isArray(exportliste) ? exportliste : [],
-    ordnerstruktur,
-    templates: mergeFormTemplates(formTemplatesRaw),
-    systemSettings: mergeSystemSettings(systemSettingsRaw)
-  };
+  return workspace.loadProjectWorkspace(ROOT_DIR, req.user.id, files.projectId);
 }
 
 // Dateistatus und Seitenzahlen werden gelesen, ohne Projektdaten zu verändern.
@@ -557,47 +553,6 @@ async function currentExportEntries(data) {
 
 // * INFO: Leitet aus aktiven Leistungsbereichen und Systemzuordnungen ab,
 // * INFO: welche Matrixeinträge aktiv und exportierbar sind.
-function templateKeyForMatrixEntry(entry) {
-  if (entry.dokumenttyp === "Konformitätserklärung") return "konformitaet";
-  if (entry.dokumenttyp === "CE-Bestätigung") return "ceBestaetigung";
-  if (/DGUV/i.test(entry.titel || "")) return "dguv";
-  if (/Errichter/i.test(entry.titel || "")) return "errichter";
-  return "";
-}
-
-function formGenerationEnabled(entry, entryLeistungsbereiche, templates) {
-  const templateKey = templateKeyForMatrixEntry(entry);
-  if (!templateKey || !entryLeistungsbereiche.length) return true;
-  return formEnabledForLeistungsbereiche(templates[templateKey] || {}, entryLeistungsbereiche);
-}
-
-function updateMatrixFromLeistungsbereiche(matrix, leistungsbereiche, projektSysteme, templates = {}) {
-  const activeSet = new Set(leistungsbereiche.aktiv || []);
-  const activeKapitel = new Set(
-    (projektSysteme || [])
-      .filter((entry) => entry.aktiv)
-      .flatMap((entry) => entry.kapitel || [])
-  );
-
-  return (matrix || []).map((entry) => {
-    const entryLeistungsbereiche = [
-      entry.leistungsbereich,
-      ...(Array.isArray(entry.leistungsbereiche) ? entry.leistungsbereiche : [])
-    ].filter(Boolean);
-    const isGeneral = entryLeistungsbereiche.length === 0 || entryLeistungsbereiche.includes("Allgemein");
-    const activeByLeistungsbereich = entryLeistungsbereiche.some((leistungsbereich) => activeSet.has(leistungsbereich));
-    const activeByKapitel = activeKapitel.has(entry.kapitel);
-    const generationEnabled = formGenerationEnabled(entry, entryLeistungsbereiche, templates);
-    const aktiv = generationEnabled && Boolean(entry.pflicht || isGeneral || activeByLeistungsbereich || activeByKapitel);
-    const autoExport = Boolean(entry.autoAktiv && (activeByLeistungsbereich || activeByKapitel));
-    return {
-      ...entry,
-      aktiv,
-      export: aktiv ? autoExport || entry.export !== false : false
-    };
-  });
-}
-
 // * INFO: Übernimmt manuelle Checkbox-Änderungen aus der Dokumentenmatrix.
 function updatePostedMatrix(matrix, body) {
   const activeIds = new Set(Array.isArray(body.aktiv) ? body.aktiv : body.aktiv ? [body.aktiv] : []);
@@ -622,19 +577,7 @@ function updateMatrixOutputSelection(matrix, body) {
 // * INFO: Synchronisiert Folge-Daten nach Änderungen an Leistungsbereichen.
 // * INFO: Dadurch bleiben Systemauswahl, Matrix und Gerätelisten im gleichen Stand.
 async function syncProjectDerivedData(files) {
-  const leistungsbereiche = await readJson(files.leistungsbereiche, { aktiv: [] });
-  const systemConfig = normalizeSystemConfig(await readJson(path.join(DATA_DIR, "systeme.json"), { leistungsbereiche: [] }));
-  const templates = mergeFormTemplates(await readJson(path.join(CONFIG_DIR, "formularTemplates.json"), {}));
-  const existingProjektSysteme = await readJson(files.projektSysteme, []);
-  const projektSysteme = syncProjektSysteme(systemConfig, existingProjektSysteme, leistungsbereiche.aktiv || []);
-  const matrix = updateMatrixFromLeistungsbereiche(await readJson(files.dokumentenmatrix, []), leistungsbereiche, projektSysteme, templates);
-  const geraetelisten = syncGeraetelistenFromLeistungsbereiche(await readJson(files.geraetelisten, []), leistungsbereiche.aktiv || [], projektSysteme);
-
-  await Promise.all([
-    writeJson(files.projektSysteme, projektSysteme),
-    writeJson(files.dokumentenmatrix, matrix),
-    writeJson(files.geraetelisten, geraetelisten)
-  ]);
+  return workspace.syncProjectDerivedData(ROOT_DIR, files);
 }
 
 // * INFO: Startseite: angemeldete Benutzer landen immer im Dashboard.
@@ -646,7 +589,7 @@ app.get("/login", (req, res) => {
   res.render("login", { flash: flashFromQuery(req) });
 });
 
-app.post("/login", authLimiter.check, (req, res) => {
+app.post("/login", (req, res) => {
   try {
     const user = loginUser(req.body.email, req.body.password);
     res.locals.auditIdentity = { actorId: user.id, actorRole: user.role };
@@ -664,7 +607,7 @@ app.get("/register", (req, res) => {
   res.render("register", { flash: flashFromQuery(req) });
 });
 
-app.post("/register", authLimiter.registration, (req, res) => {
+app.post("/register", (req, res) => {
   if (!res.locals.systemSettings.selfRegistrationEnabled) {
     return res.status(403).render("register", { flash: { error: "Die Selbstregistrierung ist geschlossen. Bitte wende dich an einen Systemadmin." } });
   }
@@ -829,10 +772,11 @@ app.post("/leistungsbereiche", requireAuth, async (req, res) => {
 app.get("/systemauswahl", requireAuth, async (req, res, next) => {
   try {
     const data = await loadCurrent(req);
-    const synced = syncProjektSysteme(data.systemConfig, data.projektSysteme, data.leistungsbereiche.aktiv);
+    const synced = require("./services/systemService").systemSelectionsWithIds(data.projektSysteme);
     res.render("systemauswahl", {
       active: "systemauswahl",
       systemConfig: data.systemConfig,
+      activeAreas: data.leistungsbereiche.aktiv,
       selections: selectionByLeistungsbereich(synced)
     });
   } catch (error) {
@@ -843,9 +787,12 @@ app.get("/systemauswahl", requireAuth, async (req, res, next) => {
 app.post("/systemauswahl", requireAuth, async (req, res) => {
   try {
     const data = await loadCurrent(req);
-    const selections = normalizePostedProjektSysteme(req.body.projektSysteme, data.systemConfig, data.leistungsbereiche.aktiv);
-    await writeJson(data.files.projektSysteme, selections);
-    await writeJson(data.files.geraetelisten, syncGeraetelistenFromLeistungsbereiche(data.geraetelisten, data.leistungsbereiche.aktiv, selections));
+    const fields=['leistungsbereich','selectionId','hersteller','systemart','herstellerSystem'];
+    const item=Object.fromEntries(fields.filter(key=>req.body[key]!==undefined).map(key=>[key,req.body[key]]));
+    item.enabled=req.body.enabled==='1';
+    if(req.body.add==='1')item.add=true;
+    item.dokumentarten=Array.isArray(req.body.dokumentarten)?req.body.dokumentarten:req.body.dokumentarten?[req.body.dokumentarten]:[];
+    await require('./services/systemSelectionService').saveSystemSelections(data,{items:[item]});
     okOrRedirect(req, res, "/systemauswahl");
   } catch (error) {
     fail(req, res, "/systemauswahl", error);
@@ -897,6 +844,8 @@ app.get("/geraetelisten", requireAuth, async (req, res, next) => {
       liste.leistungsbereich,
       deviceListFieldsForLeistungsbereich(liste.leistungsbereich)
     ]));
+    const datenblaetter = normalizeAttachments(data.anhaenge).filter(entry => entry.category === "Datenblätter" && entry.mimeType === "application/pdf")
+      .sort((a, b) => a.title.localeCompare(b.title, "de", { numeric: true, sensitivity: "base" }));
     const pdfPreviewFiles = await listPdfPreviewFiles(ROOT_DIR, data.projekt);
     const geraetelistenVorlagen = normalizeGeraetelistenVorlagen(await readJson(GERAETELISTEN_VORLAGEN_FILE, []));
     res.render("geraetelisten", {
@@ -907,6 +856,7 @@ app.get("/geraetelisten", requireAuth, async (req, res, next) => {
       suggestions: buildGeraetelistenSuggestions(data.systemConfig),
       fieldProfiles,
       bedienungsanleitungen,
+      datenblaetter,
       geraetelistenVorlagen,
       previewByListId: buildGeraetelistenPreviewMap(listen, pdfPreviewFiles)
     });
@@ -1106,17 +1056,6 @@ async function projectPhotoWarnings(data) {
     ? inspectBrandschutzPhotos(ROOT_DIR, data.projekt, data.brandschutz) : [];
 }
 
-async function generateCompleteDocumentation(rootDir, data) {
-  const generated = [];
-  await createProjectFolder(rootDir, data.projekt);
-  generated.push(...await generateInhaltsverzeichnis(rootDir, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche));
-  generated.push(...await generateFormularPdfs(rootDir, data.projekt, data.matrix, data.leistungsbereiche, data.systemConfig, data.projektSysteme, data.templates, data.systemSettings, data.geraetelisten, data.anhaenge));
-  generated.push(...await generateDeckblaetter(rootDir, data.projekt, data.matrix, data.systemSettings, data.geraetelisten, data.anhaenge, data.leistungsbereiche));
-  generated.push(...await generateGeraetelisten(rootDir, data.projekt, data.geraetelisten, data.systemSettings, data.matrix, data.leistungsbereiche, data.anhaenge));
-  generated.push(...await generateBrandschutzPdf(rootDir, data.projekt, data.brandschutz, data.systemSettings, data.matrix, data.geraetelisten, data.leistungsbereiche, data.anhaenge));
-  await buildExportliste(rootDir, data.projekt, data.matrix, data.files.exportliste, data.projektSysteme, data.anhaenge, data.geraetelisten, data.leistungsbereiche, { brandschutz: data.brandschutz });
-  return generated;
-}
 
 function estimateBinderCount(data, capacity) {
   const pagesPerBinder = capacity || data.systemSettings?.export?.ordnerruecken?.seitenProOrdner || 80;
@@ -1261,8 +1200,7 @@ app.post("/export/final", requireAuth, async (req, res) => {
 });
 
 // * INFO: Einstellungen: Systemvorgaben, Erstellerstammdaten, Ordnerstruktur und Formulare.
-app.get("/einstellungen", requireAuth, async (req, res, next) => {
-  try {
+async function renderSettings(req, res, { createdToken = null, integrationError = "", initialSettingsTab = "" } = {}) {
     const data = await loadCurrent(req);
     const isSystemAdmin = req.user && req.user.role === "systemadmin";
     res.render("einstellungen", {
@@ -1275,6 +1213,10 @@ app.get("/einstellungen", requireAuth, async (req, res, next) => {
       templates: data.templates,
       geraetelistenVorlagen: normalizeGeraetelistenVorlagen(await readJson(GERAETELISTEN_VORLAGEN_FILE, [])),
       isSystemAdmin,
+      integrationSettings: await integrationSettings.read(),
+      apiKeys: apiTokens.list(req.user.id), apiScopes, createdToken, integrationError, initialSettingsTab,
+      availableProjects: (await listProjects(ROOT_DIR, req.user.id)).filter(project => project.status !== "geloescht"),
+      integrationOrigin: process.env.APP_ORIGIN || `${req.protocol}://${req.get("host")}`,
       users: isSystemAdmin ? listUsers() : [],
       userRoles: USER_ROLES,
       userRoleLabels: USER_ROLE_LABELS,
@@ -1282,19 +1224,52 @@ app.get("/einstellungen", requireAuth, async (req, res, next) => {
       appName: APP_NAME,
       releaseNotes: await readReleaseNotes()
     });
-  } catch (error) {
-    next(error);
-  }
-});
+}
+app.get("/einstellungen", requireAuth, async (req, res) => renderSettings(req, res));
+app.get("/einstellungen/api", requireAuth, (_req, res) => res.redirect("/einstellungen#api"));
 
 app.get("/einstellungen/protokoll", requireSystemAdmin, async (req,res) => {
   const labels = { login: "Anmeldung", registration: "Registrierung", logout: "Abmeldung", "account.create": "Konto angelegt", "account.role": "Kontorolle", "account.status": "Kontostatus", "account.password": "Passwortänderung", "settings.change": "Einstellungen", "archive.export": "Projektpaket exportiert", "archive.import": "Projektpaket importiert", "archive.validate": "Projektpaket geprüft", "documentation.export": "Dokumentation exportiert", "project.create": "Projekt angelegt", "project.open": "Projekt geöffnet", "project.archive": "Projekt archiviert", "project.delete": "Projekt entfernt", "attachment.delete": "Anhang entfernt" };
   const results = { attempt: "Versuch", success: "Erfolgreich", warning: "Mit Hinweisen", failure: "Abgewiesen / fehlgeschlagen", interrupted: "Unterbrochen" };
   const users = new Map(listUsers().map(user => [user.id,user.name]));
   let events=[],auditError="";
-  try { events=(await audit.read()).slice(-200).reverse().map(event => ({ ...event, label: labels[event.event] || "Verwaltungsaktion", actorName: users.get(event.actorId) || event.actorId || "Nicht angemeldet", resultLabel: results[event.outcome] })); }
+  try { events=(await audit.read({ limit: 200 })).reverse().map(event => ({ ...event, label: labels[event.event] || "Verwaltungsaktion", actorName: users.get(event.actorId) || event.actorId || "Nicht angemeldet", resultLabel: results[event.outcome] })); }
   catch { auditError="Das Protokoll ist beschädigt oder nicht lesbar. Bitte eine Kopie sichern und die Protokollablage prüfen."; }
   res.render("audit",{events,auditError});
+});
+
+app.get("/integrationen", requireAuth, (_req, res) => res.redirect("/einstellungen#api"));
+app.post("/einstellungen/integrationen", requireSystemAdmin, async (req, res) => {
+  try {
+    await integrationSettings.save({
+      apiEnabled: req.body.apiEnabled === "on", allowWrites: req.body.allowWrites === "on",
+      defaultTokenDays: Number(req.body.defaultTokenDays), maxTokenDays: Number(req.body.maxTokenDays)
+    });
+    redirectWithFlash(res, "/einstellungen#api", "success", "API-Einstellungen gespeichert. Die Änderungen gelten sofort.");
+  } catch (error) {
+    res.status(error.status || 500);
+    await renderSettings(req, res, { integrationError: error.message, initialSettingsTab: "api" });
+  }
+});
+app.post("/integrationen/schluessel", requireAuth, async (req, res) => {
+  try {
+    const settings = await integrationSettings.read();
+    const days = Number(req.body.days);
+    if (!Number.isInteger(days) || days < 1 || days > settings.maxTokenDays) throw Object.assign(new Error(`Die Gültigkeit muss zwischen 1 und ${settings.maxTokenDays} Tagen liegen.`), { status: 400 });
+    if (!["selected", "all"].includes(req.body.projectMode)) throw Object.assign(new Error("Bitte den Projektzugriff ausdrücklich auswählen."), { status: 400 });
+    const scopes = Array.isArray(req.body.scopes) ? req.body.scopes : req.body.scopes ? [req.body.scopes] : [];
+    const projectIds = req.body.projectMode === "selected"
+      ? (Array.isArray(req.body.projectIds) ? req.body.projectIds : req.body.projectIds ? [req.body.projectIds] : []) : null;
+    const created = apiTokens.create(req.user.id, { name: req.body.name, scopes, projectIds, days });
+    await renderSettings(req, res, { createdToken: created, initialSettingsTab: "api" });
+  } catch (error) {
+    res.status(error.status || 400);
+    await renderSettings(req, res, { integrationError: error.message, initialSettingsTab: "api" });
+  }
+});
+app.post("/integrationen/schluessel/:tokenId/widerrufen", requireAuth, async (req, res) => {
+  apiTokens.revoke(req.user.id, req.params.tokenId);
+  redirectWithFlash(res, "/einstellungen#api", "success", "API-Schlüssel wurde widerrufen.");
 });
 
 app.get("/einstellungen/update-check", requireAuth, async (req, res) => {
@@ -1802,15 +1777,27 @@ app.post("/anhaenge/:id/loeschen", requireAuth, async (req, res) => {
     const files = await currentFiles(req);
     const attachments = normalizeAttachments(await readJson(files.anhaenge, []));
     const target = attachments.find((entry) => entry.id === req.params.id);
-    const nextAttachments = await deleteAttachment(ROOT_DIR, attachments, req.params.id, files);
-    await writeJson(files.anhaenge, nextAttachments);
-
-    if (target) {
-      const brandschutz = normalizeBrandschutz(await readJson(files.brandschutz, []));
-      await writeJson(files.brandschutz, clearAttachmentReferencesFromBrandschutz(brandschutz, target.relativePath));
+    const brandschutz = target ? normalizeBrandschutz(await readJson(files.brandschutz, [])) : null;
+    const nextAttachments = attachments.filter((entry) => entry.id !== req.params.id);
+    let attachmentIndexWritten = false;
+    let firestopIndexWritten = false;
+    try {
+      // Erst die Indizes aktualisieren; bei einem Dateifehler werden sie wiederhergestellt.
+      await writeJson(files.anhaenge, nextAttachments);
+      attachmentIndexWritten = true;
+      if (target) {
+        await writeJson(files.brandschutz, clearAttachmentReferencesFromBrandschutz(brandschutz, target.relativePath));
+        firestopIndexWritten = true;
+        await deleteAttachment(ROOT_DIR, [target], target.id, files);
+      }
+    } catch (error) {
+      if (firestopIndexWritten) await writeJson(files.brandschutz, brandschutz).catch(() => {});
+      if (attachmentIndexWritten) await writeJson(files.anhaenge, attachments).catch(() => {});
+      throw error;
     }
 
-    redirectWithFlash(res, "/anhaenge", "success", "Anhang wurde geloescht.");
+    const targetCategory = target?.category || "Brandschutz";
+    redirectWithFlash(res, `/anhaenge?kategorie=${encodeURIComponent(targetCategory)}`, "success", "Anhang wurde geloescht.");
   } catch (error) {
     fail(req, res, "/anhaenge", error);
   }
@@ -1893,10 +1880,14 @@ app.use((req, res) => {
 });
 
 app.use((error, req, res, _next) => {
-  console.error(error);
+  if (req.apiRequestId) return apiError(error, req, res, _next);
+  // Parserfehler können einen vollständigen Anfragekörper einschließlich Passwörtern
+  // enthalten. Nur begrenzte technische Metadaten protokollieren.
+  console.error("Anfrage fehlgeschlagen:", { status: error.status || 500, code: String(error.code || error.type || "REQUEST_FAILED").slice(0, 64) });
   if (res.headersSent) return _next(error);
   const status = error.status || 500;
-  const message = error.code && !["WRITE_FAILED","READ_FAILED"].includes(error.code) ? "Die Datei konnte nicht verarbeitet werden. Bitte die Eingabe und Zugriffsrechte prüfen." : error.message || "Ein unerwarteter Fehler ist aufgetreten.";
+  const message = error.type?.startsWith("entity.") ? "Die Anfrage ist ungültig oder überschreitet die zulässige Größe."
+    : error.code && !["WRITE_FAILED","READ_FAILED"].includes(error.code) ? "Die Datei konnte nicht verarbeitet werden. Bitte die Eingabe und Zugriffsrechte prüfen." : error.message || "Ein unerwarteter Fehler ist aufgetreten.";
   if ((req.headers.accept || "").includes("application/json")) return res.status(status).json({ ok: false, error: message });
   res.status(status).render("placeholder", {
     active: "",
@@ -1909,6 +1900,7 @@ app.use((error, req, res, _next) => {
 const server = app.listen(PORT, () => {
   console.log(`edoku läuft auf http://localhost:${PORT}`);
 });
+exportJobs.start();
 
-process.once("SIGTERM", () => server.close(async () => { await audit.flush(); process.exit(0); }));
-process.once("SIGINT", () => server.close(async () => { await audit.flush(); process.exit(0); }));
+process.once("SIGTERM", () => server.close(async () => { await exportJobs.stop(); await audit.flush(); process.exit(0); }));
+process.once("SIGINT", () => server.close(async () => { await exportJobs.stop(); await audit.flush(); process.exit(0); }));

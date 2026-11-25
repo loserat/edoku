@@ -21,7 +21,7 @@ test("Lokale Beta Ende-zu-Ende: Anmeldung, Projekt, Gerät, Anhänge, Gesamt-PDF
   const doc=(id,kapitel,titel,extra={})=>({id,kapitel,titel,ebene:kapitel.split(".").length,aktiv:true,export:true,pflicht:false,sortierung:Number(kapitel.replace(".",""))*100,...extra});
   await json("data/dokumentenmatrix.json",[doc("devices","6","Gerätelisten",{dokumenttyp:"Kapitel"}),doc("group","6.4","Elektroinstallation",{quelle:"data/geraetelisten.json"}),doc("plans","12","Bestandspläne",{dokumenttyp:"Kapitel"}),doc("plan-group","12.1","Stromlaufpläne",{dokumenttyp:"Plan",formularart:"Dateiliste"})]);
   const socket=net.createServer();await new Promise(r=>socket.listen(0,"127.0.0.1",r));const port=socket.address().port;await new Promise(r=>socket.close(r));
-  const child=spawn(process.execPath,[path.join(root,"server.js")],{cwd:root,env:{...process.env,PORT:String(port)},stdio:["ignore","pipe","pipe"]});let logs="";child.stdout.on("data",d=>logs+=d);child.stderr.on("data",d=>logs+=d);
+  const child=spawn(process.execPath,[path.join(root,"server.js")],{cwd:root,env:{...process.env,NODE_ENV:"test",PORT:String(port)},stdio:["ignore","pipe","pipe"]});let logs="";child.stdout.on("data",d=>logs+=d);child.stderr.on("data",d=>logs+=d);
   const base="http://127.0.0.1:"+port,cookies=new Map();let token="",revision="",db;
   async function request(route,options={}){
     const response=await fetch(base+route,{redirect:"manual",...options,headers:{Cookie:[...cookies].map(([k,v])=>k+"="+v).join("; "),...options.headers}});

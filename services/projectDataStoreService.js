@@ -134,6 +134,7 @@ function commit(context) {
   if(context.finished)return;
   const changed=[...context.snapshots.values()].filter(s=>s.pending.size || s.metadata);
   const databases=new Set(changed.map(s=>s.store.db));if(databases.size>1)throw failure("Eine Änderung darf nur eine Projektdatenbank betreffen.");
+  if(context.commitActions?.length && !changed.length)throw failure("Eine Zusatzaktion benötigt eine Projektdatenänderung.");
   if(changed.length)changed[0].store.db.transaction(()=>{
     for(const state of changed)assertProjectRevision(state.store.root,state.user,state.project,tokenFor(state));
     for(const state of changed) {
@@ -142,6 +143,7 @@ function commit(context) {
       if(state.metadata?.updatedAt)state.store.db.prepare("UPDATE projects SET updated_at=? WHERE id=? AND user_id=?").run(state.metadata.updatedAt,state.project,state.user);
       if(state.metadata?.status)state.store.db.prepare("UPDATE projects SET status=?,updated_at=? WHERE id=? AND user_id=?").run(state.metadata.status,state.metadata.updatedAt,state.project,state.user);
     }
+    for(const action of context.commitActions || [])action();
   })();
   for(const state of changed) { for(const [name,payload]of state.pending)state.documents.set(name,payload);state.pending.clear();state.metadata=null;state.version++; }
   context.finished=true;
@@ -167,6 +169,11 @@ async function withProjectDataTransaction(work) {
   if(requests.getStore())return work();
   return requests.run({snapshots:new Map(),finished:false},async()=>{const result=await work();commit(requests.getStore());return result;});
 }
+function onProjectDataCommit(action) {
+  const context=requests.getStore();
+  if(!context || context.finished || typeof action!=="function")throw failure("Keine aktive Projektspeichertransaktion.");
+  (context.commitActions ||= []).push(action);
+}
 function projectDataRequest(rootDir) {
   return (req,res,next)=>requests.run({snapshots:new Map(),finished:false},()=>{
     const context=requests.getStore();
@@ -179,4 +186,4 @@ function projectDataRequest(rootDir) {
     next();
   });
 }
-module.exports={PROJECT_DOCUMENTS,migrateProjectData,configureProjectDataStore,disconnectProjectDataStore,enrollProject,readProjectDocument,writeProjectDocument,writeProjectMetadata,initialProjectDocument,projectDataRevision,assertProjectRevision,withProjectDataTransaction,projectDataRequest};
+module.exports={PROJECT_DOCUMENTS,migrateProjectData,configureProjectDataStore,disconnectProjectDataStore,enrollProject,readProjectDocument,writeProjectDocument,writeProjectMetadata,initialProjectDocument,projectDataRevision,assertProjectRevision,withProjectDataTransaction,onProjectDataCommit,projectDataRequest};

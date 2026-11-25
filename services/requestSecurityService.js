@@ -3,12 +3,14 @@ const crypto = require("crypto");
 function forbidden(message) { return Object.assign(new Error(message), { status: 403 }); }
 const safeMethods = new Set(["GET", "HEAD", "OPTIONS"]);
 
-function installAsyncHandlers(app) {
+function installAsyncHandlers(app, { runHeavy } = {}) {
   for (const method of ["get", "post", "put", "patch", "delete"]) {
     const original = app[method].bind(app);
     app[method] = (route, ...handlers) => original(route, ...handlers.map(handler => {
       if (typeof handler !== "function" || handler.constructor.name !== "AsyncFunction") return handler;
-      return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
+      return (req, res, next) => Promise.resolve().then(() => runHeavy
+        ? runHeavy(req, () => handler(req, res, next))
+        : handler(req, res, next)).catch(next);
     }));
   }
 }
@@ -71,4 +73,77 @@ function createAuthLimiter({ maxFailures = 10, windowMs = 15 * 60 * 1000, now = 
   };
 }
 
-module.exports = { installAsyncHandlers, createCsrfProtection, createAuthLimiter };
+// Vor Body-Parsern, Passwortprüfung und Protokollschreiben begrenzen.
+function createRequestLimiter({ windowMs = 60000, maxReads = 300, maxWrites = 60, maxClients = 10000, now = Date.now } = {}) {
+  const clients = new Map();
+  let nextCleanup = 0;
+  return (req, res, next) => {
+    if (req.path === "/ready" && safeMethods.has(req.method)) return next();
+    const time = now();
+    if (time >= nextCleanup) {
+      for (const [key, value] of clients) if (value.expires <= time) clients.delete(key);
+      nextCleanup = time + Math.min(windowMs, 1000);
+    }
+    let record = clients.get(req.ip);
+    if (record?.expires <= time) { clients.delete(req.ip); record = null; }
+    if (!record && clients.size < maxClients) {
+      record = { reads: 0, writes: 0, expires: time + windowMs };
+      clients.set(req.ip, record);
+    }
+    const key = safeMethods.has(req.method) ? "reads" : "writes";
+    if (!record || ++record[key] > (key === "reads" ? maxReads : maxWrites)) {
+      res.set("Retry-After", String(Math.max(1, Math.ceil(((record?.expires || time + windowMs) - time) / 1000))));
+      return next(Object.assign(new Error("Zu viele Anfragen. Bitte kurz warten und erneut versuchen."), { status: 429 }));
+    }
+    next();
+  };
+}
+
+// Keine unbeschränkte Warteschlange. Auch bei Verbindungsabbruch bis zum tatsächlichen
+// Ende der Arbeit reservieren, damit abgebrochene Anfragen die Grenze nicht umgehen.
+function createResourceGuard({ maxActive = 2, maxPerUser = 1, checkStorage = async () => {} } = {}) {
+  let active = 0;
+  const users = new Map();
+  return async (req, task) => {
+    const heavy = req.method === "POST" && (req.path.startsWith("/export/")
+      || /^\/projektarchiv\/(exportieren|validieren|importieren)$/.test(req.path)
+      || /^\/projekte\/[^/]+\/exportieren$/.test(req.path) || req.path === "/anhaenge/upload");
+    if (!heavy) return task();
+    const user = req.user?.id;
+    if (!user) throw Object.assign(new Error("Bitte zuerst anmelden."), { status: 401 });
+    const count = users.get(user) || 0;
+    if (active >= maxActive || count >= maxPerUser) throw Object.assign(new Error("Eine aufwendige Verarbeitung läuft bereits. Bitte nach Abschluss erneut versuchen."), { status: 429 });
+    active++; users.set(user, count + 1);
+    try {
+      const incoming = req.multipartUpload?.files?.reduce((sum, file) => sum + file.buffer.length, 0) || 0;
+      await checkStorage(user, incoming);
+      return await task();
+    }
+    finally { active--; const left = users.get(user) - 1; if (left) users.set(user, left); else users.delete(user); }
+  };
+}
+
+function createBodyLimiter({ maxActive = 8, maxPerIp = 2 } = {}) {
+  let active = 0;
+  const clients = new Map();
+  return (req, res, next) => {
+    if (safeMethods.has(req.method)) return next();
+    const count = clients.get(req.ip) || 0;
+    if (active >= maxActive || count >= maxPerIp) {
+      res.set("Retry-After", "1");
+      return next(Object.assign(new Error("Zu viele gleichzeitige Schreibanfragen. Bitte kurz warten."), { status: 429 }));
+    }
+    active++; clients.set(req.ip, count + 1);
+    let finished = false;
+    const release = () => {
+      if (finished) return;
+      finished = true; active--;
+      const left = clients.get(req.ip) - 1;
+      if (left) clients.set(req.ip, left); else clients.delete(req.ip);
+    };
+    res.once("finish", release); res.once("close", release);
+    next();
+  };
+}
+
+module.exports = { installAsyncHandlers, createCsrfProtection, createAuthLimiter, createRequestLimiter, createResourceGuard, createBodyLimiter };

@@ -73,12 +73,23 @@ Bestehende Variablen wie `--bg`, `--surface`, `--text`, `--muted`, `--border`, `
 Der Editor liegt unter `System` beziehungsweise `/einstellungen` im Tab `Theme`.
 Er speichert über `POST /einstellungen/theme` und setzt über `POST /einstellungen/theme/defaults` auf das Standard-Theme zurück.
 
-Die Tabs der Einstellungsseite werden clientseitig über `data-settings-tab` und `data-settings-panel` geschaltet.
-Dabei wird kein URL-Hash gesetzt, damit die Seite nicht scrollt und kein Verlaufseintrag entsteht.
-
 Die Live-Anwendung der Theme-Werte wird in `public/js/app.js` über `data-theme-editor` gesteuert.
 Eingabefelder mit `data-theme-var` schreiben ihren Wert direkt auf `document.documentElement.style`.
 Light- und Dark-Farben sind getrennt gespeichert, damit ein Preset sauber zwischen Tag und Nacht wechseln kann.
+
+## Einstellungsnavigation
+
+Die Docker-Vorschau vom 18.11.2026 verwendet eine gemeinsame Leiste für Einstellungen und Sicherheitsprotokoll in `views/partials/settingsTabs.ejs`. Ein Direktlink aktiviert den gewünschten Bereich vor der zuletzt im Browser gespeicherten Auswahl. Beim Tabwechsel aktualisiert die App die Adresse mit `history.replaceState`, sodass weder ein Scrollsprung noch ein weiterer Verlaufseintrag entsteht.
+
+| Ziel | Direktlink und bisherige Aliase |
+| --- | --- |
+| Theme | `/einstellungen#theme`, auch `#theme-editor` |
+| Projektordner | `/einstellungen#ordnerstruktur` |
+| Leistungsbereiche und Formulare | `/einstellungen#leistungsbereiche`, auch `#leistungsbereiche-admin` und `#formulare` |
+| Benutzerverwaltung | `/einstellungen#benutzer`, auch `#benutzerverwaltung` |
+| Sicherheitsprotokoll | `/einstellungen/protokoll` |
+
+Benutzerverwaltung und Sicherheitsprotokoll sind für Systemadmins vorgesehen. Die Protokollroute prüft die Rolle auch beim direkten Aufruf. [Browserprüfung und Bereitstellungsstand](TAGESABSCHLUSS_2026-11-18.md#änderungen-in-der-docker-vorschau)
 
 ## Presets erweitern
 

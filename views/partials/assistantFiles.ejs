@@ -1,0 +1,26 @@
+<section class="settings-panel assistant-files" data-file-list>
+  <div class="panel-head"><div><h2><%= section === 'uebersicht' ? 'Bereit zur Prüfung' : 'Dateien' %></h2><p><%= section === 'uebersicht' ? 'Öffnen, sichten und einzeln übernehmen.' : 'Nur die aktuelle Fassung steht zur Prüfung.' %></p></div>
+    <% if (section === 'uebersicht') { %><a href="<%= base %>?ansicht=dateien">Alle Dateien</a><% } %>
+  </div>
+  <% if (section === 'dateien' && (typeof showControls === 'undefined' || showControls)) { %>
+    <div class="assistant-file-controls"><nav class="assistant-filters" aria-label="Dateistatus">
+      <% [['pending', 'Zu prüfen', pending.length], ['approved', 'Übernommen', approved.length], ['all', 'Alle', pending.length + approved.length]].forEach(([value, label, count]) => { %>
+        <a href="<%= base %>?ansicht=dateien&amp;filter=<%= value %>" <%- fileFilter === value ? 'aria-current="page"' : '' %>><%= label %> <span><%= count %></span></a>
+      <% }) %>
+    </nav><label class="assistant-search"><span class="sr-only">Dateien suchen</span><input type="search" placeholder="Datei suchen …" data-file-search></label></div>
+  <% } %>
+  <% if (!documentGroups.length) { %><div class="assistant-empty"><strong><%= fileFilter === 'approved' ? 'Noch keine Dateien übernommen' : 'Keine Datei wartet auf deine Prüfung' %></strong><p>Neue Vorschläge erscheinen hier automatisch im Auftragsstand.</p></div><% } %>
+  <% documentGroups.forEach(group => { %>
+    <section class="assistant-document-group" aria-label="<%= group.category %>" data-file-group>
+      <h3><%= group.category %> <span><%= group.documents.length %></span></h3>
+      <div class="assistant-file-rows"><% group.documents.forEach(document => { %>
+        <a class="assistant-file-row" data-file-row href="<%= base %>/dateien/<%= document.id %>">
+          <span class="assistant-file-icon" aria-hidden="true"><%= document.mimeType === 'application/pdf' ? 'PDF' : 'BILD' %></span>
+          <span class="assistant-file-name"><strong><%= document.title %></strong><small><%= document.documentRevision ? 'Revision ' + document.documentRevision + ' · ' : '' %><%= (document.bytes/1024).toFixed(0) %> KiB</small></span>
+          <span class="badge <%= document.state === 'pending' ? 'off' : 'on' %>"><%= document.state === 'pending' ? 'Prüfen' : document.projectDocument && document.projectDocument.scope !== 'documentation' ? 'Intern' : 'Übernommen' %></span><span aria-hidden="true">→</span>
+        </a>
+      <% }) %></div>
+    </section>
+  <% }) %>
+  <p data-file-empty hidden>Keine passende Datei gefunden.</p>
+</section>

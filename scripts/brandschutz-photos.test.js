@@ -95,7 +95,7 @@ test("HTTP: Warnung auf drei Seiten und beim finalen Export; nach Dateizuordnung
   await fs.writeFile(path.join(root, "data/projekt.json"), JSON.stringify({ projektname: "Foto-Prüfung", projektnummer: "TEST", logoPfad: "" }));
   for (const [name, value] of Object.entries({ projekt: { projektname: "Foto-Prüfung", projektnummer: "TEST", logoPfad: "" }, leistungsbereiche: areas, dokumentenmatrix: matrix, brandschutz: fire, geraetelisten: [], anhaenge: [], projektSysteme: [], exportliste: [] })) await fs.writeFile(path.join(root, "data", name + ".json"), JSON.stringify(value));
   const socket = net.createServer(); await new Promise(r => socket.listen(0, "127.0.0.1", r)); const port = socket.address().port; await new Promise(r => socket.close(r));
-  const child = spawn(process.execPath, [path.join(root, "server.js")], { cwd: root, env: { ...process.env, PORT: String(port) }, stdio: ["ignore", "pipe", "pipe"] });
+  const child = spawn(process.execPath, [path.join(root, "server.js")], { cwd: root, env: { ...process.env, NODE_ENV: "test", PORT: String(port) }, stdio: ["ignore", "pipe", "pipe"] });
   let logs = "", token = "", revision = "", db; child.stdout.on("data", d => logs += d); child.stderr.on("data", d => logs += d);
   const cookies = new Map(), base = "http://127.0.0.1:" + port;
   async function request(url, options = {}) {

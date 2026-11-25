@@ -267,10 +267,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const settingsPanels = Array.from(document.querySelectorAll("[data-settings-panel]"));
   if (settingsTabs.length && settingsPanels.length) {
     const storageKey = "edoku-settings-tab";
+    const initialTab = document.querySelector("[data-settings-initial-tab]")?.dataset.settingsInitialTab;
+    if (initialTab) window.history.replaceState(window.history.state, "", "/einstellungen#" + initialTab);
     const validTabIds = new Set(settingsTabs.map((tab) => tab.dataset.settingsTab));
 
-    // * INFO: Schaltet Einstellungsbereiche intern um. Es wird kein URL-Hash gesetzt,
-    // * INFO: damit der Browser nicht scrollt und kein Verlaufseintrag entsteht.
     function activateSettingsTab(tabId) {
       const nextTabId = validTabIds.has(tabId) ? tabId : settingsTabs[0].dataset.settingsTab;
 
@@ -287,10 +287,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     settingsTabs.forEach((tab) => {
-      tab.addEventListener("click", () => activateSettingsTab(tab.dataset.settingsTab));
+      tab.addEventListener("click", () => {
+        const tabId = tab.dataset.settingsTab;
+        activateSettingsTab(tabId);
+        // Der Direktlink ändert sich ohne Scrollsprung oder weiteren Verlaufseintrag.
+        window.history.replaceState(window.history.state, "", "#" + tabId);
+      });
     });
 
-    activateSettingsTab(localStorage.getItem(storageKey));
+    function activateSettingsFromLink() {
+      const target = window.location.hash.slice(1);
+      const linkedTab = settingsTabs.find((tab) =>
+        tab.dataset.settingsTab === target ||
+        tab.getAttribute("aria-controls") === target ||
+        tab.dataset.settingsAlias === target
+      );
+      activateSettingsTab(linkedTab?.dataset.settingsTab || localStorage.getItem(storageKey));
+    }
+
+    window.addEventListener("hashchange", activateSettingsFromLink);
+    activateSettingsFromLink();
   }
 
   const updateCheckButton = document.querySelector("[data-update-check]");
@@ -838,6 +854,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const fieldProfiles = fieldProfilesNode ? JSON.parse(fieldProfilesNode.textContent || "{}") : {};
     const manualsNode = document.querySelector("#device-manuals-json");
     const deviceManuals = manualsNode ? JSON.parse(manualsNode.textContent || "[]") : [];
+    const datasheetsNode = document.querySelector("#device-datasheets-json");
+    const deviceDatasheets = datasheetsNode ? JSON.parse(datasheetsNode.textContent || "[]") : [];
 
     // * INFO: Fügt clientseitig neue Positionszeilen hinzu; gespeichert wird anschließend per Auto-Save.
     button.addEventListener("click", () => {
@@ -846,7 +864,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const amountInput = button.closest(".add-position-control").querySelector("input[type='number']");
       const amount = Math.min(25, Math.max(1, Number(amountInput.value) || 1));
       let nextIndex = Number(button.dataset.nextIndex) || 0;
-      const fields = fieldProfiles[button.dataset.leistungsbereich] || [];
+      const fields = (fieldProfiles[button.dataset.leistungsbereich] || []).filter(field => field.guiVisible !== false);
 
       function escapeAttribute(value) {
         return String(value)
@@ -860,20 +878,19 @@ document.addEventListener("DOMContentLoaded", () => {
         return `<td data-col="${escapeAttribute(field)}"><input type="text" name="geraetelisten[${listIndex}][positionen][${nextIndex}][${field}]" value="${escapeAttribute(value)}" ${extra}></td>`;
       }
 
-      function manualCell() {
-        if (button.dataset.leistungsbereich === "Brandschutzabschottungen") return "";
-        const options = deviceManuals.map((manual) => {
-          const label = manual.title || manual.originalName || "Bedienungsanleitung";
+      function documentCell(field, documents, category, emptyLabel) {
+        const options = documents.map((manual) => {
+          const label = manual.title || manual.originalName || category;
           return `<option value="${escapeAttribute(manual.id)}">${escapeAttribute(label)}</option>`;
         }).join("");
         return `
-          <td data-col="bedienungsanleitungId">
+          <td data-col="${field}">
             <div class="manual-link-control">
-              <select name="geraetelisten[${listIndex}][positionen][${nextIndex}][bedienungsanleitungId]">
-                <option value="">Keine Anleitung</option>
+              <select name="geraetelisten[${listIndex}][positionen][${nextIndex}][${field}]">
+                <option value="">${emptyLabel}</option>
                 ${options}
               </select>
-              <a class="button-link compact-icon-link" href="/anhaenge?kategorie=Bedienungsanleitungen" title="Bedienungsanleitung hochladen">+</a>
+              <a class="button-link compact-icon-link" href="/anhaenge?kategorie=${encodeURIComponent(category)}" title="${category} hochladen">+</a>
             </div>
           </td>`;
       }
@@ -899,7 +916,8 @@ document.addEventListener("DOMContentLoaded", () => {
         row.innerHTML = [
           cell("pos", pos),
           ...fields.map(fieldCell),
-          manualCell(),
+          documentCell("bedienungsanleitungId", deviceManuals, "Bedienungsanleitungen", "Keine Anleitung"),
+          documentCell("datenblattId", deviceDatasheets, "Datenblätter", "Kein Datenblatt"),
           `<td data-col="delete"><button class="row-delete-button danger icon-only-button" type="button" data-delete-row data-delete-label="Geräteposition ${pos}" aria-label="Geräteposition löschen">${trashIconMarkup()}</button></td>`
         ].join("");
         tbody.appendChild(row);

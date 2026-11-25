@@ -1,6 +1,16 @@
 # Lokales Update und Datensicherung
 
-Stand: 06.11.2026. Diese Anleitung gilt für die lokale Docker-Installation. Sie beschreibt eine bewusste Aktualisierung mit Erhalt des Bestands. Der GitHub-Updatehinweis in der Anwendung installiert keine Version automatisch.
+Stand **25.11.2026**: lokal aktiv **App 0.2.0-beta.13 / HTTP-API und MCP 3.9.0**, **64 HTTP-Operationen und 55 MCP-Werkzeuge (22 Lesen / 33 Schreiben)**. Agentenvertrag 2.1, Produktprüfung V7. Die vereinfachte Oberfläche ist nach geprüfter Vollsicherung und getrennter Wiederherstellungsprobe lokal aktiviert. Neue Dateien weiterhin ausschließlich manuell einzeln in der GUI freigeben.
+
+Änderungen, Tests und lokale Aktivierungen beider Tage: **[Entwicklungsupdate 23.–24.11.2026](ENTWICKLUNGSUPDATE_2026-11-23_24.md)**. Frühere Tagesabschlüsse und vorbereitete Nachweise beschreiben ihren damaligen Zeitpunkt; sie sind keine aktuellen Aktivierungsaufträge.
+
+Die beta.13-Aktivierung am 25.11.2026 wurde nach Vollsicherung und getrennter Wiederherstellung mit Start alter/neuer Version geprüft. **2.000 Dateien/16 fachliche Tabellen im Aktivierungsvergleich unverändert**, Schema, Integrität und Fremdschlüssel geprüft. Vor- und Nachsicherung samt Abbildern erhalten; GUI-Dateien, laufende Version und MCP-Verbindung lesend bestätigt. Keine Veröffentlichung. [Bedienung und Prüfung](GUI_ASSISTENT_VEREINFACHUNG.md), [Tagesabschluss](TAGESABSCHLUSS_2026-11-25.md). Die folgenden datierten Schritte dokumentieren frühere Aktualisierungen beziehungsweise den allgemeinen Ablauf.
+
+## Lokales Sicherheitsupdate vom 17.11.2026
+
+Der neue Container läuft ohne Root-Rechte. Bei bestehenden Bind-Mounts zuerst deren vorhandene Eigentümer prüfen und über eine private `docker-compose.override.yml` die passende Benutzerkennung setzen; keine pauschale Änderung der Bestandsrechte. Die lokale Mac-Installation verwendet `501:20`. Die Vollsicherung enthält nun auch die privaten Compose-Dateien; beim getrennten Restore wird die tatsächliche Containerkennung übernommen. Vor- und Nachsicherung einschließlich Abbild sowie ein getrennter Restore sind für die lokale Aktivierung geprüft. [Konkreter Nachweis](SICHERHEITSUPDATE_2026-11-17.md). Eine Online-Aktualisierung ist damit nicht erfolgt.
+
+Stand: 22.11.2026. App-Ziel `0.2.0-beta.1`, API/MCP `3.3.0`; [Releaseumfang](RELEASE_NOTES.md) und [Versionsschema](VERSIONIERUNG.md). Diese Anleitung gilt für die lokale Docker-Installation. Sie beschreibt eine bewusste Aktualisierung mit Erhalt des Bestands. Der GitHub-Updatehinweis in der Anwendung installiert keine Version automatisch.
 
 ## Programm und Daten
 

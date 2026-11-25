@@ -35,6 +35,23 @@ function normalizeSystemConfig(raw) {
   return { leistungsbereiche: [] };
 }
 
+// Belegte Sondertypen ergänzen nur dieses Projekt; globale Vorgaben bleiben erhalten.
+function projectSystemCatalog(raw, project = {}) {
+  const config = structuredClone(normalizeSystemConfig(raw));
+  for (const item of project.systemErgaenzungen || []) {
+    const area = config.leistungsbereiche.find(entry => entry.name === item.leistungsbereich);
+    if (!area || !item.evidence || !item.hersteller) continue;
+    let manufacturer = area.hersteller.find(entry => entry.name === item.hersteller);
+    if (!manufacturer) {
+      const defaults = area.hersteller[0] || {};
+      manufacturer = { name: item.hersteller, systemarten: [], systeme: [], typen: [], dokumentarten: [...(defaults.dokumentarten || [])], normen: [...(defaults.normen || [])], kapitel: [...(defaults.kapitel || [])], geraetelisteKapitel: defaults.geraetelisteKapitel || "" };
+      area.hersteller.push(manufacturer);
+    }
+    for (const [field, key] of [["systemart", "systemarten"], ["herstellerSystem", "systeme"]]) if (item[field]) manufacturer[key] = [...new Set([...(manufacturer[key] || []), item[field]])];
+  }
+  return config;
+}
+
 // * INFO: Textarea-/CSV-Eingaben aus Einstellungsformularen in Listen umwandeln.
 function listFromText(value) {
   return String(value || "")
@@ -112,42 +129,31 @@ function selectedHerstellerConfig(configEntry, herstellerName) {
 function syncProjektSysteme(systemConfig, existingSelections, aktiveLeistungsbereiche) {
   const config = normalizeSystemConfig(systemConfig);
   const activeSet = new Set(aktiveLeistungsbereiche || []);
-  const existingByName = new Map((existingSelections || []).map((selection) => [selection.leistungsbereich, selection]));
+  const existing = systemSelectionsWithIds(existingSelections);
   const result = [];
-
-  config.leistungsbereiche.forEach((configEntry) => {
-    const existing = existingByName.get(configEntry.name);
-    if (!existing) {
-      result.push(defaultSelectionForLeistungsbereich(configEntry, activeSet.has(configEntry.name)));
-      return;
-    }
-
-    const herstellerConfig = selectedHerstellerConfig(configEntry, existing.hersteller);
-    result.push({
-      leistungsbereich: configEntry.name,
-      code: configEntry.code || existing.code || "",
-      aktiv: activeSet.has(configEntry.name),
-      hersteller: existing.hersteller || herstellerConfig.name || "",
-      systemart: existing.systemart || (herstellerConfig.systemarten || [])[0] || "",
-      herstellerSystem: existing.herstellerSystem || (herstellerConfig.systeme || [])[0] || "",
-      dokumentarten: existing.dokumentarten && existing.dokumentarten.length ? existing.dokumentarten : herstellerConfig.dokumentarten || [],
-      normen: existing.normen && existing.normen.length ? existing.normen : herstellerConfig.normen || [],
-      kapitel: existing.kapitel && existing.kapitel.length ? existing.kapitel : herstellerConfig.kapitel || [],
-      geraetelisteKapitel: existing.geraetelisteKapitel || herstellerConfig.geraetelisteKapitel || "",
-      herstellerOptionen: (configEntry.hersteller || []).map((hersteller) => hersteller.name)
-    });
-  });
-
-  existingByName.forEach((selection, leistungsbereich) => {
-    if (!result.some((entry) => entry.leistungsbereich === leistungsbereich)) {
-      result.push({
-        ...selection,
-        aktiv: activeSet.has(leistungsbereich)
+  config.leistungsbereiche.forEach(configEntry => {
+    const rows = existing.filter(selection => selection.leistungsbereich === configEntry.name);
+    if (!rows.length) { result.push(defaultSelectionForLeistungsbereich(configEntry, activeSet.has(configEntry.name))); return; }
+    for (const selection of rows) {
+      const manufacturer = selectedHerstellerConfig(configEntry, selection.hersteller);
+      result.push({ ...selection,
+        aktiv: activeSet.has(configEntry.name) && selection.enabled !== false,
+        hersteller: selection.hersteller || manufacturer.name || '',
+        systemart: selection.systemart ?? (manufacturer.systemarten || [])[0] ?? '',
+        herstellerSystem: selection.herstellerSystem ?? (manufacturer.systeme || [])[0] ?? '',
+        dokumentarten: selection.dokumentarten ?? manufacturer.dokumentarten ?? [],
+        normen: selection.normen ?? manufacturer.normen ?? [],
+        kapitel: selection.kapitel ?? manufacturer.kapitel ?? [],
+        geraetelisteKapitel: selection.geraetelisteKapitel || manufacturer.geraetelisteKapitel || '',
+        herstellerOptionen: (configEntry.hersteller || []).map(item => item.name)
       });
     }
   });
+  for (const selection of existing) if (!config.leistungsbereiche.some(item => item.name === selection.leistungsbereich)) {
+    result.push({ ...selection, aktiv: activeSet.has(selection.leistungsbereich) && selection.enabled !== false });
+  }
 
-  return result;
+  return systemSelectionsWithIds(result);
 }
 
 // * INFO: Normalisiert gespeicherte Projekt-Systemauswahl aus Formularwerten.
@@ -168,12 +174,14 @@ function normalizePostedProjektSysteme(posted, systemConfig, aktiveLeistungsbere
           : [];
 
       return {
+        ...entry,
         leistungsbereich: entry.leistungsbereich,
         code: entry.code || configEntry.code || "",
-        aktiv: activeSet.has(entry.leistungsbereich),
+        enabled: entry.enabled !== false,
+        aktiv: activeSet.has(entry.leistungsbereich) && entry.enabled !== false,
         hersteller: entry.hersteller || herstellerConfig.name || "",
-        systemart: entry.systemart || (herstellerConfig.systemarten || [])[0] || "",
-        herstellerSystem: entry.herstellerSystem || (herstellerConfig.systeme || [])[0] || "",
+        systemart: entry.systemart ?? (herstellerConfig.systemarten || [])[0] ?? "",
+        herstellerSystem: entry.herstellerSystem ?? (herstellerConfig.systeme || [])[0] ?? "",
         dokumentarten,
         normen: herstellerConfig.normen || [],
         kapitel: herstellerConfig.kapitel || [],
@@ -211,8 +219,28 @@ function kapitelFromProjektSysteme(projektSysteme) {
 }
 
 // * INFO: Map-Zugriff für Templates: Leistungsbereich -> Auswahl.
+function systemSelectionsWithIds(entries = []) {
+  const counts = new Map();
+  return entries.map(entry => {
+    const index = counts.get(entry.leistungsbereich) || 0; counts.set(entry.leistungsbereich,index+1);
+    const selectionId = entry.selectionId || 'sys_' + require('node:crypto').createHash('sha256').update(entry.leistungsbereich + ':' + index).digest('hex').slice(0,24);
+    return { ...entry, selectionId };
+  });
+}
+
 function selectionByLeistungsbereich(projektSysteme) {
-  return new Map((projektSysteme || []).map((entry) => [entry.leistungsbereich, entry]));
+  const grouped = new Map();
+  for (const entry of systemSelectionsWithIds(projektSysteme)) {
+    if (!grouped.has(entry.leistungsbereich)) grouped.set(entry.leistungsbereich, []);
+    grouped.get(entry.leistungsbereich).push(entry);
+  }
+  return new Map([...grouped].map(([area, selections]) => {
+    const active=selections.filter(entry=>entry.aktiv!==false && entry.enabled!==false);
+    const summary={...selections[0],leistungsbereich:area,aktiv:active.length>0,selections};
+    for(const key of ['hersteller','systemart','herstellerSystem']) summary[key]=uniqueValues(active.map(entry=>entry[key])).join(' / ');
+    for(const key of ['normen','kapitel','dokumentarten']) summary[key]=uniqueValues(active.flatMap(entry=>entry[key]||[]));
+    return [area,summary];
+  }));
 }
 
 // * INFO: Doppelte Vorschlagswerte entfernen, ohne die sichtbare Schreibweise zu verändern.
@@ -254,6 +282,8 @@ function buildGeraetelistenSuggestions(systemConfig) {
 }
 
 module.exports = {
+  systemSelectionsWithIds,
+  projectSystemCatalog,
   buildGeraetelistenSuggestions,
   flattenSystemConfigForLegacy,
   getLeistungsbereichConfig,

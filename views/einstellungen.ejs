@@ -6,7 +6,7 @@
   <body>
     <%# Systemeinstellungen: globale Defaults, Erstellerdaten und Formularvorlagen. %>
     <%- include("partials/header", { active }) %>
-    <main id="main-content" tabindex="-1" class="page wide compact-work-page settings-page">
+    <main id="main-content" tabindex="-1" class="page wide compact-work-page settings-page" data-settings-initial-tab="<%= initialSettingsTab %>">
       <div class="page-title">
         <p class="eyebrow">Konfiguration</p>
         <h1>Einstellungen</h1>
@@ -22,18 +22,7 @@
       <% const themeSpacing = theme.spacing || {}; %>
       <% const themeTypography = theme.typography || {}; %>
 
-      <%# Obere Einstellungsnavigation statt linker/rechter Sidebar. %>
-      <nav class="settings-top-tabs" aria-label="Einstellungsbereiche" data-settings-tabs>
-        <button type="button" data-settings-tab="system" aria-controls="system" aria-pressed="true"><%- include("partials/icon", { name: "system" }) %><span>System</span></button>
-        <button type="button" data-settings-tab="theme" aria-controls="theme-editor" aria-pressed="false"><%- include("partials/icon", { name: "sun" }) %><span>Theme</span></button>
-        <button type="button" data-settings-tab="ersteller" aria-controls="ersteller" aria-pressed="false"><%- include("partials/icon", { name: "project" }) %><span>Ersteller</span></button>
-        <button type="button" data-settings-tab="leistungsbereiche" aria-controls="leistungsbereiche-admin" aria-pressed="false"><%- include("partials/icon", { name: "grid" }) %><span>Leistungsbereiche</span></button>
-        <button type="button" data-settings-tab="geraetelisten-vorlagen" aria-controls="geraetelisten-vorlagen" aria-pressed="false"><%- include("partials/icon", { name: "list" }) %><span>Gerätelisten</span></button>
-        <button type="button" data-settings-tab="updates" aria-controls="updates" aria-pressed="false"><%- include("partials/icon", { name: "download" }) %><span>Updates</span></button>
-        <% if (isSystemAdmin) { %>
-          <button type="button" data-settings-tab="benutzer" aria-controls="benutzerverwaltung" aria-pressed="false"><%- include("partials/icon", { name: "user" }) %><span>Benutzer</span></button>
-        <% } %>
-      </nav>
+      <%- include("partials/settingsTabs", { isSystemAdmin, auditActive: false }) %>
 
       <%# Übersicht und Einstellungsbereiche bleiben auf einer Seite, Auto-Save speichert je Formular. %>
       <section class="settings-grid">
@@ -636,10 +625,12 @@
         <% } %>
       </form>
 
+      <%- include("partials/integrationSettings") %>
     </main>
     <%- include("partials/footer") %>
     <script type="application/json" id="form-template-names-json"><%- jsonForHtml(Object.fromEntries(Object.entries(templates || {}).map(([key, template]) => [key, template.name]))) %></script>
     <script type="application/json" id="theme-presets-json"><%- jsonForHtml(themePresets || {}) %></script>
     <script src="/js/app.js"></script>
+    <script src="/js/integrationen.js"></script>
   </body>
 </html>

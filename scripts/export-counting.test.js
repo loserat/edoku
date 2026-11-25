@@ -30,6 +30,83 @@ function unique(plan) {
   }
 }
 
+async function pdfText(file) {
+  const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const loading = getDocument({ data: new Uint8Array(await fs.readFile(file)), useSystemFonts: true });
+  try {
+    const document = await loading.promise;
+    const pages = [];
+    for (let page = 1; page <= document.numPages; page++) {
+      pages.push((await (await document.getPage(page)).getTextContent()).items.map(item => item.str).join(" "));
+    }
+    return pages.join("\n");
+  } finally { await loading.destroy(); }
+}
+
+test("Interne Gerätebemerkungen bleiben gespeichert und fehlen auch im mehrseitigen Kunden-PDF", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "edoku-internal-notes-"));
+  try {
+    const project = { projektname: "Künstlicher Exporttest", projektnummer: "NOTES-TEST" };
+    const matrix = [doc("devices", "6", { dokumenttyp: "Kapitel" })];
+    const lists = ["Elektroinstallation / DIN VDE 0100", "Kabeltragsysteme / Verlegesysteme"].map((area, index) => device(`notes-${index}`, {
+      leistungsbereich: area,
+      positionen: Array.from({ length: 45 }, (_, row) => ({ pos: row + 1, hersteller: "TESTHERSTELLER", system: "TESTSYSTEM", typ: `GERAET-${index}-${row}`,
+        beschreibung: "Fachlicher Quellenbezug bleibt in der Beschreibung", abmessung: "60 x 300 mm", spannung: "230 V", leistung: "125 W",
+        bemerkung: `INTERNE_RECHERCHE_${index}_${row} Quelle: https://quelle.example.invalid/intern; Zuordnung aus Agentenchat.` }))
+    }));
+    const original = JSON.stringify(lists);
+    await createProjectFolder(root, project);
+    const files = await generateGeraetelisten(root, project, lists, settings, matrix);
+    assert.equal(files.length, 2);
+    for (const file of files) {
+      assert.ok((await PDFDocument.load(await fs.readFile(file))).getPageCount() > 1);
+      const text = await pdfText(file);
+      assert.doesNotMatch(text, /Bemerkung|INTERNE_RECHERCHE|quelle\.example|Agentenchat|Spannung|Leistung|230 V|125 W/);
+      assert.match(text, /Fachlicher Quellenbezug/);
+      assert.match(text, /GERAET-[01]-44/);
+    }
+    assert.equal(JSON.stringify(lists), original);
+    await generateInhaltsverzeichnis(root, project, matrix, settings, lists);
+    await generateDeckblaetter(root, project, matrix, settings, lists);
+    const exportPath = path.join(root, "exportliste.json");
+    await buildExportliste(root, project, matrix, exportPath, [], [], lists);
+    const result = await prepareFinalExport(root, project, matrix, exportPath, { systemSettings: settings });
+    assert.equal(result.missingFiles.length, 0);
+    const text = await pdfText(result.completePdfPath);
+    assert.doesNotMatch(text, /Bemerkung|INTERNE_RECHERCHE|quelle\.example|Agentenchat|Spannung|Leistung|230 V|125 W/);
+    assert.match(text, /GERAET-0-44/); assert.match(text, /GERAET-1-44/);
+    assert.equal(JSON.stringify(lists), original);
+  } finally { await fs.rm(root, { recursive: true, force: true }); }
+});
+
+test("Geräte-PDFs mit altem Spaltenlayout werden bis zur Neuerzeugung nicht exportiert", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "edoku-old-device-pdf-"));
+  try {
+    const project = { projektname: "Künstlicher Alt-PDF-Test", projektnummer: "OLD-NOTES" };
+    const lists = [device("old-notes")], matrix = [];
+    const [file] = await generateGeraetelisten(root, project, lists, settings, matrix);
+    const old = await PDFDocument.load(await fs.readFile(file));
+    const metadata = JSON.parse(old.getSubject());
+    metadata.deviceListVersion = 2;
+    old.setSubject(JSON.stringify(metadata));
+    old.getPage(0).drawText("INTERNE_ALTE_QUELLE", { x: 40, y: 100 });
+    await fs.writeFile(file, await old.save());
+    await generateInhaltsverzeichnis(root, project, matrix, settings, lists);
+    const bytes = await fs.readFile(file), exportPath = path.join(root, "exportliste.json");
+    const entries = await buildExportliste(root, project, matrix, exportPath, [], [], lists);
+    const blocked = entries.find(entry => entry.deviceListId === "old-notes");
+    assert.equal(blocked.status, "veraltet"); assert.equal(blocked.seiten, 0);
+    const partial = await prepareFinalExport(root, project, matrix, exportPath, { systemSettings: settings });
+    assert.doesNotMatch(await pdfText(partial.completePdfPath), /INTERNE_ALTE_QUELLE/);
+    await generateGeraetelisten(root, project, lists, settings, matrix);
+    const current = await buildExportliste(root, project, matrix, exportPath, [], [], lists);
+    assert.equal(current.find(entry => entry.deviceListId === "old-notes").status, "vorhanden");
+    const history = path.join(path.dirname(file), ".previous");
+    const [folder] = await fs.readdir(history);
+    assert.deepEqual(await fs.readFile(path.join(history, folder, path.basename(file))), bytes);
+  } finally { await fs.rm(root, { recursive: true, force: true }); }
+});
+
 test("Fehlende Eltern und doppelte Originalkapitel bleiben eindeutig", () => {
   const input = [doc("orphan", "4.1"), doc("root", "5"), doc("a", "5.1"), doc("b", "5.1")];
   const before = JSON.stringify(input);
@@ -120,6 +197,32 @@ async function mixedFixture() {
   const entries = await buildExportliste(root, project, matrix, exportPath, [], attachments, lists);
   return { root, project, matrix, lists, attachments, paths, exportPath, entries };
 }
+
+test("Freigegebene Datenblätter erscheinen im Produktkapitel und im Gesamt-PDF", async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "edoku-datasheet-export-"));
+  try {
+    const project = { projektname: "Künstlicher Datenblatttest", projektnummer: "DATA-TEST" };
+    const attachments = [attachment("datasheet", { category: "Datenblätter", kapitel: "", title: "Technische Produktdaten", relativePath: "imports/datasheet.pdf" })];
+    await pdf(path.join(root, "imports/datasheet.pdf"), 2);
+    const plan = buildDocumentationPlan([], [], attachments);
+    const imported = plan.find(entry => entry.attachmentId === "datasheet");
+    const parent = plan.find(entry => entry.id === imported.parentId);
+    assert.equal(parent.titel, "Produkt-Datenblätter");
+    assert.equal(parent.originalKapitel, "7");
+    const excluded = buildDocumentationPlan([], [], [{ ...attachments[0], export: false }]);
+    assert.equal(excluded.filter(entry => entry.attachmentId).length, 0);
+    await createProjectFolder(root, project);
+    await generateInhaltsverzeichnis(root, project, [], settings, [], attachments);
+    await generateDeckblaetter(root, project, [], settings, [], attachments);
+    const entries = await buildExportliste(root, project, [], path.join(root, "exportliste.json"), [], attachments, []);
+    assert.equal(entries.find(entry => entry.attachmentId === "datasheet").seiten, 2);
+    assert.equal(summarizeExportEntries(entries).missing, 0);
+    const result = await prepareFinalExport(root, project, [], path.join(root, "exportliste.json"), { systemSettings: settings });
+    const merged = await PDFDocument.load(await fs.readFile(result.completePdfPath));
+    assert.equal(merged.getPageCount(), result.summary.pages);
+    assert.equal(result.missingFiles.length, 0);
+  } finally { await fs.rm(root, { recursive: true, force: true }); }
+});
 
 test("PDFs, mehrseitige Anhänge und Gerätelisten haben denselben Plan", async () => {
   const f = await mixedFixture();
@@ -272,4 +375,42 @@ test("Strukturüberschriften verbrauchen keine Dateinummer; finale Dateien sind 
   const copied = (await fs.readdir(f.paths.finalPath)).filter((name) => /^\d{3}_.*\.pdf$/.test(name)).sort();
   assert.equal(copied.length, result.summary.present);
   assert.deepEqual(copied.map((name) => Number(name.slice(0, 3))), Array.from({ length: copied.length }, (_, i) => i + 1));
+});
+
+test('PDF-Fußlogo entspricht der GUI-Bildmarke, bleibt verlinkt und lässt sich deaktivieren',async()=>{
+  const root=await fs.mkdtemp(path.join(os.tmpdir(),'edoku-footer-branding-'));
+  const {decodePDFRawStream,PDFRawStream}=require('pdf-lib'),PNG=require('png-js');
+  const iconFile=require('../services/brandingAssetService').pdfBrandIcon();
+  const pixels=await new Promise(resolve=>PNG.decode(iconFile,resolve));
+  const expectedRGB=Buffer.alloc(256*256*3),expectedAlpha=Buffer.alloc(256*256);
+  for(let pixel=0;pixel<256*256;pixel++){expectedRGB.set(pixels.subarray(pixel*4,pixel*4+3),pixel*3);expectedAlpha[pixel]=pixels[pixel*4+3];}
+  const check=async(file,enabled)=>{
+    const pdf=await PDFDocument.load(await fs.readFile(file));
+    for(const page of pdf.getPages()){
+      const resources=page.node.Resources(),objects=resources.lookupMaybe(PDFName.of('XObject'),PDFDict);
+      const images=objects?objects.values().map(ref=>pdf.context.lookup(ref)).filter(object=>object instanceof PDFRawStream&&object.dict.get(PDFName.of('Subtype'))?.toString()==='/Image'):[];
+      const logos=images.filter(image=>image.dict.get(PDFName.of('Width'))?.asNumber()===256&&image.dict.get(PDFName.of('Height'))?.asNumber()===256);
+      assert.equal(logos.length,enabled?1:0);
+      if(enabled){
+        assert.deepEqual(Buffer.from(decodePDFRawStream(logos[0]).decode()),expectedRGB);
+        const mask=pdf.context.lookup(logos[0].dict.get(PDFName.of('SMask')));assert.deepEqual(Buffer.from(decodePDFRawStream(mask).decode()),expectedAlpha);
+      }
+      const annotations=page.node.Annots(),links=annotations?annotations.asArray().map(ref=>pdf.context.lookup(ref)).filter(annotation=>{
+        const action=annotation.lookupMaybe(PDFName.of('A'),PDFDict);return action?.get(PDFName.of('URI'))?.decodeText?.()==='https://nickgm.de';
+      }):[];
+      assert.equal(links.length,enabled?1:0);
+    }
+    return pdf.getPageCount();
+  };
+  try{
+    const project={projektname:'Künstlicher Logo-Test',projektnummer:'LOGO-TEST'};
+    const lists=[device('brand-icon',{positionen:Array.from({length:45},(_,i)=>({pos:i+1,hersteller:'Test',system:'Testsystem',typ:'Testgerät '+i,beschreibung:'Künstlicher Nachweis, keine reale Anlagendokumentation'}))})];
+    const original=JSON.stringify(lists),matrix=[];
+    const [file]=await generateGeraetelisten(root,project,lists,{},matrix);assert.ok(await check(file,true)>1);
+    await generateInhaltsverzeichnis(root,project,matrix,{},lists);
+    const exportPath=path.join(root,'exportliste.json');await buildExportliste(root,project,matrix,exportPath,[],[],lists);
+    const result=await prepareFinalExport(root,project,matrix,exportPath,{systemSettings:{}});await check(result.completePdfPath,true);
+    await generateGeraetelisten(root,project,lists,settings,matrix);await check(file,false);
+    assert.equal(JSON.stringify(lists),original);
+  }finally{await fs.rm(root,{recursive:true,force:true});}
 });

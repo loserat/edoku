@@ -7,7 +7,10 @@ const devices = require("./deviceDataStoreService");
 function initialAdminFromEnvironment(env = process.env) {
   const login = env.EDOKU_INITIAL_ADMIN_LOGIN;
   const password = env.EDOKU_INITIAL_ADMIN_PASSWORD;
-  if (login === undefined && password === undefined) return null;
+  if (login === undefined && password === undefined) {
+    if (env.NODE_ENV === "production") throw new Error("Für eine neue Produktionsinstallation müssen beide eigenen Erstzugangsvariablen gesetzt sein.");
+    return null;
+  }
   const email = String(login || "").trim().toLowerCase();
   if (!email || email.length > 254 || /[\s\x00-\x1f\x7f]/.test(email)) {
     throw new Error("EDOKU_INITIAL_ADMIN_LOGIN muss eine gültige Kennung ohne Leer-/Steuerzeichen enthalten.");

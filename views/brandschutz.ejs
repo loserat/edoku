@@ -15,6 +15,7 @@
       <%- include("partials/flash", { flash }) %>
       <%- include("partials/photoWarnings", { photoWarnings }) %>
       <%- include("partials/sectionTabs", { active }) %>
+      <p class="field-hint">Pflichtunterlagen: ausgefüllte Übereinstimmungsbestätigung · Montageanleitung je System · zugehöriger Zulassungs-/Prüfnachweis. <a href="/assistent">Im Doku-Assistenten prüfen</a></p>
 
       <%# Statuswerte werden direkt aus den Pflichtfeldern berechnet und in der Tabelle angezeigt. %>
       <% const aktiveBrandschutz = brandschutz.filter((entry) => entry.aktiv); %>

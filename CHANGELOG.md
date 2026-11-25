@@ -1,5 +1,227 @@
 # Changelog
 
+## 0.3.0-beta.1 – 25.11.2026
+
+Gebündelter Ausbau für die nächste öffentliche Beta: integrierte HTTP-API und lokaler MCP-Adapter mit 55 Werkzeugen (22 Lesen/33 Schreiben), zentral berechnete Agentenaufgaben, Materialimport und Artikelzuordnung, Hersteller-PDF-/Variantenprüfung, dauerhafte Fakten und gebündelte Rückfragen. Vereinfachter Doku-Assistent, direkte Einzelprüfung und nächster Dateiwechsel, begründetes Zurückziehen sowie geschützte Lösch-/Wiederherstellungsfunktionen.
+
+API/MCP bleiben **3.9.0**; der App-Versionssprung bündelt die neuen Funktionen und ändert weder Rechte noch Datenbankschema. Alle neuen Dateien weiterhin ausschließlich manuell einzeln in der GUI freigeben. README um klaren MCP-Einstieg erweitert. Private Daten, Schlüssel und lokale Einstellungen gehören nicht zur Veröffentlichung. GitHub-Stand, lokale Installation und tatsächliches Online-Deployment werden getrennt nachgewiesen.
+
+## 0.2.0-beta.13 – 25.11.2026
+
+Kompakte Projektkopfzeile, Zähler direkt in der Navigation und einfache Arbeitsliste ohne wiederholte Projektspalte. Materialregeln, MCP-Verbindung und Brandschutzhinweise bei Bedarf aufklappen. Vorschauhilfe an den bestehenden isolierten Testprüfer angepasst; echte Herstellerprüfung unverändert. 43 gezielte Funktionstests und 46 Browserprüfungen bestanden. Am 25.11.2026 als App 0.2.0-beta.13 nach geprüfter Vor-/Nachsicherung und getrennter Wiederherstellungs-/Startprobe lokal aktiviert. 2.000 geschützte Dateien/16 Tabellen unverändert, API/MCP unverändert 3.9.0. Keine Veröffentlichung. [Umfang und Prüfgrenzen](docs/GUI_ASSISTENT_VEREINFACHUNG.md).
+
+## 0.2.0-beta.12 – 24.11.2026
+
+Nach PDF-Freigabe, Ablehnung oder Zurückziehen folgt der nächste offene Vorschlag hinter der aktuellen Datei. Gemeinsame sichtbare Reihenfolge, kein automatischer Umlauf zum Anfang; am Ende Hinweis auf früher übersprungene Dateien. JSON-Wechsel und Formularweg ohne JavaScript erhalten, jede Datei weiterhin einzeln manuell freigeben. Enthält beta.11-Rückziehfunktion; API/MCP unverändert 3.9.0 (64 Operationen/55 Werkzeuge). [Ablauf](docs/PRUEFREIHENFOLGE.md). Am 24.11.2026 nach ausdrücklicher Freigabe und geprüfter Sicherung/Wiederherstellung lokal aktiviert. Bestand und Dateientscheidungen unverändert; keine Veröffentlichung.
+
+## 0.2.0-beta.11 – 24.11.2026
+
+API/MCP 3.9.0: bis zu zehn offene Dateivorschläge mit Begründung und Beleg atomar zurückziehen. Eigener Status, Originale/Verlauf erhalten, GUI mit direktem Wechsel zur nächsten Datei; zurückgezogene Vorschläge entsperren die gezielte Gerätelöschung, andere fachliche Bezüge bleiben geschützt. 64 Operationen/55 Werkzeuge, keine Datenbankschema-Migration oder Dateifreigabe über MCP. [Ablauf und Grenzen](docs/DATEIVORSCHLAEGE_ZURUECKZIEHEN.md). Als Einzelversion nicht separat aktiviert; seit beta.12 enthalten.
+
+## 0.2.0-beta.10 – 24.11.2026
+
+API/MCP 3.8.2, Produktprüfung V7: belegte Hersteller-/Markenzuordnungen ergänzen, veröffentlichte PDF-Endpunkte ohne Dateiendung erkennen, FRÄNKISCHE-Familienartikel an eigene Typ-/SKU-/GTIN-Zeile binden und beschriftete NIEDAX-/OBO-Varianten exakt prüfen. Reine Katalogmaße sind optional; tatsächliche Ausführungsangaben bleiben notwendig. Konkrete Blocker erzeugen keine zusätzliche allgemeine Reparaturschleife. Bestehende Daten/Freigaben erhalten, neue Dateien nur manuell einzeln freigeben. 63 Operationen/54 Werkzeuge unverändert. [Regeln und Grenzen](docs/ME01_QUELLEN_UND_MASSE.md). Am 24.11.2026 nach geprüfter Vollsicherung und getrennter Wiederherstellungsprobe lokal aktiviert. Bestand und Dateientscheidungen unverändert; keine Veröffentlichung.
+
+## 0.2.0-beta.9 – 23.11.2026
+
+API/MCP 3.8.1, PDF-Prüfrichtlinie v6: exakte NIEDAX-RAW-Innen-/Gesamtbreite und bestätigter OBO-Artikelalias mit beschrifteten Längen-/Breitenfeldern. Aktuelle Blocker stellen Zuordnungskonflikte zurück; nur passende neue Prüfmöglichkeiten öffnen alte Blocker. Explizite Muster im Bemerkungsfeld erzeugen keine Recherche-/Gerätefeldfragen. Bestehende Positionen, Quellen und Freigaben erhalten; jede neue Datei weiterhin manuell einzeln prüfen. 63 Operationen/54 Werkzeuge unverändert. [Details](docs/PRUEFLUECKEN_ME01.md).
+
+## 0.2.0-beta.8 – 23.11.2026
+
+API/MCP 3.8.0, Agentenvertrag 2.1: zentrale Materialquellerfassung und belegte Gerätezuordnung mit eigener Vollständigkeitsprüfung, unabhängige Aufgaben vor Rückfragen, thematische Fragepakete bis zu drei Fragen und unveränderte Größen-/Freigabegrenzen. 63 Operationen/54 Werkzeuge. Bestehende Daten/Dateientscheidungen bleiben erhalten; keine stille Materialmigration. [Ablauf und Grenzen](docs/ZENTRALE_AUFGABENSTEUERUNG.md).
+
+## 0.2.0-beta.7 – 23.11.2026
+
+API/MCP 3.7.0: drei projektbezogene Ausschlüsse für Verbindungsklemmen, Kabel/Leitungen und Befestigungsmaterial im Doku-Assistenten. Steuern kompakte Agentenanweisungen, neue Materialübernahme, Artikelrecherche und erzeugte Gerätelisten. Daten, Originalpositionen, Dateien und Freigaben bleiben erhalten; explizite Auswahl mit Verlauf und Versionsschutz. Neue Projekte mit drei aktiven Regeln, alte Kabeldokumentation bleibt bis zur Änderung erhalten. 61 Operationen/52 Werkzeuge unverändert. [Ablauf und Aktivierungsstand](docs/MATERIALAUSSCHLUESSE.md).
+
+Die folgenden Versionen sind historische Stände.
+
+## 0.2.0-beta.6 – 23.11.2026
+
+API/MCP 3.6.1: normale Neuanlage übernimmt ausschließlich eingegebene Stammdaten und Struktur. Keine Beispielgeräte, Schotts, Systeme, Dokumente oder Projekthinweise. Leistungsbereichsauswahl startet leer, neue Listen ohne Platzhalterposition. Bestehende Projekte, Vorlagen, Importe und Freigaben erhalten. 61 Operationen/52 Werkzeuge, keine neuen Rechte/Argumente. [Ablauf und Aktivierungsstand](docs/LEERE_PROJEKTANLAGE.md).
+
+Die folgenden Versionen sind historische Stände.
+
+## 0.2.0-beta.5 – 22.11.2026
+
+API/MCP **3.6.0**: ein lesendes Werkzeug für höchstens drei PDF-Kandidaten aus offizieller Produktseite und einer eingebundenen Fragmentstufe, ohne HTML-/PDF-Volltext. Produktprüfung **v5** bestätigt die gezielte NIEDAX-KTUM-Auflagelängenzuordnung und lässt andere Maße/Varianten gesperrt. 61 Operationen/52 Werkzeuge (21 lesend, 31 schreibend). Keine Datenmigration; bestehende Daten und manuelle Einzelprüfung erhalten. [Ablauf und Grenzen](docs/KOMPAKTE_HERSTELLER_LINKS.md).
+
+Die folgenden Versionen sind historische Stände.
+
+## 0.2.0-beta.4 – 22.11.2026
+
+API/MCP **3.5.0**: kompakte Brandschutz-Recherchehilfe mit Systemarten, Herstellerquellen, Formularreihenfolge und gezielten Faktenchecklisten. Testannahmen bleiben vom tatsächlichen Einbau getrennt. Vorlagen und unvollständige Erklärungsentwürfe erfüllen keine Pflicht, auch nach manueller Übernahme/Umbenennung. GUI zeigt den Status; bestehende Dateien und Freigaben erhalten. 60 HTTP-Operationen/51 MCP-Werkzeuge (20 lesend, 31 schreibend), keine Datenmigration oder neuen Berechtigungsarten. [Ablauf und Grenzen](docs/BRANDSCHUTZ_AGENTENABLAUF.md).
+
+Die folgenden Versionen sind historische Stände.
+
+## 0.2.0-beta.3 – 22.11.2026
+
+API/MCP **3.4.0**: kompakte Statusübersicht ohne vollständige Listen, kleine Abschnittsseiten und direkte Anforderungs-/Warteziele in den bestehenden Werkzeugen. Filter vor Seitenauswahl, größenabhängige Seiten mit nextOffset, gezielte Originalbelege und unveränderte HTTP-Defaults. 59 HTTP-Operationen/50 Werkzeuge; keine zusätzlichen Rechte oder Datenmigration. Dateien weiterhin ausschließlich manuell einzeln freigeben. [Vertrag und Prüfstand](docs/KOMPAKTE_STATUSABFRAGEN.md).
+
+Die folgenden Abschnitte sind historische Stände.
+
+## 0.2.0-beta.2 – 22.11.2026
+
+Brandschutz-PDF-Verknüpfung und Herstellerprüfung korrigiert; API/MCP **3.3.1**, weiterhin 59 HTTP-Operationen und 50 Werkzeuge. Aktive Materialpositionen, erhaltene GUI-Zuordnung, Kapitelverweise und Datenblattabdeckung zusammengeführt. Offizielle ZAPP-ZIMMERMANN-Quelle und exakter System-/Komponentenabgleich für Montageanleitungen. Datenmodell und Abhängigkeiten unverändert; Dateien ausschließlich einzeln manuell freigeben. [Prüfablauf und Bereitstellung](docs/BRANDSCHUTZ_PDF_VERKNUEPFUNG.md).
+
+Die folgenden Versionen sind historische Stände.
+
+## 0.2.0-beta.1 – 22.11.2026
+
+- App-Version für das neue Funktionspaket erhöht; API/MCP bleiben 3.3.0 mit 59 HTTP-Operationen und 50 Werkzeugen. Abhängigkeiten und Datenmodell unverändert.
+- Informationsfragmente mit Originalbelegen, Kontextbindung, Widersprüchen und Korrekturen führen; Aufgaben nach Voraussetzungen und Nutzen gezielter Rückfragen auswählen. Neuer kleiner Wissensleser, keine automatische Primärfeldänderung oder Dateifreigabe. [Fakten und Abhängigkeiten](docs/FAKTEN_UND_ABHAENGIGKEITEN.md).
+- Brandschutz fordert eine ausgefüllte Übereinstimmungsbestätigung sowie Montageanleitung und Systemnachweis je verwendetem System; vorhandene Anforderungen und Entscheidungen erhalten. [Pflichtunterlagen](docs/BRANDSCHUTZ_PFLICHTUNTERLAGEN.md).
+- Release Notes, Einstieg, Bedienung, API-/MCP-Anleitungen, Versionsschema, offene Punkte und Tagesabschluss abgeglichen. Historische Nachweise behalten ihren damaligen Stand.
+- Funktionaler Stand mit 258 Anwendungstests geprüft; endgültige Versionsprüfung, Sicherung und lokale Aktivierung im [aktuellen Stand](docs/AKTUELLER_STAND.md). [Releaseumfang und Grenzen](docs/RELEASE_NOTES.md). Keine automatische Veröffentlichung.
+
+## 21.11.2026 – Einheitliches GUI-/PDF-Fußlogo
+
+- PDF-Fußlogo aus derselben Globus-SVG wie die GUI abgeleitet; bisheriges Laborsymbol ersetzt. Transparenz, Website-Link, Branding-Schalter und Kunden-/Erstellerlogos erhalten.
+- Quelle und PNG über Prüfsummen aneinander gebunden. 245 Anwendungstests und acht Sicherungstests bestanden; vierseitiger künstlicher Export visuell geprüft. Gesichert lokal aktiviert, bestehende Daten und Dateifreigaben unverändert. [Nachweis und Pflege](docs/PDF_BRANDING.md).
+
+## 21.11.2026 – Mehrere Hersteller und Systeme (API/MCP 3.1.0)
+
+- Mehrere einzeln adressierbare Zuordnungen je Leistungsbereich in API, MCP und kompakter GUI; Deaktivierung mit Erhalt und Wiederaktivierung. Alte Einzelzuordnungen ohne Startmigration erhalten.
+- Gemeinsame Prüfung für GUI/API, kein Überschreiben mehrdeutiger Ziele, Bestandsfelder erhalten und Zusammenfassung aller verwendeten Systeme in PDF-/Exportmetadaten. Kleine dreistufige Katalogseiten und kompakte Schreibbelege bei unveränderten Antwortgrenzen.
+- 244 Anwendungstests, acht Sicherungstests, sieben Wartungsprüfungen und künstliche Browserprüfung bestanden. Gesichert lokal aktiviert; 1.329 Dateien/16 Tabellen unverändert. Keine neue Dateifreigabe. [Vertrag, Bedienung und Betriebsnachweis](docs/MEHRFACH_SYSTEMAUSWAHL.md).
+
+## 21.11.2026 – Schneller manueller Freigabeablauf
+
+- Einzelentscheidungen ohne vollständiges Neuladen, direkter Wechsel zur nächsten offenen Datei desselben Auftrags und Aktualisierung der Übersicht im Hintergrund.
+- Schlanke Einzelansicht ohne projektweite Bereitschaftsprüfung; bisherige PDF-Darstellung beim Wechsel beenden. Folgefreigabe erfordert weiterhin eigene Sichtung und neue manuelle Bestätigung.
+- 237 Anwendungstests, acht Sicherungstests, sieben Wartungsprüfungen und künstliche Browserprüfung bestanden. Gesichert lokal aktiviert; Daten und Freigaben unverändert, API/MCP unverändert. [Nachweis](docs/GUI_FREIGABEABLAUF.md).
+
+## 21.11.2026 – ESYLUX-/Gira-Prüflücken (API/MCP 3.0.1)
+
+- Deutsche ESYLUX-Domain und belastbarer Artikel-/GTIN-Beleg bei grafischem Herstellerlogo; Gira-Tabellenköpfe, gruppierte Artikelnummern und zeilenweise PDF-Artikelprüfung korrigiert.
+- Neue Richtlinie v2 verwendet ältere Cache-Befunde nicht weiter; Originale, Daten und Freigaben erhalten. Keine neuen Werkzeuge oder Rechte.
+- 229 Anwendungstests, acht Sicherungstests und zwei Vertragsprüfungen bestanden; lokal gesichert aktiviert. Zwei Herstellerdatenblätter im bestehenden Auftrag als offene Vorschläge, weiterhin ausschließlich manuell freizugeben. [Nachweise](docs/PRODUKTPRUEFUNG_KORREKTUR.md).
+
+
+## 21.11.2026 – Verbindliche Hersteller-PDF-Prüfung (API/MCP 3.0)
+
+- Hersteller-Produktseite und verlinkte PDF serverseitig prüfen; gezielte Artikel-/Variantenbelege, konservative Ablehnung unklarer Treffer und begrenzte lokale Textextraktion.
+- Bestehendes MCP-Werkzeug um beide Quellen und `mode=check` ergänzt; neuer HTTP-Endpunkt, kompakte Befunde und privater gebundener Cache. Technische Multipart-Dateien und spätere Kategorieänderungen ebenfalls geschützt.
+- Bestehende Dateien/Freigaben erhalten, neue Dateien weiterhin ausschließlich manuell einzeln übernehmen. Neue GUI zeigt den Prüfbeleg kurz an.
+- Lokal gesichert aktiviert; 226 Anwendungstests, acht Sicherungstests und zwei Vertragsprüfungen bestanden. [Details und Prüfgrenzen](docs/PRODUKTPRUEFUNG.md).
+
+
+## 21.11.2026 – MCP-Dateiübergabe zwischen Browser-Container und Mac repariert
+
+- Host-MCP 2.3.0: Hersteller-PDFs direkt über `metadata.sourceUrl` vorschlagen, lokaler `filePath` optional. Bekannte Browser-Containerpfade verwenden die Quellenadresse als Ersatz. Konkrete Quellfehler statt pauschalem Ordnerfehler; HTTPS-/DNS-/Redirect-/Größen-/Zeitgrenzen und privater Dateierhalt.
+- HTTP-API/Docker unverändert 2.2.0, weiterhin 49 Werkzeuge. 216 Anwendungstests und acht Sicherungstests bestanden. Vorhandener Test-Auftrag erhalten, genau ein BRUMBERG-Datenblatt als offener Vorschlag eingereicht; keine Freigabe. Nach Neustart direkt im Codex-Chat verifiziert. [Ablauf und Nachweise](docs/MCP_DATEIUEBERGABE.md).
+
+## 21.11.2026 – Einzellöschung und Wiederherstellung lokal aktiviert
+
+- API/MCP 2.2.0: Gerätepositionen, Projekt-Dokumente und Assistentenaufträge gezielt entfernen, privaten Papierkorb und unveränderliches Lösch-/Wiederherstellungsprotokoll führen, gespeicherten Zustand ohne Überschreiben wiederherstellen. Vorschau, Benutzerbeleg, Version und Wiederholungsschlüssel verpflichtend.
+- Dokumentbezüge werden gezielt entfernt; offene Anforderungen/Exporte und veränderte Wiederherstellungsziele werden geschützt. Übernommene Dokumente behalten nach Auftragslöschung ihre Freigabeherkunft. Keine neue Dateifreigabe über API/MCP.
+- 209 Anwendungstests, acht Sicherungstests und sieben Wartungsprüfungen bestanden. Nach geprüfter Sicherung lokal aktiviert; 1.143 Dateien/16 Tabellen unverändert, keine realen Einträge gelöscht. [Ablauf und Nachweise](docs/EINZELLOESCHUNG.md).
+
+## 21.11.2026 – gesicherter Projektreset über API/MCP lokal aktiviert
+
+- API/MCP 2.1.0: Resetvorschau und ausdrücklich bestätigter Reset mit Versionsschutz, geprüfter Projektsicherung, atomarem Datenbankabschluss und sicher wiederholbarer Dateibereinigung. Alte Wiederholungsschlüssel können gelöschte Inhalte nicht wieder einspielen; gemeinsame Alt-Ausgaben bleiben geschützt.
+- Leere Gerätelisten bleiben leer. Arbeitsplan verlangt nach Reset ausschließlich neu bereitgestelltes Material; manuelle Dateifreigabe unverändert.
+- Nach geprüfter Vollsicherung ausschließlich Test · 0815-3 über MCP zurückgesetzt: 88 Gerätezeilen, 58 Dokumenteinträge und alter Auftrag samt Vorschlägen entfernt. Andere Projekte/Konten unverändert nachgewiesen. 203 Anwendungstests, acht Sicherungstests und sieben Wartungsprüfungen bestanden. [Umfang und Nachweise](docs/PROJEKT_RESET.md).
+
+## 21.11.2026 – API-/MCP-Agentenvertrag 2.0 lokal aktiviert
+
+- Kompakte Defaults, gezielte Detailansichten und kleine Seiten; API-Leseantworten begrenzt, MCP-Standardantworten höchstens 8 KiB und ausdrücklich angeforderte Vollansichten höchstens 32 KiB. Auch Werkzeugkataloge werden paginiert. Serveranweisung verkürzt, keine vollständige JSON-Doppelausgabe mehr.
+- Chatantworten und Arbeitsentscheidungen gemeinsam mit Beleg, Versionen und Idempotenz speichern; automatische Zurückstellung/Wiederaufnahme und aktueller Folgeplan. Dauerhafte Historie gezielt lesbar.
+- 208 Anwendungs-/Sicherungsprüfungen plus sieben Wartungsprüfungen bestanden; Sicherung getrennt wiederhergestellt/gestartet, Bestandsvergleich unverändert. [Vertrag und Umstellung](docs/AGENTENVERTRAG.md).
+
+## 21.11.2026 – Assistent an geöffnetes Projekt gebunden
+
+- Projektwahl entfernt; Übersicht, Zähler, Auftragsanlage und Status nur für das geöffnete Projekt. Direkte Links, Exporte und alte Formulare anderer Projekte gesperrt. Wechsel in anderem Fenster wird beim Statusabruf erkannt.
+- API/MCP und Dateifreigaben unverändert. 205 Anwendungs-/Sicherungsprüfungen bestanden, gesicherte lokale Aktivierung und Bestandsvergleich unverändert. [Details](docs/GUI_ASSISTENT_ARBEITSPLATZ.md#anschlusskorrektur-ausschließlich-geöffnetes-projekt).
+
+## 21.11.2026 – Doku-Arbeitsplatz lokal aktiviert
+
+- Genehmigte gemeinsame Arbeitsliste mit Projektwahl, Filtern, Statuszählern und Detailbereich auf bestehende Daten übertragen. Material-/Benutzeraufträge versioniert ergänzen, Rückfragen direkt beantworten, Punkte begründet zurückstellen/wieder aufnehmen.
+- Echte geschützte PDF-Einzelprüfung erhalten; Ablehnungsgrund dauerhaft und für den Agenten lesbar. Keine Dateifreigabe über API/MCP.
+- Vorherige veraltete MCP-Zählerprüfungen korrigiert. API 1.6.0/MCP 1.7.0 einschließlich allgemeiner Bearbeitungszustände gesichert aktiviert. 204 Anwendungs-/Sicherungsprüfungen und sieben Wartungsprüfungen bestanden; Bestandsvergleich unverändert. [Nachweise](docs/GUI_ASSISTENT_ARBEITSPLATZ.md).
+
+## 20.11.2026 – Unterlagenarbeit im Quellstand ergänzt, noch nicht aktiviert
+
+- API 1.6.0 / MCP 1.7.0: Recherche-/Wartezustände für Anforderungen aller Kategorien und Rückfragen mit Quellen, Benutzerbelegen und unveränderter Historie. Zwei neue Werkzeuge; 47 HTTP-Operationen / 39 MCP-Werkzeuge.
+- Arbeitsplan berücksichtigt Nichtfunde, Zurückstellungen und unpassenden abgelehnten Inhalt; neue Antworten/Zieländerungen entwerten alte Zurückstellungen. Kundenpflichten bleiben unerfüllt und manuelle Dateiprüfungen erreichbar.
+- Keine Produktionstabellen, Quellen, Freigaben oder Dateientscheidungen geändert. [Vertrag und Aktivierungsgrenzen](docs/UNTERLAGENARBEIT.md).
+
+## 20.11.2026 – Datenblattablauf geprüft und lokal verbessert
+
+- API 1.5.0 / MCP 1.6.0: optionaler kompakter Folgeplan mit unverändertem Standard und erhaltenen Rechten/Versionen; 94,3 % weniger gemessene serialisierte Ergebniszeichen, keine behauptete Tokenabrechnung.
+- Abgelehnte interne Entwürfe werden nicht erneut automatisch vorbereitet; Wartegründe bleiben sichtbar und Kundenpflichtquellen offen. Artikelliste zeigt Suchdatum und Quellen.
+- Vier Datenblätter und eine Montageanleitung für Test 0815-3 nur vorgeschlagen. Drei unbekannte R&M-Varianten ausdrücklich offen; bestehende Entscheidungen erhalten.
+- 202 Anwendungs-/Sicherungsprüfungen, sieben Wartungsprüfungen, künstliche Browserprüfung, Vollsicherung/getrennter Wiederherstellungsstart und unveränderter Bestand nach lokaler Aktivierung. [Nachweise und Grenzen](docs/TAGESABSCHLUSS_2026-11-20.md).
+
+## 19.11.2026 – API-/MCP-Dokumentation und verlustfreie Speicherpflege
+
+- Zentrale Übersicht, Architektur-/Refactoring-Karte und automatisch erzeugte Referenz für 45 HTTP-Operationen / 37 MCP-Werkzeuge. Neue Befehle `docs:api`, `docs:check` und passende CI-Prüfung verhindern unbemerkte Dokumentationsabweichungen. Rechte, Versionsschutz, manuelle Dateifreigabe und bekannte Ausbaupunkte klar getrennt.
+- `storage:compact` plant und prüft unabhängige APFS-Klone identischer Sicherungs-/Nachweiskopien auf dem Mac. Keine Hardlinks, entfernten Dateipfade, geänderten Inhalte oder pauschale Docker-Bereinigung. Rund 10 GB mehr freier Mac-Speicher gemessen; 30 Sicherungen erneut validiert und aktiver Bestand unverändert.
+- Sieben Wartungstests bestanden. Laufender API-Vertrag stimmt mit der erzeugten Referenz überein. Keine neue App-Aktivierung oder Online-Veröffentlichung; vorheriger 201-Test-Appnachweis bleibt getrennt.
+
+## 19.11.2026 – BALS-Anforderung auf die beiden realen UV korrigiert
+
+- Expliziter, versionierter API-/MCP-Korrekturweg für bestehende Geräteanforderungen mit vollständiger Vorher-/Nachher-Historie und Benutzerbeleg. Einzelbezüge bleiben kompatibel; eine Anforderung kann mehrere reale Geräte gemeinsam erfassen.
+- Auf Benutzerauftrag genau die bestehende BALS-Datenblattanforderung von der historischen Typreferenz auf UV 01/UV 02 umgestellt und korrekt als Datenblatt eingeordnet. Dasselbe freigegebene Original erfüllt beide Geräte; keine neue Verteilung, Datei oder Freigabe.
+- Typreferenzen, fremde Artikel, doppelte Ziele, veraltete Versionen und unerlaubte Änderungen werden abgewiesen. GUI zeigt mehrere Gerätebezüge. 201 Prüfungen bestanden; Sicherung und getrennte Wiederherstellung geprüft. Nach Korrektur alle 65 Vorschläge, 61 Sichtungen, Geräte-/Anhangsdaten und 740 vorhandene PDF-Dateien unverändert; 30/33 Kundenanforderungen erfüllt.
+
+## 19.11.2026 – automatische Datenblattprüfung lokal aktiviert
+
+- Gemeinsame Artikelabdeckung aus allen aktiven Gerätepositionen für API, MCP und minimalistische GUI; unabhängig von Einzelanforderungen. Instanzen gebündelt, Verbrauchsteile/Altmuster begründet ausgenommen.
+- Neue lesende Abdeckungsroute und versionierte Recherchebelege für Nichtfunde/unklare Varianten; MCP 1.4.0 mit 36 Werkzeugen, OpenAPI 1.3.0. Datenblätter bleiben bis zur GUI-Einzelprüfung Vorschläge.
+- Vorhandene Originale wiederverwendet, Typ-/Variantenwechsel und manipulierte Dateien erkannt. Historisch falsch kategorisierte Datenblattpflichten behalten eng begrenzt ihre explizite Bindung an dasselbe freigegebene Original; Anforderungen und Entscheidungen unverändert.
+- Test 0815-3: 60 Artikel geprüft, 23 neue Original-PDFs vorgeschlagen und anschließend vom Benutzer über die GUI freigegeben. Aktuell 46 Artikel abgedeckt, elf belegte Nichtfunde, drei R&M-Varianten offen. Alte BALS-Typreferenz bleibt getrennt von den beiden realen UV.
+- 197 Prüfungen erfolgreich, Desktop-/Mobilprüfung, Sicherung, getrennte Wiederherstellung und unveränderte Bestandsdaten beim lokalen Containerwechsel nachgewiesen. Keine automatisch erteilte Freigabe und keine Online-Veröffentlichung.
+
+## 19.11.2026 – Bearbeitungsrichtlinie und Effizienzauswertung
+
+- Verbindliche Regeln für reale Dokumentationsarbeit, Recherche, Rückfragen, Zurückstellungen, Ablehnungen, Bestandsschutz und manuelle Dateientscheidungen festgelegt; über `AGENTS.md` im Projekt verankert.
+- Richtlinie 1.1 priorisiert Datenblätter für alle bestätigten dokumentationsrelevanten Artikel. Bestandsweite Abdeckung, gebündelte Recherche pro Artikel/Variante und gemeinsame Statusanzeige in edokus Struktur als höchste fachliche Ausbaustufe festgelegt; automatische Ermittlung noch nicht implementiert.
+- Große Planantwort und doppelte MCP-Ergebnisdarstellung vermessen. Priorisierter Ausbauplan mit kompakten Antworten, Änderungsabruf, sicheren Sammeloperationen und messbaren Abnahmekriterien dokumentiert.
+- Reine Richtlinien-/Planungsänderung; neue API-Parameter und MCP-Funktionen noch nicht implementiert oder aktiviert. Keine behauptete gemessene Tokenersparnis.
+
+## 19.11.2026 – lokaler Tagesabschluss, Assistenteneinstieg und Gerätelisten
+
+- Menüpunkt **Doku-Assistent** zeigt direkt offene Punkte eigener aktiver Aufträge. Antworten in der Liste, Dateisuche/-filter und direkter Zugang zu Angaben, Ausgabe, Verlauf, neuen Aufträgen und MCP-Einstellungen.
+- edoku-Aktionsplan mit Herstellerrecherche und belegten Chatantworten; native Codex-Verbindung mit 34 Werkzeugen und Host-Adapter über Containerupdates hinweg geprüft.
+- Projekttexte und zugehörige Anforderungen intern von Kundenunterlagen getrennt. Bemerkungen/Quellenhinweise aus Geräte-PDFs ausgeschlossen.
+- Spannung und Leistung aus sichtbaren Gerätespalten und neuen Geräte-PDFs entfernt. Gespeicherte Werte auch beim GUI-Speichern erhalten; PDF-Ausgabeversion 3 schützt vor erneutem Export alter Layouts.
+- 191 automatisierte Prüfungen, Browserprüfungen und sechs Geräte-PDFs mit sieben Seiten einer separaten Projektkopie. Sicherungen mit Abbild, getrennte Wiederherstellung und unveränderter Bestand nach lokaler Aktivierung geprüft.
+- Reale Herstellerunterlagen für Test 0815-3 weiter recherchiert. Projekt bleibt wegen fehlender Pflichtquellen/Ausgaben fachlich offen. Keine automatische Dateiübernahme und keine Online-Veröffentlichung im Abschluss.
+- [Tagesabschluss mit verbindlichen Entscheidungen und nächstem Einstieg](docs/TAGESABSCHLUSS_2026-11-19.md).
+
+## 19.11.2026 – kompakte Doku-Assistenten-Übersicht
+
+- Übersicht mit nächster Aktion, offenen Dateien und getrennten Rückfragen; Auftragstext, Quellenbelege und Historie in eigenen Ansichten.
+- Kurze Dateizeilen mit Statusfiltern und Suche statt langer Textkarten; übernommene und ersetzte Fassungen stehen nicht in der offenen Prüfliste.
+- Eigene Dateiprüfung mit PDF-Vorschau, optionaler Ganzseitenansicht und eingeklappter Zuordnung. Nach manueller Einzelbestätigung direkt zur nächsten offenen Datei.
+- Unverändert: Sichtung, Checkbox, Prüfsumme, Projektversion und GUI-Einzelfreigabe sind Voraussetzung jeder Übernahme.
+
+## 19.11.2026 – MCP-Materialablauf
+
+- Chatantworten mit Quellenbeleg und Versionsprüfung in den Dokumentationsauftrag übernehmen; überholte Fragen mit Historie kennzeichnen.
+- Projektbezogene Hersteller-/Systemtypen ergänzen, ohne globale Kataloge oder vorhandene Geräte zu ersetzen.
+- Projekttexte als edoku-Kapitelentwürfe vorbereiten; Text und PDF erst nach manueller GUI-Einzelprüfung übernehmen.
+- Alte offene Dateifassungen ohne Löschung ablösen; freigegebene Originale bleiben erhalten.
+- Nachweise und weitere PDF-Projektunterlagen in Exportplanung, Inhaltsverzeichnis und Gesamt-PDF berücksichtigen.
+- Ablauf, Rechte und Prüfungen: [MCP-Materialablauf](docs/MCP_MATERIALABLAUF.md).
+
+## 18.11.2026 – Einstellungsleiste und Projektmanager
+
+- Lokal aktiviert und auf der Online-Testinstanz geprüft: gerundete Einstellungsleiste und Farbwechsel nach Auswahl einer Theme-Vorlage.
+- Auf GitHub veröffentlicht: überarbeitetes README mit siebenseitigem Beispiel-Export und technischer Online-Prüfstand.
+- Mit künstlichen Daten in der Docker-Vorschau geprüft: zentriertes Plus für neue Projekte, originales nickgm-Globus-Logo und Direktnavigation zu Projektordnern, Benutzerverwaltung und Sicherheitsprotokoll.
+- [Tagesabschluss mit Prüfungen und Bereitstellungsständen](docs/TAGESABSCHLUSS_2026-11-18.md)
+
+## 17.11.2026 – Sicherheitskorrekturen für die lokale Anwendung
+
+- Eingeschleustes JavaScript in eingebetteten Projektdaten verhindert; CSP und weitere Antwortheader ergänzt.
+- Routenprüfung vereinheitlicht; frühe Anfrage-, Schreib-, Export- und Speichergrenzen eingeführt.
+- Auditprotokoll inkrementell und mit durchgehender, überprüfter Rotation; keine historischen Einträge gelöscht.
+- Eigener Erstzugang bei Produktions-Neuinstallation erforderlich; Docker ohne Root-Rechte, Wiederherstellung mit passender Benutzerkennung.
+- 118 automatisierte Prüfungen und acht Projektkopien (80 Vergleiche, 249 PDF-Seiten, acht Rückimporte) bestanden. Lokale Aktivierung getrennt vom unveränderten Online-Stand.
+- Details: [Sicherheitsupdate](docs/SICHERHEITSUPDATE_2026-11-17.md).
+
 ## Tagesabschluss dokumentiert – 17.11.2026
 
 - [Tagesabschluss](docs/TAGESABSCHLUSS_2026-11-17.md) mit getrenntem Quell-, Online- und lokalem Installationsstand ergänzt.
@@ -177,3 +399,8 @@ Das Format orientiert sich an Keep a Changelog. Die Versionierung folgt semantis
 - Gesamt-PDF, ZIP-Export, Trennstreifen und Ordnerrücken müssen weiter im Praxiseinsatz geprüft werden.
 - Klickbare Inhaltsverzeichnis-Einträge im finalen Gesamt-PDF sind noch offen.
 - Normtexte und erzeugte Formulartexte müssen fachlich weiter geprüft werden.
+
+
+## 21.11.2026 – Produktprüfung / API-MCP 3.0.2
+
+Hersteller-Linkauflösung, gebundene Produktfragmente, ausgewählte Varianten und PDF-Artikel-/Spaltenlayouts korrigiert. Technische Rechercheblocker gesondert speicherbar, Fortschrittsantwort im MCP kompakt. Vorhandene Dateien und Freigaben erhalten; neue Dateien nur nach GUI-Einzelsichtung. Einzelheiten und Grenzen: `docs/PRODUKTPRUEFUNG_PRUEFLUECKEN.md`.

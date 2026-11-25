@@ -98,12 +98,16 @@ class InstallationBackupTests(unittest.TestCase):
 
     def test_stopped_container_is_not_started_by_backup(self):
         metadata = self.docker_metadata(False)
+        metadata["Config"]["User"] = "501:20"
+        (self.root / "docker-compose.override.yml").write_text('services:\n  edoku:\n    user: "501:20"\n')
         with patch.object(backup, "docker", return_value=json.dumps([metadata])) as docker:
             manifest = backup.create_with_docker(self.root, self.destination, "test-container", False)
         self.assertEqual(docker.call_count, 1)
         self.assertTrue(manifest["complete"])
         target = self.base / "restored-docker"; backup.restore_backup(self.destination, target)
         compose = json.loads((target / "compose.restore.json").read_text())
+        self.assertEqual(compose["services"]["edoku"]["user"], "501:20")
+        self.assertEqual((target / "docker-compose.override.yml").read_bytes(), (self.root / "docker-compose.override.yml").read_bytes())
         self.assertEqual(compose["services"]["edoku"]["image"], metadata["Image"])
         self.assertEqual(compose["services"]["edoku"]["ports"], ["127.0.0.1:3104:3000"])
 

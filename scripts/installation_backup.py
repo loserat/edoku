@@ -13,7 +13,7 @@ import tempfile
 import uuid
 
 AREAS = ("data", "config", "storage", "output", "templates")
-EXTRAS = (".env", "docker-compose.yml", "Dockerfile", "package.json", "package-lock.json")
+EXTRAS = (".env", "docker-compose.override.yml", "compose.private.yml", "docker-compose.yml", "Dockerfile", "package.json", "package-lock.json")
 SQLITE_FILES = {"storage/app.db" + suffix for suffix in ("", "-wal", "-shm", "-journal")}
 
 
@@ -168,6 +168,8 @@ def restore_backup(backup, target):
             service = {"image": metadata["Image"], "ports": ["127.0.0.1:3104:3000"],
                        "volumes": ["./" + name + ":/app/" + name for name in AREAS],
                        "environment": metadata["Config"].get("Env", []), "restart": "no"}
+            if metadata["Config"].get("User"):
+                service["user"] = metadata["Config"]["User"]
             write_json(target / "compose.restore.json", {"services": {"edoku": service}})
         write_json(target / "restore-report.json", {"verified": True, "sourceBackup": str(backup), "database": manifest["database"]})
     except BaseException:

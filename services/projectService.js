@@ -5,8 +5,9 @@ const { assertSafePath, ensureInsideBase, accessError, sanitizeId } = require(".
 const scopes = new WeakMap();
 const { initialProjectDocument } = require("./projectDataStoreService");
 
-function bindProjectScope(projekt, userId, projectId) {
-  scopes.set(projekt, { userId, projectId });
+function bindProjectScope(projekt, userId, projectId, { outputRunId } = {}) {
+  if (outputRunId !== undefined && !/^[a-z0-9_-]{1,80}$/.test(outputRunId)) throw accessError("Ungültige Ausgabezuordnung.");
+  scopes.set(projekt, { userId, projectId, ...(outputRunId ? { outputRunId } : {}) });
   return projekt;
 }
 function projectScope(projekt) { return scopes.get(projekt); }
@@ -17,6 +18,7 @@ function scopedProjectRoot(rootDir, userId, projectId) {
 
 // Alte gemeinsame Ausgaben dürfen nur bei eindeutigem Eigentümer gelesen werden.
 function legacyOutputStatus(rootDir, projekt) {
+  if (projectScope(projekt)?.outputRunId) return "none";
   if (!projectScope(projekt)) return "standalone";
   const ownScope = projectScope(projekt);
   const original = initialProjectDocument(rootDir,ownScope.userId,ownScope.projectId,"projekt.json") || projekt;
@@ -29,6 +31,13 @@ function legacyOutputStatus(rootDir, projekt) {
       const file = path.join(scopedProjectRoot(rootDir, row.user_id, row.id), "data", "projekt.json");
       const value = initialProjectDocument(rootDir,row.user_id,row.id,"projekt.json") || JSON.parse(syncFs.readFileSync(file, "utf8"));
       if (projectFolderName(value) === projectFolderName(original)) owners.push(row);
+    }
+    // Ein Reset darf gemeinsame Alt-Ausgaben nicht nachträglich einem anderen Eigentümer zuschlagen.
+    const db=connection();
+    if(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='project_resets'").get()) {
+      const key=path.relative(rootDir,legacy).split(path.sep).join('/');
+      const claims=db.prepare("SELECT DISTINCT user_id,project_id AS id FROM project_resets WHERE EXISTS(SELECT 1 FROM json_each(receipt,'$.legacyClaims') WHERE value=?)").all(key);
+      for(const claim of claims)if(!owners.some(row=>row.id===claim.id&&row.user_id===claim.user_id))owners.push(claim);
     }
   } catch { return "ambiguous"; }
   const scope = projectScope(projekt);
@@ -111,7 +120,7 @@ function projectFolderName(projekt) {
 // * INFO: Liefert alle wichtigen Output-Pfade für ein Projekt.
 function getProjectPaths(rootDir, projekt) {
   const scope = projectScope(projekt);
-  const projectPath = scope ? path.join(scopedProjectRoot(rootDir, scope.userId, scope.projectId), "output") : path.join(rootDir, "output", "projekte", projectFolderName(projekt));
+  const projectPath = scope ? path.join(scopedProjectRoot(rootDir, scope.userId, scope.projectId), "output", ...(scope.outputRunId ? ["runs", scope.outputRunId] : [])) : path.join(rootDir, "output", "projekte", projectFolderName(projekt));
   return pathsForRoot(projectPath);
 }
 

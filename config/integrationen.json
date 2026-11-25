@@ -1,0 +1,6 @@
+{
+  "apiEnabled": true,
+  "allowWrites": true,
+  "defaultTokenDays": 90,
+  "maxTokenDays": 365
+}

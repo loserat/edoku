@@ -7,6 +7,7 @@ const { chapterFolderForKapitel, createProjectFolder, fileSafeName, getProjectPa
 const { readJson, writeJson } = require("./jsonService");
 const { buildDocumentationPlan, summarizeExportEntries } = require("./documentationPlanService");
 const { generateInhaltsverzeichnis } = require("./pdfService");
+const { DEVICE_LIST_PDF_VERSION } = require("./geraetelistenService");
 const { brandschutzPhotosRelevant, inspectBrandschutzPhotos, photoWarningsFromEntries } = require("./brandschutzPhotoService");
 
 // * INFO: Sucht rekursiv alle PDF-Dateien in einem Ordner. Fehlende Ordner liefern eine leere Liste.
@@ -154,9 +155,11 @@ function addInhaltsverzeichnisLinks(pdfDoc, mergedEntries, layoutRows) {
 }
 
 function metadataForEntry(entry, systems = []) {
-  const selection = systems.find((item) => item.leistungsbereich === entry.leistungsbereich)
-    || systems.find((item) => (item.kapitel || []).includes(entry.originalKapitel)) || {};
-  return { leistungsbereich: entry.leistungsbereich || selection.leistungsbereich || "", hersteller: selection.hersteller || "", systemart: selection.systemart || "", dokumentarten: selection.dokumentarten || [] };
+  const enabled=systems.filter(item=>item.enabled!==false && item.aktiv!==false);
+  const direct=enabled.filter(item=>item.leistungsbereich===entry.leistungsbereich);
+  const rows=direct.length?direct:enabled.filter(item=>(item.kapitel||[]).includes(entry.originalKapitel));
+  const values=key=>[...new Set(rows.map(row=>row[key]).filter(Boolean))].join(' / ');
+  return {leistungsbereich:entry.leistungsbereich||values('leistungsbereich'),hersteller:values('hersteller'),systemart:values('systemart'),dokumentarten:[...new Set(rows.flatMap(row=>row.dokumentarten||[]))]};
 }
 function chapterFileMatches(file, chapter) {
   const prefix = String(chapter).replaceAll(".", "_");
@@ -174,7 +177,7 @@ async function inspectPdf(filePath) {
     const seiten = pdf.getPageCount();
     let metadata = {};
     try { const parsed = JSON.parse(pdf.getSubject() || "{}"); if (parsed && typeof parsed === "object") metadata = parsed; } catch {}
-    return seiten ? { status: "vorhanden", seiten, pdfDocumentId: metadata.edoku === 1 ? metadata.id : null, pdfChapter: metadata.edoku === 1 ? metadata.chapter : null } : { status: "fehlerhaft", seiten: 0, fehler: "PDF enthält keine Seiten." };
+    return seiten ? { status: "vorhanden", seiten, pdfDocumentId: metadata.edoku === 1 ? metadata.id : null, pdfChapter: metadata.edoku === 1 ? metadata.chapter : null, pdfDeviceListVersion: metadata.edoku === 1 ? metadata.deviceListVersion : null } : { status: "fehlerhaft", seiten: 0, fehler: "PDF enthält keine Seiten." };
   } catch (error) {
     return { status: error.code === "ENOENT" ? "fehlt" : "fehlerhaft", seiten: 0, fehler: error.code === "ENOENT" ? "Datei nicht vorhanden." : "PDF ist nicht lesbar oder verschlüsselt." };
   }
@@ -234,7 +237,8 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
       const identified = [];
       for (const file of candidates) {
         const metadata = await inspect(file);
-        if (metadata.pdfDocumentId === node.id && metadata.pdfChapter === node.displayKapitel) identified.push(file);
+        if (metadata.pdfDocumentId === node.id && metadata.pdfChapter === node.displayKapitel
+          && (!node.deviceListId || metadata.pdfDeviceListVersion === DEVICE_LIST_PDF_VERSION)) identified.push(file);
         else stale = true;
       }
       source = takeMatchingFile(identified, node, used);
@@ -254,7 +258,7 @@ async function buildExportliste(rootDir, projekt, matrix, exportlistePath, proje
       previewId: source && source.startsWith(paths.projectPath + path.sep) ? relative(paths.projectPath, source) : "",
       previewUrl: node.attachmentId ? `/anhaenge/preview?id=${encodeURIComponent(node.attachmentId)}` : "",
       quelle: node.requiresFile ? quelle : "Struktur",
-      ...(node.requiresFile ? source ? await inspect(source) : { status: stale ? "veraltet" : "fehlt", seiten: 0, ...(stale ? { fehler: "PDF passt nicht zur aktuellen Kapitelzuordnung. Dokumentation neu erzeugen." } : {}) } : { status: "struktur", seiten: 0 })
+      ...(node.requiresFile ? source ? await inspect(source) : { status: stale ? "veraltet" : "fehlt", seiten: 0, ...(stale ? { fehler: "PDF passt nicht zum aktuellen Ausgabeformat oder zur Kapitelzuordnung. Dokumentation neu erzeugen." } : {}) } : { status: "struktur", seiten: 0 })
     });
   }
   toc.unzugeordneteDateien = external.filter((file) => !used.has(file)).map((file) => relative(rootDir, file));
@@ -322,10 +326,17 @@ async function buildFinalExport(rootDir, projekt, matrix, exportlistePath, optio
   const orderFile = path.join(paths.finalPath, "EXPORT_REIHENFOLGE.txt");
   await fs.writeFile(orderFile, lines.join("\n") + "\n");
   zipFiles.push({ sourcePath: orderFile, zipPath: "00_Inhaltsverzeichnis/EXPORT_REIHENFOLGE.txt" });
+  let reportFile;
+  if (options.report) {
+    reportFile = path.join(paths.finalPath, "DOKUMENTATIONSBERICHT.json");
+    await fs.writeFile(reportFile, JSON.stringify({ ...options.report, export: summarizeExportEntries(ordered), technicalComplete: summarizeExportEntries(ordered).complete,
+      missingDocuments: missing.map(entry => ({ id: entry.id, title: entry.titel, status: entry.status })), photoWarnings: photoWarnings.map(warning => ({ id: warning.id, message: warning.message })) }, null, 2) + "\n");
+    zipFiles.push({ sourcePath: reportFile, zipPath: "00_Inhaltsverzeichnis/DOKUMENTATIONSBERICHT.json" });
+  }
   if (merged.targetPath) zipFiles.unshift({ sourcePath: merged.targetPath, zipPath: `00_Inhaltsverzeichnis/${path.basename(merged.targetPath)}` });
   const zipPath = path.join(paths.finalPath, `${fileSafeName(projekt.projektnummer || "Projekt")}_${fileSafeName(projekt.projektname || "edoku")}_Export.zip`);
   await writeZipFile(zipPath, zipFiles);
-  return { ordered, completePdfPath: merged.targetPath, completePdfPages: merged.pages, skippedMergeFiles: merged.skipped, unassignedFiles: toc.unzugeordneteDateien || [], orderFile, zipPath, missingRequired: missing.filter((entry) => entry.pflicht).map((entry) => `${entry.kapitel} ${entry.titel}`), missingFiles: missing, photoWarnings, summary: summarizeExportEntries(ordered) };
+  return { ordered, completePdfPath: merged.targetPath, completePdfPages: merged.pages, skippedMergeFiles: merged.skipped, unassignedFiles: toc.unzugeordneteDateien || [], orderFile, zipPath, ...(reportFile ? { reportFile } : {}), missingRequired: missing.filter((entry) => entry.pflicht).map((entry) => `${entry.kapitel} ${entry.titel}`), missingFiles: missing, photoWarnings, summary: summarizeExportEntries(ordered) };
 }
 
 // Ein gescheiterter Export darf die letzte fertige Ausgabe nicht zerstören.
@@ -346,7 +357,7 @@ async function prepareFinalExport(rootDir,projekt,matrix,exportlistePath,options
       await writeJson(exportlistePath,result.ordered);
       const relocate=file=>file?path.join(live.finalPath,path.basename(file)):file;
       const {ordered,...answer}=result;
-      return {...answer,completePdfPath:relocate(result.completePdfPath),orderFile:relocate(result.orderFile),zipPath:relocate(result.zipPath)};
+      return {...answer,completePdfPath:relocate(result.completePdfPath),orderFile:relocate(result.orderFile),zipPath:relocate(result.zipPath),...(result.reportFile?{reportFile:relocate(result.reportFile)}:{})};
     } catch(error) {
       if(published)await fs.rename(live.finalPath,working);
       if(moved)await fs.rename(archived,live.finalPath);

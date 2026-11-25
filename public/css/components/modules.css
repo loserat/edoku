@@ -331,6 +331,7 @@
 .editable-table [data-col="abmessung"],
 .editable-table [data-col="lvPosition"],
 .editable-table [data-col="bedienungsanleitungId"],
+.editable-table [data-col="datenblattId"],
 .editable-table [data-col="bemerkung"] {
   min-width: 260px;
   width: 260px;
@@ -1215,7 +1216,7 @@
   z-index: 12;
 }
 
-.settings-top-tabs button {
+.settings-top-tabs :is(button, a) {
   align-items: center;
   background: transparent;
   border: 1px solid transparent;
@@ -1231,21 +1232,22 @@
   min-width: 0;
   padding: 8px 11px;
   text-align: left;
+  text-decoration: none;
 }
 
-.settings-top-tabs button:hover {
+.settings-top-tabs :is(button, a):hover {
   background: var(--ui-hover);
   border-color: transparent;
   color: var(--text);
 }
 
-.settings-top-tabs button[aria-pressed="true"] {
+.settings-top-tabs :is([aria-pressed="true"], [aria-current="page"]) {
   background: color-mix(in srgb, var(--accent) 13%, var(--surface-solid));
   border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
   color: var(--accent-dark);
 }
 
-.settings-top-tabs button:focus-visible {
+.settings-top-tabs :is(button, a):focus-visible {
   outline-offset: -2px;
 }
 
@@ -1261,7 +1263,7 @@
     width: 100%;
   }
 
-  .settings-top-tabs button {
+  .settings-top-tabs :is(button, a) {
     min-height: 42px;
   }
 }
@@ -1327,6 +1329,65 @@
   margin: 10px auto 0;
   max-width: 1280px;
   width: min(100%, 1280px);
+}
+
+.integration-settings { display: grid; gap: 14px; margin: 10px auto 0; max-width: 1280px; width: 100%; }
+.integration-settings [hidden] { display: none !important; }
+body:has(#api-integrations:not([hidden])) .autosave-status { display: none; }
+.integration-settings > *, .integration-columns > * { min-width: 0; }
+.integration-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.integration-settings .settings-panel { order: initial; }
+.integration-settings .form-grid.compact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.assistant-page { display: grid; gap: 16px; max-width: 1440px; margin: 0 auto; }
+.assistant-page [hidden] { display: none !important; }
+.assistant-page > *, .assistant-start-grid > *, .assistant-review-grid > * { min-width: 0; }
+.assistant-page .settings-panel { order: initial; }
+.assistant-page .settings-panel h2, .assistant-page .settings-panel h3, .assistant-page .settings-panel p { margin: 0; }
+.assistant-start-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+.assistant-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.assistant-flow { display: grid; gap: 20px; padding-left: 22px; }
+.assistant-flow li span { display: block; color: var(--muted); margin-top: 5px; }
+.assistant-job-list { display: grid; gap: 10px; }
+.assistant-job { display: flex; justify-content: space-between; align-items: start; gap: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 14px; text-decoration: none; color: var(--text); }
+.assistant-job > span:first-child { min-width: 0; display: grid; gap: 5px; }
+.assistant-job > span:first-child > span { color: var(--muted); overflow-wrap: anywhere; }
+.assistant-preserve { white-space: pre-wrap; overflow-wrap: anywhere; }
+.assistant-agent-message { padding: 12px; background: var(--surface-muted); border-radius: var(--radius-sm); }
+.assistant-review-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr); gap: 20px; }
+.assistant-review-grid > .stack-form { align-content: start; }
+.assistant-review { scroll-margin-top: 90px; }
+.assistant-preview { display: grid; align-content: start; gap: 10px; }
+.assistant-pdf { display: grid; gap: 10px; min-width: 0; }
+.assistant-pdf-canvas { max-height: 780px; overflow: auto; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-muted); }
+.assistant-pdf canvas { display: block; max-width: 100%; background: white; }
+.assistant-image-preview { max-width: 100%; max-height: 780px; object-fit: contain; }
+.assistant-digest { display: block; overflow-wrap: anywhere; font-size: 12px; margin: 8px 0; }
+.assistant-document-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 14px; }
+.assistant-document-group + .assistant-document-group { margin-top: 24px; }
+.assistant-device-targets { max-height: 260px; overflow-y: auto; }
+.assistant-document { display: grid; align-content: start; gap: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 16px; overflow-wrap: anywhere; }
+.assistant-document .badge { justify-self: start; }
+@media (max-width: 900px) { .assistant-start-grid, .assistant-review-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) { .assistant-pdf-canvas { max-height: 550px; } .assistant-job { flex-direction: column; } .assistant-review .form-grid { grid-template-columns: minmax(0, 1fr); } }
+.integration-settings h3 { margin: 0; }
+.integration-settings p { margin: 0; }
+.integration-settings code, .integration-settings td { overflow-wrap: anywhere; }
+.integration-facts { display: grid; grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); gap: 10px; }
+.integration-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.integration-options { display: grid; gap: 9px; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px; min-width: 0; }
+.integration-options legend { font-weight: 600; padding: 0 5px; }
+.integration-choice { display: flex; gap: 9px; align-items: start; }
+.integration-choice input { flex: 0 0 auto; margin-top: 3px; }
+.integration-choice span { margin: 0; }
+.integration-choice small { display: block; color: var(--muted); font-weight: 400; }
+.integration-projects { display: grid; gap: 9px; max-height: 200px; overflow: auto; padding: 8px; background: var(--surface-muted); border-radius: var(--radius-sm); }
+.integration-new-key { border-color: var(--success); }
+.integration-settings textarea { font-family: ui-monospace, monospace; font-size: 12px; overflow-wrap: anywhere; }
+@media (max-width: 900px) {
+  .integration-columns, .integration-facts { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .integration-settings .form-grid.compact { grid-template-columns: minmax(0, 1fr); }
 }
 
 .settings-panel {
@@ -2082,6 +2143,7 @@
 .table-wrap .editable-table [data-col="abmessung"],
 .table-wrap .editable-table [data-col="lvPosition"],
 .table-wrap .editable-table [data-col="bedienungsanleitungId"],
+.table-wrap .editable-table [data-col="datenblattId"],
 .table-wrap .editable-table [data-col="bemerkung"] {
   min-width: 260px;
   width: 260px;
@@ -2097,41 +2159,34 @@
   padding-left: 20px;
 }
 
-/* * INFO: Permanenter Labor-Link unten links, unabhängig von Seite und Scrollposition. */
+/* Website-Link unten links, unabhängig von der Scrollposition. */
 .lab-floating {
   align-items: center;
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  backdrop-filter: var(--glass-blur);
-  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
-  border-radius: 999px;
-  color: var(--text);
+  background: var(--surface-solid);
+  border: 1px solid var(--line);
+  border-radius: 50%;
   display: inline-flex;
-  height: 46px;
+  height: 36px;
   justify-content: center;
   left: max(16px, env(safe-area-inset-left));
   padding: 0;
   position: fixed;
   bottom: max(16px, env(safe-area-inset-bottom));
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--shadow-sm);
   text-decoration: none;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-  width: 46px;
+  width: 36px;
   z-index: 100;
 }
 
 .lab-floating:hover {
-  background: var(--surface);
+  background: var(--surface-muted);
   border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
-  color: var(--accent-dark);
   transform: translateY(-1px);
 }
 
-.lab-floating svg {
-  fill: none;
-  height: 27px;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-  width: 27px;
+.lab-floating img {
+  display: block;
+  height: 26px;
+  width: 26px;
 }

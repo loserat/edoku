@@ -94,8 +94,11 @@ const BASE_DEVICE_FIELDS = [
 ];
 
 const OPTIONAL_END_FIELDS = [
-  { name: "bemerkung", label: "Bemerkung", required: false, pdfWidth: 78 }
+  { name: "bemerkung", label: "Bemerkung (intern)", required: false, pdfExport: false }
 ];
+
+// Ältere Tabellen enthalten gegebenenfalls interne Hinweise oder entfallene Spalten.
+const DEVICE_LIST_PDF_VERSION = 3;
 
 // * INFO: Leistungsbereichsspezifische Zusatzfelder. Nur Felder mit required=true zählen
 // * INFO: später für Vollständigkeits- und Fortschrittsberechnungen.
@@ -115,10 +118,10 @@ const DEVICE_FIELD_PROFILES = {
     { name: "farbe", label: "Farbe (optional)", required: false, pdfWidth: 46 }
   ],
   "Kabeltragsysteme / Verlegesysteme": [
-    { name: "abmessung", label: "Abmessung", required: true, pdfWidth: 58 }
+    { name: "abmessung", label: "Abmessung (optional)", required: false, pdfWidth: 58 }
   ],
   "Kabeltragsysteme / Verlegesysteme mit Funktionserhalt": [
-    { name: "abmessung", label: "Abmessung", required: true, pdfWidth: 58 },
+    { name: "abmessung", label: "Abmessung (optional)", required: false, pdfWidth: 58 },
     { name: "funktionserhalt", label: "Funktionserhalt", required: true, pdfWidth: 58 }
   ],
   "Niederspannungsschaltanlagen / Verteilungen": [
@@ -165,7 +168,9 @@ function deviceListFieldsForLeistungsbereich(leistungsbereich) {
     ...BASE_DEVICE_FIELDS,
     ...(DEVICE_FIELD_PROFILES[leistungsbereich] || [{ name: "abmessung", label: "Abmessung (optional)", required: false, pdfWidth: 56 }]),
     ...OPTIONAL_END_FIELDS
-  ];
+  ].map(field => ["spannung", "leistung"].includes(field.name)
+    ? { ...field, guiVisible: false, pdfExport: false }
+    : field);
 }
 
 // * INFO: Pflichtfelder einer Geräteposition; optionale Angaben werden nicht als Fehler gewertet.
@@ -240,13 +245,17 @@ function emptyPosition(pos = 1, _einheit = "Stk", defaults = {}) {
     funktionserhalt: "",
     lvPosition: "",
     bedienungsanleitungId: "",
+    datenblattId: "",
     bemerkung: ""
   };
 }
 
 // * INFO: Holt die projektspezifische Systemvorauswahl für einen Leistungsbereich.
 function selectionFor(leistungsbereich, projektSysteme = []) {
-  return (projektSysteme || []).find((entry) => entry.leistungsbereich === leistungsbereich) || {};
+  const rows=(projektSysteme||[]).filter(entry=>entry.leistungsbereich===leistungsbereich && entry.enabled!==false && entry.aktiv!==false);
+  if(rows.length<2)return rows[0]||((projektSysteme||[]).some(entry=>entry.leistungsbereich===leistungsbereich)?{multiple:true,hersteller:'',herstellerSystem:'',systemart:''}:{});
+  const unique=key=>[...new Set(rows.map(row=>row[key]).filter(Boolean))];
+  return {hersteller:unique('hersteller').length===1?unique('hersteller')[0]:'',herstellerSystem:unique('herstellerSystem').length===1?unique('herstellerSystem')[0]:'',systemart:unique('systemart').length===1?unique('systemart')[0]:'',multiple:true};
 }
 
 // * INFO: Erstellt eine Geräteliste aus Leistungsbereich, Kapitelmapping und Systemvorauswahl.
@@ -262,7 +271,7 @@ function createGeraeteliste(leistungsbereich, aktiv = false, projektSysteme = []
     systemartVorauswahl: selection.herstellerSystem || selection.systemart || "",
     aktiv,
     export: true,
-    positionen: [emptyPosition(1, mapping.einheit, selection)]
+    positionen: []
   };
 }
 
@@ -279,8 +288,10 @@ function normalizeFlatPosition(item) {
     spannung: item.spannung || "",
     leistung: item.leistung || "",
     kategorie: item.kategorie || "",
+    funktionserhalt: item.funktionserhalt || "",
     lvPosition: item.lvPosition || item.lvPositionNr || item.lvPositionnummer || "",
     bedienungsanleitungId: item.bedienungsanleitungId || item.anleitungId || "",
+    datenblattId: item.datenblattId || "",
     bemerkung: item.bemerkung || ""
   };
 }
@@ -349,11 +360,11 @@ function syncGeraetelistenFromLeistungsbereiche(rawGeraetelisten, aktiveLeistung
       ...liste,
       kapitel: selection.geraetelisteKapitel || liste.kapitel || mapping.kapitel,
       titel: liste.titel || mapping.titel,
-      herstellerVorauswahl: selection.hersteller || liste.herstellerVorauswahl || "",
-      systemartVorauswahl: selection.herstellerSystem || selection.systemart || liste.systemartVorauswahl || "",
+      herstellerVorauswahl: selection.multiple ? selection.hersteller : selection.hersteller || liste.herstellerVorauswahl || "",
+      systemartVorauswahl: selection.multiple ? selection.herstellerSystem || selection.systemart : selection.herstellerSystem || selection.systemart || liste.systemartVorauswahl || "",
       aktiv,
       export: liste.export !== false,
-      positionen: liste.positionen.length ? liste.positionen : [emptyPosition(1, mapping.einheit, selection)]
+      positionen: liste.positionen
     });
   });
 
@@ -380,8 +391,10 @@ function normalizePostedGeraetelisten(posted) {
           spannung: position.spannung || "",
           leistung: position.leistung || "",
           kategorie: position.kategorie || "",
+          funktionserhalt: position.funktionserhalt || "",
           lvPosition: position.lvPosition || "",
-          bedienungsanleitungId: liste.leistungsbereich === "Brandschutzabschottungen" ? "" : position.bedienungsanleitungId || "",
+          bedienungsanleitungId: position.bedienungsanleitungId || "",
+          datenblattId: position.datenblattId || "",
           bemerkung: position.bemerkung || ""
         }));
 
@@ -512,6 +525,7 @@ function normalizePostedGeraetelistenVorlagen(posted, currentTemplates = []) {
 }
 
 module.exports = {
+  DEVICE_LIST_PDF_VERSION,
   DEVICE_FIELD_PROFILES,
   GERAETELISTEN_KAPITEL,
   addPosition,

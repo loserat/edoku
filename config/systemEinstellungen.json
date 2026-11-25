@@ -9,13 +9,20 @@
   "datumFormat": "de-DE",
   "export": {
     "trennstreifen": {
-      "showInnenText": true,
-      "showRegisterTitel": true
+      "showInnenText": false,
+      "showRegisterTitel": false
     },
     "ordnerruecken": {
-      "format": "schmal",
+      "format": "61x192-r",
       "anzahlModus": "manuell",
-      "ordnerAnzahl": 4
+      "ordnerAnzahl": 1,
+      "showProjektname": true,
+      "showProjektnummer": true,
+      "showAuftraggeber": false,
+      "showLiegenschaft": true,
+      "showBaumassnahme": false,
+      "showOrdnernummer": true,
+      "showFormatHint": false
     }
   },
   "lizenz": {
@@ -23,62 +30,12 @@
   },
   "ersteller": {
     "name": "",
-    "firma": "",
-    "anschrift": "",
+    "firma": "Demo GmbH",
+    "anschrift": "Musterstrasse 1, 12345 Musterstadt",
     "telefon": "",
     "email": "",
     "webseite": "",
     "bearbeiter": "",
-    "logoPfad": "creator/921bbd3c-d2ab-448e-ada2-106e6781f692.png"
-  },
-  "theme": {
-    "name": "GitHub Dark",
-    "preset": "github-dark",
-    "mode": "dark",
-    "colors": {
-      "bgLight": "#f6f8fa",
-      "bgDark": "#0d1117",
-      "surface": "#ffffff",
-      "surfaceMuted": "#f6f8fa",
-      "surfaceDark": "#161b22",
-      "surfaceMutedDark": "#21262d",
-      "text": "#1f2328",
-      "textMuted": "#656d76",
-      "textDark": "#e6edf3",
-      "textMutedDark": "#7d8590",
-      "accent": "#2f81f7",
-      "border": "#d0d7de",
-      "borderDark": "#30363d",
-      "buttonPrimary": "#74a7fe",
-      "buttonSecondary": "#21262d",
-      "warning": "#d29922",
-      "danger": "#f85149",
-      "success": "#3fb950"
-    },
-    "shape": {
-      "globalRadius": 14,
-      "cardRadius": 22,
-      "buttonRadius": 999,
-      "inputRadius": 14,
-      "borderWidth": 1
-    },
-    "shadow": {
-      "strength": 16,
-      "softness": 34
-    },
-    "spacing": {
-      "global": 12,
-      "page": 16,
-      "card": 14,
-      "form": 10,
-      "tableRowHeight": 42
-    },
-    "typography": {
-      "base": 14,
-      "heading": 24,
-      "label": 12,
-      "button": 13,
-      "lineHeight": 1.42
-    }
+    "logoPfad": ""
   }
 }

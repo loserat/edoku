@@ -1,10 +1,13 @@
 # Installation
 
+Aktueller App-Stand: `0.2.0-beta.1`, API/MCP `3.3.0`. [Release Notes](docs/RELEASE_NOTES.md) · [Versionen](docs/VERSIONIERUNG.md). Bestehende Installationen ausschließlich nach [Update-Anleitung](docs/UPDATE.md) mit Sicherung aktualisieren.
+
+
 Stand: 17.11.2026. Diese Anleitung beschreibt eine Neuinstallation des aktuellen Arbeitsstands für Entwicklung, Tests und lokalen Beta-Betrieb. Bei einer vorhandenen Installation zuerst [Update und Datenerhalt](docs/UPDATE.md) lesen. Der geprüfte Programmstand ist in `main` übernommen. Den gewünschten Branch beziehungsweise Commit vor dem Bauen ausdrücklich auswählen. Die reine Nutzung erklärt die [Bedienungsanleitung](docs/BEDIENUNGSANLEITUNG.md).
 
 ## Online-Testinstanz mit Coolify
 
-Für Coolify gibt es eine separate [Einrichtungsanleitung](docs/COOLIFY.md) und `docker-compose.coolify.yml`. Das Docker-Abbild prüft die echte Betriebsbereitschaft unter `/ready`. Bei einer neuen Online-Installation beide Variablen `EDOKU_INITIAL_ADMIN_LOGIN` und `EDOKU_INITIAL_ADMIN_PASSWORD` als Laufzeitwerte setzen: Dann entsteht genau ein eigener Systemadmin und keine bekannten Demo-Konten. Vorhandene Konten bleiben bei späteren Starts unverändert. Ohne diese Variablen gilt weiterhin das unten beschriebene lokale Demo-Verhalten.
+Für Coolify gibt es eine separate [Einrichtungsanleitung](docs/COOLIFY.md) und `docker-compose.coolify.yml`. Das Docker-Abbild prüft die echte Betriebsbereitschaft unter `/ready`. Bei einer neuen Online-Installation beide Variablen `EDOKU_INITIAL_ADMIN_LOGIN` und `EDOKU_INITIAL_ADMIN_PASSWORD` als Laufzeitwerte setzen: Dann entsteht genau ein eigener Systemadmin und keine bekannten Demo-Konten. Vorhandene Konten bleiben bei späteren Starts unverändert. Im Produktionsmodus bricht eine Neuinstallation ohne beide Variablen vor der Datenbankanlage ab. Bestehende Datenbanken benötigen keine neuen Startzugangsdaten.
 
 ## Start mit Docker
 
@@ -71,7 +74,7 @@ Der Befehl zeigt den Projektmodus und die zusätzliche Geräteprojektion an. Er 
 
 Vor einer echten Neuinstallation einen eigenen Erstzugang über die Laufzeitvariablen `EDOKU_INITIAL_ADMIN_LOGIN` und `EDOKU_INITIAL_ADMIN_PASSWORD` konfigurieren. Das Passwort benötigt 12 bis 256 Zeichen und darf nicht nur aus Leerzeichen bestehen. Beide Werte privat hinterlegen; keine Zugangsdaten in Git speichern. Bei einer so eingerichteten Neuinstallation entsteht genau ein eigener Systemadmin, ohne bekannte Demo-Konten.
 
-Bei lokalem Docker Compose reicht eine `.env`-Datei allein nicht aus, da die normale Compose-Datei diese beiden Variablen nicht an den Container weitergibt. Eine **private** Zusatzdatei `compose.private.yml` anlegen:
+Bei lokalem Docker Compose reicht eine `.env`-Datei allein nicht aus, da die normale Compose-Datei diese beiden Variablen nicht an den Container weitergibt. Eine **private**, automatisch geladene Zusatzdatei `docker-compose.override.yml` anlegen:
 
 ```yaml
 services:
@@ -81,15 +84,17 @@ services:
       EDOKU_INITIAL_ADMIN_PASSWORD: ${EDOKU_INITIAL_ADMIN_PASSWORD:?Eigenes Passwort setzen}
 ```
 
-Die beiden Werte vor dem Start in einer privaten `.env`-Datei festlegen. Das Passwort dort in einfachen Anführungszeichen notieren, damit etwa Dollarzeichen wörtlich erhalten bleiben. `.env` und `compose.private.yml` nicht veröffentlichen. Mit beiden Compose-Dateien starten:
+Die beiden Werte vor dem Start in einer privaten `.env`-Datei festlegen. Das Passwort dort in einfachen Anführungszeichen notieren, damit etwa Dollarzeichen wörtlich erhalten bleiben. `.env` und `docker-compose.override.yml` nicht veröffentlichen. Die Zusatzdatei wird beim normalen Start automatisch geladen:
 
 ```bash
-docker compose -f docker-compose.yml -f compose.private.yml up -d --build
+docker compose up -d --build
 ```
 
 Für die jeweils eigene Bereitstellung die privaten Werte in der passenden Laufzeitkonfiguration erhalten. Für Online-Betrieb ist die [separate Betreiberanleitung](docs/COOLIFY.md) maßgeblich.
 
-Ohne beide Erstzugangsvariablen bleibt das bisherige Demo-Verhalten für lokale Tests kompatibel. Solche Konten sind kein geeigneter öffentlicher Erstzugang. Diese Dokumentation veröffentlicht keine Klartext-Zugangsliste.
+Docker verwendet `NODE_ENV=production`: Ohne eigene Erstzugangsvariablen wird keine neue Datenbank angelegt. Nur ausdrücklich gestartete Entwicklungs- oder Testumgebungen behalten das Demo-Verhalten. Diese Dokumentation veröffentlicht keine Klartext-Zugangsliste.
+
+Das Abbild läuft standardmäßig als Benutzer `node` (UID/GID 1000:1000). Vorhandene Bind-Mounts müssen für den ausführenden Benutzer beschreibbar sein. Auf macOS mit `id -u` und `id -g` die eigene Kennung ermitteln und in der privaten Zusatzdatei unter `services.edoku` beispielsweise `user: "501:20"` ergänzen; immer die tatsächlich ermittelten Werte verwenden. Alternativ vor jedem Compose-Aufruf `EDOKU_UID` und `EDOKU_GID` setzen. Bestehende Datenordner nicht pauschal umbenennen oder deren Eigentümer ändern. Vollsicherungen erhalten die private Zusatzdatei und die tatsächliche Container-Benutzerkennung für die Wiederherstellung.
 
 Eine vorhandene Datenbank hat Vorrang: Bei Neustarts werden eigene Konten, Passwortänderungen, Rollen und Sperren erhalten; auch eine leere vorhandene Datenbank wird nicht automatisch mit Startkonten befüllt. Die Erstzugangsvariablen sind **kein Passwortreset**. Bestehende Zugänge durch den zuständigen Systemadmin verwalten; die Datenbank niemals zum Zurücksetzen löschen.
 

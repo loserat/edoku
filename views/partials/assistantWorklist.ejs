@@ -1,0 +1,10 @@
+<section class="assistant-work-panel assistant-checklist assistant-clean-list" aria-label="Offene Punkte und Vorschläge">
+  <div class="assistant-work-panel-heading"><div><h2>Offene Punkte <span class="badge" data-work-count><%= workspace.rows.length %></span></h2></div><label class="assistant-search"><span class="sr-only">Arbeitsliste durchsuchen</span><input type="search" data-work-search placeholder="Aufgabe oder Artikel suchen …"></label></div>
+  <nav class="assistant-work-filters" aria-label="Aufgaben filtern"><% [['now','Jetzt bearbeiten'],['all','Alle'],['file','Dateien'],['question','Angaben'],['waiting','Wartet']].forEach(([value,label]) => { %><button type="button" class="secondary" data-work-filter="<%= value %>" aria-pressed="<%= value === 'now' %>"><%= label %></button><% }) %></nav>
+  <div class="assistant-task-head"><span>Aufgabe</span><span>Status</span><span>Aktion</span></div>
+  <ul class="assistant-task-list"><% workspace.rows.forEach((row,index) => { %>
+    <li class="assistant-task-row" data-work-row data-kind="<%= row.kind %>"><span class="assistant-task-name"><strong><%= row.title %></strong><small><%= row.subtitle %></small></span><span class="assistant-task-state <%= row.kind %>"><%= row.status %></span>
+    <% if (row.href) { %><a class="secondary" href="<%= row.href %>" <%- row.kind === 'file' ? 'data-review-link' : '' %>><%= row.action %> →</a><% } else { %><button type="button" class="secondary" data-work-detail="work-<%= index %>"><%= row.action %></button><% } %></li>
+  <% }) %></ul><p class="assistant-empty" data-work-empty hidden>Keine passenden Punkte. Andere Filter zeigen weitere Aufgaben.</p>
+  <% if (entries.some(entry => entry.projectReadiness.firestopDocumentation?.active)) { %><details class="assistant-clean-help"><summary>Hinweise zum Brandschutz</summary><p class="field-hint">Erforderlich: ausgefüllte Übereinstimmungsbestätigung, Montageanleitung je System und Zulassungs-/Prüfnachweis. Jede Datei einzeln manuell freigeben.</p></details><% } %>
+</section>

@@ -42,6 +42,10 @@ function normalizeAttachments(raw) {
     .filter((entry) => entry && entry.id && entry.relativePath)
     .map((entry) => {
       const sortierung = Number.parseFloat(entry.sortierung);
+      // Alte, vom Assistenten vorbereitete Projekttexte hatten noch keine Exportfreigabe.
+      // Sie gelten sicherheitshalber als intern, bis scope="documentation" ausdrücklich gesetzt wurde.
+      const projectText = entry.assistantProvenance?.projectDocument;
+      const internalProjectText = Boolean(projectText && projectText.scope !== "documentation");
       return {
         id: String(entry.id),
         originalName: String(entry.originalName || entry.fileName || "Anhang"),
@@ -61,9 +65,12 @@ function normalizeAttachments(raw) {
         messart: String(entry.messart || ""),
         normgrundlage: String(entry.normgrundlage || ""),
         datum: String(entry.datum || ""),
-        export: entry.export === undefined ? true : Boolean(entry.export),
+        export: internalProjectText ? false : entry.export === undefined ? true : Boolean(entry.export),
         sortierung: Number.isFinite(sortierung) ? sortierung : null,
-        uploadedAt: String(entry.uploadedAt || "")
+        uploadedAt: String(entry.uploadedAt || ""),
+        ...(entry.assistantProvenance ? { assistantProvenance: entry.assistantProvenance } : {}),
+        ...(entry.matrixDocumentId ? { matrixDocumentId: String(entry.matrixDocumentId) } : {}),
+        ...(Array.isArray(entry.deviceReferences) ? { deviceReferences: entry.deviceReferences } : {})
       };
     });
 }
@@ -175,6 +182,7 @@ function logicalCategoryName(category) {
     "Schemata": "Schema",
     "Messprotokolle": "Messprotokoll",
     "Bedienungsanleitungen": "Bedienungsanleitung",
+    "Datenblätter": "Datenblatt",
     "Brandschutz": "Brandschutz",
     "Fotos": "Foto",
     "Pläne": "Plan",
@@ -196,6 +204,7 @@ function logicalAttachmentFileName(fields, originalBaseName, extension, id) {
     "Schemata": [logicalCategoryName(category), fields.stockwerk, fields.anlage, fields.plannummer, fields.revision ? `Rev_${fields.revision}` : "", title],
     "Messprotokolle": [logicalCategoryName(category), fields.stockwerk, fields.messart, fields.normgrundlage, fields.anlage || fields.bereich, fields.datum, title],
     "Bedienungsanleitungen": [logicalCategoryName(category), fields.anlage || fields.bereich, title],
+    "Datenblätter": [logicalCategoryName(category), fields.anlage || fields.bereich, title],
     "Brandschutz": [logicalCategoryName(category), fields.stockwerk, title],
     "Fotos": [logicalCategoryName(category), fields.stockwerk, title]
   };
@@ -374,6 +383,7 @@ function assignAttachmentToBrandschutz(brandschutz, relativePath, brandschutzId,
 }
 
 module.exports = {
+  detectAttachmentMime,
   attachmentPreviewMime,
   resolveAttachmentFile,
   assignAttachmentToBrandschutz,

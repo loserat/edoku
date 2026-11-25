@@ -1,12 +1,18 @@
 # Bedienungsanleitung
 
+Im Doku-Assistenten unter **Dokumentationsumfang** Verbindungsklemmen, Kabel/Leitungen und Befestigungsmaterial projektbezogen ausnehmen und speichern. Dies steuert neue Übernahme, Recherche und erzeugte Gerätelisten; vorhandene Daten und Freigaben bleiben erhalten. [Details und Aktivierungsstand](MATERIALAUSSCHLUESSE.md).
+
+Neuer Quellstand 0.2.0-beta.6: [Projekte starten inhaltlich leer](LEERE_PROJEKTANLAGE.md). Bestehende Projekte bleiben erhalten; den tatsächlich aktivierten lokalen Stand beachten.
+
 **Mit edoku vom leeren Projekt zur geordneten Elektro-Bestandsdokumentation.**
 
 Diese Anleitung erklärt die tägliche Nutzung der Anwendung: Projekte bearbeiten, Unterlagen zuordnen, Dokumente prüfen und Ausgaben erstellen. Sie richtet sich an Anwenderinnen und Anwender. Installation, Servereinrichtung und technische Administration sind kein Bestandteil dieser Anleitung.
 
-Stand: **17.11.2026**, Oberfläche `0.1.0-beta.1`. Die Screenshots zeigen ein künstliches Testprojekt. Angaben wie Firmennamen, Geräte und Projektfortschritt sind Beispiele. Auf schmalen Bildschirmen können Tabellen innerhalb ihres Bereichs seitlich gescrollt werden.
+Textstand: **22.11.2026**, Oberfläche `0.2.0-beta.2`. Die bisherigen Screenshots zeigen den Stand vom 17./18.11. mit künstlichen Testprojekten; einzelne Spalten können inzwischen entfallen sein. Firmennamen, Geräte und Fortschritt in diesen Aufnahmen sind Beispiele. Auf schmalen Bildschirmen können Tabellen innerhalb ihres Bereichs seitlich gescrollt werden.
 
 ## Inhalt
+
+[Mit dem Doku-Assistenten arbeiten](#mit-dem-doku-assistenten-arbeiten)
 
 1. [Anmelden und orientieren](#1-anmelden-und-orientieren)
 2. [Projekt auswählen oder anlegen](#2-projekt-auswählen-oder-anlegen)
@@ -24,6 +30,17 @@ Stand: **17.11.2026**, Oberfläche `0.1.0-beta.1`. Die Screenshots zeigen ein k�
 14. [Konten und Rollen verstehen](#14-konten-und-rollen-verstehen)
 15. [Häufige Fragen und Fehlermeldungen](#15-häufige-fragen-und-fehlermeldungen)
 16. [Checkliste vor der Weitergabe](#16-checkliste-vor-der-weitergabe)
+
+## Mit dem Doku-Assistenten arbeiten
+
+1. Das gewünschte Projekt öffnen und oben **Doku-Assistent** wählen. Er zeigt ausschließlich dieses geöffnete Projekt; innerhalb des Assistenten wird nicht zu anderen Projekten gewechselt.
+2. Bei **Angabe → Bearbeiten** die Rückfrage aufklappen und beantworten. Alternativ im verbundenen Agentenchat antworten. Der Agent recherchiert Herstellerdaten selbst und fragt nach tatsächlichen Einbaudaten.
+3. Eine Datei über **Prüfen** öffnen und lesen. Titel, Kategorie und bei Bedarf Zuordnung korrigieren. Erst danach die Sichtung bestätigen und die einzelne Datei freigeben oder ablehnen. **Freigeben & weiter** öffnet die nächste Datei ohne vorausgewählte Bestätigung.
+4. Unter **Dateien** nach Titel suchen oder zwischen zu prüfenden und übernommenen Dateien wechseln. **Angaben**, **Ausgabe** und **Verlauf** sind am Projekt direkt erreichbar. **Aufträge** enthält auch abgeschlossene Aufträge; **Neue Dokumentation** öffnet das Formular.
+5. Der Agent nutzt gespeicherte Fakten und Originalbelege, fragt gezielt nach und lässt unbekannte oder widersprüchliche Angaben offen. Bei Brandschutzabschottungen werden Bestätigung, Montageanleitung und Systemnachweis benötigt. Kanäle und elektrischen Funktionserhalt davon unterscheiden. DUMMY-Daten ersetzen keine echten Angaben zur Abgabe.
+6. Unter **Ausgabe** fehlende Voraussetzungen prüfen und PDF/ZIP beauftragen. Ein technischer Export ist keine fachliche Freigabe. Der Assistent selbst startet keinen KI-Dienst; dafür muss ein externer Agent verbunden sein.
+
+Interne Projekttexte erscheinen nicht in der Kundendokumentation. Neue Dateien bleiben Vorschläge bis zur manuellen Einzelprüfung. Ein Hinweis auf einen neuen Stand lädt laufende Eingaben nicht automatisch neu. Ausführliche Regeln: [Doku-Assistent](DOKU_ASSISTENT.md).
 
 ## 1. Anmelden und orientieren
 
@@ -112,6 +129,8 @@ Unter **Export → Matrix** legst du fest, welche Einträge zur Dokumentation ge
 
 **Vorlagen:** Das Drei-Punkte-Menü bietet Werkzeuge für die jeweilige Liste. Vorlagen bewusst verwenden und die vorhandenen Positionen vorher prüfen, da das Laden einer Vorlage Positionen ersetzen kann. Globale Vorlagen verwaltet der Systemadmin.
 
+**Weniger Spalten:** Spannung und Leistung sind in der Tabelle und in neu erzeugten Geräte-PDFs ausgeblendet. Bereits erfasste Werte bleiben erhalten. Bemerkungen und Quellenhinweise bleiben intern und erscheinen nicht im Geräte-PDF. Alte PDF-Ausgaben ändern sich nicht nachträglich; für die aktuelle Ausgabe die PDFs neu erzeugen.
+
 ## 7. Anhänge und Nachweise verwalten
 
 1. **Anhänge** öffnen und zuerst die passende Kategorie wählen, etwa Stromlaufpläne, Messprotokolle, Bedienungsanleitungen oder Nachweise.
@@ -140,6 +159,10 @@ Die Aufnahme zeigt eine leere Kategorie des Testprojekts. Im eigenen Projekt ers
 Ein eingetragener Verweis auf ein fehlendes oder nicht zugreifbares Foto erzeugt eine Warnung. Die Meldung nennt das betroffene Fotofeld; sie zählt Fotoverweise, nicht PDF-Seiten. Ein leeres optionales Fotofeld erzeugt keine solche Dateiwarnung. Ob ein Foto fachlich erforderlich ist und die richtige Ausführung zeigt, muss weiterhin verantwortlich geprüft werden. Im Screenshot ist der Beispielseintrag noch nicht ausgefüllt.
 
 Fehlende Bilder nachliefern und zuordnen; einen berechtigten Hinweis nicht durch Entfernen des Verweises verdecken. Mehr dazu: [Brandschutzfotos prüfen](BRANDSCHUTZFOTOS.md).
+
+Der Agent sucht zuerst passende Herstellerformulare oder Muster im Systemnachweis. Ein als Vorlage oder unvollständiger Entwurf gekennzeichnetes Formular erfüllt keine fertige Pflichtbestätigung, auch wenn du es zur Ablage manuell übernimmst. Fehlende Angaben und DUMMY-Daten bleiben sichtbar. [Recherche- und Formularablauf](BRANDSCHUTZ_AGENTENABLAUF.md).
+
+Der Agent kann aus einer offiziellen Produktseite kompakt passende PDF-Links ermitteln. Die anschließende Artikel-/Variantenprüfung und deine manuelle Einzelprüfung bleiben erforderlich. [Hersteller-Linkermittlung](KOMPAKTE_HERSTELLER_LINKS.md).
 
 ## 9. PDF-Dokumentation erzeugen und prüfen
 
@@ -251,6 +274,10 @@ Unter **Einstellungen → Theme** stehen Presets und eigene Farb-, Größen- und
 Globale Einstellungen, Vorlagen und Erstellerangaben gelten nicht zwingend nur für das aktuell geöffnete Projekt. Diese Änderungen mit dem zuständigen Systemadmin abstimmen.
 
 ![Globale Grundeinstellungen und Einstellungsbereiche](screenshots/2026-11-17/13-einstellungen.jpg)
+
+**In der Vorschau vom 18.11.2026** gibt es den eigenen Tab **Projektordner** für die gespeicherten Ordner-Vorgaben. Systemadmins erreichen **Benutzer** auch über das Benutzermenü und **Sicherheitsprotokoll** über die Einstellungsleiste. Im Protokoll führt dieselbe Leiste zurück zu den anderen Bereichen.
+
+![Einstellungsleiste der Vorschau mit Projektordner und Sicherheitsprotokoll](screenshots/2026-11-18/einstellungen-direktlinks.jpg)
 
 ## 14. Konten und Rollen verstehen
 

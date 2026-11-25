@@ -59,8 +59,6 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--color-primary)
 .header-icon-link:hover, .header-icon-button:hover, .theme-toggle:hover { border-color: var(--line); background: var(--surface-muted); color: var(--text); }
 .theme-toggle-icon { box-shadow: none !important; background: transparent !important; }
 .user-dropdown { backdrop-filter: none; border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-md); }
-.lab-floating { background: var(--surface-solid); border-color: var(--line); box-shadow: var(--shadow-sm); width: 32px; height: 32px; opacity: .75; }
-.lab-floating svg { width: 18px; height: 18px; }
 .brand-footer, .site-footer { color: var(--muted); font-size: 11px; }
 
 /* Seitenrahmen und Seitenleisten */
@@ -81,7 +79,31 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--color-primary)
 .section-tabs a.active, .section-tabs button.active { background: var(--ui-selected); border-color: color-mix(in srgb, var(--accent) 15%, var(--line)); color: var(--accent-dark); box-shadow: none; }
 .section-tabs-subhead { color: var(--muted); font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
 .section-tabs .section-project-item { border-radius: var(--radius-sm); }
-.section-tabs .section-plus-button { width: 30px; min-width: 30px; height: 30px; min-height: 30px; padding: 0; }
+.section-tabs .section-plus-button {
+  background: var(--ui-selected);
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--line));
+  border-radius: 9px;
+  color: var(--accent-dark);
+  display: grid;
+  gap: 0;
+  grid-template: 1fr / 1fr;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  place-items: center;
+  width: 32px;
+}
+.section-tabs .section-plus-button:hover {
+  background: color-mix(in srgb, var(--accent) 17%, var(--surface-solid));
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  color: var(--accent-dark);
+}
+.section-plus-button::before, .section-plus-button::after {
+  content: "";
+  grid-area: 1 / 1;
+}
+.section-plus-button::before { border-top: 2px solid currentColor; width: 14px; }
+.section-plus-button::after { border-left: 2px solid currentColor; height: 14px; }
 .section-tabs .section-project-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Flächen: dieselbe Hierarchie in Projektmanager, Fachseiten und Einstellungen */
@@ -124,8 +146,8 @@ button.secondary:hover, .button-link.secondary:hover { background: var(--surface
 button.danger, .button-link.danger { background: color-mix(in srgb, var(--danger) 7%, var(--surface-solid)); border: 1px solid color-mix(in srgb, var(--danger) 25%, var(--line)); color: var(--ui-danger-ink); }
 button.danger:hover, .button-link.danger:hover { background: color-mix(in srgb, var(--danger) 13%, var(--surface-solid)); }
 button:disabled, .button-link[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
-.page :is(.section-plus-button, .add-position-control button, .button-link.compact-icon-link) { background: var(--color-button-primary); border-color: var(--color-button-primary); color: var(--on-primary); box-shadow: none; }
-.page :is(.section-plus-button, .add-position-control button, .button-link.compact-icon-link):hover { background: var(--color-primary-hover); box-shadow: none; }
+.page :is(.add-position-control button, .button-link.compact-icon-link) { background: var(--color-button-primary); border-color: var(--color-button-primary); color: var(--on-primary); box-shadow: none; }
+.page :is(.add-position-control button, .button-link.compact-icon-link):hover { background: var(--color-primary-hover); box-shadow: none; }
 .page :is(input, select, textarea):where(:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="range"]):not([type="color"])) { background: var(--surface-solid); border: 1px solid var(--line); border-radius: var(--radius-sm); box-shadow: none; color: var(--text); font-size: var(--font-size-base); min-width: 0; max-width: 100%; }
 .page input::placeholder, .page textarea::placeholder { color: var(--muted); opacity: .75; }
 .page input:focus, .page select:focus, .page textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus); }
@@ -299,6 +321,7 @@ button:disabled, .button-link[aria-disabled="true"] { opacity: .5; cursor: not-a
   .section-tabs-head { border: 0; border-right: 1px solid var(--line); padding: 0 12px 0 4px; margin: 0 4px 0 0; }
   .section-tabs-head > strong { display: none; }
   .section-tabs a, .section-tabs button { width: auto; min-height: 34px; padding: 8px 10px; }
+  .section-tabs .section-plus-button { width: 40px; height: 40px; }
   .section-tabs a span, .section-tabs button span { white-space: nowrap; }
   .section-tabs-group { align-items: center; border-left: 1px solid var(--line); border-top: 0; display: flex; flex: 0 0 auto; gap: 5px; margin: 0; padding: 0 0 0 8px; }
   .section-tabs-group form { flex: 0 0 auto; margin: 0; }

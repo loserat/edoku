@@ -244,7 +244,7 @@ async function boot(root) {
   child.stdout.on("data",d=>logs+=d);child.stderr.on("data",d=>logs+=d);
   const base=`http://127.0.0.1:${port}`;
   for(let i=0;i<100;i++){
-    try{if((await fetch(base+"/api/health")).status===200)return{child,base};}catch{}
+    try{if(logs.includes(`edoku läuft auf http://localhost:${port}`)&&(await fetch(base+"/ready")).status===200)return{child,base};}catch{}
     if(child.exitCode!==null)throw new Error(logs);await new Promise(r=>setTimeout(r,50));
   }
   child.kill();throw new Error("Teststart fehlgeschlagen: "+logs);
@@ -252,7 +252,7 @@ async function boot(root) {
 async function stop(child){if(child.exitCode===null){const done=new Promise(r=>child.once("exit",r));child.kill();await done;}}
 async function page(app,user) {
   const session="session_"+user;
-  const response=await fetch(app.base+"/dashboard",{headers:{Cookie:"dm_session="+session}});assert.equal(response.status,200);
+  const response=await fetch(app.base+"/dashboard",{redirect:"manual",headers:{Cookie:"dm_session="+session}});assert.equal(response.status,200);
   const html=await response.text();const csrf=html.match(/name="csrf-token" content="([a-f0-9]+)"/)[1];
   const cookies=response.headers.getSetCookie().map(v=>v.split(";")[0]).join("; ");
   return{csrf,cookie:`dm_session=${session}; ${cookies}`,html};

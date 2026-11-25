@@ -1,5 +1,102 @@
 # Release Notes
 
+## 0.3.0-beta.1 – 25.11.2026
+
+Gebündelter Ausbau für die nächste öffentliche Beta: integrierte HTTP-API und lokaler MCP-Adapter mit 55 Werkzeugen (22 Lesen/33 Schreiben), zentral berechnete Agentenaufgaben, Materialimport und Artikelzuordnung, Hersteller-PDF-/Variantenprüfung, dauerhafte Fakten und gebündelte Rückfragen. Vereinfachter Doku-Assistent, direkte Einzelprüfung und nächster Dateiwechsel, begründetes Zurückziehen sowie geschützte Lösch-/Wiederherstellungsfunktionen.
+
+API/MCP bleiben **3.9.0**; der App-Versionssprung bündelt die neuen Funktionen und ändert weder Rechte noch Datenbankschema. Alle neuen Dateien weiterhin ausschließlich manuell einzeln in der GUI freigeben. README um klaren MCP-Einstieg erweitert. Private Daten, Schlüssel und lokale Einstellungen gehören nicht zur Veröffentlichung. GitHub-Stand, lokale Installation und tatsächliches Online-Deployment werden getrennt nachgewiesen.
+
+## 0.2.0-beta.13 – 25.11.2026
+
+Schlichter Doku-Assistent: kompakte Projektkopfzeile und Zähler in der Navigation, einfache Arbeitsliste ohne wiederholte Projektspalte. Materialregeln, MCP-Verbindung und Brandschutzhinweise bei Bedarf aufklappen. Suche, Filter, Antworten und manuelle Datei-Einzelprüfung mit direktem Weiterwechsel erhalten. Die Sichtungscheckbox der nächsten Datei bleibt leer; kein automatisches Freigeben.
+
+43 gezielte Funktionstests und 46 Browserprüfungen mit künstlichen Daten bestanden; Desktop und Mobil bis 320 Pixel geprüft. Vorschauhilfe repariert, echte Herstellerprüfung unverändert. API/MCP weiterhin 3.9.0, 64 Operationen/55 Werkzeuge; keine Datenbankschema-Migration oder neuen Abhängigkeiten. Am 25.11.2026 nach geprüfter Sicherung und Wiederherstellungsprobe lokal aktiviert; 2.000 Dateien/16 Tabellen im Aktivierungsvergleich unverändert. Keine Veröffentlichung. [Bedienung und Prüfgrenzen](GUI_ASSISTENT_VEREINFACHUNG.md).
+
+## 0.2.0-beta.12 – 24.11.2026
+
+Nach PDF-Freigabe, Ablehnung oder Zurückziehen folgt der nächste offene Vorschlag hinter der aktuellen Datei. Gemeinsame sichtbare Reihenfolge, kein automatischer Umlauf zum Anfang; am Ende Hinweis auf früher übersprungene Dateien. JSON-Wechsel und Formularweg ohne JavaScript erhalten, jede Datei weiterhin einzeln manuell freigeben. Enthält beta.11-Rückziehfunktion; API/MCP unverändert 3.9.0 (64 Operationen/55 Werkzeuge). [Ablauf](PRUEFREIHENFOLGE.md). Am 24.11.2026 nach ausdrücklicher Freigabe und geprüfter Sicherung/Wiederherstellung lokal aktiviert. Bestand und Dateientscheidungen unverändert; keine Veröffentlichung.
+
+## 0.2.0-beta.11 – 24.11.2026
+
+API/MCP 3.9.0: bis zu zehn offene Dateivorschläge mit Begründung und Beleg atomar zurückziehen. Eigener Status, Originale/Verlauf erhalten, GUI mit direktem Wechsel zur nächsten Datei; zurückgezogene Vorschläge entsperren die gezielte Gerätelöschung, andere fachliche Bezüge bleiben geschützt. 64 Operationen/55 Werkzeuge, keine Datenbankschema-Migration oder Dateifreigabe über MCP. [Ablauf und Grenzen](DATEIVORSCHLAEGE_ZURUECKZIEHEN.md). Noch nicht lokal aktiviert.
+
+## 0.2.0-beta.10 – 24.11.2026
+
+API/MCP 3.8.2, Produktprüfung V7: belegte Hersteller-/Markenzuordnungen ergänzen, veröffentlichte PDF-Endpunkte ohne Dateiendung erkennen, FRÄNKISCHE-Familienartikel an eigene Typ-/SKU-/GTIN-Zeile binden und beschriftete NIEDAX-/OBO-Varianten exakt prüfen. Reine Katalogmaße sind optional; tatsächliche Ausführungsangaben bleiben notwendig. Konkrete Blocker erzeugen keine zusätzliche allgemeine Reparaturschleife. Bestehende Daten/Freigaben erhalten, neue Dateien nur manuell einzeln freigeben. 63 Operationen/54 Werkzeuge unverändert. [Regeln und Grenzen](ME01_QUELLEN_UND_MASSE.md). Am 24.11.2026 nach geprüfter Vollsicherung und getrennter Wiederherstellungsprobe lokal aktiviert. Bestand und Dateientscheidungen unverändert; keine Veröffentlichung.
+
+## 0.2.0-beta.9 – 23.11.2026
+
+Nach ausdrücklicher Freigabe am 23.11.2026 gesichert lokal aktiviert; Wiederherstellung/Start alt und neu getrennt geprüft. 1.557 geschützte Dateien/16 Tabellen unverändert. [Betriebsnachweis](AKTUELLER_STAND.md).
+
+API/MCP 3.8.1, PDF-Prüfrichtlinie v6: exakte NIEDAX-RAW-Innen-/Gesamtbreite und bestätigter OBO-Artikelalias mit beschrifteten Längen-/Breitenfeldern. Aktuelle Blocker stellen Zuordnungskonflikte zurück; nur passende neue Prüfmöglichkeiten öffnen alte Blocker. Explizite Muster im Bemerkungsfeld erzeugen keine Recherche-/Gerätefeldfragen. Bestehende Positionen, Quellen und Freigaben erhalten; jede neue Datei weiterhin manuell einzeln prüfen. 63 Operationen/54 Werkzeuge unverändert. [Details](PRUEFLUECKEN_ME01.md).
+
+## 0.2.0-beta.8 – 23.11.2026
+
+Nach ausdrücklicher Aktivierungsfreigabe gesichert lokal aktiviert. Frische Vollsicherung und getrennter Restore/Start erfolgreich, 1.556 geschützte Dateien/16 Tabellen unverändert. App/API/MCP und 54 Werkzeuge lesend bestätigt. Kein veröffentlichter Release. [Nachweis](AKTUELLER_STAND.md).
+
+API/MCP 3.8.0, Agentenvertrag 2.1: zentrale Materialquellerfassung und belegte Gerätezuordnung mit eigener Vollständigkeitsprüfung, unabhängige Aufgaben vor Rückfragen, thematische Fragepakete bis zu drei Fragen und unveränderte Größen-/Freigabegrenzen. 63 Operationen/54 Werkzeuge. Bestehende Daten/Dateientscheidungen bleiben erhalten; keine stille Materialmigration. [Ablauf und Grenzen](ZENTRALE_AUFGABENSTEUERUNG.md).
+
+## 0.2.0-beta.7 – 23.11.2026
+
+Lokal nach Importende mit aktueller geprüfter Sicherung und getrennter Wiederherstellung aktiviert. 1.529 geschützte Dateien/16 Tabellen unverändert; keine Veröffentlichung. [Betriebsnachweis](AKTUELLER_STAND.md).
+
+API/MCP 3.7.0: drei projektbezogene Ausschlüsse für Verbindungsklemmen, Kabel/Leitungen und Befestigungsmaterial im Doku-Assistenten. Steuern kompakte Agentenanweisungen, neue Materialübernahme, Artikelrecherche und erzeugte Gerätelisten. Daten, Originalpositionen, Dateien und Freigaben bleiben erhalten; explizite Auswahl mit Verlauf und Versionsschutz. Neue Projekte mit drei aktiven Regeln, alte Kabeldokumentation bleibt bis zur Änderung erhalten. 61 Operationen/52 Werkzeuge unverändert. [Ablauf und Aktivierungsstand](MATERIALAUSSCHLUESSE.md).
+
+Die folgenden Versionen sind historische Stände.
+
+## 0.2.0-beta.6 – 23.11.2026
+
+API/MCP 3.6.1: normale Neuanlage übernimmt ausschließlich eingegebene Stammdaten und Struktur. Keine Beispielgeräte, Schotts, Systeme, Dokumente oder Projekthinweise. Leistungsbereichsauswahl startet leer, neue Listen ohne Platzhalterposition. Bestehende Projekte, Vorlagen, Importe und Freigaben erhalten. 61 Operationen/52 Werkzeuge, keine neuen Rechte/Argumente. [Ablauf und Aktivierungsstand](LEERE_PROJEKTANLAGE.md).
+
+Die folgenden Versionen sind historische Stände.
+
+## 0.2.0-beta.5 – 22.11.2026
+
+API/MCP **3.6.0**: ein lesendes Werkzeug für höchstens drei PDF-Kandidaten aus offizieller Produktseite und einer eingebundenen Fragmentstufe, ohne HTML-/PDF-Volltext. Produktprüfung **v5** bestätigt die gezielte NIEDAX-KTUM-Auflagelängenzuordnung und lässt andere Maße/Varianten gesperrt. 61 Operationen/52 Werkzeuge (21 lesend, 31 schreibend). Keine Datenmigration; bestehende Daten und manuelle Einzelprüfung erhalten. [Ablauf und Grenzen](KOMPAKTE_HERSTELLER_LINKS.md).
+
+Die folgenden Versionen sind historische Stände.
+
+## 0.2.0-beta.4 – 22.11.2026
+
+API/MCP **3.5.0**: kompakte Brandschutz-Recherchehilfe mit Systemarten, Herstellerquellen, Formularreihenfolge und gezielten Faktenchecklisten. Testannahmen bleiben vom tatsächlichen Einbau getrennt. Vorlagen und unvollständige Erklärungsentwürfe erfüllen keine Pflicht, auch nach manueller Übernahme/Umbenennung. GUI zeigt den Status; bestehende Dateien und Freigaben erhalten. 60 HTTP-Operationen/51 MCP-Werkzeuge (20 lesend, 31 schreibend), keine Datenmigration oder neuen Berechtigungsarten. [Ablauf und Grenzen](BRANDSCHUTZ_AGENTENABLAUF.md).
+
+Die folgenden Versionen sind historische Stände.
+
+## 0.2.0-beta.3 – 22.11.2026
+
+API/MCP **3.4.0**: kompakte Statusübersicht ohne vollständige Listen, kleine Abschnittsseiten und direkte Anforderungs-/Warteziele in den bestehenden Werkzeugen. Filter vor Seitenauswahl, größenabhängige Seiten mit nextOffset, gezielte Originalbelege und unveränderte HTTP-Defaults. 59 HTTP-Operationen/50 Werkzeuge; keine zusätzlichen Rechte oder Datenmigration. Dateien weiterhin ausschließlich manuell einzeln freigeben. [Vertrag und Prüfstand](KOMPAKTE_STATUSABFRAGEN.md).
+
+Die folgenden Abschnitte sind historische Stände.
+
+## 0.2.0-beta.2 – 22.11.2026
+
+Brandschutz-PDF-Verknüpfung und Herstellerprüfung korrigiert; API/MCP **3.3.1**, weiterhin 59 HTTP-Operationen und 50 Werkzeuge. Aktive Materialpositionen, erhaltene GUI-Zuordnung, Kapitelverweise und Datenblattabdeckung zusammengeführt. Offizielle ZAPP-ZIMMERMANN-Quelle und exakter System-/Komponentenabgleich für Montageanleitungen. Datenmodell und Abhängigkeiten unverändert; Dateien ausschließlich einzeln manuell freigeben. [Prüfablauf und Bereitstellung](BRANDSCHUTZ_PDF_VERKNUEPFUNG.md).
+
+Die folgenden Versionen sind historische Stände.
+
+## 0.2.0-beta.1 – 22.11.2026
+
+Lokales Versionspaket mit API/MCP **3.3.0**, **59 HTTP-Operationen und 50 MCP-Werkzeugen**. Die Anwendung bleibt Beta. Version und lokale Bereitstellung sind von GitHub-/Online-Veröffentlichung und fachlicher Abnahme getrennt.
+
+- **Geführte Agentenarbeit:** belegte Informationsfragmente, Widersprüche, Abhängigkeiten und priorisierte Einzelrückfragen. Vorhandene Antworten zuerst strukturieren; Herstellerrecherche bleibt vor Bestätigung eine Vermutung. Neuer kompakter Leseweg `edoku_knowledge`.
+- **Brandschutz-Pflichtunterlagen:** ausgefüllte Übereinstimmungsbestätigung aller Schotts sowie passende Montageanleitung und Zulassungs-/Prüfnachweis je System. Keine Hersteller-Leistungserklärung als Ersatz.
+- **Herstellerunterlagen:** bestandsweite Datenblattabdeckung, verlinkte Original-PDFs und gezielte Artikel-/Variantenprüfung; Quellen und Rechercheblocker nachvollziehbar erhalten.
+- **Einfacher prüfen:** Assistent auf das geöffnete Projekt begrenzt, einzelne Dateientscheidungen ohne komplette Neuladung und direkter Wechsel zur nächsten Datei. Mehrere Hersteller/Systeme je Leistungsbereich; einheitliches GUI-/PDF-Fußlogo.
+- **Bestand schützen:** gezielte Löschung mit Vorschau, Wiederherstellung und Protokoll; gesonderter gesicherter Projektreset. Neue Abhängigkeiten berücksichtigen den vorhandenen Löschschutz.
+- **Freigaben bleiben manuell:** jede neue Datei einzeln in der GUI sichten und bestätigen. Keine automatische fachliche Abnahme, Unterschrift oder Änderung vorhandener Daten durch dieses Versionspaket.
+
+Funktionaler Prüfstand: 258 Anwendungstests, acht Sicherungstests und sieben Wartungsprüfungen. Das Versionsabbild wurde erneut vollständig getestet, gesichert lokal aktiviert und über die laufende Versionsauskunft geprüft. Bestandsvergleich: 1.334 Dateien und 16 Tabellen unverändert. [Bereitstellungsnachweis](AKTUELLER_STAND.md). Paketabhängigkeiten, API/MCP-Vertrag und Datenmodell werden mit diesem Paket nicht geändert.
+
+**Weiter offen:** technische Brandschutz-PDF-Verknüpfung/Herstellerquellen-Freischaltung, ein zu großer unpaginierter Bereitschaftsabruf sowie echte fehlende Einbaudaten und fachliche Abnahme. Einzelheiten: [offene Punkte](OFFENE_PUNKTE.md). [Tagesabschluss](TAGESABSCHLUSS_2026-11-22.md) · [Versionsschema](VERSIONIERUNG.md).
+
+Die folgenden datierten Abschnitte dokumentieren frühere Stände mit ihren damaligen Versions- und Testzahlen.
+
+## Lokaler Arbeitsstand 19.11.2026 – kein neuer Release-Tag
+
+API/MCP und Codex-Verbindung lokal aktiv, 34 Werkzeuge, Host-Adapter unabhängig vom edoku-Container. Kompakter Doku-Assistent mit direkter Prüfliste und manueller Dateifreigabe. Projekttexte intern; Quellenbemerkungen sowie Spannungs-/Leistungsspalten entfallen in neuen Geräte-PDFs. Bestehende Werte bleiben gespeichert.
+
+191 Prüfungen erfolgreich, Browser und Geräte-PDFs auf getrennten Testdaten/Kopien geprüft. Lokale Updates mit Sicherung, separatem Restore und Bestandsvergleich aktiviert. Paketversion bleibt `0.1.0-beta.1`; kein heutiger GitHub-/Online-Release. Beispielprojekt A bleibt fachlich unvollständig. [Tagesabschluss](TAGESABSCHLUSS_2026-11-19.md).
+
 ## Übernahme des geprüften Stands in main – 17.11.2026
 
 Programmstand, Tests, Docker-Konfiguration, Bedienungsanleitung und 16 Screenshots gemeinsam in `main` übernommen. README und Installation zeigen auf den Hauptbranch. Paketversion bleibt `0.1.0-beta.1`; kein neuer Release-Tag und keine automatische Aktivierung in bestehenden Installationen. Konten, Projekte, Daten, Sicherungen und historischer Altbestand bleiben unverändert. Die fachlichen Exportlücken und Betriebsgrenzen bleiben dokumentiert.

@@ -1,0 +1,32 @@
+<% const proposedRequirements = new Set(pending.flatMap(document => document.requirementIds || []));
+   const missing = projectReadiness.requirements.filter(item => !item.fulfilled && item.scope !== 'internal' && !proposedRequirements.has(item.id));
+   const workItems = typeof workflowPlan !== 'undefined' && workflowPlan ? workflowPlan.documentWork?.items || [] : [];
+   const workLabels = { not_found: 'Nicht gefunden', awaiting_manufacturer: 'Herstellerunterlage ausstehend', awaiting_user: 'Angabe ausstehend', deferred: 'Zurückgestellt', unsuitable: 'Inhalt unpassend' };
+   const sheetsOpen = typeof datasheetCoverage !== 'undefined' && datasheetCoverage && !datasheetCoverage.summary.complete;
+   const count = pending.length + openQuestions.length + missing.length + agentIssues.length + (sheetsOpen ? 1 : 0); %>
+<section class="assistant-checklist" aria-label="Offene Punkte und Vorschläge">
+  <div class="panel-head"><h2>Offen <span class="badge"><%= count %></span></h2><a href="<%= base %>?ansicht=export">Ausgabe</a></div>
+  <% if (!count) { %><p class="assistant-empty">Aktuell nichts zu prüfen.</p><% } %>
+  <ul class="assistant-check-items">
+    <% if (sheetsOpen) { %><li><a class="assistant-check-row" href="<%= base %>?ansicht=datenblaetter"><span class="assistant-item-kind">Datenblätter</span><span class="assistant-item-name"><strong><%= datasheetCoverage.summary.articles - datasheetCoverage.summary.approved %> Artikel noch offen</strong><small><%= datasheetCoverage.summary.approved %> von <%= datasheetCoverage.summary.articles %> freigegeben</small></span><span class="assistant-item-action">Ansehen →</span></a></li><% } %>
+    <% pending.forEach(document => { %>
+      <li><a class="assistant-check-row" data-file-row href="<%= base %>/dateien/<%= document.id %>"><span class="assistant-item-kind">Datei</span><span class="assistant-item-name"><strong><%= document.title %></strong><small><%= document.projectDocument && document.projectDocument.scope !== 'documentation' ? 'Intern' : document.category %></small></span><span class="assistant-item-action">Prüfen →</span></a></li>
+    <% }) %>
+    <% openQuestions.forEach(question => { %>
+      <li><details class="assistant-check-detail"><summary class="assistant-check-row"><span class="assistant-item-kind">Angabe</span><strong class="assistant-item-name"><%= question.prompt %></strong><span class="assistant-item-action">Bearbeiten</span></summary>
+        <form action="<%= base %>/antworten" method="post" class="assistant-inline-answer" data-assistant-answer><%- include('formSecurity') %>
+          <% if (typeof fromDashboard !== 'undefined' && fromDashboard) { %><input type="hidden" name="returnToOverview" value="1"><% } %>
+          <label><span class="sr-only"><%= question.prompt %></span><textarea name="answers[<%= question.id %>]" rows="2" maxlength="2000" placeholder="Antwort eingeben" required<%= selected.status === 'closed' ? ' disabled' : '' %>></textarea></label>
+          <% if (question.context) { %><details><summary>Hintergrund</summary><p><%= question.context %></p></details><% } %>
+          <% if (selected.status !== 'closed') { %><button type="submit" class="success-button">Speichern</button><% } %>
+        </form>
+      </details></li>
+    <% }) %>
+    <% missing.forEach(item => { const work = workItems.find(r => r.target.kind === 'requirement' && r.target.requirementId === item.id); %>
+      <li><details class="assistant-check-detail"><summary class="assistant-check-row"><span class="assistant-item-kind">Unterlage</span><strong class="assistant-item-name"><%= item.category %></strong><span class="assistant-item-action"><%= workLabels[work?.state] || 'Fehlt' %></span></summary><div class="assistant-check-body"><p><%= item.title %></p><% if (work) { %><p><%= work.reason %></p><% if (work.resumeCondition) { %><p class="field-hint">Weiter bei: <%= work.resumeCondition %></p><% } %><% } %><p class="field-hint">Vorhandene Datei im Agentenchat bereitstellen. Der Vorschlag erscheint anschließend hier zur Prüfung.</p></div></details></li>
+    <% }) %>
+    <% agentIssues.forEach(issue => { %>
+      <li><details class="assistant-check-detail"><summary class="assistant-check-row"><span class="assistant-item-kind">Angabe</span><strong class="assistant-item-name"><%= issue.message %></strong><span class="assistant-item-action">Details</span></summary><div class="assistant-check-body"><p class="field-hint">Mit dem verbundenen Agenten klären.</p></div></details></li>
+    <% }) %>
+  </ul>
+</section>

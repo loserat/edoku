@@ -1,0 +1,17 @@
+<% const manufacturer=(area.hersteller||[]).find(item=>item.name===row.hersteller)||(area.hersteller||[])[0]||{}; %>
+<details class="settings-panel" data-system-row<%= isNew?' open':'' %>>
+<summary><strong><%= isNew?'Neue Zuordnung':row.hersteller+' · '+(row.herstellerSystem||row.systemart||'Systemauswahl') %></strong><%= !isNew&&row.enabled===false?' · deaktiviert':'' %></summary>
+<form action="/systemauswahl" method="post" class="stack-form" data-system-selection data-leistungsbereich="<%= area.name %>">
+  <%- include('formSecurity') %>
+  <input type="hidden" name="leistungsbereich" value="<%= area.name %>">
+  <% if(isNew){ %><input type="hidden" name="add" value="1"><% }else{ %><input type="hidden" name="selectionId" value="<%= row.selectionId %>"><% } %>
+  <div class="system-grid">
+    <label><span>Hersteller</span><select name="hersteller" data-multi-manufacturer required><% (area.hersteller||[]).forEach(item=>{ %><option value="<%= item.name %>"<%= item.name===manufacturer.name?' selected':'' %>><%= item.name %></option><% }) %></select></label>
+    <label><span>Systemart</span><select name="systemart"><option value="">Keine Auswahl</option><% [...new Set([...(manufacturer.systemarten||[]),row.systemart].filter(Boolean))].forEach(value=>{ %><option value="<%= value %>"<%= value===row.systemart?' selected':'' %>><%= value %></option><% }) %></select></label>
+    <label><span>Herstellersystem</span><select name="herstellerSystem"><option value="">Keine Auswahl</option><% [...new Set([...(manufacturer.systeme||[]),row.herstellerSystem].filter(Boolean))].forEach(value=>{ %><option value="<%= value %>"<%= value===row.herstellerSystem?' selected':'' %>><%= value %></option><% }) %></select></label>
+  </div>
+  <details><summary>Dokumentarten</summary><div class="document-checks" data-multi-documents><% [...new Set([...(manufacturer.dokumentarten||[]),...(row.dokumentarten||[])])].forEach(value=>{ %><label class="checkbox-card compact"><input type="checkbox" name="dokumentarten" value="<%= value %>"<%= (isNew||(row.dokumentarten||[]).includes(value))?' checked':'' %>><span><%= value %></span></label><% }) %></div></details>
+  <div class="assistant-actions"><label class="integration-choice"><input type="checkbox" name="enabled" value="1"<%= row.enabled!==false?' checked':'' %>><span>Zuordnung verwenden</span></label><button type="submit"><%= isNew?'Zuordnung hinzufügen':'Änderungen speichern' %></button><% if(isNew){ %><button type="button" class="secondary" data-discard-system>Verwerfen</button><% } %></div>
+  <% if(!isNew&&row.enabled===false){ %><p class="field-hint">Deaktiviert und erhalten. Zum Wiederverwenden das Häkchen setzen und speichern.</p><% } %>
+</form>
+</details>

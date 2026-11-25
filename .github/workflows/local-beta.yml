@@ -32,6 +32,10 @@ jobs:
         run: npm ci
       - name: Programm und Seitenvorlagen prüfen
         run: npm run check
+      - name: API-/MCP-Referenz auf Vertragsänderungen prüfen
+        run: npm run docs:check
+      - name: Dokumentations- und Wartungswerkzeuge prüfen
+        run: npm run test:maintenance
       - name: Export, Sicherheit, Protokoll, Sicherung und vollständigen Ablauf testen
         run: npm test
       - name: Synthetischen Ablaufnachweis festhalten
