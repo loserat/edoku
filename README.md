@@ -20,11 +20,11 @@ Der Agent kann Material zuordnen, Geräte und Leistungsbereiche pflegen, Herstel
 
 Der MCP-Adapter verwendet dieselbe geschützte HTTP-API wie andere Integrationen. 22 Werkzeuge lesen, 33 bearbeiten im Rahmen des API-Schlüssels. Gezieltes Löschen, Wiederherstellung und Projektreset haben eigene Schutzregeln und benötigen einen ausdrücklichen Auftrag. **edoku startet selbst keinen eingebauten KI-Agenten.** Der Client führt die von edoku berechneten Schritte aus und benötigt für Recherchen Zugriff auf die Herstellerquellen. Remote-MCP/OAuth gehört nicht zum beschriebenen lokalen Adapter.
 
-[Agentenablauf](docs/AGENTENABLAUF.md) · [Zentrale Aufgabensteuerung](docs/ZENTRALE_AUFGABENSTEUERUNG.md) · [API-/MCP-Vertrag](docs/API_MCP.md) · [Manuelle Dateiprüfung](docs/PRUEFREIHENFOLGE.md).
+[Anbindung und Ablauf](docs/API_MCP.md) · [Manuelle Dateiprüfung](docs/DOKU_ASSISTENT.md).
 
 ## Einstieg
 
-**Für Anwender:** [Bedienungsanleitung](docs/BEDIENUNGSANLEITUNG.md) · [Funktionsüberblick](#funktionen) · [Vereinfachter Doku-Assistent](docs/GUI_ASSISTENT_VEREINFACHUNG.md).
+**Für Anwender:** [Bedienungsanleitung](docs/BEDIENUNGSANLEITUNG.md) · [Funktionsüberblick](#funktionen) · [Vereinfachter Doku-Assistent](docs/DOKU_ASSISTENT.md).
 
 **Für Betrieb und Entwicklung:** [Installation](INSTALL.md) · [Coolify](docs/COOLIFY.md) · [Dokumentationsübersicht](docs/README.md) · [Release Notes](docs/RELEASE_NOTES.md).
 
@@ -111,7 +111,7 @@ Eine Kopie auf einem weiteren Datenträger und regelmäßige Wiederherstellungsp
 - **Online:** HTTPS, Anmeldung, Speichern/Wiederladen, Erhalt über einen Containerwechsel sowie PDF-/ZIP-Erzeugung auf der Testinstanz geprüft. Das künstliche Projekt meldet 15 fehlende PDF-Quellen; der Export ist fachlich unvollständig. Der Download wurde in dieser Runde nicht unabhängig geprüft.
 - **Offen:** Fachliche Abnahme, externe Sicherungsorganisation, physische Druckprüfung, weitere Browser-/Barrierefreiheitsfälle, eigener Benutzer-Passwortwechsel und eine vollständige Betriebs-/Sicherheitsabnahme.
 
-Die Nachweise sind datiert. Ein lokaler Testlauf ist kein GitHub-CI-Lauf. [Prüfumfang](docs/TESTS.md) · [Online-Prüfstand](docs/ONLINE_PRUEFSTAND.md) · [Offene Punkte](docs/OFFENE_PUNKTE.md)
+Die Nachweise sind datiert. Ein lokaler Testlauf ist kein GitHub-CI-Lauf. [Prüfumfang](docs/TESTS.md) · [Online-Prüfstand](docs/TECHNIK.md) · [Offene Punkte](docs/TESTS.md)
 
 ## Entwickeln und mitmachen
 
@@ -132,4 +132,4 @@ Tester und Mitentwickler sind willkommen. Bei Fehlern bitte Schritte, erwartetes
 
 ## API, MCP und Wartung
 
-Zentraler Einstieg: [API-/MCP-Übersicht](docs/API_MCP.md), [automatisch geprüfter Vertrag](docs/api/README.md), [Architektur und Refactoring](docs/API_MCP_REFACTORING.md), [Speicherpflege auf dem Mac](docs/SPEICHERPFLEGE.md). `npm run docs:check` erkennt veraltete Schnittstellendokumentation; `npm run test:maintenance` prüft die neuen Wartungswerkzeuge.
+Zentraler Einstieg: [API-/MCP-Übersicht](docs/API_MCP.md), [automatisch geprüfter Vertrag](docs/api/README.md), [Architektur und Refactoring](docs/TECHNIK.md), [Speicherpflege auf dem Mac](docs/SICHERHEIT.md). `npm run docs:check` erkennt veraltete Schnittstellendokumentation; `npm run test:maintenance` prüft die neuen Wartungswerkzeuge.

@@ -1,8 +1,8 @@
 # Bedienungsanleitung
 
-Im Doku-Assistenten unter **Dokumentationsumfang** Verbindungsklemmen, Kabel/Leitungen und Befestigungsmaterial projektbezogen ausnehmen und speichern. Dies steuert neue Übernahme, Recherche und erzeugte Gerätelisten; vorhandene Daten und Freigaben bleiben erhalten. [Details und Aktivierungsstand](MATERIALAUSSCHLUESSE.md).
+Im Doku-Assistenten unter **Dokumentationsumfang** Verbindungsklemmen, Kabel/Leitungen und Befestigungsmaterial projektbezogen ausnehmen und speichern. Dies steuert neue Übernahme, Recherche und erzeugte Gerätelisten; vorhandene Daten und Freigaben bleiben erhalten. [Details und Aktivierungsstand](DOKU_ASSISTENT.md).
 
-Neuer Quellstand 0.2.0-beta.6: [Projekte starten inhaltlich leer](LEERE_PROJEKTANLAGE.md). Bestehende Projekte bleiben erhalten; den tatsächlich aktivierten lokalen Stand beachten.
+Neuer Quellstand 0.2.0-beta.6: [Projekte starten inhaltlich leer](DOKU_ASSISTENT.md). Bestehende Projekte bleiben erhalten; den tatsächlich aktivierten lokalen Stand beachten.
 
 **Mit edoku vom leeren Projekt zur geordneten Elektro-Bestandsdokumentation.**
 
@@ -33,14 +33,7 @@ Textstand: **22.11.2026**, Oberfläche `0.2.0-beta.2`. Die bisherigen Screenshot
 
 ## Mit dem Doku-Assistenten arbeiten
 
-1. Das gewünschte Projekt öffnen und oben **Doku-Assistent** wählen. Er zeigt ausschließlich dieses geöffnete Projekt; innerhalb des Assistenten wird nicht zu anderen Projekten gewechselt.
-2. Bei **Angabe → Bearbeiten** die Rückfrage aufklappen und beantworten. Alternativ im verbundenen Agentenchat antworten. Der Agent recherchiert Herstellerdaten selbst und fragt nach tatsächlichen Einbaudaten.
-3. Eine Datei über **Prüfen** öffnen und lesen. Titel, Kategorie und bei Bedarf Zuordnung korrigieren. Erst danach die Sichtung bestätigen und die einzelne Datei freigeben oder ablehnen. **Freigeben & weiter** öffnet die nächste Datei ohne vorausgewählte Bestätigung.
-4. Unter **Dateien** nach Titel suchen oder zwischen zu prüfenden und übernommenen Dateien wechseln. **Angaben**, **Ausgabe** und **Verlauf** sind am Projekt direkt erreichbar. **Aufträge** enthält auch abgeschlossene Aufträge; **Neue Dokumentation** öffnet das Formular.
-5. Der Agent nutzt gespeicherte Fakten und Originalbelege, fragt gezielt nach und lässt unbekannte oder widersprüchliche Angaben offen. Bei Brandschutzabschottungen werden Bestätigung, Montageanleitung und Systemnachweis benötigt. Kanäle und elektrischen Funktionserhalt davon unterscheiden. DUMMY-Daten ersetzen keine echten Angaben zur Abgabe.
-6. Unter **Ausgabe** fehlende Voraussetzungen prüfen und PDF/ZIP beauftragen. Ein technischer Export ist keine fachliche Freigabe. Der Assistent selbst startet keinen KI-Dienst; dafür muss ein externer Agent verbunden sein.
-
-Interne Projekttexte erscheinen nicht in der Kundendokumentation. Neue Dateien bleiben Vorschläge bis zur manuellen Einzelprüfung. Ein Hinweis auf einen neuen Stand lädt laufende Eingaben nicht automatisch neu. Ausführliche Regeln: [Doku-Assistent](DOKU_ASSISTENT.md).
+Der Assistent zeigt offene Punkte des aktuell geöffneten Projekts. Material und bestätigte Angaben ergänzen, Vorschläge tatsächlich ansehen und Dateien einzeln manuell übernehmen. Ein externer MCP-Agent folgt edokus Aufgabensteuerung; die GUI startet keinen eigenen KI-Dienst. [Aktueller Ablauf](DOKU_ASSISTENT.md).
 
 ## 1. Anmelden und orientieren
 
@@ -160,9 +153,9 @@ Ein eingetragener Verweis auf ein fehlendes oder nicht zugreifbares Foto erzeugt
 
 Fehlende Bilder nachliefern und zuordnen; einen berechtigten Hinweis nicht durch Entfernen des Verweises verdecken. Mehr dazu: [Brandschutzfotos prüfen](BRANDSCHUTZFOTOS.md).
 
-Der Agent sucht zuerst passende Herstellerformulare oder Muster im Systemnachweis. Ein als Vorlage oder unvollständiger Entwurf gekennzeichnetes Formular erfüllt keine fertige Pflichtbestätigung, auch wenn du es zur Ablage manuell übernimmst. Fehlende Angaben und DUMMY-Daten bleiben sichtbar. [Recherche- und Formularablauf](BRANDSCHUTZ_AGENTENABLAUF.md).
+Der Agent sucht zuerst passende Herstellerformulare oder Muster im Systemnachweis. Ein als Vorlage oder unvollständiger Entwurf gekennzeichnetes Formular erfüllt keine fertige Pflichtbestätigung, auch wenn du es zur Ablage manuell übernimmst. Fehlende Angaben und DUMMY-Daten bleiben sichtbar. [Recherche- und Formularablauf](DOKU_ASSISTENT.md).
 
-Der Agent kann aus einer offiziellen Produktseite kompakt passende PDF-Links ermitteln. Die anschließende Artikel-/Variantenprüfung und deine manuelle Einzelprüfung bleiben erforderlich. [Hersteller-Linkermittlung](KOMPAKTE_HERSTELLER_LINKS.md).
+Der Agent kann aus einer offiziellen Produktseite kompakt passende PDF-Links ermitteln. Die anschließende Artikel-/Variantenprüfung und deine manuelle Einzelprüfung bleiben erforderlich. [Hersteller-Linkermittlung](API_MCP.md).
 
 ## 9. PDF-Dokumentation erzeugen und prüfen
 

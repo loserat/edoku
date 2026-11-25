@@ -1,93 +1,23 @@
-# Zugriffsschutz und Datenerhalt
+# Sicherheit und Datenerhalt
 
-## Sicherheitskorrekturen vom 17.11.2026
+## Zugriff
 
-Sichere JSON-Ausgabe in HTML, CSP mit individuellen Script-Freigaben, konsistente Groß-/Kleinschreibung und Pfade, frühe Anfragelimits, begrenzte gleichzeitige Schreib- und Exportarbeiten sowie Speicherbudgets sind ergänzt. Das Auditprotokoll prüft seine Kette und rotiert ohne Einträge zu löschen. Produktions-Neuinstallationen verlangen eigene Erstzugangsdaten; Docker läuft ohne Root-Rechte. [Umfang, Vorgaben und Grenzen](SICHERHEITSUPDATE_2026-11-17.md). Bestehende Benutzer, Passwörter und Daten werden dadurch nicht migriert.
+Eigene Erstzugangsdaten für neue öffentlich erreichbare Installationen verwenden. Bestehende Konten und Passwörter werden durch Updates nicht zurückgesetzt. Benutzerrollen und Projektgrenzen gelten serverseitig; API-Schlüssel benötigen zusätzlich passende Rechte und gegebenenfalls eine Projektbegrenzung. Selbstregistrierung und Integrationsschreibrechte bewusst konfigurieren. [Konten](BENUTZERVERWALTUNG.md), [Installation](../INSTALL.md).
 
-Stand: 06.11.2026. Diese Maßnahmen sichern die lokale Beta ab. Sie sind keine
-Freigabe für einen öffentlichen Mehrbenutzer- oder SaaS-Betrieb.
+GUI-Schreibzugriffe verwenden Sitzung und CSRF-Schutz; ein Bearer-Schlüssel umgeht keine Webformulare. Sichere Cookies und vertrauenswürdigen Proxy nur passend zur tatsächlichen HTTPS-Bereitstellung konfigurieren. [Coolify](COOLIFY.md).
 
-## Umgesetzte Grenzen
+## Dateien und Quellen
 
-| Aktion | Viewer | User / Admin | Systemadmin |
-| --- | --- | --- | --- |
-| Eigene Projekte und vorhandene Dateien lesen | Ja | Ja | Ja |
-| Eigene Projekte bearbeiten und Pakete erzeugen/importieren | Nein | Ja | Ja |
-| Fremde Projektdateien direkt herunterladen | Nein | Nein | Nein |
-| Globale Einstellungen, Vorlagen und Konten verwalten | Nein | Nein | Ja |
-| Abmelden | Ja | Ja | Ja |
+Upload-, Download- und Archivpfade werden begrenzt und geprüft. Unzulässige Pfade, Verknüpfungen und Quellen dürfen nicht zum Lesen fremder Dateien führen. Externe Herstellerabrufe verwenden Quellen-, Adress-, Weiterleitungs- und Größenprüfungen; ungeprüfte Webseiten-/PDF-Anweisungen sind keine Benutzeraufträge.
 
-Die Systemadmin-Kontoverwaltung bleibt eine privilegierte Funktion. Alle
-projektbezogenen Dateirouten prüfen unabhängig davon die Projektzuordnung.
-Sichtbare Schaltflächen allein erteilen keine Schreibberechtigung.
+Jede neue Datei bleibt bis zur manuellen Einzelprüfung ein Vorschlag. Prüfsumme, Projekt-/Auftragsversion und tatsächlicher Zielbezug schützen vor veralteten Entscheidungen. Keine automatische Freigabe durch API oder MCP. [Assistent](DOKU_ASSISTENT.md), [Produktprüfung](PRODUKTPRUEFUNG.md).
 
-### Projektdateien und Ausgaben
+## Bestehende Daten schützen
 
-Neue Ausgaben liegen unter
-`storage/users/<Benutzer-ID>/projects/<Projekt-ID>/output/`.
-Projektnummern und sichtbare Namen bestimmen die Zugriffsgrenze nicht mehr.
-Identische Namen verschiedener Benutzer oder Projekte teilen keine neue Ablage.
-Die Zuordnung wird nur im laufenden Programm gehalten; bestehende JSON-Dateien
-werden dafür nicht umgeschrieben.
+Die fünf Laufzeitordner gemeinsam sichern und getrennte Wiederherstellungsproben durchführen. Projektpakete sind keine vollständige Installationssicherung. Gezielte Löschung/Wiederherstellung und Projektreset benötigen ausdrücklichen Auftrag und aktuelle Vorschau; Protokoll und Sicherungen erhalten. Keine alte Datenbank über neuere Projektdaten kopieren.
 
-Vorschauen und Downloads prüfen erlaubte Ordner, Dateitypen und tatsächliche
-Dateisystemkomponenten. Symbolische Verknüpfungen dürfen die Grenzen nicht
-umgehen. Anhangsvorschauen erkennen PDF-/Bildtypen anhand des Dateiinhalts;
-eine manipulierte MIME-Angabe kann keine HTML-Seite im App-Ursprung freigeben.
-Alte projekt-relative Bildpfade werden ausschließlich im eigenen Projekt gesucht.
+Zugangsdaten, echte Projektinhalte, persönliche Konfiguration, Exporte, Sicherungen und detaillierte Betriebsnachweise gehören nicht in ein öffentliches Repository. Auch Screenshots und Dokumentation vor Veröffentlichung prüfen. Ignore-Regeln allein schützen bereits versionierte Dateien nicht.
 
-Alte Ordner unter `output/projekte/` bleiben unverändert. Eindeutig zuordenbare
-Bestände bleiben lesbar. Gemeinsam verwendete Bestände bleiben entsprechend der
-Benutzerentscheidung separat historisch erhalten und werden nicht automatisch
-einem Projekt zugewiesen. Neue Archive dokumentieren diese Trennung.
+## Grenzen
 
-### Schreibende Anfragen und Anmeldung
-
-- Serverseitige Formulare erhalten einen signierten, an die Sitzung gebundenen CSRF-Token. Auto-Save sendet ihn ebenfalls. So werden ungewollte Schreibanfragen von fremden Webseiten abgewehrt.
-- Fremde `Origin`-/Fetch-Metadata-Angaben werden abgewiesen. Für abweichende Reverse-Proxy-Ursprünge kann `APP_ORIGIN` als vollständiger externer Ursprung konfiguriert werden, zum Beispiel `https://edoku.example.org`.
-- CSRF-Geheimnisse liegen nur im Prozess. Nach einem Neustart müssen bereits geöffnete Formulare neu geladen werden; bestehende Login-Sitzungen werden dadurch nicht gelöscht.
-- Zehn fehlgeschlagene Anmeldungen pro Kennung beziehungsweise dreißig pro IP-Adresse innerhalb von 15 Minuten führen vorübergehend zu HTTP 429. Registrierung ist auf zehn Versuche pro IP und Stunde begrenzt. Die Grenzen gelten pro laufendem Prozess.
-- `X-Forwarded-Proto` wird nur über Express und die ausdrücklich konfigurierte Proxy-Vertrauensregel berücksichtigt. Eine beliebige Client-Angabe allein erzwingt keine HTTPS-Annahme.
-- Gesperrte Konten werden abgewiesen. Passwortänderungen und Kontosperren beenden bestehende Sitzungen des betroffenen Kontos.
-
-Der CSRF-Ansatz orientiert sich an den
-[OWASP-Empfehlungen](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html).
-
-### Zuverlässiges Schreiben
-
-Bei aktiviertem SQLite werden Änderungen der erfassten Projektdatensätze pro Arbeitsvorgang gesammelt und gemeinsam gespeichert. Die Projektversion verhindert stilles Überschreiben durch veraltete Seiten oder einen zwischenzeitlichen Projektwechsel (HTTP 409). Die Geräteprojektion wird durch SQLite-Trigger in derselben Transaktion aktualisiert. Originale JSON-Ausgangskopien werden nicht überschrieben; Fehler führen nicht zu einem stillen Rückfall. Die Projektversion ersetzt weder Rollenprüfung noch CSRF. Details: [SQLite-Projektdaten](SQLITE_PROJEKTDATEN.md).
-
-Weiterhin dateibasierte JSON-Daten werden über eine temporäre Datei im selben Ordner geschrieben,
-vor dem Austausch synchronisiert und anschließend ersetzt. Schreibfehler
-werden bis zur HTML-/Auto-Save-Antwort weitergereicht. Eine beschädigte
-vorhandene JSON-Datei wird beim Lesen nicht still durch einen leeren Standard
-ersetzt. Asynchrone Routenfehler gelangen zum zentralen Fehlerhandler.
-
-Neue PDF-Dateien werden zunächst separat fertiggestellt. Frühere generierte
-PDFs bleiben unter `.previous/` erhalten. Ein finaler Export wird vollständig
-in einem Arbeitsordner vorbereitet; die letzte fertige Ausgabe bleibt bei
-Fehlern erhalten und erfolgreiche Vorgänger liegen in `07_Vorherige_Exporte/`.
-Gelöschte Anhänge werden im eigenen Projekt unter `.trash/` aufbewahrt.
-Diese Rückfallebenen ersetzen keine vollständige externe Sicherung.
-
-Das Verfahren verwendet die Dateioperationen der
-[Node.js-Dateisystem-API](https://nodejs.org/docs/latest-v20.x/api/fs.html).
-Die gemeinsame SQLite-Projekttransaktion umfasst nicht zusätzlich sämtliche
-globalen JSON-Dateien, Fotos, Uploads oder PDF-Dateioperationen. Speicherplatz und Aufbewahrung der Historien müssen weiterhin überwacht werden.
-
-## Nachweise und verbleibende Grenzen
-
-Die automatisierten [Tests](TESTS.md) prüfen unter anderem Kontentrennung,
-gleiche Projektnamen, Symlinks, manipulierte Archive, HTTP-Rechte, CSRF,
-Sitzungsentzug, Speicherfehler und Exportabbrüche. Änderungen an bestehenden
-Projekten werden zusätzlich in einer getrennten Datenkopie geprüft.
-
-Ein lokales Sicherheitsprotokoll ist umgesetzt; Details und Grenzen stehen in [BETA_BETRIEB.md](BETA_BETRIEB.md). Noch offen bleiben insbesondere verteilte
-Rate-Limits, systematische Prüfung aller Browser-/Uploadvarianten, ein
-automatisiertes externes Backup-/Restore-System und die vollständige Härtung
-eines öffentlichen Serverbetriebs. Vorhandene lokale Demo-Zugänge wurden
-nicht automatisch verändert oder entfernt.
-
-## Benutzerverwaltung vom 06.11.2026
-
-Neue Passwörter werden bei Anlage, Registrierung und Reset einheitlich mit 12–256 Zeichen und ohne reine Leerzeichen geprüft. Alte Hashes und Passwörter bleiben beim Update unverändert. Selbstregistrierung ist standardmäßig geschlossen und kann nur durch Systemadmins freigegeben werden. Fehlende Konten erzeugen keine Erfolgsmeldung; ungültige Rollen/Statuswerte werden abgewiesen, der letzte aktive Systemadmin bleibt geschützt. Die alte Rolle Admin bleibt als Benutzerrolle kompatibel. Bedienung, Grenzen und Prüfungen: [Benutzerverwaltung](BENUTZERVERWALTUNG.md).
+Automatisierte Tests sind kein vollständiger Sicherheitsnachweis. Tatsächliche HTTPS-/Proxy-Konfiguration, Dateirechte, Datensicherungen und fachliche Abnahme in der eigenen Umgebung prüfen. Sicherheitsprobleme nicht mit echten Zugangsdaten oder Kundendateien in öffentliche Issues eintragen. [Tests](TESTS.md), [Update](UPDATE.md).

@@ -1,267 +1,35 @@
-# Technische Dokumentation
+# Architektur
 
-Die aktuelle API-/MCP-Karte mit Zuständigkeiten, Transaktionen, Vertragsprüfung und Refactoring-Regeln steht in [API_MCP_REFACTORING.md](API_MCP_REFACTORING.md). Die folgende technische Grundbeschreibung stammt überwiegend vom 06.11.2026; datierte frühere Übernahmen beschreiben ihren jeweiligen damaligen Prüfstand.
+edoku ist eine Node.js-/Express-Anwendung mit serverseitigen EJS-Ansichten, SQLite und dateibasierten Originalunterlagen. GUI, HTTP-API und MCP verwenden gemeinsame Fachservices; es gibt keine zweite MCP-Datenhaltung.
 
-## Architektur
+## Zuständigkeiten
 
-edoku ist eine Node.js-Webanwendung mit Express und serverseitigem Rendering über EJS. Das Frontend verwendet Vanilla JavaScript und CSS ohne Framework.
-
-Die Anwendung ist so aufgebaut, dass sie lokal auf einem Rechner laufen kann, aber grundsätzlich für späteren Webserverbetrieb vorbereitet ist.
-
-## Backend
-
-- `server.js` enthält Express-App, Routen und zentrale Request-Flows.
-- `services/` enthält fachliche und technische Hilfsdienste.
-- `jsonService.js` leitet erfasste Projektpfade an den aktiven SQLite-Projektspeicher weiter; globale und noch nicht aktivierte Daten bleiben dateibasiert.
-- Dateipfade werden mit `path.join` und kontrollierten Projektpfaden aufgebaut.
-- Projektdateien und neue Ausgaben werden über Benutzer-/Projektkennungen aufgelöst. Archivdownloads und Dateivorschauen prüfen Benutzergrenzen, Dateitypen und Symlinks; siehe `docs/SICHERHEIT.md`.
-
-## Datenhaltung
-
-SQLite ist eingebettet; es gibt keinen zusätzlichen Datenbankserver. `better-sqlite3` ist Teil der Laufzeit. `dbService.js` öffnet `storage/app.db` mit WAL und aktivierten Fremdschlüsseln. Bei einer echten Erstinstallation ohne Datenbank werden Startkonten und beide SQLite-Stufen vorbereitet. Eine vorhandene Datenbank wird nicht ersetzt oder erneut mit Startkonten befüllt.
-
-| Daten | Führender Speicher |
+| Bereich | Führende Stellen |
 | --- | --- |
-| Konten, Sitzungen, Projektregister | SQLite: `users`, `sessions`, `projects` |
-| Neun strukturierte Projektdatensätze nach Aktivierung | SQLite: `project_documents`, projektgebundene Versionen in `project_data_revisions` |
-| Gerätelisten und Positionen nach Stufe 2 | Zusätzliche relationale Projektion; vollständiges Projektdokument bleibt führend |
-| Globale Startdaten, Einstellungen und Vorlagen | Dateien in `data/`, `config/`, `templates/` |
-| Fotos, Anhänge, PDFs und ZIPs | Benutzer-/projektgebundene Dateien; historischer Bestand separat |
+| Server, Anmeldung und GUI | `server.js`, `services/authService.js`, `views/` |
+| HTTP-API, Rechte und Schemas | `src/routes/integration.routes.js`, `src/api/` |
+| MCP-Adapter und Werkzeuge | `services/mcpServerService.js`, `scripts/edoku-mcp.js` |
+| Schnittstellenversionen | `services/interfaceVersions.js`; Software aus `package.json` |
+| Führender Projektstand und atomare Änderungen | `projectDataStoreService.js`, `deviceDataStoreService.js`, `integrationService.js` |
+| Aufträge, Fragen und Vorschläge | `documentAssistantService.js`, `documentationWorkflowService.js` |
+| Materialquelle und Ausschlüsse | `materialImportService.js`, `documentationMaterialPolicy.js` |
+| Fakten, Entscheidungen und Abhängigkeiten | `knowledgeService.js`, `agentContractService.js` |
+| Herstellerlinks und PDF-Prüfung | `manufacturerLinkService.js`, `productDocumentVerificationService.js` |
+| Manuelle Prüfung und Reihenfolge | `documentAssistant.routes.js`, `assistantReviewNavigation.js` |
+| Hintergrundexport | `exportJobService.js`, `exportService.js`, `documentationPlanService.js` |
 
-Die Dokumentnamen `projekt.json`, `leistungsbereiche.json`, `projektSysteme.json`, `dokumentenmatrix.json`, `geraetelisten.json`, `brandschutz.json`, `anhaenge.json`, `exportliste.json` und `files.json` bleiben als Schnittstelle erhalten. Im aktiven Modus werden sie in SQLite geführt. Ursprüngliche Dateien unter `storage/users/<Benutzer-ID>/projects/<Projekt-ID>/data/` bleiben Ausgangskopien, aber kein aktueller Spiegel. Der kompatible JSON-Altmodus gilt für Installationen ohne Aktivierung.
+Servicenamen liegen unter `services/`, GUI-Routen unter `src/routes/`. Fachlogik nicht in Toolbeschreibungen oder getrennten Adapter-Speichern nachbauen.
 
-Speicherversionen, Tabellen, Transaktionen, Projektversionsprüfung, Archive und Rückweg: [SQLite-Projektdaten](SQLITE_PROJEKTDATEN.md). Migrationen aktivieren sich bei vorhandenen Installationen nicht durch bloßes Starten einer neuen Programmversion.
+## Daten und Nebenläufigkeit
 
-## Benutzerverwaltung
+SQLite ist für aktivierte Projekte führend. Frühere JSON-Dateien sind Herkunftskopien, kein aktueller Spiegel. Gerätelisten werden zusätzlich relational projiziert. Konten, Aufträge, Anforderungen, Vorschläge und Sichtungen bleiben versioniert; Originaldateien bleiben dateibasiert. Projektversionen und atomare Commits schützen zwischenzeitliche Änderungen. Keine SQLite-Transaktion über beliebige asynchrone Arbeit offenhalten.
 
-- Login ist vorhanden; Selbstregistrierung ist standardmäßig geschlossen und nur durch Systemadmins freigebbar.
-- Passwörter werden mit `crypto.scrypt` und Salt gehasht.
-- Sessions werden als zufällige Tokens in SQLite gespeichert.
-- Session-Cookies sind `httpOnly`, nutzen standardmäßig `SameSite=Lax` und können für HTTPS-Betrieb per ENV auf `Secure` gehärtet werden.
-- Fachseiten sind nur nach Login erreichbar.
-- Projektzugriff erfolgt über die angemeldete `userId`.
-- Startkonten werden ausschließlich bei echter Neuinstallation ohne vorhandene Datenbank vorbereitet; konkrete lokale Defaults stehen in `INSTALL.md`.
-- Rollen sind als Beta-Funktion vorhanden: `viewer`, `user`, `admin`, `systemadmin`.
-- `systemadmin` kann Benutzer anlegen und Rollen verwalten.
-- `viewer` darf Fachseiten lesen, aber keine Schreiboperationen ausführen.
-- Benutzerkonten besitzen einen Status `active` oder `disabled`.
-- Gesperrte Konten können sich nicht anmelden; vorhandene Sessions werden beim Sperren entfernt.
-- Passwort-Reset durch Systemadmins schreibt neuen Hash/Salt und beendet vorhandene Sessions des Kontos.
-- Bestehende IDs, Rollen und Passwortdaten bleiben bei Updates erhalten; die alte Rolle `admin` hat kompatible Benutzerrechte. Neue Passwörter werden einheitlich mit 12–256 Zeichen geprüft.
-- Kontofehler und ungültige Rollen/Statuswerte werden abgewiesen; der letzte aktive Systemadmin ist zusätzlich in der Datenbankschicht geschützt. Details: [Benutzerverwaltung](BENUTZERVERWALTUNG.md).
+Die fünf Laufzeitordner `data/`, `config/`, `storage/`, `output/` und `templates/` gemeinsam sichern. Ein Projektpaket ersetzt keine Vollsicherung. [Datenmodell und Rückweg](SQLITE_PROJEKTDATEN.md), [Updateablauf](UPDATE.md).
 
-## Session-Cookies und Reverse Proxy
+## Ausgabe und Oberfläche
 
-Für lokale Entwicklung bleiben Session-Cookies ohne `Secure`-Attribut, damit `http://localhost:3000` funktioniert. Bei HTTPS-Anfragen wird `Secure` automatisch gesetzt. Hinter einem Reverse Proxy sollte `TRUST_PROXY=true` gesetzt werden, damit Express Proxy-Header korrekt auswertet.
+Ein gemeinsamer Dokumentationsplan bestimmt Kapitel, Pflichtquellen und Ausgabeumfang. PDF-/ZIP-Aufträge arbeiten dauerhaft im Hintergrund und prüfen veränderte Voraussetzungen vor Veröffentlichung. Bestehende Ausgaben und Quellen nicht überschreiben, nur um einen Status zu erfüllen. GUI und PDF verwenden gemeinsame Gestaltungs-/Brandingregeln; [Theme](THEME.md).
 
-Empfohlene Serverwerte:
+## Änderungen prüfen
 
-```text
-NODE_ENV=production
-COOKIE_SAME_SITE=lax
-TRUST_PROXY=true
-```
-
-Optional:
-
-```text
-SESSION_COOKIE_NAME=edoku_session
-COOKIE_DOMAIN=example.org
-COOKIE_SECURE=true
-```
-
-`COOKIE_SECURE=true` erzwingt sichere Cookies immer. Das sollte nur gesetzt werden, wenn der Browser die Anwendung tatsächlich über HTTPS erreicht. Bei HTTP-only-Testinstallationen würde ein erzwungenes Secure-Cookie den Login verhindern.
-
-## Projektkonzept
-
-Ein Benutzer kann mehrere Projekte besitzen. Ein Projekt wird als aktueller Arbeitskontext geöffnet. Alle Fachseiten arbeiten mit diesem aktuellen Projekt.
-
-Globale Dateien in `data/` dienen als Startdaten und Defaults. Neue Projekte erhalten zunächst ihre Ausgangsdateien und werden im aktiven Modus in SQLite erfasst. Bereits erfasste Projekte lesen aktuelle Daten aus SQLite und werden nicht aus alten JSON-Dateien zurückgesetzt. Der Projektkontext wird pro Anfrage festgehalten, damit ein paralleler Projektwechsel kein anderes Projekt überschreiben kann.
-
-## Dokumentationslogik
-
-Die Dokumentenmatrix enthält fachliche Kapitel und Exportpunkte. Die internen Original-Kapitel bleiben stabil. Für Ausgabe und Export wird zusätzlich eine logische Nummerierung erzeugt, damit deaktivierte Kapitel keine Lücken erzeugen.
-
-## PDF-Erzeugung
-
-Die PDF-Erzeugung nutzt `pdfkit`.
-
-Aktuell erzeugt werden:
-
-- Inhaltsverzeichnis
-- Anlagenbeschreibung
-- Konformitätserklärungen
-- CE-Bestätigungen
-- DGUV-/Errichterbestätigungen
-- Gerätelisten
-- Brandschutzdokumentation
-- Deckblätter für Hauptkategorien
-- separate Trennstreifen für Unterkategorien im Maß 24 x 10,5 cm
-- separate Ordnerrücken für Avery-Zweckform `61x192-R` und `38x192-R`
-- finale Gesamt-PDF und ZIP-Ausgabe als Beta-Funktion
-
-Die Trennstreifen werden ohne GitHub-Branding erzeugt, damit sie als reine Registerstreifen gedruckt werden können. Layoutoptionen für Trennstreifen werden in den Systemeinstellungen gespeichert.
-
-Ordnerrücken werden ebenfalls ohne Footer-Branding erzeugt. Die Ausgabe orientiert sich an A4-Kalibrierungsbögen: `61x192-R` nutzt 4 horizontale Rücken je Seite, `38x192-R` nutzt 7 horizontale Rücken je Seite. Die Druckoptionen für Projektkenndaten werden in `config/systemEinstellungen.json` unter `export.ordnerruecken` gespeichert.
-
-## Oberfläche und Theme
-
-- Globale Farben, Radien, Schatten, Abstände und Typografie werden über CSS-Variablen gesteuert.
-- Der Theme-Editor speichert Werte in `config/systemEinstellungen.json`.
-- Statusmeldungen werden als schwebende Toasts dargestellt und verschieben keine Seiteninhalte.
-- Tag-/Nacht-Umschaltung und Theme-Presets greifen global auf Header, Navigation, Karten, Tabellen, Formulare und Buttons.
-- Default-Presets teilen sich identische Radius-, Spacing- und Typografiewerte, damit beim Themewechsel keine Layoutgrößen springen.
-- GitHub-orientierte Presets sind vorgesehen: Light Default, Light High Contrast, Light Colorblind, Dark Default, Dark High Contrast, Dark Colorblind und Dark Dimmed.
-- Der Theme-Editor zeigt bewusst nur die wichtigsten Werte, damit die Einstellungen wartbar bleiben.
-
-## Anhänge und importierte PDFs
-
-Anhänge werden projektbezogen gespeichert und immer in der aktuell gewählten Kategorie importiert. Die Oberfläche zeigt Anhänge als Kacheln; Detaildaten werden bewusst in einem Bearbeiten-Popup gespeichert, damit keine versehentlichen Auto-Saves beim reinen Öffnen oder Vorschauen entstehen.
-
-PDF-Anhänge können Kategorien erhalten, z. B.:
-
-- Stromlaufpläne
-- Schaltpläne
-- Installationspläne
-- Schemata
-- Messprotokolle
-- Bedienungsanleitungen
-
-Diese PDF-Anhänge können in Inhaltsverzeichnis und Exportliste aufgenommen werden.
-
-Für Pläne und Messprotokolle wird die Stockwerksangabe zur Sortierung verwendet. Bedienungsanleitungen können in Gerätelisten mit einzelnen Gerätepositionen verknüpft werden. Brandschutzgerätelisten sind davon ausgenommen, weil dort die Bild- und Schottungsdokumentation separat geführt wird.
-
-Bildanhänge können Brandschutzabschottungen als `Foto 1` oder `Foto 2` zugeordnet werden. Die Zuordnung erfolgt im Anhangs-Popup und wird gemeinsam mit den Metadaten über den Speichern-Button übernommen. Das Bearbeiten-Popup zeigt für Bilder eine direkte Vorschau; PDFs werden über eine separate PDF-Vorschau geöffnet.
-
-Importierte Dateien werden serverseitig mit einem logischen Dateinamen aus Kategorie und Metadaten abgelegt. Dadurch bleiben Ablage, Export und Inhaltsverzeichnis nachvollziehbar.
-
-## Docker
-
-Die Anwendung ist über `Dockerfile` und `docker-compose.yml` startbar. Persistente lokale Ordner werden als Volumes eingebunden.
-
-Der Container nutzt Node.js 22. Für lokale Entwicklung sollte ebenfalls Node.js 22 verwendet werden.
-
-## GitHub-Upload
-
-Nicht ins Repository gehören:
-
-- `node_modules/`
-- `output/`
-- `storage/app.db`
-- `storage/users/`
-- `storage/exports/`
-- `storage/imports/`
-- `.env`
-- interne Tagesupdates
-
-## Beta-Einschränkungen
-
-- Rollen- und Rechteverwaltung ist Beta und muss vor produktiver Nutzung weiter geprüft werden
-- keine produktive Webserver-Härtung
-- 52 gezielte automatisierte Prüfungen; eine vollständige Fach-, Browser- und Betriebsabnahme fehlt
-- PDF-Gesamtdatei, ZIP-Export und Archivstruktur weiter im Praxistest prüfen
-- fachliche Texte und Normbezüge müssen weiter geprüft werden
-
-## Einheitliche Kapitel- und Exportzählung (2026-10-30)
-
-`services/documentationPlanService.js` baut die gemeinsame Struktur für Matrix,
-Inhaltsverzeichnis, Gerätelisten, Anhänge, Dateinamen und Exportvorschau.
-Originalkapitel bleiben Fachschlüssel; die Ausgabenummerierung folgt einem Baum.
-Fehlende Vorfahren werden ergänzt. Doppelte Originalnummern, zusätzliche
-Gerätelisten und importierte PDFs erhalten eindeutige Ausgabenummern.
-
-Die Zählungen haben unterschiedliche, ausdrücklich getrennte Einheiten:
-
-- Kapitelgruppen: Hauptkapitel, ohne das Inhaltsverzeichnis mit Kennung 0.
-- Strukturüberschriften: Gliederung ohne eigene PDF, daher keine fehlende Datei.
-- Einzel-PDFs: gewählte Dokumente einschließlich Deckblättern und Inhaltsverzeichnis.
-- Seiten: tatsächlich gelesene Seiten vorhandener, lesbarer Einzel-PDFs.
-- Gesamt-PDF und separate Druckvorlagen zählen nicht zusätzlich als Einzel-PDFs.
-- Dateinummern der final enthaltenen PDFs sind lückenlos; Überschriften verbrauchen keine Dateinummer.
-
-Neu erzeugte PDFs enthalten eine Dokumentkennung und Kapitelnummer als
-Metadaten. Alte oder unpassende generierte PDFs werden als veraltet ausgewiesen;
-Dateinummern allein reichen nicht für eine eindeutige Zuordnung. Für eine
-Dokumentation nach der neuen Struktur wird der Export bewusst neu gestartet.
-Das Update selbst erzeugt keine PDFs neu und migriert keine Projektdaten.
-
-Dashboard und Export prüfen den aktuellen Plan und die Quelldateien neu. Eine
-leere Exportliste gilt nicht als vollständiger Pflichtnachweis. Pflicht-PDFs
-werden im Gesamtfortschritt nicht zusätzlich ein zweites Mal gewichtet.
-
-Beim finalen Export werden interne PDFs aktualisiert und das Inhaltsverzeichnis
-mit den tatsächlichen Startseiten neu gesetzt. Die Linkflächen stammen aus dem
-gemessenen Textsatz einschließlich mehrzeiliger Titel und Seitenumbrüche.
-Unlesbare, fehlende und nicht zuordenbare externe PDFs werden ausdrücklich
-gemeldet. Verschlüsselte PDFs werden nicht als lesbare Exportquellen gezählt.
-ZIP-Ordner verwenden die tatsächlichen Kapiteltitel, auch wenn Hauptkapitel
-durch die Auswahl eine neue Ausgabenummer erhalten.
-
-Die automatische Ordneranzahl berechnet sich aus den vorhandenen PDF-Seiten
-und dem einstellbaren Wert `seitenProOrdner` (Standard: 80). Das ist eine
-Ablageschätzung; Druckmodus und physische Ordnerkapazität bleiben zu berücksichtigen.
-
-Prüfung: `npm run test:exports`. Die 18 gezielten Prüfungen umfassen unter
-anderem Nummernkollisionen, abgewählte Kapitel, mehrere Gerätelisten,
-mehrseitige Anhänge, ungültige PDFs, alte Zuordnungen, Dateireihenfolge und ein
-dreiseitiges Inhaltsverzeichnis mit 56 überprüften internen Sprunglinks.
-Sicherheits- und Archivkorrekturen stehen in `SICHERHEIT.md` und `PROJEKTARCHIVE.md`; Vollsicherung und getrennte Wiederherstellung stehen in `BETA_BETRIEB.md`; externe Aufbewahrung und Betriebsabnahme bleiben offen.
-
-## Datenerhalt bei der lokalen Übernahme (2026-10-30)
-
-Beim Start werden Startkonten und das alte JSON-Projektregister nur bei einer
-echten Erstinstallation ohne vorhandene Datenbank eingerichtet. Bestehende
-Konten behalten Passwort-Hashes, Rollen, Sperren und aktuelles Projekt; auch
-eine vorhandene leere Datenbank wird nicht automatisch mit Konten befüllt.
-Bereits registrierte Projekte werden beim Aufrufen nicht neu gespeichert.
-Die GET-Systemauswahl gleicht ihre Anzeige ab, speichert aber erst nach einer
-ausdrücklichen Benutzeraktion.
-
-`npm run test:preservation` prüft drei Fälle einschließlich Neustart und zwölf
-angemeldeter Seiten. Zusammen mit `npm run test:exports` bestanden damals 21 Prüfungen
-im zu diesem Zeitpunkt eingesetzten Node-20-Abbild. Der aktuelle Stand vom 17.11.2026 nutzt Node 22 und 109 Prüfungen; siehe [Tests](TESTS.md). Zusätzlich wurde die neue Version
-mit einer konsistenten Kopie der echten Daten vorab geprüft.
-
-Die Hauptinstanz wurde mit denselben fünf eingebundenen Laufzeitordnern
-(`data`, `config`, `storage`, `output`, `templates`), Ports und Startparametern
-umgestellt. Eine bei gestoppter Anwendung erstellte vollständige Sicherung
-enthält 761 Dateien. Nach dem Start wurden sämtliche nichtoperativen
-Laufzeitdateien per SHA-256 verglichen; Datenbankschema und alle Tabellenzeilen
-wurden gesondert verglichen, weil SQLite seine Betriebsdateien verändern kann.
-Es gab keine Inhaltsänderung. Die Sicherung selbst ist bytegleich erhalten.
-
-Der Nachweis liegt lokal unter
-`backups/2026-10-30_uebernahme-edoku-6hmt5og/UEBERNAHME.md`.
-Die Sicherung liegt außerhalb der Laufzeitordner und wird weder in Git noch in
-Docker-Abbilder aufgenommen. Dies ist eine geprüfte lokale Einzelsicherung;
-das neue lokale Sicherungswerkzeug und dessen Grenzen stehen in `BETA_BETRIEB.md`.
-
-Reproduzierbare Prüfschritte stehen in [TESTS.md](TESTS.md), das Vorgehen für
-weitere lokale Updates in [UPDATE.md](UPDATE.md). Private Sicherungen und
-Prüfprotokolle werden nicht veröffentlicht.
-
-## Sicherheits- und Archivstruktur
-
-- `requestSecurityService.js`: signierte sitzungsgebundene CSRF-Tokens, Ursprungsprüfung, Login-/Registrierungsbegrenzung und Weitergabe asynchroner Routenfehler.
-- `projectService.js`: nur im Speicher gebundener Projektkontext, neue stabile Ausgabeablage und eindeutige, rein lesende Altbestandszuordnung.
-- `pathService.js`: lexikalische Pfadgrenzen plus Prüfung der Dateisystemkomponenten auf Symlinks/Spezialdateien.
-- `projectPackageService.js`: Paketformat 2.0, tatsächliche Dateiinventare, Prüfsummen, benutzerbezogene Import-/Exportpfade und konfliktfreie Rückimporte.
-- `zipService.js`: Streaming-ZIP mit geprüften relativen Einträgen und Größenlimits, ohne neue Laufzeitabhängigkeit.
-- `jsonService.js`: Weiterleitung aktiver Projektpfade an SQLite; für übrige JSON-Dateien synchronisierte temporäre Dateien und anschließender Austausch.
-- `projectDataStoreService.js`: versionierte vollständige Projektdatensätze, Anfragenkontext, gemeinsame Transaktionen, Herkunftsdaten und Konflikterkennung.
-- `deviceDataStoreService.js`: versionierte Geräteprojektion, SQLite-Trigger und Prüfung gegen den vollständigen Datensatz.
-- `scripts/project-storage.js`: ausdrückliche Übernahme, Status und Materialisierung in einer neuen Rückwegkopie.
-- `brandschutzPhotoService.js`: Prüfung fehlender aktiver Fotoverweise für Oberfläche und Export.
-- `passwordPolicyService.js`: gemeinsame Prüfung neu gesetzter Passwörter.
-
-Neue Ausgaben liegen unter `storage/users/<Benutzer-ID>/projects/<Projekt-ID>/output/`.
-Bestehende Ordner werden weder umbenannt noch automatisch migriert. Historische
-Mehrfachzuordnungen werden nicht als neue Dateirechte verwendet. Originale
-abgeleiteter Exportindizes bleiben in Archiv-Begleitmetadaten erhalten;
-importierte aktive Indizes werden neu aufgebaut.
-
-## SQLite-Projektdaten ab 06.11.2026
-
-Die lokale Anwendung verwendet nach geprüfter Aktivierung beide SQLite-Stufen. Ausgangsdateien bleiben erhalten; neue Installationen verwenden beide Stufen ohne separaten Datenbankserver. Vorhandene andere Installationen benötigen eine ausdrückliche Migration. Datenmodell, Transaktionen, Projektversionen, Archive und Rückweg: [SQLite-Projektdaten](SQLITE_PROJEKTDATEN.md).
-
-Stufe 2 ergänzt die versionierte relationale Geräteprojektion (`project_device_storage`, `project_device_lists`, `project_device_positions`). Synchronisierung erfolgt durch SQLite-Trigger in der Dokumenttransaktion; das vollständige Projektdokument bleibt führend. Direkte Änderungen an der Projektion sind kein unterstützter Schreibweg. Benutzer- und Projektzuordnung sind über zusammengesetzte Fremdschlüssel abgesichert.
+[Tests](TESTS.md) angemessen zur Änderung ausführen. Bei API-/MCP-Änderungen `npm run docs:api`, erzeugten Diff prüfen und `npm run docs:check` ausführen; Referenzen nicht von Hand ändern. Eingabe-/Antwortgrenzen, Rechte, Versionsschutz und manuelle Dateiprüfung erhalten. [Vertrag](api/README.md), [Versionierung](VERSIONIERUNG.md).

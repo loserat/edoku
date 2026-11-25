@@ -1,14 +1,6 @@
-# Lokaler Beta-Betrieb
+# Sicherung und Wiederherstellung
 
-Stand: 19.11.2026. Diese Anleitung gilt für die lokale Docker-Installation mit den fünf eingebundenen Ordnern `data`, `config`, `storage`, `output` und `templates`. Sie ersetzt keine Freigabe für öffentlichen Serverbetrieb.
-
-## Aktueller lokaler Betriebsnachweis
-
-Zum Tagesabschluss läuft genau ein edoku-Anwendungscontainer `edoku_v1` auf Port 3000 mit Benutzerkennung `501:20`, SQLite-Geräteprojektion und Status `healthy`. Aktives Abbild: `edoku:device-columns-20261119`. Die Codex-Verbindung nutzt den Host-MCP-Adapter; sie benötigt keinen zweiten edoku-Container. Vollständige Image-ID und Prüfergebnisse: [Tagesabschluss 19.11.](TAGESABSCHLUSS_2026-11-19.md).
-
-Die jüngsten Vorsicherungen `backups/assistant-overview-pre-20261119` und `backups/device-columns-pre-20261119` wurden jeweils separat wiederhergestellt und mit dem neuen Abbild gestartet. Beim letzten Update blieben acht geschützte Tabellen, Datenpfade, Ports und Benutzerkennung unverändert. Das ist kein heutiger neuer Nachweis einer externen Sicherung oder eines vollständigen fachlichen Exports.
-
-`mcp-documents/` ist eine zusätzliche lokale Recherche-Eingangsablage. Private Codex-Starter und Verbindungsdateien liegen außerhalb der fünf Laufzeitordner und sind gesondert zu sichern; vorhandene private Host-Adapter-Sicherung erhalten. [Einrichtung und Grenzen](CODEX_DOCKER_MCP.md). Nach einem Rückweg zuerst neue Projekte, Antworten und Dateientscheidungen sichern; nie einen älteren Datenstand ungeprüft über neuere Daten kopieren.
+Diese Anleitung gilt für eine eigene Docker-Installation mit den fünf dauerhaften Laufzeitordnern. Sicherungen und konkrete Betriebsnachweise privat aufbewahren.
 
 ## Vollständige Sicherung
 
@@ -63,7 +55,7 @@ Das Sicherheitsprotokoll ist für Systemadmins unter `/einstellungen/protokoll` 
 
 Die Ablage liegt unter `storage/audit/events.jsonl` und ist Bestandteil der Vollsicherung. Kritische Anmeldungs-, Konto-, Einstellungs-, Projekt-, Archiv- und Exportaktionen erhalten vor ihrer Ausführung einen dauerhaft geschriebenen Versuchsdatensatz. Bei unlesbarem oder beschädigtem Protokoll werden diese Aktionen abgewiesen. Ist nur der spätere Ergebnisdatensatz nicht schreibbar, bleibt der Versuch erhalten und der Server meldet den Fehler. Nach einem abrupten Prozessabbruch kann daher ein Versuch ohne Ergebnis bestehen.
 
-Die Hashkette erkennt beschädigte oder einzeln veränderte Datensätze. Sie setzt voraus, dass die Ablage gegen komplettes Umschreiben geschützt ist. Der lokal aktivierte Sicherheitsstand rotiert die Protokolldatei und behält die bisherigen Einträge. Externe unveränderliche Ablage, Aufbewahrungsregeln und Betrieb mit mehreren gleichzeitig schreibenden Prozessen sind noch offen. Eine beschädigte Datei zunächst privat sichern und untersuchen. [Lokale Protokolländerungen](SICHERHEITSUPDATE_2026-11-17.md)
+Die Hashkette erkennt beschädigte oder einzeln veränderte Datensätze. Sie setzt voraus, dass die Ablage gegen komplettes Umschreiben geschützt ist. Die Protokolldatei wird rotiert; bisherige Einträge bleiben erhalten. Externe unveränderliche Ablage, Aufbewahrungsregeln und Betrieb mit mehreren gleichzeitig schreibenden Prozessen sind noch offen. Eine beschädigte Datei zunächst privat sichern und untersuchen. [Lokale Protokolländerungen](SICHERHEIT.md)
 
 ## Prüfungen und Grenzen
 

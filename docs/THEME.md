@@ -1,6 +1,6 @@
 # Theme-System
 
-Stand: 06.11.2026. Diese Datei beschreibt die CSS-/Preset-Anbindung. Die aktuelle ruhige Standardgestaltung, der lesende Abgleich alter Vorgaben und das Browser-Prüfraster stehen unter [Gestaltung](GESTALTUNG.md).
+Stand: 06.11.2026. Diese Datei beschreibt die CSS-/Preset-Anbindung. Die aktuelle ruhige Standardgestaltung, der lesende Abgleich alter Vorgaben und das Browser-Prüfraster stehen unter [Gestaltung](THEME.md).
 
 Das Theme-System steuert die zentrale Optik von edoku über CSS-Variablen.
 Die Werte werden in `config/systemEinstellungen.json` im Objekt `theme` gespeichert.
@@ -89,7 +89,7 @@ Die Docker-Vorschau vom 18.11.2026 verwendet eine gemeinsame Leiste für Einstel
 | Benutzerverwaltung | `/einstellungen#benutzer`, auch `#benutzerverwaltung` |
 | Sicherheitsprotokoll | `/einstellungen/protokoll` |
 
-Benutzerverwaltung und Sicherheitsprotokoll sind für Systemadmins vorgesehen. Die Protokollroute prüft die Rolle auch beim direkten Aufruf. [Browserprüfung und Bereitstellungsstand](TAGESABSCHLUSS_2026-11-18.md#änderungen-in-der-docker-vorschau)
+Benutzerverwaltung und Sicherheitsprotokoll sind für Systemadmins vorgesehen. Die Protokollroute prüft die Rolle auch beim direkten Aufruf. [Browserprüfung und Bereitstellungsstand](TESTS.md)
 
 ## Presets erweitern
 

@@ -9,7 +9,7 @@
 | [Einstellungsnavigation](2026-11-18/einstellungen-direktlinks.jpg) | Lokale Docker-Vorschau, Projektordner aktiv und Admin-Link zum Protokoll sichtbar |
 | [Einstellungsleiste mobil](2026-11-18/coolify-einstellungen-mobil.jpg) | Getrennte Online-Prüfung des Programmcommits `2993893` bei 390 Pixeln |
 
-Die Ausschnitte zeigen nur die betroffenen Bedienelemente. [Arbeitsstand und Prüfung](../TAGESABSCHLUSS_2026-11-18.md)
+Die Ausschnitte zeigen nur die betroffenen Bedienelemente. [Arbeitsstand und Prüfung](../TESTS.md)
 
 ## Aktuelle Aufnahmen vom 17.11.2026
 
@@ -17,7 +17,7 @@ Die Ausschnitte zeigen nur die betroffenen Bedienelemente. [Arbeitsstand und Pr�
 
 Alle Bilder sind unveränderte JPEG-Aufnahmen der gerenderten Oberfläche im vorhandenen schmalen Browserfenster. Die Bilder sind keine Mockups. Breite Tabellen und lange Seiten sind als Ausschnitt sichtbar; die Bedienung und übrigen Felder werden im Text erklärt. Die Sammlung enthält weder echte Kundendaten noch Passwörter, Sitzungswerte oder Aufnahmen der Verwaltungsoberfläche. Der leere Anhangsbereich und die unfertige Schottung sind ausdrücklich Beispielzustände, keine abgeschlossene Dokumentation.
 
-Der Export ist ein Teilstand: 48 geplante, 33 vorhandene und 15 fehlende Einzel-PDFs, 35 tatsächliche Seiten. Die Kennzeichnung „bereit“ an den Ausgabedateien ist kein fachlicher Vollständigkeitsstatus. [Online-Prüfstand](../ONLINE_PRUEFSTAND.md).
+Der Export ist ein Teilstand: 48 geplante, 33 vorhandene und 15 fehlende Einzel-PDFs, 35 tatsächliche Seiten. Die Kennzeichnung „bereit“ an den Ausgabedateien ist kein fachlicher Vollständigkeitsstatus. [Online-Prüfstand](../TECHNIK.md).
 
 | Datei unter `2026-11-17/` | Ansicht |
 | --- | --- |

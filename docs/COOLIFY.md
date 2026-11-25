@@ -1,6 +1,5 @@
 # Coolify: reproduzierbarer Testbetrieb
 
-> **Separater lokaler Sicherheitsstand vom 17.11.2026:** Das lokal aktivierte Abbild läuft ohne Root-Rechte. Bei einer späteren Übernahme dieses Abbilds müssen die Schreibrechte der fünf vorhandenen Volumes auf einer Kopie mit der geplanten Benutzerkennung geprüft werden. [Lokaler Sicherheitsstand und Bestandsschutz](SICHERHEITSUPDATE_2026-11-17.md).
 
 Stand **18.11.2026**. Technische Anleitung für Betreiber. Die [Bedienungsanleitung](BEDIENUNGSANLEITUNG.md) richtet sich getrennt an Anwender. Die Containerkonfiguration ist lokal geprüft und auf der bezeichneten Online-Testinstanz verifiziert; andere Installationen benötigen eine eigene Zielprüfung.
 
@@ -68,7 +67,7 @@ Online separat prüfen: ausgewählter Git-Commit, gültiges HTTPS, HTTP-Umleitun
 
 ## Tatsächlich aktivierter Teststand
 
-Am 18.11.2026 wurde die Testressource auf `main` umgestellt und auf Commit [2993893](https://github.com/loserat/edoku/commit/299389312d31e91752834fef33d47c722e5dad4b) festgesetzt. Dockerfile, interner Port und die fünf vorhandenen Datenvolumes wurden weiterverwendet. Coolify meldete den neuen Container als `healthy`. Über HTTPS bestätigte `/ready` SQLite samt Geräteprojektion. Anmeldung, Testprojekt, Einstellungsleiste und Theme-Wechsel wurden danach im Browser geprüft. [Online-Prüfstand](ONLINE_PRUEFSTAND.md#update-und-prüfung-vom-18112026)
+Am 18.11.2026 wurde die Testressource auf `main` umgestellt und auf Commit [2993893](https://github.com/loserat/edoku/commit/299389312d31e91752834fef33d47c722e5dad4b) festgesetzt. Dockerfile, interner Port und die fünf vorhandenen Datenvolumes wurden weiterverwendet. Coolify meldete den neuen Container als `healthy`. Über HTTPS bestätigte `/ready` SQLite samt Geräteprojektion. Anmeldung, Testprojekt, Einstellungsleiste und Theme-Wechsel wurden danach im Browser geprüft. [Online-Prüfstand](TECHNIK.md)
 
 Bei einem weiteren Update zuerst den gewünschten Commit und seine Prüfungen festlegen. In **Git Source** den Branch und den Commit SHA speichern, dann **Redeploy** auslösen. Nach dem Rollout den laufenden Commit, den Containerstatus und `/ready` abgleichen. Den zuvor laufenden, gesunden Commit vor dem Wechsel als Rückweg festhalten. Der festgesetzte Commit trennt die Bereitstellung von späteren Dokumentationsänderungen.
 
@@ -78,7 +77,7 @@ Der Programmcommit `a07104ba18c0cb1ea0d7958ebc32504c47bd002e` aus `gm/coolify-te
 
 Die Ressource verwendet den Dockerfile-Healthcheck. Wenn Coolify einen eigenen HTTP-Healthcheck aktiviert, kann dieser den Check des Abbilds ersetzen; nicht versehentlich einen abweichenden Demo-Endpunkt prüfen. Bei der geprüften Ressource war kein separater Coolify-HTTP-Check aktiv.
 
-Der Online-Testbestand ist fachlich unvollständig: 33 vorhandene Einzel-PDFs mit 35 Seiten, 15 fehlende PDF-Quellen. Die erzeugten Dateien wurden als Teilstand angeboten. Ein konkreter Download wurde nicht unabhängig geprüft. Vollständiger [Online-Prüfstand](ONLINE_PRUEFSTAND.md).
+Der Online-Testbestand ist fachlich unvollständig: 33 vorhandene Einzel-PDFs mit 35 Seiten, 15 fehlende PDF-Quellen. Die erzeugten Dateien wurden als Teilstand angeboten. Ein konkreter Download wurde nicht unabhängig geprüft. Vollständiger [Online-Prüfstand](TECHNIK.md).
 
 ## Abhängigkeitsprüfung vom 17.11.2026
 

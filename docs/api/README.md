@@ -1,6 +1,6 @@
 # API-/MCP-Vertragsinventar
 
-Automatisch erzeugt mit `npm run docs:api`. Nicht von Hand bearbeiten. `npm run docs:check` erkennt Abweichungen. Diese Referenz beschreibt den Quellstand; der Betriebsstand steht in [AKTUELLER_STAND.md](../AKTUELLER_STAND.md).
+Automatisch erzeugt mit `npm run docs:api`. Nicht von Hand bearbeiten. `npm run docs:check` erkennt Abweichungen. Diese Referenz beschreibt den Quellstand. [Versionsschema](../VERSIONIERUNG.md) und [Prüfverfahren](../TESTS.md) ergänzen den Vertrag.
 
 OpenAPI **3.9.0** · MCP **3.9.0** · **64 HTTP-Operationen** · **22 Lese- / 33 Schreibwerkzeuge**.
 

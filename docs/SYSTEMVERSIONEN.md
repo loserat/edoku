@@ -1,6 +1,6 @@
 # Versionsanzeige unter Einstellungen → System
 
-Seit lokal aktivierter App **0.3.0-beta.2** (25.11.2026) zeigt der Systembereich eine kompakte Zeile mit **Software**, **MCP** und **API**. Die Werte sind reine Statusangaben, keine Einstellungen zum Bearbeiten. Es wird weder ein Speicheraufruf noch eine externe Updateabfrage ausgelöst.
+Ab App-Version **0.3.0-beta.2** zeigt der Systembereich eine kompakte Zeile mit **Software**, **MCP** und **API**. Die Werte sind reine Statusangaben, keine Einstellungen zum Bearbeiten. Es wird weder ein Speicheraufruf noch eine externe Updateabfrage ausgelöst.
 
 Software kommt aus dem tatsächlich laufenden `package.json`. API und MCP stammen aus `services/interfaceVersions.js`; dieselben Konstanten verwenden OpenAPI und tatsächlicher MCP-Handshake. MCP bezeichnet den edoku-MCP-Server, nicht die Version eines externen Clients. Die OpenAPI-Formatkennung 3.1.0 ist eine andere Angabe.
 
