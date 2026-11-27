@@ -1,5 +1,9 @@
 # Changelog
 
+## Noch nicht veröffentlicht
+
+- Export- und Einstellungsuntermenüs kompakter: 40 Pixel Höhe am Desktop, kleinere Abstände und Einstellungsicons. Zentrierung und normale Schrift bleiben erhalten; auf schmalen Bildschirmen 44 Pixel hohe, seitlich scrollbare Leisten.
+
 ## 0.3.2 – 27.11.2026
 
 Kleiner Versions- und Dokumentationsstand für die bestehende Update-Erkennung. Funktionsumfang, Abhängigkeiten, Datenbankschema und API/MCP **3.15.0** mit **58 Werkzeugen** sind gegenüber 0.3.1 unverändert.

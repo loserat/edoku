@@ -176,6 +176,8 @@ Tastaturfokusse und die Einstellung für reduzierte Bewegung werden berücksicht
 
 Die bereichsbezogene Navigation steht direkt unter dem gemeinsamen Header, als vollbreite Leiste mit dezenter Trennlinie. Automatische Außenränder zentrieren die Reitergruppe bei genügend Platz. Bei Überbreite bleiben alle Einträge über den eigenen horizontalen Scrollbereich erreichbar, ohne die ganze Seite zu verbreitern. Reiter verwenden Schriftstärke 400; aktive Auswahl und Tastaturfokus bleiben sichtbar. Die Einstellungen und das Sicherheitsprotokoll verwenden dieselbe rollenabhängige Teilvorlage. Export-, Einstellungs- und Direktlinkfunktionen bleiben erhalten.
 
+Die kompakte Ausführung verwendet am Desktop 40 Pixel Leistenhöhe, 30 Pixel hohe Reiter und 12 Pixel Schrift. Einstellungsicons sind 14 Pixel groß. Bis 760 Pixel Bildschirmbreite bleiben 44 Pixel Leistenhöhe und 36 Pixel hohe Reiter für die Bedienung erhalten; alle Einträge sind weiterhin seitlich erreichbar.
+
 ## App-Icon
 
 Das Hauptmotiv liegt in `public/img/icons/edoku-app-icon.svg`: ein Dokument mit

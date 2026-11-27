@@ -1209,12 +1209,14 @@
   flex: 0 0 auto;
   flex-wrap: nowrap;
   gap: 4px;
+  height: 40px;
   margin: 0;
+  min-height: 40px;
   max-width: 100%;
   min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 6px 28px;
+  padding: 4px 28px;
   scroll-padding-inline: 28px;
   scrollbar-width: thin;
   width: 100%;
@@ -1234,10 +1236,10 @@
   flex: 0 0 auto;
   font-size: 12px;
   font-weight: 400;
-  gap: 8px;
-  min-height: 38px;
+  gap: 6px;
+  min-height: 30px;
   min-width: 0;
-  padding: 8px 11px;
+  padding: 4px 10px;
   text-align: left;
   text-decoration: none;
   white-space: nowrap;
@@ -1260,19 +1262,22 @@
 }
 
 .settings-top-tabs .icon {
-  flex: 0 0 16px;
-  height: 16px;
-  width: 16px;
+  flex: 0 0 14px;
+  height: 14px;
+  width: 14px;
 }
 
 @media (max-width: 760px) {
   .settings-top-tabs {
+    height: 44px;
+    min-height: 44px;
+    padding-block: 3px;
     padding-inline: 16px;
     scroll-padding-inline: 16px;
   }
 
   .settings-top-tabs :is(button, a) {
-    min-height: 42px;
+    min-height: 36px;
   }
 }
 

@@ -1453,12 +1453,12 @@ tr:last-child td {
   border-radius: min(var(--radius-lg), 22px);
   box-shadow: var(--shadow-soft);
   flex-wrap: nowrap;
-  height: 48px;
+  height: 40px;
   justify-content: center;
   margin: 0 auto;
-  max-height: 48px;
+  max-height: 40px;
   max-width: min(100%, 920px);
-  min-height: 48px;
+  min-height: 40px;
   overflow-x: auto;
   overflow-y: hidden;
   padding: 6px;
@@ -1472,11 +1472,11 @@ tr:last-child td {
   box-shadow: none;
   display: inline-flex;
   flex: 0 0 auto;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
-  height: 34px;
-  min-height: 34px;
-  padding: 0 14px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0 10px;
 }
 
 .export-tabs .tab-button:hover,
@@ -2673,7 +2673,7 @@ body.modal-open {
   justify-content: flex-start;
   margin: 0;
   max-width: 100%;
-  padding: 6px 28px;
+  padding: 4px 28px;
   scroll-padding-inline: 28px;
   width: 100%;
 }
@@ -2685,7 +2685,15 @@ body.modal-open {
 }
 @media (max-width: 760px) {
   .export-page-layout > .export-tabs {
+    height: 44px;
+    min-height: 44px;
+    max-height: 44px;
+    padding-block: 3px;
     padding-inline: 16px;
     scroll-padding-inline: 16px;
+  }
+  .export-page-layout > .export-tabs .tab-button {
+    height: 36px;
+    min-height: 36px;
   }
 }
