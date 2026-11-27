@@ -1,5 +1,11 @@
 # Release Notes
 
+## 0.3.2 – 27.11.2026
+
+Kleiner Versions- und Dokumentationsstand für die bestehende Update-Erkennung. Funktionsumfang, Abhängigkeiten, Datenbankschema und API/MCP **3.15.0** mit **58 Werkzeugen** sind gegenüber 0.3.1 unverändert.
+
+Unter **Einstellungen → Updates → Updates prüfen** vergleicht edoku die installierte Version mit dem neuesten stabilen GitHub-Release. Eine lokale 0.3.1 soll den veröffentlichten Release v0.3.2 als neuere Version melden. Ein main-Push allein reicht dafür nicht; die Prüfung lädt und installiert keine Software. Bestehende Daten und Freigaben bleiben erhalten, Dateien weiterhin manuell einzeln freigeben. Eine spätere Installation erfolgt gesondert nach Sicherung und Wiederherstellungsprobe.
+
 ## 0.3.1 – 27.11.2026
 
 **Oberfläche:** Export und Einstellungen zeigen ihre Untermenüs direkt unter der Topbar, zentriert und ohne Fettschrift. Bei wenig Platz bleibt die jeweilige Leiste seitlich scrollbar. Die Einstellungsnavigation gilt auch für das Sicherheitsprotokoll; Rollen, aktive Auswahl und Direktlinks bleiben erhalten. Icons geben dezente Rückmeldungen und berücksichtigen reduzierte Bewegung. Bei Messprotokollen ist MessPilot optional verlinkt; es werden keine Dateien automatisch übertragen.

@@ -2,7 +2,7 @@
 
 | Bereich | Version | Quelle |
 | --- | --- | --- |
-| Anwendung | `0.3.1` | `package.json`; beide Wurzeleinträge in `package-lock.json` |
+| Anwendung | `0.3.2` | `package.json`; beide Wurzeleinträge in `package-lock.json` |
 | HTTP-API | `3.15.0` | `services/interfaceVersions.js`, verwendet von OpenAPI |
 | MCP-Server | `3.15.0` | `services/interfaceVersions.js`, verwendet vom MCP-Server |
 | Schnittstellenumfang | 69 Operationen / 58 Werkzeuge | erzeugtes `docs/api/manifest.json` |

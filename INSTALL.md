@@ -1,6 +1,6 @@
 # Installation
 
-Aktueller App-Stand: `0.3.1`, API/MCP `3.15.0`. [Release Notes](docs/RELEASE_NOTES.md) · [Versionen](docs/VERSIONIERUNG.md). Bestehende Installationen ausschließlich nach [Update-Anleitung](docs/UPDATE.md) mit Sicherung aktualisieren.
+Aktueller App-Stand: `0.3.2`, API/MCP `3.15.0`. [Release Notes](docs/RELEASE_NOTES.md) · [Versionen](docs/VERSIONIERUNG.md). Bestehende Installationen ausschließlich nach [Update-Anleitung](docs/UPDATE.md) mit Sicherung aktualisieren.
 
 
 Stand: 27.11.2026. Diese Anleitung beschreibt eine Neuinstallation des aktuellen Arbeitsstands für Entwicklung, Tests und lokalen Betrieb. Bei einer vorhandenen Installation zuerst [Update und Datenerhalt](docs/UPDATE.md) lesen. Quellstand, freigegebener Git-Stand und laufende Installation sind getrennt; die Versionsanhebung allein veröffentlicht oder aktiviert nichts. Den gewünschten Branch beziehungsweise Commit vor dem Bauen ausdrücklich auswählen. Die reine Nutzung erklärt die [Bedienungsanleitung](docs/BEDIENUNGSANLEITUNG.md).

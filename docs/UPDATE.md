@@ -2,6 +2,12 @@
 
 Bestehende Installationen bewusst mit geprüfter Sicherung und Wiederherstellungsprobe aktualisieren. Daten, Konten und Dateientscheidungen erhalten; tatsächliche laufende Version nach dem Wechsel prüfen.
 
+## Update-Erkennung mit 0.3.2 prüfen
+
+Die GUI unter **Einstellungen → Updates** liest den neuesten stabilen Release von `loserat/edoku` über GitHub. Maßgeblich ist dessen Versions-Tag, nicht der letzte Commit auf main. Entwürfe und Vorab-Releases gehören nicht zu diesem stabilen Kanal. „Updates prüfen“ meldet eine neuere Version; es führt weder einen Download noch eine Installation oder Migration aus.
+
+Für den Erkennungstest die bestehende lokale 0.3.1 laufen lassen und nach Veröffentlichung von v0.3.2 die Prüfung aufrufen. Erwartet wird „Neue Version verfügbar: 0.3.2“. 0.3.2 unterscheidet sich von 0.3.1 nur durch Paket-/Lock-Version und Dokumentation, nicht durch Fachlogik oder Abhängigkeiten. Der eigentliche Wechsel benötigt weiterhin die nachfolgend beschriebene Sicherung und Wiederherstellungsprobe.
+
 ## Versionswechsel auf 0.3.1
 
 0.3.1 bündelt die vorbereiteten Brandschutz- und OBO-Prüfverbesserungen aus beta.9/beta.10. API/MCP bleiben bei 3.15.0; die App-Version allein ist kein Datenbankupgrade. Gegenüber beta.8 und den vorbereiteten beta.9/beta.10 wird keine neue Migration eingeführt. Für ältere Installationen gilt weiterhin der unten beschriebene ausdrückliche Vorschlagsspeicher-Upgrade.

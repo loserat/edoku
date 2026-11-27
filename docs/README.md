@@ -1,6 +1,6 @@
 # Dokumentation
 
-Produktstand **0.3.1** · API/MCP **3.15.0**. [Änderungen](RELEASE_NOTES.md#031--27112026) · [Update und Datenerhalt](UPDATE.md).
+Produktstand **0.3.2** · API/MCP **3.15.0**. [Änderungen](RELEASE_NOTES.md#032--27112026) · [Update und Datenerhalt](UPDATE.md).
 
 ## Nutzung
 

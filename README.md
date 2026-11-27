@@ -4,7 +4,7 @@
 
 edoku verbindet Projektstammdaten, Gerätelisten, Brandschutz und technische Unterlagen zu einer geordneten PDF-/ZIP-Dokumentation. Du arbeitest in der Weboberfläche oder verbindest einen Agenten wie Codex über den integrierten **MCP-Server**. edoku gibt den Projektaufbau und die nächsten Aufgaben vor; der Agent ergänzt belegte Informationen und schlägt passende Herstellerunterlagen vor.
 
-**Version `0.3.1`** · HTTP-API/MCP `3.15.0` · **58 MCP-Werkzeuge** · Docker und SQLite.
+**Version `0.3.2`** · HTTP-API/MCP `3.15.0` · **58 MCP-Werkzeuge** · Docker und SQLite.
 
 [![Prüfung für main](https://github.com/loserat/edoku/actions/workflows/local-beta.yml/badge.svg?branch=main)](https://github.com/loserat/edoku/actions/workflows/local-beta.yml)
 
@@ -34,7 +34,7 @@ Der MCP-Adapter verwendet dieselbe geschützte HTTP-API wie andere Integrationen
 
 Export und Einstellungen verwenden eine schlichte Untermenüleiste direkt unter der Hauptnavigation: mittig, mit normaler Schriftstärke und mobil seitlich scrollbar. Dezente Icon-Bewegungen berücksichtigen reduzierte Bewegung; bei Messprotokollen ist MessPilot optional verlinkt. Die bestehende Einzelprüfung und Freigabe von Dateien bleibt erhalten.
 
-Version 0.3.1 bündelt die automatische herstellerunabhängige Brandschutz-Aufgabensteuerung, konkrete fehlende Fakten, technische Prüfbefunde und die artikelgebundene OBO-PLM-Maßprüfung. Gespeicherte Originalquellen werden nach einer behobenen Prüfsperre gezielt erneut verwendet. Alle neuen Dateien bleiben manuell einzeln freizugeben; Quelltests, lokale Aktivierung und Online-Deployment sind getrennte Nachweise. Gegenüber 0.3.0-beta.8 ist keine neue Datenmigration erforderlich; frühere Speicher-Upgrades bleiben für ältere Installationen nach der Update-Anleitung maßgeblich. [Tests und Grenzen](docs/TESTS.md).
+Version 0.3.2 übernimmt aus 0.3.1 die automatische herstellerunabhängige Brandschutz-Aufgabensteuerung, konkrete fehlende Fakten, technische Prüfbefunde und die artikelgebundene OBO-PLM-Maßprüfung. Gespeicherte Originalquellen werden nach einer behobenen Prüfsperre gezielt erneut verwendet. Alle neuen Dateien bleiben manuell einzeln freizugeben; Quelltests, lokale Aktivierung und Online-Deployment sind getrennte Nachweise. Gegenüber 0.3.0-beta.8 ist keine neue Datenmigration erforderlich; frühere Speicher-Upgrades bleiben für ältere Installationen nach der Update-Anleitung maßgeblich. [Tests und Grenzen](docs/TESTS.md).
 
 ## Einblick
 
