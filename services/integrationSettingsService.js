@@ -6,6 +6,7 @@ const { assertSafePath } = require("./pathService");
 const settingsSchema = z.object({
   apiEnabled: z.boolean().default(true),
   allowWrites: z.boolean().default(true),
+  remoteMcpEnabled: z.boolean().default(false),
   defaultTokenDays: z.number().int().min(1).max(365).default(90),
   maxTokenDays: z.number().int().min(1).max(365).default(365)
 }).strict().refine(value => value.defaultTokenDays <= value.maxTokenDays, "Die Standardgültigkeit darf die maximale Gültigkeit nicht überschreiten.");

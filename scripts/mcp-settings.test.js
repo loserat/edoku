@@ -43,3 +43,15 @@ test('GUI-Abrufe und Diagnose legen keine neue Schlüsseltabelle an; Viewer erh�
   assert.equal(f.db.prepare("SELECT count(*) n FROM sqlite_master WHERE name='api_tokens'").get().n,0);
  }finally{await f.cleanup();}
 });
+test('Nur Systemadmin kann Remote-MCP schalten; bestehende Schlüssel und Rechte bleiben erhalten',async()=>{
+ const f=await fixture();try{
+  const settings=require('../services/integrationSettingsService').createIntegrationSettingsService(f.root);assert.equal((await settings.read()).remoteMcpEnabled,false);
+  const ui=await browser(f),before=JSON.stringify(f.tokens.list('alice'));
+  const html=await(await ui('/einstellungen')).text(),csrf=html.match(/name="csrf-token" content="([a-f0-9]+)"/)[1];assert.match(html,/name="remoteMcpEnabled"/);assert.match(html,/value="remote"/);
+  const response=await ui('/einstellungen/integrationen',{method:'POST',body:new URLSearchParams({_csrf:csrf,apiEnabled:'on',allowWrites:'on',remoteMcpEnabled:'on',defaultTokenDays:'90',maxTokenDays:'365'})});assert.equal(response.status,302);
+  assert.equal((await settings.read()).remoteMcpEnabled,true);assert.equal(JSON.stringify(f.tokens.list('alice')),before);
+  const diagnosis=await(await ui('/integrationen/diagnose')).json();assert.equal(diagnosis.checks.find(c=>c.id==='remote').state,'ok');
+  const viewer=await browser(f,'viewer'),viewerHtml=await(await viewer('/einstellungen')).text(),viewerCsrf=viewerHtml.match(/name="csrf-token" content="([a-f0-9]+)"/)[1];assert.doesNotMatch(viewerHtml,/name="remoteMcpEnabled"/);
+  assert.equal((await viewer('/einstellungen/integrationen',{method:'POST',body:new URLSearchParams({_csrf:viewerCsrf})})).status,403);assert.equal((await settings.read()).remoteMcpEnabled,true);
+ }finally{await f.cleanup();}
+});

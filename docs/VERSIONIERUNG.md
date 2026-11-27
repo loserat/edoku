@@ -2,10 +2,10 @@
 
 | Bereich | Version | Quelle |
 | --- | --- | --- |
-| Anwendung | `0.3.2` | `package.json`; beide Wurzeleinträge in `package-lock.json` |
+| Anwendung | `0.3.3-beta.1` | `package.json`; beide Wurzeleinträge in `package-lock.json` |
 | HTTP-API | `3.15.0` | `services/interfaceVersions.js`, verwendet von OpenAPI |
-| MCP-Server | `3.15.0` | `services/interfaceVersions.js`, verwendet vom MCP-Server |
-| Schnittstellenumfang | 69 Operationen / 58 Werkzeuge | erzeugtes `docs/api/manifest.json` |
+| MCP-Server | `3.16.0` | `services/interfaceVersions.js`, verwendet vom MCP-Server |
+| Schnittstellenumfang | 69 REST-Operationen / 58 Werkzeuge + `/mcp` | erzeugtes `docs/api/manifest.json` |
 | Aufgabenvertrag | `2.5` | `services/documentationWorkflowService.js` |
 | Produktprüfung | `manufacturer_pdf_article_variant_v10` | `services/productDocumentVerificationService.js` |
 | Brandschutzpflichten | `firestop_documents_v2` | `services/firestopDocumentationService.js` |

@@ -3,6 +3,13 @@
 
 Stand **18.11.2026**. Technische Anleitung für Betreiber. Die [Bedienungsanleitung](BEDIENUNGSANLEITUNG.md) richtet sich getrennt an Anwender. Die Containerkonfiguration ist lokal geprüft und auf der bezeichneten Online-Testinstanz verifiziert; andere Installationen benötigen eine eigene Zielprüfung.
 
+
+## Optionaler direkter Remote-MCP-Zugang
+
+Ab 0.3.3-beta.1 kann edoku unter der bestehenden HTTPS-Domain `/mcp` bereitstellen. Keine zusätzliche öffentliche Containerfreigabe nötig. `APP_ORIGIN` muss die exakte öffentliche HTTPS-Adresse ohne Pfad enthalten; Host/Authorization unverändert weitergeben. `TRUST_PROXY` ausschließlich passend zum vertrauenswürdigen vorgeschalteten Proxy konfigurieren; bei gesetztem Vertrauen den internen Anwendungsport gegen Direktzugriffe abschirmen. Streaming und längere PDF-Prüfaufrufe (bis 90 Sekunden) zulassen, `/mcp` nicht cachen. Keine CORS-Freigabe oder Cookie-Ausnahme einrichten.
+
+Nach gesicherter Aktualisierung durch Systemadmin unter API & MCP → Erweitert einschalten; bestehende Installationen bleiben standardmäßig aus. [Einrichtung, Rechte und Grenzen](CODEX_DOCKER_MCP.md#remote-mcp-auf-dem-vps). Die Aktivierung ist keine tatsächliche Client-/HTTPS-Prüfung; Handshake, Werkzeuge und Identität auf dem VPS separat verifizieren.
+
 ## Dockerfile statt automatischer Erkennung
 
 Das Projekt enthält einen mehrstufigen `Dockerfile`: Node.js 22 und native SQLite-Abhängigkeiten werden getrennt von der Laufzeit gebaut. Compiler bleiben außerhalb des fertigen Abbilds. Python bleibt für Sicherungs- und Wiederherstellungswerkzeuge enthalten. Node startet direkt als Hauptprozess und kann beim Stoppen sauber beenden.

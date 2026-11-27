@@ -1,8 +1,33 @@
 # Docker und MCP-Client verbinden
 
-edoku läuft als Webanwendung im Docker-Container. Ein lokaler Node.js-Prozess stellt die Werkzeuge für einen MCP-Client wie Codex bereit und spricht über die geschützte HTTP-API mit edoku. Der Client benötigt dafür keine direkte Datenbankverbindung.
+edoku läuft als Webanwendung im Docker-Container. Lokal stellt ein Node.js-Prozess die Werkzeuge für einen MCP-Client wie Codex bereit und spricht über die geschützte HTTP-API mit edoku. Auf einem VPS kann der Client edoku alternativ direkt über den optionalen HTTPS-MCP-Endpunkt erreichen; dafür braucht er keinen lokalen Starter. Der Client benötigt dafür keine direkte Datenbankverbindung.
 
-## Voraussetzungen
+## Remote-MCP auf dem VPS
+
+1. edoku hinter einem vertrauenswürdigen HTTPS-Proxy betreiben. `APP_ORIGIN=https://edoku.example.org` ohne Pfad oder Zugangsdaten setzen, `TRUST_PROXY` passend zum tatsächlich vorgeschalteten Proxy konfigurieren. Den internen Anwendungsport nicht öffentlich freigeben. Host und Authorization unverändert an edoku weitergeben, Streaming erlauben und `/mcp` nicht zwischenspeichern. [Coolify](COOLIFY.md).
+2. Als Systemadmin unter **Einstellungen → API & MCP → Erweitert** API-Zugang und **Remote-MCP per HTTPS erlauben** einschalten. Standardmäßig bleibt Remote-MCP aus. Vorhandene Schlüssel werden weder erneuert noch erweitert.
+3. Unter **Einrichten → Remote per HTTPS-URL** öffentliche Serveradresse und eigenen API-Schlüssel eingeben. Ein Client mit URL und eigenen Bearer-Headern ist erforderlich. Die generische JSON-Konfiguration in das Format des jeweiligen Clients übertragen. Kein OAuth-Anmeldefluss.
+
+```json
+{
+  "mcpServers": {
+    "edoku": {
+      "url": "https://edoku.example.org/mcp",
+      "headers": { "Authorization": "Bearer DEIN_PRIVATER_API_SCHLUESSEL" }
+    }
+  }
+}
+```
+
+Die URL ohne Parameter bietet nur Lesen. Für Änderungen `https://edoku.example.org/mcp?access=write` verwenden und zusätzlich passende Schlüsselrechte, Kontorolle und serverseitige Schreibfreigabe vorsehen. Schlüssel niemals als URL-Parameter oder in öffentlichen Dateien speichern. Die GUI zeigt Aktivierung und URL, bestätigt damit jedoch keine tatsächlich gestartete externe Verbindung.
+
+Alle 58 Werkzeuge stehen im Schreibmodus zur Verfügung; jede tatsächliche Operation bleibt durch ihre API-Rechte und Projektgrenzen geschützt. Ohne Schreibmodus sind es 22 Lesewerkzeuge. Der Transport hält keine dauerhaften Sitzungen. Nach einem Serverneustart neu verbinden; Schreibanfragen mit unbekanntem Ergebnis erst im Projekt prüfen, bevor sie erneut ausgeführt werden.
+
+Herstellerdatenblätter können durch Produktseite und PDF-URL geprüft und vorgeschlagen werden. Lokale Serverpfade werden über Remote-MCP nicht gelesen; optionale Eingangsordner gelten nur für die bestehenden lokalen Adapter. Jede Datei bleibt bis zur manuellen GUI-Einzelprüfung ein Vorschlag. Für andere Dateiarten ist kein allgemeiner Remote-Upload ergänzt.
+
+Zuerst den kopierbaren lesenden Prüfauftrag ausführen: Initialisierung, alle Seiten von `tools/list`, `edoku_identity`. Anschließend im beauftragten Projekt mit `edoku_next_action` beginnen. HTTPS und tatsächliche Erreichbarkeit müssen auf dem Ziel-VPS separat geprüft werden. Eine HTTP-Adresse im Browser ist keine gültige Remote-Adresse.
+
+## Voraussetzungen für den lokalen Adapter
 
 - Laufendes edoku, eigene Anmeldung und erreichbare API.
 - Eigener API-Schlüssel mit den erforderlichen Rechten; Projektbegrenzung empfohlen.

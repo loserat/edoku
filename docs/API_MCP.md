@@ -1,8 +1,8 @@
 # API und MCP
 
-edoku bietet eine geschützte HTTP-API und einen lokalen MCP-Adapter. Beide verwenden dieselben Projektdienste, API-Schlüssel und Rechte. Die GUI nutzt dieselben Fachregeln. edoku berechnet den nächsten Arbeitsschritt; ein externer Agent führt ihn aus. Ein eingebautes Sprachmodell oder automatischer Recherche-Agent wird nicht gestartet.
+edoku bietet eine geschützte HTTP-API und einen lokalen MCP-Adapter sowie einen optionalen Remote-MCP-Zugang. Beide verwenden dieselben Projektdienste, API-Schlüssel und Rechte. Die GUI nutzt dieselben Fachregeln. edoku berechnet den nächsten Arbeitsschritt; ein externer Agent führt ihn aus. Ein eingebautes Sprachmodell oder automatischer Recherche-Agent wird nicht gestartet.
 
-API/MCP **3.15.0**: **69 HTTP-Operationen, 58 MCP-Werkzeuge (22 Lesen / 36 Schreiben)**. Maßgeblich für Eingaben, Rechte und Grenzen ist die [erzeugte Referenz](api/README.md), nicht ein Chatverlauf.
+HTTP-API **3.15.0**, MCP **3.16.0**: **69 REST-Operationen, 58 MCP-Werkzeuge (22 Lesen / 36 Schreiben)** und der getrennte MCP-Protokollendpunkt `/mcp`. Maßgeblich für Eingaben, Rechte und Grenzen ist die [erzeugte Referenz](api/README.md), nicht ein Chatverlauf.
 
 ## Einstieg
 
@@ -10,7 +10,15 @@ API/MCP **3.15.0**: **69 HTTP-Operationen, 58 MCP-Werkzeuge (22 Lesen / 36 Schre
 2. In Einstellungen → API & MCP einen eigenen Schlüssel mit benötigten Rechten und möglichst passender Projektbegrenzung erstellen.
 3. [MCP-Client verbinden](CODEX_DOCKER_MCP.md) oder die [HTTP-API](API.md) verwenden. Schlüssel ausschließlich privat speichern.
 
-Die GUI bietet einen Einrichtungsassistenten für Node-/Docker-Start, lesende Server-/Rechtediagnose und eine gruppierte Werkzeugübersicht mit kleinen Seiten. Die sitzungsgebundenen GUI-Hilfen erweitern keine API-/MCP-Berechtigungen; der Serverkatalog bleibt bei 58 Werkzeugen. Ein externer Client wird nicht automatisch verbunden oder als geprüft gemeldet. [Einrichtung und Prüfgrenzen](CODEX_DOCKER_MCP.md#diagnose-und-werkzeugübersicht).
+Die GUI bietet einen Einrichtungsassistenten für Node-/Docker-Start und direkten Remote-Zugang, lesende Server-/Rechtediagnose und eine gruppierte Werkzeugübersicht mit kleinen Seiten. Die sitzungsgebundenen GUI-Hilfen erweitern keine API-/MCP-Berechtigungen; der Serverkatalog bleibt bei 58 Werkzeugen. Ein externer Client wird nicht automatisch verbunden oder als geprüft gemeldet. [Einrichtung und Prüfgrenzen](CODEX_DOCKER_MCP.md#diagnose-und-werkzeugübersicht).
+
+## Remote-Transport
+
+`POST /mcp` verwendet Streamable HTTP mit frischer MCP-Instanz je Anfrage, einschließlich zustandsloser 2025-Kompatibilität. Aktivierung nur durch Systemadmin, standardmäßig aus. HTTPS, feste öffentliche `APP_ORIGIN`, passende Host-/Origin-Header und ein aktiver API-Schlüssel sind Pflicht. Cookies sind kein Zugang. Ohne Parameter nur Lesen; `?access=write` bietet Schreibwerkzeuge zusätzlich an, sofern Server, Kontorolle und Schlüsselrechte passen. Jede Fachoperation prüft Rechte und Projektgrenzen erneut über die interne API. Keine neuen Freigaberechte.
+
+Höchstens 256 KiB pro Anfrage, keine Kompression oder JSON-RPC-Batches. Höchstens acht gleichzeitige Anfragen insgesamt und zwei je Benutzer; abgebrochene Aufrufe belegen ihren Platz bis zum Ende der Werkzeugarbeit. GET/DELETE/OPTIONS liefern 405 (nach Authentifizierung), keine dauerhaften Sitzungen oder Hintergrund-Abonnements. API-Fehler und veraltete Versionen dürfen nicht durch blindes Wiederholen von Schreibaufrufen übergangen werden.
+
+Hersteller-PDFs weiterhin über Produktseite und verlinkte Original-PDF-Adresse prüfen/vorschlagen. Remote-Aufrufe mit `filePath` werden abgewiesen; der Server gibt keinen lokalen Dateiordner frei. Kein allgemeiner Remote-Dateiupload und kein OAuth. Client muss URL und Bearer-Header unterstützen. [Einrichtung und Proxy](CODEX_DOCKER_MCP.md#remote-mcp-auf-dem-vps).
 
 ## Aufgabensteuerung für einen Agenten
 
@@ -84,7 +92,7 @@ Dateien werden ausschließlich vorgeschlagen. Erst tatsächliche Sichtung und ma
 
 Schreibaufrufe benötigen die im Vertrag genannten Projekt-/Auftragsversionen; geeignete Operationen zusätzlich Wiederholungsschlüssel. Ein Versionskonflikt erfordert einen frischen gezielten Stand, kein blindes Wiederholen. Gezieltes Löschen/Wiederherstellen und vollständiger Projektreset haben eigene Vorschau-, Bestätigungs- und Sicherungsbedingungen und benötigen einen ausdrücklichen Auftrag.
 
-Die tatsächlichen Software-, API- und MCP-Versionen stehen unter Einstellungen → System. OpenAPI 3.1.0 bezeichnet das Format und ist keine API-Version. Lokaler Adapter und Online-API sind unterschiedliche Verbindungen; entfernte API-Verbindungen benötigen HTTPS. Remote-MCP/OAuth ist nicht Bestandteil dieses lokalen Adapters.
+Die tatsächlichen Software-, API- und MCP-Versionen stehen unter Einstellungen → System. OpenAPI 3.1.0 bezeichnet das Format und ist keine API-Version. Lokaler Adapter und Online-API sind unterschiedliche Verbindungen; entfernte API-Verbindungen benötigen HTTPS. Der optionale direkte Remote-MCP-Endpunkt ist davon getrennt und benötigt HTTPS/Bearer; OAuth wird nicht angeboten.
 
 [HTTP-Handbuch](API.md) · [Architektur](TECHNIK.md) · [Tests](TESTS.md) · [Sicherheit](SICHERHEIT.md).
 

@@ -2,6 +2,13 @@
 
 Bestehende Installationen bewusst mit geprüfter Sicherung und Wiederherstellungsprobe aktualisieren. Daten, Konten und Dateientscheidungen erhalten; tatsächliche laufende Version nach dem Wechsel prüfen.
 
+
+## Optionaler Remote-MCP-Transport ab 0.3.3-beta.1
+
+Der neue Konfigurationswert `remoteMcpEnabled` wird bei bestehenden Einstellungen als `false` gelesen, ohne diese beim Start umzuschreiben. Keine Datenmigration und keine Änderung bestehender Schlüssel, Passwörter, Projektzuordnungen oder Dateientscheidungen. Node-HTTP-Adapter wird durch den normalen Docker-/Paketbuild installiert; bestehende lokale Adapter bleiben kompatibel.
+
+Vor Aktivierung aktuelle vollständige Sicherung und getrennte Wiederherstellungsprobe durchführen. Remote danach ausdrücklich als Systemadmin einschalten, HTTPS/Proxy prüfen und zunächst mit rein lesender Verbindung testen. Bei Rückkehr auf einen alten Stand den zusätzlichen Konfigurationswert auf einer gesicherten Kopie entfernen: frühere Versionen prüfen unbekannte Konfigurationsfelder streng. [Remote-Einrichtung](CODEX_DOCKER_MCP.md#remote-mcp-auf-dem-vps).
+
 ## Update-Erkennung mit 0.3.2 prüfen
 
 Die GUI unter **Einstellungen → Updates** liest den neuesten stabilen Release von `loserat/edoku` über GitHub. Maßgeblich ist dessen Versions-Tag, nicht der letzte Commit auf main. Entwürfe und Vorab-Releases gehören nicht zu diesem stabilen Kanal. „Updates prüfen“ meldet eine neuere Version; es führt weder einen Download noch eine Installation oder Migration aus.

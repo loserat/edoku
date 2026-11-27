@@ -1,6 +1,6 @@
 {
   "name": "edoku",
-  "version": "0.3.2",
+  "version": "0.3.3-beta.1",
   "description": "Lokale Web-Anwendung fuer einen Elektro-Dokumentationsmanager.",
   "main": "server.js",
   "scripts": {
@@ -18,7 +18,7 @@
     "docs:check": "node scripts/api-docs.js --check",
     "storage:compact": "python3 scripts/compact-project-copies.py",
     "test:maintenance": "node --test scripts/api-docs.test.js && python3 -m unittest discover -s scripts -p test_compact_project_copies.py",
-    "test": "node --test scripts/mcp-settings.test.js scripts/assistant-workspace.test.js scripts/obo-plm-dimensions.test.js scripts/zz330-verification-v9.test.js scripts/firestop-capture.test.js scripts/publisher-verification-v8.test.js scripts/material-scope-duplicates.test.js scripts/stable-device-workflow.test.js scripts/review-navigation.test.js scripts/proposal-withdrawal.test.js scripts/me01-sources-dimensions.test.js scripts/me01-verification-fixes.test.js scripts/autonomous-workflow.test.js scripts/material-exclusions.test.js scripts/empty-project.test.js scripts/manufacturer-links.test.js scripts/fire-protection-workflow.test.js scripts/status-queries.test.js scripts/knowledge.test.js scripts/firestop-documentation.test.js scripts/export-counting.test.js scripts/update-preservation.test.js scripts/security-archive.test.js scripts/audit.test.js scripts/local-beta.e2e.test.js scripts/brandschutz-photos.test.js scripts/theme-settings.test.js scripts/user-management.test.js scripts/project-storage.test.js scripts/deployment.test.js scripts/security-hardening.test.js scripts/integration-api.test.js scripts/documentation-workflow.test.js scripts/device-document-links.test.js scripts/agent-workflow.test.js scripts/agent-contract.test.js scripts/project-reset.test.js scripts/item-deletion.test.js scripts/mcp-document-source.test.js scripts/product-document-verification.test.js scripts/requirement-scope.test.js scripts/datasheet-coverage.test.js scripts/requirement-corrections.test.js scripts/system-selections.test.js && npm run test:backup && npm run test:mcp-launcher",
+    "test": "node --test scripts/remote-mcp.test.js scripts/mcp-settings.test.js scripts/assistant-workspace.test.js scripts/obo-plm-dimensions.test.js scripts/zz330-verification-v9.test.js scripts/firestop-capture.test.js scripts/publisher-verification-v8.test.js scripts/material-scope-duplicates.test.js scripts/stable-device-workflow.test.js scripts/review-navigation.test.js scripts/proposal-withdrawal.test.js scripts/me01-sources-dimensions.test.js scripts/me01-verification-fixes.test.js scripts/autonomous-workflow.test.js scripts/material-exclusions.test.js scripts/empty-project.test.js scripts/manufacturer-links.test.js scripts/fire-protection-workflow.test.js scripts/status-queries.test.js scripts/knowledge.test.js scripts/firestop-documentation.test.js scripts/export-counting.test.js scripts/update-preservation.test.js scripts/security-archive.test.js scripts/audit.test.js scripts/local-beta.e2e.test.js scripts/brandschutz-photos.test.js scripts/theme-settings.test.js scripts/user-management.test.js scripts/project-storage.test.js scripts/deployment.test.js scripts/security-hardening.test.js scripts/integration-api.test.js scripts/documentation-workflow.test.js scripts/device-document-links.test.js scripts/agent-workflow.test.js scripts/agent-contract.test.js scripts/project-reset.test.js scripts/item-deletion.test.js scripts/mcp-document-source.test.js scripts/product-document-verification.test.js scripts/requirement-scope.test.js scripts/datasheet-coverage.test.js scripts/requirement-corrections.test.js scripts/system-selections.test.js && npm run test:backup && npm run test:mcp-launcher",
     "backup": "python3 scripts/installation_backup.py",
     "test:photos": "node --test scripts/brandschutz-photos.test.js",
     "test:theme": "node --test scripts/theme-settings.test.js",
@@ -33,9 +33,11 @@
     "test:api": "node --test scripts/integration-api.test.js",
     "mcp": "node scripts/edoku-mcp.js",
     "test:workflow": "node --test scripts/documentation-workflow.test.js",
-    "storage:proposals": "node scripts/proposal-storage.js"
+    "storage:proposals": "node scripts/proposal-storage.js",
+    "test:remote-mcp": "node --test scripts/remote-mcp.test.js"
   },
   "dependencies": {
+    "@modelcontextprotocol/node": "2.1.2",
     "@modelcontextprotocol/server": "2.4.0",
     "better-sqlite3": "^11.9.1",
     "ejs": "^3.1.10",

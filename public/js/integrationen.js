@@ -62,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const absolute = value => /^(\/|[a-zA-Z]:[\\/]|\\\\)/.test(value);
   function launch() {
     const url = address(), mode = field('mode').value, script = field('script').value.trim();
+    if (mode === 'remote') { if (url.protocol !== 'https:') throw Error('Remote-MCP benötigt eine HTTPS-Adresse.'); return { url, mode }; }
     const suffix = mode === 'docker' ? /[\\/]edoku-mcp-docker\.py$/ : /[\\/]edoku-mcp\.js$/;
     if (!absolute(script) || !suffix.test(script)) throw Error('Vollständigen Pfad zum passenden edoku-MCP-Starter auf dem Client-Rechner eingeben.');
     const container = field('container').value.trim();
@@ -78,11 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
     invalidate();
     try {
       const { url, mode, script, container } = launch(), value = secret(), documentRoot = field('document-root').value.trim();
-      if (documentRoot && !absolute(documentRoot)) throw Error('Bitte einen vollständigen Eingangsordner eingeben.');
+      if (mode !== 'remote' && documentRoot && !absolute(documentRoot)) throw Error('Bitte einen vollständigen Eingangsordner eingeben.');
       const env = { EDOKU_API_URL: url.origin, EDOKU_API_TOKEN: value, EDOKU_MCP_ALLOW_WRITES: String(field('writes').checked), EDOKU_MCP_RESPONSE_MODE: 'structured' };
       if (documentRoot) env.EDOKU_MCP_DOCUMENT_ROOT = documentRoot;
       if (mode === 'docker') { env.EDOKU_MCP_CONTAINER = container; env.EDOKU_MCP_LAUNCH_MODE = 'environment'; }
-      output.value = JSON.stringify({ mcpServers: { edoku: { command: mode === 'docker' ? 'python3' : 'node', args: [script], env } } }, null, 2);
+      const connection = mode === 'remote' ? { url: url.origin + '/mcp' + (field('writes').checked ? '?access=write' : ''), headers: { Authorization: 'Bearer ' + value } } : { command: mode === 'docker' ? 'python3' : 'node', args: [script], env };
+      output.value = JSON.stringify({ mcpServers: { edoku: connection } }, null, 2);
       showStep(2); status.textContent = 'Konfiguration erstellt. Die Verbindung wird erst im MCP-Client gestartet.';
     } catch(error) { status.textContent = error.message; }
   }
@@ -90,7 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
   form.addEventListener('change', event => {
     invalidate();
     if (event.target === field('mode')) {
-      const docker = field('mode').value === 'docker';
+      const docker = field('mode').value === 'docker', remote = field('mode').value === 'remote';
+      field('script-field').hidden = remote; field('local-files').hidden = remote; field('remote-hint').hidden = !remote;
+      field('address-hint').textContent = remote ? 'Öffentliche HTTPS-Adresse des VPS, ohne /mcp. Kein lokaler Starter erforderlich.' : 'Docker vor Ort: meist http://127.0.0.1:3000 im Container.';
       field('container-field').hidden = !docker;
       field('script').value = ''; field('script').placeholder = docker ? '/Pfad/zu/edoku/scripts/edoku-mcp-docker.py' : '/Pfad/zu/edoku/scripts/edoku-mcp.js';
       field('mode-hint').textContent = docker ? 'Python 3 und lokaler Docker-Zugriff erforderlich; kein Node.js auf dem Host nötig.' : 'Node.js 22 und edoku-Abhängigkeiten erforderlich.';
@@ -102,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
   form.querySelector('[data-mcp-build]').addEventListener('click', build);
   form.querySelectorAll('[data-mcp-back]').forEach(button => button.addEventListener('click', () => { invalidate(); showStep(Number(button.dataset.mcpBack)); }));
   panel.querySelector('[data-use-created-key]')?.addEventListener('click', () => {
-    invalidate(); token.value = panel.querySelector('[data-created-key]').value; openPane('setup'); showStep(0); field('script').focus(); status.textContent = 'Schlüssel übernommen. Betriebsart und Starter prüfen.';
+    invalidate(); token.value = panel.querySelector('[data-created-key]').value; openPane('setup'); showStep(0); field('mode').focus(); status.textContent = 'Schlüssel übernommen. Betriebsart und Serveradresse prüfen.';
   });
   function clearSecrets() {
     invalidate(); token.value = ''; showStep(0);

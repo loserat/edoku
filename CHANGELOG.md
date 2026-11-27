@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.3-beta.1 – 27.11.2026
+
+Optionaler direkter Remote-MCP-Zugang unter `/mcp` für HTTPS-VPS: bestehende Bearer-Schlüssel, frische Instanz je Anfrage, Host-/Origin-Prüfung, begrenzte Einzelanfragen und getrennte Benutzerzugriffe. Standardmäßig ausgeschaltet; Aktivierung durch Systemadmin. Nur Lesen als Default, Schreibmodus zusätzlich über `?access=write` sowie bestehende Rechte. GUI ergänzt Remote-Einrichtung, URL und Aktivierungsstatus.
+
+Software **0.3.3-beta.1**, HTTP-API **3.15.0**, MCP **3.16.0**. 69 REST-Operationen und 58 Werkzeuge bleiben erhalten. Der offizielle Node-HTTP-Adapter ergänzt die Abhängigkeiten. Keine Datenmigration, automatische Aktivierung oder Schlüsselerweiterung. Keine lokalen Serverdateien über Remote und kein OAuth; URL/Bearer-fähiger Client erforderlich. Dateien weiterhin ausschließlich manuell einzeln freigeben. VPS-/Produktivaktivierung separat nach Sicherung und Wiederherstellungsprobe.
+
 ## Noch nicht veröffentlicht
 
 - API-/MCP-Einstellungen mit fünf kompakten Bereichen, Einrichtungsassistent für Node.js und lokalen Docker, lesender Server-/Schlüssel-/Projektdiagnose und gruppierter Werkzeugübersicht mit maximal zwölf Einträgen pro Abruf. Bestehende Schlüssel und Starter bleiben kompatibel, externer Clientstatus wird nicht vorgetäuscht. Keine zusätzlichen API-/MCP-Rechte oder automatische Dateifreigabe.

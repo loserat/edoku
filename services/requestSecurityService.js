@@ -90,7 +90,7 @@ function createRequestLimiter({ windowMs = 60000, maxReads = 300, maxWrites = 60
       record = { reads: 0, writes: 0, expires: time + windowMs };
       clients.set(req.ip, record);
     }
-    const key = safeMethods.has(req.method) ? "reads" : "writes";
+    const key = safeMethods.has(req.method) || req.path === "/mcp" ? "reads" : "writes"; // MCP uses POST for reads too; actual writes are limited again by the internal API.
     if (!record || ++record[key] > (key === "reads" ? maxReads : maxWrites)) {
       res.set("Retry-After", String(Math.max(1, Math.ceil(((record?.expires || time + windowMs) - time) / 1000))));
       return next(Object.assign(new Error("Zu viele Anfragen. Bitte kurz warten und erneut versuchen."), { status: 429 }));

@@ -44,6 +44,7 @@ function diagnose({ settings, keys, keyId, projectId, profile = 'read', projects
   const selected = profiles.find(item => item.id === profile);
   const checks = [{ id: 'server', state: 'ok', label: 'edoku-Server erreichbar' },
     { id: 'api', state: settings.apiEnabled ? 'ok' : 'error', label: settings.apiEnabled ? 'API eingeschaltet' : 'API ausgeschaltet – Serverzugang prüfen' }];
+  checks.push({ id: 'remote', state: settings.apiEnabled && settings.remoteMcpEnabled ? 'ok' : 'warning', label: settings.apiEnabled && settings.remoteMcpEnabled ? 'Remote-MCP eingeschaltet – HTTPS und Client separat prüfen' : 'Remote-MCP ausgeschaltet (lokales STDIO bleibt verfügbar)' });
   const key = keyId ? keys.find(item => item.id === keyId) : null;
   if (keyId && !key) throw Object.assign(Error('Schlüssel wurde nicht gefunden.'), { status: 404 });
   if (projectId && !projects.some(project => project.id === projectId)) throw Object.assign(Error('Projekt wurde nicht gefunden.'), { status: 404 });

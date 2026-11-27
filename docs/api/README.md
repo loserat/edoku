@@ -2,7 +2,7 @@
 
 Automatisch erzeugt mit `npm run docs:api`. Nicht von Hand bearbeiten. `npm run docs:check` erkennt Abweichungen. Diese Referenz beschreibt den Quellstand. [Versionsschema](../VERSIONIERUNG.md) und [Prüfverfahren](../TESTS.md) ergänzen den Vertrag.
 
-OpenAPI **3.15.0** · MCP **3.15.0** · **69 HTTP-Operationen** · **22 Lese- / 36 Schreibwerkzeuge**.
+OpenAPI **3.15.0** · MCP **3.16.0** · **69 HTTP-Operationen** · **22 Lese- / 36 Schreibwerkzeuge**.
 
 ## HTTP-Vertrag
 

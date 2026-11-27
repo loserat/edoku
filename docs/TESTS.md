@@ -2,6 +2,13 @@
 
 Automatisierte Prüfungen verwenden künstliche Projekte oder getrennte Kopien. Keine aktive Datenbank oder echte Uploadordner an Testcontainer binden. Technische Tests ersetzen keine fachliche Anlagenfreigabe, Druckabnahme oder Prüfung der tatsächlichen Installation.
 
+
+## Remote-MCP ab 0.3.3-beta.1
+
+`npm run test:remote-mcp` prüft mit künstlichen Konten den echten HTTP-Transport: Default aus, HTTPS-/Proxy-/Host-/Origin-Prüfung, reine Bearer-Anmeldung, ungültige und abgelaufene/widerrufene Schlüssel, Rollenwechsel, beide SDK-Protokollwege, 22/58 Werkzeuge, Rechte-/Projektgrenzen, ETags, lokale Dateipfadsperre, Bodylimit und verbotene Batches. Lang laufende und abgebrochene Aufrufe bleiben bis Arbeitsende begrenzt. GUI-Tests prüfen Adminschalter und erhaltene Schlüssel; bestehende API-/Assistententests sichern weiterhin die manuelle Einzelprüfung.
+
+HTTPS-Terminierung wird im Integrationstest durch einen vertrauten Testproxy nachgebildet. Das ersetzt keine Zertifikats-/Proxy-/Verbindungsprüfung auf dem Ziel-VPS. Browserprüfung der Remote-Konfiguration und tatsächlicher Online-Rollout werden getrennt nachgewiesen.
+
 ## Nachweis zur Versionsanhebung 0.3.1
 
 Die Versionsanhebung ändert Paket-/Lock-Version und Dokumentation, keine Fachlogik oder Abhängigkeiten. Der identische beta.10-Funktionsstand wurde mit 365 Anwendungstests, acht Sicherungstests und zwei Vertragsprüfungen geprüft. Für 0.3.1 Paketkonsistenz, unveränderte Fachdateien, Syntax, `docs:check` und gezielte Vertrags-/Startprüfungen nachweisen. Eine erneute fachliche oder Browserabnahme wird daraus nicht abgeleitet.

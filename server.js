@@ -173,6 +173,7 @@ const audit = createAuditService(ROOT_DIR, { resolveTarget: req => {
   return null;
 } });
 const exportJobs = createExportJobService(ROOT_DIR, { audit, checkStorage: createStorageBudget(ROOT_DIR) });
+const remoteMcp = require('./services/remoteMcpService').createRemoteMcpHandler({tokens:apiTokens,settings:integrationSettings,apiBaseUrl:'http://127.0.0.1:'+PORT});
 if (["1", "true", "yes", "on"].includes(String(process.env.TRUST_PROXY || "").trim().toLowerCase())) {
   app.set("trust proxy", 1);
 }
@@ -200,12 +201,15 @@ app.use((req, res, next) => {
 app.use("/api/v1", prepareApiResponse);
 app.use(createRequestLimiter());
 app.use(createBodyLimiter());
+// Canonical remote MCP endpoint before cookie parsing, body parsers and form CSRF.
+// Authentication is exclusively an existing API Bearer token; no browser session fallback.
+app.all('/mcp', (req,res,next) => remoteMcp(req,res).catch(next));
 app.use(express.static(path.join(ROOT_DIR, "public")));
 app.use(express.urlencoded({ extended: true, limit: "2mb", parameterLimit: 10000, depth: 16 }));
 app.use(express.json({ limit: "2mb" }));
 app.use(parseCookies);
 app.use(attachUser);
-// Nur dieser getrennte Bearer-Zugang wird vor der Formular-CSRF-Prüfung bedient.
+// API und der oben getrennte MCP-Zugang nutzen Bearer vor der Formular-CSRF-Prüfung.
 // Browser-Cookies werden hier nicht als API-Anmeldung akzeptiert.
 app.use("/api/v1", createIntegrationRouter({ root: ROOT_DIR, tokens: apiTokens, audit, exportJobs, checkStorage: createStorageBudget(ROOT_DIR) }));
 app.use((req,res,next) => {
@@ -1267,6 +1271,7 @@ app.post("/einstellungen/integrationen", requireSystemAdmin, async (req, res) =>
   try {
     await integrationSettings.save({
       apiEnabled: req.body.apiEnabled === "on", allowWrites: req.body.allowWrites === "on",
+      remoteMcpEnabled: req.body.remoteMcpEnabled === "on",
       defaultTokenDays: Number(req.body.defaultTokenDays), maxTokenDays: Number(req.body.maxTokenDays)
     });
     redirectWithFlash(res, "/einstellungen#api", "success", "API-Einstellungen gespeichert. Die Änderungen gelten sofort.");

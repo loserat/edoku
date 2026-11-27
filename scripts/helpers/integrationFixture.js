@@ -13,7 +13,7 @@ const responseContracts = Object.entries(contract.paths).flatMap(([route, method
 }))));
 const source = path.resolve(__dirname, "../..");
 
-async function fixture({ setup, port: requestedPort, productChecks = false } = {}) {
+async function fixture({ setup, port: requestedPort, productChecks = false, env = {} } = {}) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "edoku-integration-"));
   for (const name of ["server.js", "package.json", "services", "src", "views", "public", "data", "config", "templates", "docs"]) await fs.cp(path.join(source, name), path.join(root, name), { recursive: true });
   await fs.symlink(path.join(source, "node_modules"), path.join(root, "node_modules"), "dir");
@@ -47,7 +47,7 @@ async function fixture({ setup, port: requestedPort, productChecks = false } = {
   await new Promise(resolve => socket.listen(0, "127.0.0.1", resolve));
   const port = requestedPort || socket.address().port;
   await new Promise(resolve => socket.close(resolve));
-  let child = spawn(process.execPath, [path.join(root, "server.js")], { cwd: root, env: { ...process.env, NODE_ENV: "test", PORT: String(port) }, stdio: ["ignore", "pipe", "pipe"] });
+  let child = spawn(process.execPath, [path.join(root, "server.js")], { cwd: root, env: { ...process.env, NODE_ENV: "test", PORT: String(port), ...env }, stdio: ["ignore", "pipe", "pipe"] });
   let logs = "";
   child.stdout.on("data", data => logs += data);
   child.stderr.on("data", data => logs += data);
@@ -78,7 +78,7 @@ async function fixture({ setup, port: requestedPort, productChecks = false } = {
   }
   async function restart() {
     await stop();
-    child = spawn(process.execPath, [path.join(root, "server.js")], { cwd: root, env: { ...process.env, NODE_ENV: "test", PORT: String(port) }, stdio: ["ignore", "pipe", "pipe"] });
+    child = spawn(process.execPath, [path.join(root, "server.js")], { cwd: root, env: { ...process.env, NODE_ENV: "test", PORT: String(port), ...env }, stdio: ["ignore", "pipe", "pipe"] });
     logs = "";
     child.stdout.on("data", data => logs += data); child.stderr.on("data", data => logs += data);
     for (let n = 0; n < 150; n++) {

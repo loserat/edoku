@@ -4,7 +4,7 @@
 
 edoku verbindet Projektstammdaten, Gerätelisten, Brandschutz und technische Unterlagen zu einer geordneten PDF-/ZIP-Dokumentation. Du arbeitest in der Weboberfläche oder verbindest einen Agenten wie Codex über den integrierten **MCP-Server**. edoku gibt den Projektaufbau und die nächsten Aufgaben vor; der Agent ergänzt belegte Informationen und schlägt passende Herstellerunterlagen vor.
 
-**Version `0.3.2`** · HTTP-API/MCP `3.15.0` · **58 MCP-Werkzeuge** · Docker und SQLite.
+**Version `0.3.3-beta.1`** · HTTP-API `3.15.0` / MCP `3.16.0` · **58 MCP-Werkzeuge** · Docker und SQLite.
 
 [![Prüfung für main](https://github.com/loserat/edoku/actions/workflows/local-beta.yml/badge.svg?branch=main)](https://github.com/loserat/edoku/actions/workflows/local-beta.yml)
 
@@ -13,12 +13,12 @@ edoku verbindet Projektstammdaten, Gerätelisten, Brandschutz und technische Unt
 ## Mit einem Agenten über MCP arbeiten
 
 1. **edoku starten und Zugriff einrichten:** Unter Einstellungen → API/MCP die Integration aktivieren und einen eigenen API-Schlüssel mit den benötigten Rechten anlegen. Möglichst auf die gewünschten Projekte begrenzen.
-2. **MCP-Client verbinden:** Codex oder einen anderen Client über den lokalen edoku-MCP-Adapter anbinden. Serveradresse, Schlüssel und freigegebenen Dokumentordner ausschließlich in der privaten Clientkonfiguration speichern. [Einrichtung mit Docker und Codex](docs/CODEX_DOCKER_MCP.md).
+2. **MCP-Client verbinden:** Codex oder einen anderen Client über den lokalen edoku-MCP-Adapter oder direkt per HTTPS-URL anbinden. Serveradresse, Schlüssel und freigegebenen Dokumentordner ausschließlich in der privaten Clientkonfiguration speichern. [Einrichtung mit Docker und Codex](docs/CODEX_DOCKER_MCP.md).
 3. **Materialliste bereitstellen:** Dem Agenten das Zielprojekt und die neue Materialliste geben. Er beginnt mit `edoku_next_action`, folgt edokus Aufgabensteuerung und bündelt notwendige Rückfragen im Chat.
 
 Der Agent kann Material zuordnen, Geräte und Leistungsbereiche pflegen, Herstellerdatenblätter und erforderliche Anleitungen recherchieren, PDFs auf Artikel-/Variantenpassung prüfen lassen und Dateien zur manuellen Prüfung vorschlagen. Gespeicherte Fakten und Entscheidungen erlauben die Fortsetzung in einem neuen Chat. Offene Freigaben blockieren keine unabhängige Recherche.
 
-Der MCP-Adapter verwendet dieselbe geschützte HTTP-API wie andere Integrationen. 22 Werkzeuge lesen, 36 bearbeiten im Rahmen des API-Schlüssels. Gezieltes Löschen, Wiederherstellung und Projektreset haben eigene Schutzregeln und benötigen einen ausdrücklichen Auftrag. **edoku startet selbst keinen eingebauten KI-Agenten.** Der Client führt die von edoku berechneten Schritte aus und benötigt für Recherchen Zugriff auf die Herstellerquellen. Remote-MCP/OAuth gehört nicht zum beschriebenen lokalen Adapter.
+Der MCP-Adapter verwendet dieselbe geschützte HTTP-API wie andere Integrationen. 22 Werkzeuge lesen, 36 bearbeiten im Rahmen des API-Schlüssels. Gezieltes Löschen, Wiederherstellung und Projektreset haben eigene Schutzregeln und benötigen einen ausdrücklichen Auftrag. **edoku startet selbst keinen eingebauten KI-Agenten.** Der Client führt die von edoku berechneten Schritte aus und benötigt für Recherchen Zugriff auf die Herstellerquellen. Für den VPS gibt es einen standardmäßig ausgeschalteten Remote-Zugang unter `/mcp` mit bestehendem Bearer-API-Schlüssel. OAuth wird nicht angeboten. [Remote-Einrichtung](docs/CODEX_DOCKER_MCP.md#remote-mcp-auf-dem-vps).
 
 [Anbindung und Ablauf](docs/API_MCP.md) · [Manuelle Dateiprüfung](docs/DOKU_ASSISTENT.md).
 
