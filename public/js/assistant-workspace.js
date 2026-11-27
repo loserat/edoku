@@ -55,14 +55,18 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   const getRows=()=>[...document.querySelectorAll('[data-work-row]')];
   let filter = new URLSearchParams(location.search).get('aufgaben') || 'now';
-  if (!['now','all','file','question','waiting'].includes(filter)) filter = 'now';
+  if (!['now','all','file','question','research','waiting'].includes(filter)) filter = 'now';
   function apply() {
     const rows=getRows(),query = document.querySelector('[data-work-search]')?.value.trim().toLocaleLowerCase('de') || '';
-    rows.forEach(row => { row.hidden = !(filter === 'all' || (filter === 'now' ? row.dataset.kind !== 'waiting' : row.dataset.kind === filter)) || !row.textContent.toLocaleLowerCase('de').includes(query); });
+    rows.forEach(row => { row.hidden = !(filter === 'all' || (filter === 'now' ? row.dataset.kind !== 'waiting' : filter === 'research' ? ['source','article'].includes(row.dataset.kind) : row.dataset.kind === filter)) || !row.textContent.toLocaleLowerCase('de').includes(query); });
+    document.querySelectorAll('[data-work-group]').forEach(group => {
+      const count=[...group.querySelectorAll('[data-work-row]')].filter(row=>!row.hidden).length;
+      group.hidden=count===0;
+      group.querySelector('[data-group-count]').textContent=count;
+    });
     const count = rows.filter(row => !row.hidden).length;
     const empty = document.querySelector('[data-work-empty]'); if (empty) empty.hidden = count > 0;
-    const badge = document.querySelector('[data-work-count]'); if (badge) badge.textContent = count;
-    document.querySelectorAll('[data-work-filter]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.workFilter === filter)));
+    document.querySelectorAll('nav [data-work-filter]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.workFilter === filter)));
   }
   document.addEventListener('click',event=>{const button=event.target.closest('[data-work-filter]');if(!button)return;filter=button.dataset.workFilter;const url=new URL(location.href);url.searchParams.set('aufgaben',filter);history.replaceState(null,'',url);apply();});
   document.addEventListener('input',event=>{if(event.target.matches('[data-work-search]'))apply();});apply();

@@ -2,6 +2,8 @@
 
 ## Noch nicht veröffentlicht
 
+- API-/MCP-Einstellungen mit fünf kompakten Bereichen, Einrichtungsassistent für Node.js und lokalen Docker, lesender Server-/Schlüssel-/Projektdiagnose und gruppierter Werkzeugübersicht mit maximal zwölf Einträgen pro Abruf. Bestehende Schlüssel und Starter bleiben kompatibel, externer Clientstatus wird nicht vorgetäuscht. Keine zusätzlichen API-/MCP-Rechte oder automatische Dateifreigabe.
+- Doku-Assistent mit direkt erreichbarer nächster Aktion und getrennten Gruppen für Dateiprüfungen, fehlende Angaben, Unterlagen/Zuordnungen und Wartezustände. Kompakte Zeilen, Such-/Filterzähler und aufklappbare Ablehnung; bestehende manuelle Einzelprüfung und Vorwärtsnavigation bleiben erhalten.
 - Export- und Einstellungsuntermenüs kompakter: 40 Pixel Höhe am Desktop, kleinere Abstände und Einstellungsicons. Zentrierung und normale Schrift bleiben erhalten; auf schmalen Bildschirmen 44 Pixel hohe, seitlich scrollbare Leisten.
 
 ## 0.3.2 – 27.11.2026

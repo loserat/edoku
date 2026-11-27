@@ -6,7 +6,9 @@ Der Doku-Assistent zeigt die offenen Aufgaben des aktuell geöffneten Projekts. 
 
 ## Arbeitsliste
 
-Die Kopfzeile zeigt das Projekt, die Navigation die offenen Punkte und Dateiprüfungen. Suche und Filter trennen direkt bearbeitbare Aufgaben, Dateien, Angaben und wartende Punkte. Details erscheinen erst beim Öffnen einer Aufgabe. Einstellungen enthalten Materialausschlüsse und die MCP-Verbindung; Brandschutzhinweise sind aufklappbar.
+Die Kopfzeile zeigt das aktuelle Projekt. Oben ist die nächste verfügbare Aktion direkt erreichbar: zuerst eine Datei einzeln prüfen, danach fehlende Angaben ergänzen oder Unterlagen und Zuordnungen ansehen. Diese Anzeige ordnet vorhandene GUI-Aktionen; die fachlichen Abhängigkeiten und der Agentenablauf werden weiterhin von edoku berechnet.
+
+Die Arbeitsliste trennt **Dateien prüfen**, **Angaben ergänzen**, **Unterlagen & Zuordnungen** und **Wartet**. Suche und Filter mit Zählern helfen bei längeren Listen. „Aktiv“ blendet wartende Punkte aus; „Alle“ zeigt auch diese. Filter verändern keinen Aufgabenstatus. Sind nur wartende Punkte übrig, nennt die Übersicht dies ausdrücklich; eine leere Ansicht bestätigt keine vollständige Dokumentation. Details erscheinen erst beim Öffnen einer Aufgabe. Einstellungen enthalten Materialausschlüsse und die MCP-Verbindung; Brandschutzhinweise sind aufklappbar.
 
 Verbindungsklemmen, Kabel/Leitungen und Befestigungsmaterial lassen sich projektbezogen ausnehmen. Das steuert neue Materialübernahme, Recherche und erzeugte Gerätelisten; gespeicherte Positionen und frühere Dateientscheidungen bleiben erhalten. Technische Systemteile nicht pauschal als Verbrauchsmaterial behandeln.
 
@@ -23,6 +25,8 @@ Gerätekennungen bleiben beim Sortieren und Speichern erhalten. Lücken nach ein
 Keine Sammelfreigabe und keine vorausgewählte Sichtungsbestätigung. API und MCP können keine Datei freigeben. Ein Vorschlag ist noch kein Projektanhang und erfüllt noch keine Dokumentpflicht.
 
 Nach einer Entscheidung folgt die nächste offene Datei hinter der aktuellen Position, ohne automatischen Rücksprung zum Anfang. Frühere übersprungene Dateien bleiben offen und sind über die Dateiliste erreichbar. Jede nächste Datei benötigt eine neue Sichtung und Einzelbestätigung. Der Wechsel ohne vollständiges Neuladen ändert diese Bedingungen nicht.
+
+Die Dateiansicht zeigt die Anzahl wartender Einzelprüfungen und einen direkten Einstieg. Die Arbeitsliste und die nächste Aktion aktualisieren sich nach einer Entscheidung. Quelle und Zuordnung sind in der Einzelprüfung erreichbar; die begründete Ablehnung lässt sich bei Bedarf aufklappen.
 
 Gegenstandslose offene Vorschläge lassen sich mit Begründung zurückziehen. Das ist keine Ablehnung wegen des Inhalts und keine Freigabe. Originale und Verlauf bleiben erhalten; bereits entschiedene Vorschläge sind geschützt.
 

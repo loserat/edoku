@@ -281,3 +281,32 @@
 }
 
 .assistant-page details.assistant-clean-settings[open] > summary { margin-bottom:0; }
+
+/* Nächste Aktion und getrennte Aufgaben: Kontext bleibt in den Details. */
+.assistant-focus-action { margin:18px 0; padding:18px 22px; gap:18px; }
+.assistant-focus-action .assistant-next-label { margin:0 0 6px; color:var(--primary); font-size:11px; font-weight:600; }
+.assistant-focus-action h2 { font-size:17px; line-height:1.45; overflow-wrap:anywhere; font-weight:500; }
+.assistant-focus-action p { font-size:12px; }
+.assistant-focus-action > button,.assistant-focus-action > a { flex-shrink:0; min-height:44px; }
+.assistant-work-filters button { display:inline-flex; align-items:center; gap:7px; }
+.assistant-work-filters button > span,.assistant-task-group h3 > span { font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; }
+.assistant-task-group h3 { margin:0; padding:12px 24px; display:flex; align-items:center; gap:9px; font-size:12px; font-weight:500; color:var(--muted); background:var(--surface-muted); border-block:1px solid var(--line); }
+.assistant-clean-list .assistant-task-row { grid-template-columns:minmax(0,1fr) auto; gap:16px; min-height:64px; padding-block:11px; }
+.assistant-clean-list .assistant-task-row:last-child { border-bottom:0; }
+.assistant-clean-list .assistant-task-name strong { font-weight:500; line-height:1.45; }
+.assistant-clean-list .assistant-task-name small { margin-top:3px; }
+.assistant-clean-list .assistant-task-row > .secondary { min-width:90px; }
+.assistant-file-start { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:16px 0; padding:12px 16px; border:1px solid var(--line); background:var(--surface-solid); border-radius:10px; font-size:13px; }
+.assistant-file-start strong { color:var(--primary); font-variant-numeric:tabular-nums; }
+.assistant-file-start > a { flex-shrink:0; }
+.assistant-clean-list [hidden] { display:none !important; }
+@media(max-width:700px) {
+ .assistant-clean-list .assistant-task-name { grid-column:1; }
+ .assistant-clean-list .assistant-task-row > .secondary { grid-column:2; grid-row:1; min-width:0; }
+ .assistant-task-group h3 { padding-inline:16px; }
+ .assistant-focus-action { padding:16px; }
+}
+@media(max-width:520px) {
+ .assistant-file-start { align-items:flex-start; flex-direction:column; }
+ .assistant-focus-action > button,.assistant-focus-action > a { width:100%; }
+}

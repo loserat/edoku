@@ -10,6 +10,8 @@ API/MCP **3.15.0**: **69 HTTP-Operationen, 58 MCP-Werkzeuge (22 Lesen / 36 Schre
 2. In Einstellungen → API & MCP einen eigenen Schlüssel mit benötigten Rechten und möglichst passender Projektbegrenzung erstellen.
 3. [MCP-Client verbinden](CODEX_DOCKER_MCP.md) oder die [HTTP-API](API.md) verwenden. Schlüssel ausschließlich privat speichern.
 
+Die GUI bietet einen Einrichtungsassistenten für Node-/Docker-Start, lesende Server-/Rechtediagnose und eine gruppierte Werkzeugübersicht mit kleinen Seiten. Die sitzungsgebundenen GUI-Hilfen erweitern keine API-/MCP-Berechtigungen; der Serverkatalog bleibt bei 58 Werkzeugen. Ein externer Client wird nicht automatisch verbunden oder als geprüft gemeldet. [Einrichtung und Prüfgrenzen](CODEX_DOCKER_MCP.md#diagnose-und-werkzeugübersicht).
+
 ## Aufgabensteuerung für einen Agenten
 
 Der Agent beginnt mit `edoku_next_action` im standardmäßig kompakten Modus. edoku liefert vorhandene Informationen, offene Aufgaben und die Ausführungsentscheidung. Bei `continue` unabhängig lösbare Aufgaben weiterbearbeiten; offene Dateifreigaben blockieren andere Artikel nicht. Verbleibende notwendige Rückfragen thematisch bündeln. Benutzerstopp und vereinbarte Budgets bleiben verbindlich.

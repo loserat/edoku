@@ -1,0 +1,52 @@
+/* API/MCP: kurze Einstiege, technische Details bei Bedarf. */
+.integration-clean { gap:16px; }
+.integration-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.integration-heading h2 { margin:0 0 4px; font-size:23px; }
+.integration-heading p { color:var(--muted); font-size:13px; }
+.integration-nav { display:flex; gap:5px; overflow-x:auto; min-width:0; border-bottom:1px solid var(--line); padding-bottom:8px; }
+.integration-nav .secondary { flex-shrink:0; min-height:40px; padding:8px 12px; font-size:12px; font-weight:400; border-color:transparent; box-shadow:none; }
+.integration-nav [aria-pressed=true] { color:var(--primary); background:var(--surface-muted); }
+.integration-nav span { margin-left:7px; color:var(--muted); font-size:11px; }
+.integration-clean .settings-panel { padding:20px; gap:16px; box-shadow:none; }
+.integration-status-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; padding-bottom:18px; border-bottom:1px solid var(--line); }
+.integration-status-grid > div { display:grid; gap:6px; min-width:0; }
+.integration-status-grid span { font-size:12px; color:var(--muted); }
+.integration-status-grid strong { font-size:22px; font-weight:500; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+.integration-status-grid small { display:block; margin-top:3px; font-size:11px; color:var(--muted); font-weight:400; }
+.integration-clean details { min-width:0; border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+.integration-clean summary { cursor:pointer; font-size:12px; }
+.integration-clean details[open] > summary { margin-bottom:12px; }
+.integration-clean .stack-form > div { min-width:0; }
+.integration-steps { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:8px; }
+.integration-steps li { padding:7px 10px; border-radius:7px; background:var(--surface-muted); color:var(--muted); font-size:12px; }
+.integration-steps [aria-current] { color:var(--primary); outline:1px solid var(--primary); }
+.integration-clean [data-mcp-config] { min-height:260px; width:100%; white-space:pre; overflow:auto; }
+.integration-key-list,.integration-tool-list,.integration-diagnostics { margin:0; padding:0; list-style:none; }
+.integration-key-list { display:grid; gap:12px; }
+.integration-key-list > li { display:grid; gap:10px; padding:14px; border:1px solid var(--line); border-radius:10px; min-width:0; }
+.integration-key-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.integration-key-heading strong { font-size:14px; font-weight:500; overflow-wrap:anywhere; }
+.integration-key-list form { justify-self:end; margin:0; }
+.integration-key-list details ul { padding-left:18px; font-size:12px; line-height:1.7; }
+.integration-diagnostics { display:grid; gap:7px; }
+.integration-diagnostics li { padding:8px 11px; border-left:3px solid var(--line); background:var(--surface-muted); font-size:12px; overflow-wrap:anywhere; }
+.integration-diagnostics [data-state=ok] { border-color:var(--success); }
+.integration-diagnostics [data-state=error] { border-color:var(--danger,#c54646); }
+.integration-tool-controls { display:grid; grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr)); gap:10px; }
+.integration-tool-controls > label { min-width:0; }
+.integration-tool-controls input,.integration-tool-controls select { width:100%; min-width:0; }
+.integration-tool-list > li + li { margin-top:7px; }
+.integration-tool-list summary { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.integration-tool-list summary code { min-width:0; overflow-wrap:anywhere; font-size:12px; }
+.integration-tool-list summary span { flex-shrink:0; color:var(--muted); font-size:10px; }
+.integration-tool-list details p { margin:0; color:var(--muted); font-size:12px; line-height:1.6; }
+@media(max-width:700px) {
+ .integration-clean .settings-panel { padding:16px; }
+ .integration-status-grid { gap:10px; }
+ .integration-status-grid strong { font-size:17px; }
+ .integration-tool-controls { grid-template-columns:minmax(0,1fr); }
+ .integration-tool-list summary { align-items:flex-start; flex-direction:column; gap:5px; }
+ .integration-heading h2 { font-size:21px; }
+ .integration-key-heading { flex-wrap:wrap; }
+}
+@media(prefers-reduced-motion:reduce) { .integration-clean * { scroll-behavior:auto; } }

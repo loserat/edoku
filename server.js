@@ -1202,6 +1202,7 @@ app.post("/export/final", requireAuth, async (req, res) => {
 
 // * INFO: Einstellungen: Systemvorgaben, Erstellerstammdaten, Ordnerstruktur und Formulare.
 async function renderSettings(req, res, { createdToken = null, integrationError = "", initialSettingsTab = "" } = {}) {
+    res.set("Cache-Control", "no-store");
     const data = await loadCurrent(req);
     const isSystemAdmin = req.user && req.user.role === "systemadmin";
     res.render("einstellungen", {
@@ -1216,6 +1217,7 @@ async function renderSettings(req, res, { createdToken = null, integrationError 
       isSystemAdmin,
       integrationSettings: await integrationSettings.read(),
       apiKeys: apiTokens.list(req.user.id), apiScopes, createdToken, integrationError, initialSettingsTab,
+      integrationOverview: require('./services/integrationPresentationService').summary(),
       availableProjects: (await listProjects(ROOT_DIR, req.user.id)).filter(project => project.status !== "geloescht"),
       integrationOrigin: process.env.APP_ORIGIN || `${req.protocol}://${req.get("host")}`,
       users: isSystemAdmin ? listUsers() : [],
@@ -1242,6 +1244,25 @@ app.get("/einstellungen/protokoll", requireSystemAdmin, async (req,res) => {
 });
 
 app.get("/integrationen", requireAuth, (_req, res) => res.redirect("/einstellungen#api"));
+// Sitzungsgebundene GUI-Hilfen, keine neuen öffentlichen API-/MCP-Rechte.
+app.get('/integrationen/werkzeuge', requireAuth, (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  try {
+    const { z } = require('./src/api/schemas');
+    const presentation = require('./services/integrationPresentationService');
+    const query = z.object({ search: z.string().max(80).default(''), group: z.enum(['all', ...Object.keys(presentation.groupLabels)]).default('all'), mode: z.enum(['all','read','write','sensitive']).default('all'), offset: z.coerce.number().int().min(0).max(1000).default(0), limit: z.coerce.number().int().min(1).max(12).default(12) }).strict().parse(req.query);
+    res.json(presentation.toolPage(query));
+  } catch (error) { const invalid = error.name === 'ZodError'; res.status(invalid ? 400 : 503).json({ message: invalid ? 'Werkzeugauswahl ungültig.' : 'Werkzeugkatalog nicht verfügbar. Bitte Softwarestand prüfen.' }); }
+});
+app.get('/integrationen/diagnose', requireAuth, async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  try {
+    const { z } = require('./src/api/schemas');
+    const query = z.object({ keyId: z.string().regex(/^[a-f0-9]{24}$/).optional(), projectId: z.string().min(1).max(100).optional(), profile: z.enum(['read','research','full']).default('read') }).strict().parse(req.query);
+    const result = require('./services/integrationPresentationService').diagnose({ ...query, settings: await integrationSettings.read(), keys: apiTokens.list(req.user.id), projects: (await listProjects(ROOT_DIR, req.user.id)).filter(project => project.status !== 'geloescht'), role: req.user.role });
+    res.json(result);
+  } catch (error) { res.status(error.status === 404 ? 404 : error.name === 'ZodError' ? 400 : 503).json({ message: error.status === 404 ? error.message : error.name === 'ZodError' ? 'Diagnoseauswahl ungültig.' : 'Integrationseinstellungen nicht verfügbar. Bitte Serverkonfiguration prüfen.' }); }
+});
 app.post("/einstellungen/integrationen", requireSystemAdmin, async (req, res) => {
   try {
     await integrationSettings.save({

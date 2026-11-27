@@ -1,7 +1,9 @@
-<section class="settings-panel assistant-files" data-file-list>
+<section class="settings-panel assistant-files" data-file-list aria-label="Dateivorschläge">
+  <% if (typeof showControls === 'undefined' || showControls) { %>
   <div class="panel-head"><div><h2><%= section === 'uebersicht' ? 'Bereit zur Prüfung' : 'Dateien' %></h2><p><%= section === 'uebersicht' ? 'Öffnen, sichten und einzeln übernehmen.' : 'Nur die aktuelle Fassung steht zur Prüfung.' %></p></div>
     <% if (section === 'uebersicht') { %><a href="<%= base %>?ansicht=dateien">Alle Dateien</a><% } %>
   </div>
+  <% } %>
   <% if (section === 'dateien' && (typeof showControls === 'undefined' || showControls)) { %>
     <div class="assistant-file-controls"><nav class="assistant-filters" aria-label="Dateistatus">
       <% [['pending', 'Zu prüfen', pending.length], ['approved', 'Übernommen', approved.length], ['all', 'Alle', pending.length + approved.length]].forEach(([value, label, count]) => { %>

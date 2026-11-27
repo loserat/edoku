@@ -68,6 +68,7 @@
     "services/requirementScopeService.js": "93a6f548b171b1e4fe5beb3d4833081db8a89b3bce89c9601597a3b7fb22d530",
     "services/projectDataStoreService.js": "f3fd8bb593be0b1751529c10f0945c4ccbaa67e3edee65bf8f96ba15195b64d6",
     "services/apiTokenService.js": "11d60476d4488b19b12079a7e39724feef65b33f711451bf9b47bd78998f0b3e",
-    "scripts/edoku-mcp.js": "66d662dc61f69bac0aec22767a43ba95c88c28deff3219133e8bbbe0a97c20f5"
+    "scripts/edoku-mcp.js": "66d662dc61f69bac0aec22767a43ba95c88c28deff3219133e8bbbe0a97c20f5",
+    "scripts/edoku-mcp-docker.py": "aba6add0eb7409274bde8544a8a4a065c803cd70940b9e19795f3a0c6888f289"
   }
 }

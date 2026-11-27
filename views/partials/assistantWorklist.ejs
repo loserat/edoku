@@ -1,10 +1,15 @@
 <section class="assistant-work-panel assistant-checklist assistant-clean-list" aria-label="Offene Punkte und Vorschläge">
-  <div class="assistant-work-panel-heading"><div><h2>Offene Punkte <span class="badge" data-work-count><%= workspace.rows.length %></span></h2></div><label class="assistant-search"><span class="sr-only">Arbeitsliste durchsuchen</span><input type="search" data-work-search placeholder="Aufgabe oder Artikel suchen …"></label></div>
-  <nav class="assistant-work-filters" aria-label="Aufgaben filtern"><% [['now','Jetzt bearbeiten'],['all','Alle'],['file','Dateien'],['question','Angaben'],['waiting','Wartet']].forEach(([value,label]) => { %><button type="button" class="secondary" data-work-filter="<%= value %>" aria-pressed="<%= value === 'now' %>"><%= label %></button><% }) %></nav>
-  <div class="assistant-task-head"><span>Aufgabe</span><span>Status</span><span>Aktion</span></div>
-  <ul class="assistant-task-list"><% workspace.rows.forEach((row,index) => { %>
-    <li class="assistant-task-row" data-work-row data-kind="<%= row.kind %>"><span class="assistant-task-name"><strong><%= row.title %></strong><small><%= row.subtitle %></small></span><span class="assistant-task-state <%= row.kind %>"><%= row.status %></span>
-    <% if (row.href) { %><a class="secondary" href="<%= row.href %>" <%- row.kind === 'file' ? 'data-review-link' : '' %>><%= row.action %> →</a><% } else { %><button type="button" class="secondary" data-work-detail="work-<%= index %>"><%= row.action %></button><% } %></li>
-  <% }) %></ul><p class="assistant-empty" data-work-empty hidden>Keine passenden Punkte. Andere Filter zeigen weitere Aufgaben.</p>
+  <div class="assistant-work-panel-heading"><h2>Offene Aufgaben <span class="badge"><%= workspace.rows.length %></span></h2><label class="assistant-search"><span class="sr-only">Arbeitsliste durchsuchen</span><input type="search" data-work-search placeholder="Aufgabe oder Artikel suchen …"></label></div>
+  <nav class="assistant-work-filters" aria-label="Aufgaben filtern"><% [['now','Aktiv',workspace.rows.length - workspace.counts.waiting],['file','Dateien',workspace.counts.files],['question','Angaben',workspace.counts.questions],['research','Unterlagen',workspace.counts.research],['waiting','Wartet',workspace.counts.waiting],['all','Alle',workspace.rows.length]].forEach(([value,label,count]) => { %><button type="button" class="secondary" data-work-filter="<%= value %>" aria-pressed="<%= value === 'now' %>"><%= label %><span><%= count %></span></button><% }) %></nav>
+  <div class="assistant-task-groups"><% workspace.groups.forEach(group => { if (!group.rows.length) return; %>
+    <section class="assistant-task-group" data-work-group aria-labelledby="work-group-<%= group.id %>">
+      <h3 id="work-group-<%= group.id %>"><%= group.title %><span data-group-count><%= group.rows.length %></span></h3>
+      <ul class="assistant-task-list"><% group.rows.forEach(row => { const index = workspace.rows.indexOf(row); %>
+        <li class="assistant-task-row" data-work-row data-kind="<%= row.kind %>"><span class="assistant-task-name"><strong title="<%= row.title %>"><%= row.title %></strong><small><%= row.subtitle %><% if (group.id === 'waiting' || group.id === 'research') { %> · <%= row.status %><% } %></small></span>
+        <% if (row.href) { %><a class="secondary" href="<%= row.href %>" aria-label="<%= row.action + ': ' + row.title %>" <%- row.kind === 'file' ? 'data-review-link' : '' %>><%= row.action %> →</a><% } else { %><button type="button" class="secondary" data-work-detail="work-<%= index %>" aria-label="<%= row.action + ': ' + row.title %>"><%= row.action %> →</button><% } %></li>
+      <% }) %></ul>
+    </section>
+  <% }) %></div>
+  <p class="assistant-empty" data-work-empty role="status" aria-live="polite" <%- workspace.rows.length ? 'hidden' : '' %>><%= workspace.rows.length ? 'Keine passenden Aufgaben. Anderen Filter wählen.' : 'Keine offenen Aufgaben in dieser Ansicht.' %></p>
   <% if (entries.some(entry => entry.projectReadiness.firestopDocumentation?.active)) { %><details class="assistant-clean-help"><summary>Hinweise zum Brandschutz</summary><p class="field-hint">Erforderlich: ausgefüllte Übereinstimmungsbestätigung, Montageanleitung je System und Zulassungs-/Prüfnachweis. Jede Datei einzeln manuell freigeben.</p></details><% } %>
 </section>
