@@ -1473,7 +1473,7 @@ tr:last-child td {
   display: inline-flex;
   flex: 0 0 auto;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 400;
   height: 34px;
   min-height: 34px;
   padding: 0 14px;
@@ -2476,6 +2476,7 @@ body.modal-open {
 
 .device-tool-menu {
   position: relative;
+  justify-self: end;
 }
 
 .device-tool-trigger {
@@ -2492,7 +2493,10 @@ body.modal-open {
   min-height: 30px;
   min-width: 36px;
   padding: 0 9px 2px;
+  list-style: none;
+  cursor: pointer;
 }
+.device-tool-trigger::-webkit-details-marker { display: none; }
 
 .device-tool-trigger:hover {
   background: color-mix(in srgb, var(--surface-solid) 74%, var(--accent) 10%);
@@ -2508,16 +2512,19 @@ body.modal-open {
   box-shadow: var(--shadow-lg);
   display: none;
   gap: 8px;
-  min-width: 260px;
-  padding: 10px;
+  width: min(320px, calc(100vw - 32px));
+  min-width: 0;
+  padding: 12px;
+  box-sizing: border-box;
+  max-height: min(480px, calc(100dvh - 120px));
+  overflow-y: auto;
   position: absolute;
   right: 0;
   top: calc(100% + 8px);
   z-index: 40;
 }
 
-.device-tool-menu:hover .device-tool-dropdown,
-.device-tool-menu:focus-within .device-tool-dropdown {
+.device-tool-menu[open] .device-tool-dropdown {
   display: grid;
 }
 
@@ -2547,7 +2554,23 @@ body.modal-open {
 
 .device-tool-head strong {
   font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
 }
+
+.device-view-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  cursor: pointer;
+}
+.device-view-option input[type="checkbox"] { width: 17px; height: 17px; min-height: 0; margin: 0; flex: 0 0 17px; }
+.device-view-option span { font-size: 13px; font-weight: 500; color: var(--text); }
+.device-list-page [data-device-list-panel][data-lv-hidden="true"] [data-col="lvPosition"] { display: none; }
+.device-tool-dropdown .add-position-control { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); }
+.device-tool-dropdown .add-position-control input { min-width: 0; width: 100%; box-sizing: border-box; }
+.device-tool-dropdown .add-position-control button { min-width: 0; white-space: normal; overflow-wrap: anywhere; padding: 8px; }
 
 .device-tool-dropdown > button,
 .device-tool-dropdown .preview-button,
@@ -2628,4 +2651,41 @@ body.modal-open {
   border-color: color-mix(in srgb, var(--success) 74%, var(--border));
   box-shadow: 0 10px 20px color-mix(in srgb, var(--success) 18%, transparent);
   color: var(--on-primary);
+}
+
+/* Export-Untermenü unmittelbar unter der Hauptnavigation; Tabs und Panels
+   behalten denselben gemeinsamen Daten-/Speicherschlüssel. */
+.export-page-layout {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.export-page-layout > .export-tabs {
+  background: var(--surface-solid);
+  backdrop-filter: none;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+  flex: 0 0 auto;
+  gap: 4px;
+  justify-content: flex-start;
+  margin: 0;
+  max-width: 100%;
+  padding: 6px 28px;
+  scroll-padding-inline: 28px;
+  width: 100%;
+}
+.export-page-layout > .export-tabs > .tab-button:first-child {
+  margin-inline-start: auto;
+}
+.export-page-layout > .export-tabs > .tab-button:last-child {
+  margin-inline-end: auto;
+}
+@media (max-width: 760px) {
+  .export-page-layout > .export-tabs {
+    padding-inline: 16px;
+    scroll-padding-inline: 16px;
+  }
 }

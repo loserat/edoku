@@ -1,5 +1,7 @@
 # Dokumentation
 
+Produktstand **0.3.1** · API/MCP **3.15.0**. [Änderungen](RELEASE_NOTES.md#031--27112026) · [Update und Datenerhalt](UPDATE.md).
+
 ## Nutzung
 
 - [Bedienungsanleitung](BEDIENUNGSANLEITUNG.md): Projekte, Gerätelisten, Anhänge und Ausgabe.
@@ -12,7 +14,7 @@
 
 - [Überblick und Agentenablauf](API_MCP.md).
 - [HTTP-API](API.md), [Docker und MCP-Client](CODEX_DOCKER_MCP.md).
-- [Erzeugte Referenz](api/README.md): 64 HTTP-Operationen und 55 MCP-Werkzeuge.
+- [Erzeugte Referenz](api/README.md): 69 HTTP-Operationen und 58 MCP-Werkzeuge.
 
 ## Installation und Betrieb
 

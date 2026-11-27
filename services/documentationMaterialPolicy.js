@@ -1,6 +1,6 @@
 const POLICY='documentation_material_exclusions_v1';
 const keys=['connectionTerminals','cablesAndWires','fasteningMaterial'];
-const labels={connectionTerminals:'Verbindungsklemmen',cablesAndWires:'Kabel und Leitungen',fasteningMaterial:'Befestigungsmaterial'};
+const labels={connectionTerminals:'Verbindungsklemmen',cablesAndWires:'Kabel und Leitungen',fasteningMaterial:'Befestigungsmaterial',manual_consumable:'Manuell ausgenommene Verbrauchsmaterialien'};
 const newProjectExclusions=Object.freeze({connectionTerminals:true,cablesAndWires:true,fasteningMaterial:true});
 const norm=v=>String(v||'').normalize('NFKC').replace(/[®™]/g,'').replace(/[‐‑‒–—−]/g,'-').trim();
 function historicalSample(row={}){
@@ -30,10 +30,12 @@ function classify(row={}){
  if(text.some(v=>/^(?:Befestigungsmaterial|Schrauben?|Blechschrauben?|Sechskantschrauben?|Senkkopfschrauben?|Montageschrauben?|Unterlegscheiben?|Dübel|Kabelbinder|Muttern?|Sechskantmuttern?|Gewindestangen?|Stockschrauben?)\b/i.test(v)))return 'fasteningMaterial';
  return null;
 }
-function excluded(row,project){const group=classify(row);return group&&effective(project).exclusions[group]?group:null;}
+const MANUAL_CONSUMABLE_CATEGORY='Verbrauchsmaterial (nicht dokumentieren)';
+function manualExcluded(row){return norm(row?.kategorie).toLocaleLowerCase('de')===MANUAL_CONSUMABLE_CATEGORY.toLocaleLowerCase('de')?'manual_consumable':null;}
+function excluded(row,project){const manual=manualExcluded(row);if(manual)return manual;const group=classify(row);return group&&effective(project).exclusions[group]?group:null;}
 function projectLists(lists,project){
- if(!explicit(project))return lists;
- return lists.map(list=>({...list,positionen:(list.positionen||[]).filter(row=>!excluded(row,project))})).filter((list,index)=>!lists[index].positionen?.length||list.positionen.length);
+ if(!explicit(project)&&!lists.some(list=>(list.positionen||[]).some(manualExcluded)))return lists;
+ return lists.map(list=>({...list,positionen:(list.positionen||[]).filter(row=>!(manualExcluded(row)||explicit(project)&&excluded(row,project)))})).filter((list,index)=>!lists[index].positionen?.length||list.positionen.length);
 }
 function save(project,exclusions,{actor,source,evidence}){
  const before=effective(project).exclusions;if(keys.every(k=>before[k]===exclusions[k])&&explicit(project))return false;
@@ -43,12 +45,12 @@ function save(project,exclusions,{actor,source,evidence}){
  project.assistantMaterialHistory=[...history,{before,after:{...exclusions},actor,source,evidence,recordedAt:at}];return true;
 }
 function excludedRequirement(data,requirement){
- if(!explicit(data.projekt)||!['Datenblätter','Bedienungsanleitungen'].includes(requirement.category))return false;
+ if(!['Datenblätter','Bedienungsanleitungen'].includes(requirement.category))return false;
  const refs=requirement.devices||(requirement.device?[requirement.device]:[]);
  return refs.length>0&&refs.every(ref=>{
   const list=data.geraetelisten.find(item=>item.id===ref.listId);
   const row=list?.positionen.find((r,i)=>Number(r.pos||i+1)===ref.position);
-  return row&&excluded(row,data.projekt);
+  return row&&(manualExcluded(row)||explicit(data.projekt)&&excluded(row,data.projekt));
  });
 }
 function historicalRequirement(data,requirement){
@@ -59,5 +61,5 @@ function historicalRequirement(data,requirement){
   return row&&historicalSample(row);
  });
 }
-function assertIncluded(row,project){const group=explicit(project)&&excluded(row,project);if(group)throw Object.assign(new Error(`${labels[group]} sind im Doku-Assistenten ausgeschlossen. Projektregeln beachten.`),{status:409,apiCode:'DOCUMENTATION_MATERIAL_EXCLUDED'});}
-module.exports={POLICY,keys,labels,newProjectExclusions,effective,explicit,classify,excluded,projectLists,save,excludedRequirement,assertIncluded,historicalSample,historicalRequirement};
+function assertIncluded(row,project){const group=manualExcluded(row)||explicit(project)&&excluded(row,project);if(group)throw Object.assign(new Error(`${labels[group]||'Manuell ausgenommene Verbrauchsmaterialien'} sind im Doku-Assistenten ausgeschlossen. Projektregeln beachten.`),{status:409,apiCode:'DOCUMENTATION_MATERIAL_EXCLUDED'});}
+module.exports={POLICY,keys,labels,newProjectExclusions,effective,explicit,classify,excluded,projectLists,save,excludedRequirement,assertIncluded,historicalSample,historicalRequirement,manualExcluded,MANUAL_CONSUMABLE_CATEGORY};

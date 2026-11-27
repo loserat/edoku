@@ -34,14 +34,14 @@ function createDocumentAssistantService(root, { db = connection(), checkStorage 
       id TEXT PRIMARY KEY, job_id TEXT NOT NULL REFERENCES documentation_jobs(id),
       metadata TEXT NOT NULL CHECK(json_valid(metadata)), filename TEXT NOT NULL, mime_type TEXT NOT NULL,
       bytes INTEGER NOT NULL, sha256 TEXT NOT NULL, state TEXT NOT NULL DEFAULT 'pending' CHECK(state IN('pending','approved','rejected')),
-      created_at TEXT NOT NULL, decided_at TEXT, decided_by TEXT REFERENCES users(id), attachment_id TEXT,
-      UNIQUE(job_id,sha256));
+      created_at TEXT NOT NULL, decided_at TEXT, decided_by TEXT REFERENCES users(id), attachment_id TEXT);
       CREATE TABLE IF NOT EXISTS document_review_views (
       proposal_id TEXT NOT NULL REFERENCES document_proposals(id), user_id TEXT NOT NULL REFERENCES users(id),
       sha256 TEXT NOT NULL, viewed_at TEXT NOT NULL, PRIMARY KEY(proposal_id,user_id));`);
     db.exec(`CREATE TABLE IF NOT EXISTS documentation_requirements (
       job_id TEXT NOT NULL REFERENCES documentation_jobs(id), id TEXT NOT NULL,
       payload TEXT NOT NULL CHECK(json_valid(payload)), PRIMARY KEY(job_id,id));`);
+    db.exec(require('./documentProposalStorageService').INDEX);
   }
   function project(userId, projectId) {
     parse(id, userId); parse(id, projectId);
@@ -74,6 +74,12 @@ function createDocumentAssistantService(root, { db = connection(), checkStorage 
     const row = job(userId, jobId);
     const hasRequirements = db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='documentation_requirements'").get();
     const value = { ...publicJob(row), requirements: hasRequirements ? db.prepare("SELECT payload FROM documentation_requirements WHERE job_id=? ORDER BY id").all(jobId).map(item => JSON.parse(item.payload)) : [], documents: db.prepare("SELECT * FROM document_proposals WHERE job_id=? ORDER BY created_at,id").all(jobId).map(publicProposal) };
+    // Compute obligations without writing on reads, migrating legacy rows or touching decisions.
+    if (row.status !== 'closed') {
+      const read = (name, fallback) => store.readProjectDocumentSync(root, userId, row.project_id, name + '.json', fallback);
+      const data = { projekt: read('projekt', {}), leistungsbereiche: read('leistungsbereiche', { aktiv: [] }), brandschutz: read('brandschutz', []), projektSysteme: read('projektSysteme', []), geraetelisten: read('geraetelisten', []) };
+      value.requirements = require('./firestopDocumentationService').automaticRequirements(data, value.requirements, jobId);
+    }
     return { ...value, version: hash(JSON.stringify(value)) };
   }
   function assertVersion(userId, jobId, version) {
@@ -152,6 +158,7 @@ function createDocumentAssistantService(root, { db = connection(), checkStorage 
     db.transaction(() => {
       db.prepare("INSERT INTO documentation_jobs(id,user_id,project_id,instruction,status,created_at,updated_at) VALUES(?,?,?,?,'queued',?,?)").run(jobId, userId, projectId, data.instruction, stamp, stamp);
       addRequirements(jobId, data.requirements);
+      addRequirements(jobId, get(userId, jobId).requirements);
     })();
     return get(userId, jobId);
   }
@@ -211,6 +218,7 @@ function createDocumentAssistantService(root, { db = connection(), checkStorage 
       if (data.requirements) addRequirements(jobId, data.requirements);
       const status = questions.some(questionOpen) ? "needs_info" : data.status || row.status;
       db.prepare("UPDATE documentation_jobs SET status=?,message=?,questions=?,updated_at=? WHERE id=?").run(status, data.message ?? row.message, JSON.stringify(questions), now(), jobId);
+      addRequirements(jobId, get(userId, jobId).requirements);
     })();
     return get(userId, jobId);
   }
@@ -267,15 +275,31 @@ function createDocumentAssistantService(root, { db = connection(), checkStorage 
       catch { throw fault("Die PDF-Datei ist beschädigt, verschlüsselt oder zu umfangreich.", 415, "INVALID_PDF"); }
     }
     const digest = hash(upload.buffer);
-    const duplicate = db.prepare("SELECT * FROM document_proposals WHERE job_id=? AND sha256=?").get(jobId, digest);
+    const duplicates = db.prepare("SELECT * FROM document_proposals WHERE job_id=? AND sha256=? ORDER BY created_at,id").all(jobId, digest);
+    const withdrawn=duplicates.filter(row=>JSON.parse(row.metadata).withdrawal);
+    const duplicate = duplicates.find(row=>!JSON.parse(row.metadata).withdrawal);
     if (duplicate) {
-      const saved = JSON.parse(duplicate.metadata); delete saved.supersededBy;delete saved.withdrawal;delete saved.productVerification;delete saved.productVerificationPolicy;
+      const saved = JSON.parse(duplicate.metadata); delete saved.supersededBy;delete saved.withdrawal;delete saved.productVerification;delete saved.productVerificationPolicy;delete saved.withdrawnPredecessors;
       const previous = parse(documentInput, saved);
       previous.deviceReferences = referencesForDocument(previous, requirements);
       delete previous.expectedJobVersion;
       const comparable = { ...data }; delete comparable.expectedJobVersion;
       if (JSON.stringify(previous) !== JSON.stringify(comparable)) throw fault("Diese Datei wurde bereits mit anderen Metadaten eingereicht. Vorhandenen Vorschlag prüfen; Zuordnungen werden nicht still verändert.", 409, "PROPOSAL_CONFLICT");
       return publicProposal(duplicate);
+    }
+    if(withdrawn.length){
+      const normalized=value=>String(value||'').normalize('NFKC').trim().replace(/\s+/g,' ').toLocaleLowerCase('de');
+      const destination=value=>JSON.stringify([value.category,[...value.requirementIds].sort(),value.deviceReferences.map(ref=>[ref.listId,ref.position,normalized(ref.manufacturer),normalized(ref.model),normalized(ref.variant)]).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]);
+      for(const old of withdrawn){
+        const saved=JSON.parse(old.metadata);delete saved.withdrawal;delete saved.productVerification;delete saved.productVerificationPolicy;delete saved.withdrawnPredecessors;delete saved.supersededBy;
+        const previous=parse(documentInput,saved);previous.deviceReferences=referencesForDocument(previous,requirements);
+        delete previous.expectedJobVersion;const comparable={...data};delete comparable.expectedJobVersion;
+        if(JSON.stringify(previous)===JSON.stringify(comparable))return publicProposal(old);
+        if(destination(previous)===destination(data))throw fault('Zurückgezogene Datei nicht durch geänderte Beschriftungen erneut einreichen.',409,'PROPOSAL_CONFLICT');
+      }
+      if(!data.expectedJobVersion)throw fault('Ein neuer Gerätebezug nach Zurückziehen benötigt die aktuelle Auftragsversion.',428,'PRECONDITION_REQUIRED');
+      if(require('./documentProposalStorageService').legacy(db))throw fault('Vorschlagsspeicher zuerst nach Sicherung getrennt prüfen und ausdrücklich aktualisieren.',409,'PROPOSAL_STORAGE_UPGRADE_REQUIRED');
+      data.withdrawnPredecessors=withdrawn.map(row=>row.id);
     }
     if (data.expectedJobVersion) assertVersion(userId, jobId, data.expectedJobVersion);
     validateSupersedes();
@@ -300,6 +324,13 @@ function createDocumentAssistantService(root, { db = connection(), checkStorage 
         if (data.expectedJobVersion) assertVersion(userId, jobId, data.expectedJobVersion);
         validateSupersedes();
         if (job(userId, jobId).status === "closed") throw fault("Auftrag ist abgeschlossen.", 409, "JOB_CLOSED");
+        const currentRequirements = get(userId, jobId).requirements;
+        for (const requirementId of data.requirementIds) {
+          const current = currentRequirements.find(row => row.id === requirementId);
+          const original = requirements.find(row => row.id === requirementId);
+          if (!current || JSON.stringify(current) !== JSON.stringify(original)) throw fault('Brandschutzanforderung wurde zwischenzeitlich geändert.', 409, 'FIRESTOP_REQUIREMENT_CHANGED');
+        }
+        addRequirements(jobId, currentRequirements.filter(row => data.requirementIds.includes(row.id)));
         db.prepare("INSERT INTO document_proposals(id,job_id,metadata,filename,mime_type,bytes,sha256,created_at) VALUES(?,?,?,?,?,?,?,?)").run(proposalId, jobId, JSON.stringify(data), sanitizeFileName(upload.originalName || "Dokument"), mime, upload.buffer.length, digest, now());
         for (const previousId of data.supersedes) {
           const previous = proposal(userId, jobId, previousId).row;
@@ -436,13 +467,14 @@ function createDocumentAssistantService(root, { db = connection(), checkStorage 
       const row = job(userId, jobId);
       if (get(userId, jobId).documents.some(document => document.state === "pending")) throw fault("Bitte zuerst über alle Dateivorschläge entscheiden.", 409, "REVIEW_REQUIRED");
       if (JSON.parse(row.questions).some(questionOpen)) throw fault("Es sind noch erforderliche Rückfragen offen.", 409, "ANSWERS_REQUIRED");
+      addRequirements(jobId, get(userId, jobId).requirements);
       db.prepare("UPDATE documentation_jobs SET status='closed',updated_at=? WHERE id=?").run(now(), jobId);
     })();
   }
   async function assertMaterialIncluded(userId,projectId,data){
     if(!['Datenblätter','Bedienungsanleitungen'].includes(data.category))return;
     const files=dataFilesForProject(root,userId,projectId),project=await readJson(files.projekt,{});
-    const policy=require('./documentationMaterialPolicy');if(!policy.explicit(project))return;
+    const policy=require('./documentationMaterialPolicy');
     const lists=await readJson(files.geraetelisten,[]);
     for(const ref of data.deviceReferences||[]){
       const list=lists.find(item=>item.id===ref.listId),rows=list?.positionen.filter((row,index)=>Number(row.pos||index+1)===ref.position)||[];

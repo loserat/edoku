@@ -35,6 +35,17 @@ function safeFile(root, file) {
     catch(error) { if(error.code!=="ENOENT")throw error; }
   }
 }
+// Shared synchronous read for consumers that also run inside a project transaction.
+// Never read the migration original or bypass the legacy path/symlink guard.
+function readProjectDocumentSync(root, user, project, name, fallback) {
+  if (!PROJECT_DOCUMENTS.includes(name)) throw failure('Unbekanntes Projektdokument.', 400);
+  const file = path.join(safeProjectDirectory(root, user, project), name);
+  safeFile(root, file);
+  const stored = readProjectDocument(file);
+  if (stored.handled) return stored.value;
+  try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
+  catch (error) { if (error.code === 'ENOENT') return fallback; throw error; }
+}
 function capture(root, row) {
   const directory=safeProjectDirectory(root,row.user_id,row.id);
   return PROJECT_DOCUMENTS.map(name=>{
@@ -186,4 +197,4 @@ function projectDataRequest(rootDir) {
     next();
   });
 }
-module.exports={PROJECT_DOCUMENTS,migrateProjectData,configureProjectDataStore,disconnectProjectDataStore,enrollProject,readProjectDocument,writeProjectDocument,writeProjectMetadata,initialProjectDocument,projectDataRevision,assertProjectRevision,withProjectDataTransaction,onProjectDataCommit,projectDataRequest};
+module.exports={PROJECT_DOCUMENTS,migrateProjectData,configureProjectDataStore,disconnectProjectDataStore,enrollProject,readProjectDocument,readProjectDocumentSync,writeProjectDocument,writeProjectMetadata,initialProjectDocument,projectDataRevision,assertProjectRevision,withProjectDataTransaction,onProjectDataCommit,projectDataRequest};

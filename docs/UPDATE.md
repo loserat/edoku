@@ -2,6 +2,14 @@
 
 Bestehende Installationen bewusst mit geprüfter Sicherung und Wiederherstellungsprobe aktualisieren. Daten, Konten und Dateientscheidungen erhalten; tatsächliche laufende Version nach dem Wechsel prüfen.
 
+## Versionswechsel auf 0.3.1
+
+0.3.1 bündelt die vorbereiteten Brandschutz- und OBO-Prüfverbesserungen aus beta.9/beta.10. API/MCP bleiben bei 3.15.0; die App-Version allein ist kein Datenbankupgrade. Gegenüber beta.8 und den vorbereiteten beta.9/beta.10 wird keine neue Migration eingeführt. Für ältere Installationen gilt weiterhin der unten beschriebene ausdrückliche Vorschlagsspeicher-Upgrade.
+
+Vor dem Wechsel vollständige Sicherung prüfen und eine getrennte Wiederherstellung erproben. Bestehende Konfiguration, Konten, Projektpfade und Dateientscheidungen übernehmen; keine neutralen Test- oder Startdaten darüberkopieren. Danach Softwareversion unter Einstellungen → System, API-Version und MCP-Verbindung prüfen; nach dem Serverwechsel den MCP-Client neu verbinden. Neue Dateien bleiben manuell einzeln freizugeben.
+
+Ein Versionsstand in der Dokumentation beweist keine lokale Aktivierung, Veröffentlichung oder Online-Aktualisierung.
+
 ## Programm und Daten
 
 Compose bindet fünf bestehende Verzeichnisse nach `/app/` ein:
@@ -69,6 +77,20 @@ python3 scripts/installation_backup.py restore --backup /absoluter/sicherungsord
 Originalinstallation und Sicherung bleiben unangetastet. Im neuen Testordner das zur Sicherung gehörende Programmabbild verwenden. Start, Anmeldung, Projekte, Dateien und Archive getrennt von der Integritätsprüfung kontrollieren. Genaue Docker-Schritte: [Getrennte Wiederherstellung](BETA_BETRIEB.md#getrennte-wiederherstellung).
 
 Für eine Rückkehr von SQLite zu einem älteren JSON-Programm müssen aktuelle SQLite-Inhalte zuerst in einer neuen Wiederherstellungskopie materialisiert werden. Dafür gibt es `storage:rollback`; die [SQLite-Anleitung](SQLITE_PROJEKTDATEN.md#geprüfter-rückweg-nur-in-einen-neuen-ordner) beschreibt Voraussetzungen und Grenzen. Eine alte Datenbank nicht mit neueren Projektdateien mischen. Vor einer tatsächlichen Rückkehr der Hauptanwendung neu entstandene Daten zusätzlich sichern und abgleichen.
+
+## Vorschlagsspeicher für zurückgezogene Originale
+
+Ab 0.3.0-beta.6 kann derselbe PDF-Inhalt nach einer Zurückziehung für einen korrigierten tatsächlichen Gerätebezug als eigener neuer Vorschlag angelegt werden. Der alte Vorgang wird weder wieder geöffnet noch überschrieben. Die frühere Datenbank-Eindeutigkeit pro Auftrag/Inhalt muss dafür ausdrücklich durch einen Index ersetzt werden, der zurückgezogene Vorgänge ausnimmt. Alle bisherigen Zeilen und Fremdschlüssel bleiben erhalten.
+
+Zuerst vollständige Sicherung und getrennte Wiederherstellungsprobe durchführen. Auf der Kopie mit dem neuen Programm prüfen; bestehende Anwendung für den tatsächlichen Schritt anhalten. Der Programmstart führt diese Tabellenumstellung nicht automatisch aus:
+
+```bash
+# /app bezeichnet hier ausschließlich die eingebundenen Laufzeitordner der Kopie.
+node scripts/proposal-storage.js --root /app
+node scripts/proposal-storage.js --root /app --apply
+```
+
+Der erste Aufruf ist lesend. Der zweite baut bei Bedarf ausschließlich die Vorschlagstabelle atomar um, vergleicht alle Zeilen und prüft Fremdschlüssel. Bei Fehlern bleibt der alte Tabellenstand erhalten. Identischer Wiederholungsaufruf ändert nichts. Bei Docker das neue Abbild mit diesen Befehlen und den jeweiligen fünf Datenanbindungen verwenden; ein bloßer Image-Wechsel führt den Schritt nicht aus. Erst nach erfolgreicher Prüfung auf der Kopie auf den gesicherten, angehaltenen Originalbestand anwenden. Vorheriges Abbild und vollständige Sicherung erhalten.
 
 ## Historischer Bestand, Privatsphäre und Aufräumen
 

@@ -4,20 +4,39 @@ const {promisify}=require('node:util');
 const run=promisify(execFile);
 const {downloadResource}=require('./mcpDocumentSourceService');
 const {trustedPage,aliasFor}=require('./manufacturerSourcePolicy');
-const {matchDocument}=require('./productDocumentMatchingService');
+const {matchDocument,zz330TradeNameTarget}=require('./productDocumentMatchingService');
 const {dataFilesForProject}=require('./projectArchiveService');
 const {readJson,writeJson}=require('./jsonService');
 const {assertSafePath}=require('./pathService');
 const {resolveDeviceReferences,referenceKey}=require('./deviceDocumentService');
 const store=require('./projectDataStoreService');
 const {fault}=require('../src/api/validation');
-const POLICY='manufacturer_pdf_article_variant_v7';
+const POLICY='manufacturer_pdf_article_variant_v10';
 function retryAfterPolicyChange(record,target){
- if(record.outcome!=='blocked'||!['manufacturer_pdf_article_variant_v5','manufacturer_pdf_article_variant_v6'].includes(record.verificationPolicy))return false;
+ if(record.outcome==='blocked'&&record.verificationPolicy==='manufacturer_pdf_article_variant_v9'){
+  const brand=String(target.manufacturer||'').toLowerCase().replace(/[^a-z]/g,'');
+  const issue=[record.reason,record.blockerCode,record.evidence?.sourceQuote].filter(Boolean).join(' ');
+  return brand==='obobettermann'&&/^PLM D \d{4} FS$/i.test(target.model||'')&&/^[\d.,]+\s*[×x]\s*[\d.,]+\s*[×x]\s*[\d.,]+\s*mm$/i.test(target.variant||'')
+   && /PDF_DIMENSION_LAYOUT_UNSUPPORTED|variant_not_confirmed/.test(issue)
+   && !/SOURCE_|manufacturer_(?:source|page_article)_|pdf_not_linked|PROPOSAL_/.test(issue);
+ }
+
+ if(record.outcome==='blocked'&&record.verificationPolicy==='manufacturer_pdf_article_variant_v8'){
+  const issue=[record.reason,record.evidence?.sourceQuote,record.blockerCode].filter(Boolean).join(' ');
+  return zz330TradeNameTarget(target)&&/PRODUCT_DOCUMENT_UNCONFIRMED|article_not_confirmed/.test(issue)
+   && !/SOURCE_|manufacturer_(?:source|page_article)_|pdf_not_linked|variant_not_confirmed|PROPOSAL_/.test(issue);
+ }
+ if(record.outcome!=='blocked'||!['manufacturer_pdf_article_variant_v5','manufacturer_pdf_article_variant_v6','manufacturer_pdf_article_variant_v7'].includes(record.verificationPolicy))return false;
  const reason=record.reason+' '+(record.evidence?.sourceQuote||'');
  const brand=String(target.manufacturer).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z]/g,'');
  const sourceGap=/manufacturer_source_unconfirmed|Herstellerquelle[^.]*nicht bestätig/i.test(reason);
  const linkGap=/pdf_not_linked_by_manufacturer|manufacturer_page_article_not_confirmed|no_bound_pdf_link|PDF-Link[^.]*nicht bestätig/i.test(reason);
+ if(record.verificationPolicy==='manufacturer_pdf_article_variant_v7'){
+  return sourceGap&&['bega','sikora','siteco'].includes(brand)
+   ||linkGap&&['abbstriebeljohn','striebeljohn','rittal'].includes(brand)
+   ||/SOURCE_FILE_LIMIT/.test(reason)&&['berker','niedax'].includes(brand)
+   ||/PROPOSAL_CONFLICT/.test(reason)&&brand==='obobettermann'&&target.model==='V-TEC VM32 LGR';
+ }
  const publishers=['abbstotz','abbstriebeljohn','bachmann','berker','buschjaeger','cellpack','eaton','eltropa','esser','hegler','hensel','indexa','klauke','mersen','phoenixcontact','rittal','siemens','siteco','weidmuller'];
  if(sourceGap&&publishers.includes(brand))return true;
  if(linkGap&&(brand==='gira'&&/^\d{6}$/.test(target.model)||brand==='frankische'&&/^(?:AES-E|ALU Steck-ES|AMS-E|E-Ku-E|FPKu-EM-F|SMS-E-V|Staro Steck-ES-V)\s*\d{2,3}(?:\s+gr)?$/i.test(target.model)||brand==='ledvance'&&['PL625SUR.MOUNTKITH75','HBP75W84070DEGIP66PS'].includes(target.model)))return true;
@@ -38,7 +57,7 @@ const technical=category=>['Datenblätter','Bedienungsanleitungen'].includes(cat
 function compactVerification(report){
  if(!report)return undefined;
  const {policy,state,reason,sha256,checkedAt,pagesChecked,totalPages,truncated,cacheHit}=report,targets=report.targets||[];
- return {policy,state,reason,sha256,checkedAt,pagesChecked,totalPages,truncated,cacheHit,targetCount:report.targetCount??targets.length,matchedTargets:report.matchedTargets??targets.filter(x=>x.state==='matched').length,
+ return {policy,state,reason,resolution:require('./workflowBlockerService').verificationResolution(report),sha256,checkedAt,pagesChecked,totalPages,truncated,cacheHit,targetCount:report.targetCount??targets.length,matchedTargets:report.matchedTargets??targets.filter(x=>x.state==='matched').length,
   targets:targets.slice(0,3).map(({listId,position,manufacturer,model,documentModel,variant,variantRequired,variantMatched,state,reason,via,page,manufacturerEvidence,gtin,variantEvidence})=>({listId,position,manufacturer,model,documentModel,variant,variantRequired,variantMatched,state,reason,via,page,manufacturerEvidence,gtin,...(variantEvidence?{variantEvidence}:{})})),fullTextReturned:false,fileApproval:'manual_gui_per_file'};
 }
 async function extractPdf(file){
@@ -94,7 +113,9 @@ function createProductDocumentVerificationService(root,{sourceLoader=downloadRes
     const alias=aliasFor(t.manufacturer,t.model,aliases);
     if(!alias)return null;
     const evidence=pageEvidence({html,pageUrl:page.finalUrl,sourceUrl:data.sourceUrl,model:t.model,documentModel:alias});
-    return evidence.matched?{...t,documentModel:alias,sourceGtins:evidence.sourceGtins,pageArticleConfirmed:true}:null;
+    // Rittal's page omits the catalogue dot; its PDF keeps the original notation.
+    const pageOnlyFormatting=/^rittal$/i.test(t.manufacturer)&&alias===t.model.replace('.','');
+    return evidence.matched?{...t,...(pageOnlyFormatting?{}:{documentModel:alias}),sourceGtins:evidence.sourceGtins,pageArticleConfirmed:true}:null;
    });
    if(bound.some(x=>!x))return {report:fail('unclear','manufacturer_page_article_not_confirmed'),bytes:null,revision};
    if(data.category==='Bedienungsanleitungen'&&!/anleitung|manual|instruction|montage|installation|operating/i.test(link.label))return {report:fail('unclear','manual_link_not_confirmed'),bytes:null,revision};

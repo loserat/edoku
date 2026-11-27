@@ -869,7 +869,7 @@ app.get("/geraetelisten", requireAuth, async (req, res, next) => {
 app.post("/geraetelisten", requireAuth, async (req, res) => {
   try {
     const files = await currentFiles(req);
-    await writeJson(files.geraetelisten, normalizePostedGeraetelisten(req.body.geraetelisten));
+    await writeJson(files.geraetelisten, normalizePostedGeraetelisten(req.body.geraetelisten, await readJson(files.geraetelisten, [])));
     okOrRedirect(req, res, "/geraetelisten");
   } catch (error) {
     fail(req, res, "/geraetelisten", error);
@@ -946,7 +946,7 @@ app.get("/brandschutz", requireAuth, async (req, res, next) => {
 app.post("/brandschutz", requireAuth, async (req, res) => {
   try {
     const files = await currentFiles(req);
-    await writeJson(files.brandschutz, normalizePostedBrandschutz(req.body.brandschutz));
+    await writeJson(files.brandschutz, normalizePostedBrandschutz(req.body.brandschutz, await readJson(files.brandschutz, [])));
     okOrRedirect(req, res, "/brandschutz");
   } catch (error) {
     fail(req, res, "/brandschutz", error);

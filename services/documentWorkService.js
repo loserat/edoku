@@ -46,6 +46,10 @@ function createDocumentWorkService(root) {
     const latest = new Map();
     for (const record of records(data)) if (record.jobId === job.id && (!target || key(record.target) === key(target))) latest.set(key(record.target), record);
     return [...latest.values()].filter(record => {
+      if(record.target.kind==='question'){
+        const q=job.questions.find(q=>q.id===record.target.questionId);
+        if(q&&!require('./materialImportService').questionRelevant(data,q))return false;
+      }
       try { return record.fingerprint === fingerprint(data, job, record.target); } catch { return false; }
     });
   }

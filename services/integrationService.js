@@ -216,6 +216,8 @@ function createIntegrationService(root) {
       if (list.aktiv === false) throw fault("Bitte den Leistungsbereich vor dem Eintragen von Geräten aktivieren.", 409, "INACTIVE_DEVICE_LIST");
       const fields = new Set(deviceListFieldsForLeistungsbereich(list.leistungsbereich).map(field => field.name));
       if (Object.keys(patch).some(field => !fields.has(field))) throw fault("Ein Feld gehört nicht zum gewählten Leistungsbereich. Die Feldbeschreibung der Geräteliste neu lesen.", 400, "DEVICE_FIELD_MISMATCH");
+      const categoryField=deviceListFieldsForLeistungsbereich(list.leistungsbereich).find(field=>field.name==='kategorie');
+      if(patch.kategorie!==undefined&&categoryField?.guiVisible===false&&!['',require('./documentationMaterialPolicy').MANUAL_CONSUMABLE_CATEGORY].includes(patch.kategorie))throw fault('Diese Liste unterstützt nur die ausdrückliche interne Verbrauchsmaterial-Kennzeichnung.',400,'DEVICE_FIELD_MISMATCH');
       let result;
       if (position === null) {
         require("./documentationMaterialPolicy").assertIncluded(patch,await readJson(files.projekt,{}));
@@ -223,9 +225,10 @@ function createIntegrationService(root) {
         const positions = list.positionen.map((entry, i) => Number(entry.pos || i + 1));
         const db=connection();
         const reserved=db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='project_item_deletions'").get()?db.prepare("SELECT COALESCE(MAX(json_extract(snapshot,'$.target.position')),0) AS position FROM project_item_deletions WHERE user_id=? AND project_id=? AND kind='device' AND json_extract(snapshot,'$.generation')=? AND json_extract(snapshot,'$.target.listId')=?").get(auth.user.id,projectId,projectResetGeneration(db,auth.user.id,projectId),listId).position:0;
-        const pos = Math.max(0, ...positions,reserved) + 1;
+        const pos = Math.max(Number(list.positionSequence) || 0, 0, ...positions,reserved) + 1;
         if (!Number.isSafeInteger(pos)) throw fault("Positionsnummern müssen zuerst bereinigt werden.", 409, "INVALID_POSITIONS");
         result = { pos, ...patch };
+        list.positionSequence = pos;
         list.positionen.push(result);
       } else {
         const entries = list.positionen.filter((entry, i) => Number(entry.pos || i + 1) === position);
@@ -238,7 +241,7 @@ function createIntegrationService(root) {
       return result;
     }, options);
   }
-  return { project, list, get, section, devices, linkApprovedDocument, removeInternalProjectDocument, patchAttachment, patchProject, changePosition, revision, selectServiceAreas, selectDocuments, selectSystems, mutate };
+  return { project, list, get, section, devices, linkApprovedDocument, removeInternalProjectDocument, patchAttachment, patchProject, changePosition, revision, selectServiceAreas, selectDocuments, selectSystems, mutate, read };
 }
 
 module.exports = { createIntegrationService, parse, fault };

@@ -33,6 +33,12 @@
               Projektdateien dieser Kategorie verwalten und für die Dokumentation vorbereiten.
             <% } %>
           </p>
+          <% if (selectedKategorie === "Messprotokolle") { %>
+            <aside class="measurement-tool-hint" aria-label="Messprotokolle mit MessPilot">
+              <p><strong>Messprotokolle digital erstellen?</strong> Mit MessPilot Elektroprüfungen dokumentieren und die fertigen PDF-Berichte hier hinzufügen.</p>
+              <a href="https://www.messpilot.de/" target="_blank" rel="noopener noreferrer" aria-label="MessPilot kennenlernen (öffnet in neuem Tab)">MessPilot kennenlernen <%- include("partials/icon", { name: "arrow-right" }) %></a>
+            </aside>
+          <% } %>
         </div>
         <form class="attachment-header-upload" action="/anhaenge/upload?kategorie=<%= encodeURIComponent(selectedKategorie) %>" method="post" enctype="multipart/form-data" data-attachment-upload-form>
             <%- include("partials/formSecurity") %>

@@ -17,6 +17,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 html { overflow-x: visible; scroll-padding-top: 88px; }
+/* Gleiche Kopfzeilenbreite auf kurzen und langen Seiten; ältere Safari-Versionen reservieren rechts Platz. */
+@media screen {
+  html { overflow-y: scroll; }
+  @supports (scrollbar-gutter: stable both-edges) {
+    html { overflow-y: auto; scrollbar-gutter: stable both-edges; }
+  }
+}
 [data-theme="dark"] body {
   --accent: color-mix(in srgb, var(--color-primary) 58%, #ffffff);
   --accent-dark: var(--accent);
@@ -65,6 +72,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--color-primary)
 .page { flex: 1 0 auto; min-width: 0; width: 100%; max-width: 1440px; padding: 28px 32px 36px; gap: 24px; }
 .page > *, .page form, .page section, .page article { min-width: 0; }
 .page:has(.section-tabs) { padding-left: 264px; padding-right: 32px; max-width: none; }
+.page.wide:has(.section-tabs) { width: 100%; }
 .page-title { background: transparent; border-bottom: 1px solid var(--line); padding: 0 0 20px; }
 .page-title h1 { color: var(--text); font-size: var(--font-size-heading); font-weight: 650; letter-spacing: -.65px; line-height: 1.25; margin: 4px 0 8px; }
 .page-subtitle, .compact-subtitle { color: var(--muted); margin: 5px 0 0; line-height: 1.6; max-width: 76ch; }
@@ -382,3 +390,78 @@ button:disabled, .button-link[aria-disabled="true"] { opacity: .5; cursor: not-a
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* Kurze Rückmeldung an interaktiven Icons; keine Schleifen oder Layoutbewegung. */
+@keyframes edoku-icon-download {
+  0%, 100% { transform: translateY(0); }
+  55% { transform: translateY(2px); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  :where(a[href], button, summary) .icon {
+    transform-origin: center;
+    transition: transform 180ms ease-out;
+  }
+  :where(a[href], button, summary):focus-visible:not(:disabled):not([aria-disabled="true"]) .icon {
+    transform: translateY(-1px) scale(1.04);
+  }
+  :where(a[href], button, summary):focus-visible:not(:disabled):not([aria-disabled="true"]) .icon[data-icon="system"] {
+    transform: rotate(24deg);
+  }
+  :where(a[href], button, summary):focus-visible:not(:disabled):not([aria-disabled="true"]) :is(.icon[data-icon="sun"], .icon[data-icon="moon"]) {
+    transform: rotate(-12deg);
+  }
+  :where(a[href], button, summary):focus-visible:not(:disabled):not([aria-disabled="true"]) :is(.icon[data-icon="download"], .icon[data-icon="export"]) > path:not(:last-child) {
+    animation: edoku-icon-download 320ms ease-out 1;
+  }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  :where(a[href], button, summary):hover:not(:disabled):not([aria-disabled="true"]) .icon {
+    transform: translateY(-1px) scale(1.04);
+  }
+  :where(a[href], button, summary):hover:not(:disabled):not([aria-disabled="true"]) .icon[data-icon="system"] {
+    transform: rotate(24deg);
+  }
+  :where(a[href], button, summary):hover:not(:disabled):not([aria-disabled="true"]) :is(.icon[data-icon="sun"], .icon[data-icon="moon"]) {
+    transform: rotate(-12deg);
+  }
+  :where(a[href], button, summary):hover:not(:disabled):not([aria-disabled="true"]) :is(.icon[data-icon="download"], .icon[data-icon="export"]) > path:not(:last-child) {
+    animation: edoku-icon-download 320ms ease-out 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  :where(a[href], button, summary):active:not(:disabled):not([aria-disabled="true"]) .icon[data-icon] {
+    transform: scale(.94);
+  }
+}
+
+/* Dezenter Werkzeughinweis ausschließlich in der Kategorie Messprotokolle. */
+.measurement-tool-hint {
+  background: var(--surface-muted);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  max-width: 640px;
+  padding: 12px 14px;
+}
+.measurement-tool-hint p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+}
+.measurement-tool-hint strong { color: var(--text); font-weight: 600; }
+.measurement-tool-hint a {
+  align-items: center;
+  color: var(--accent-dark);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 7px;
+  justify-self: start;
+  min-height: 32px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.measurement-tool-hint a .icon { height: 14px; width: 14px; }

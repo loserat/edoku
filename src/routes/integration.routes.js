@@ -34,6 +34,7 @@ const paginate = (items, { limit, offset }) => ({ items: items.slice(offset, off
 function createIntegrationRouter({ root, tokens, audit, exportJobs, checkStorage = () => {} }) {
   const router = express.Router({ caseSensitive: true, strict: true });
   const service = createIntegrationService(root);
+  const firestops = require('../../services/firestopCaptureService').createFirestopCaptureService(service);
   const datasheets = createDatasheetCoverageService(root);
   const settings = createIntegrationSettingsService(root);
   const assistant = createDocumentAssistantService(root, { checkStorage });
@@ -43,6 +44,29 @@ function createIntegrationRouter({ root, tokens, audit, exportJobs, checkStorage
   const workflow = createDocumentationWorkflowService(root);
   const documentWork = createDocumentWorkService(root);
   const agentContract = createAgentContractService(root);
+  const referenceRepair = require('../../services/deviceReferenceRepairService').createDeviceReferenceRepairService(root);
+  // Optional continuation never changes the mutation receipt or turns a committed write into an error.
+  router.use((req,res,next) => {
+    const send = res.json.bind(res);
+    res.json = async body => {
+      const projectId = req.params.projectId, jobId = req.params.jobId;
+      const reads = ['projects:read','devices:read','documents:read','assistant:read'];
+      const progressOnly = req.method === 'PATCH' && /\/assistant\/jobs\/[^/]+$/.test(req.path) && Object.keys(req.body || {}).every(key=>key==='message');
+      if (progressOnly || !body?.success || !projectId || ['GET','HEAD','OPTIONS','DELETE'].includes(req.method) || !String(req.get('prefer') || '').split(',').map(s=>s.trim()).includes('return=next-action')
+        || !reads.every(scope=>req.integration?.token.scopes.includes(scope)) || /\/(reset|restore)$/.test(req.path)) return send(body);
+      const refresh = {state:'refresh_required',tool:'edoku_next_action',arguments:{projectId,...(jobId?{jobId}:{}),view:'compact',limit:1}};
+      let continuation = refresh;
+      try {
+        const plan = await workflow.inspect(req.user.id,projectId,{jobId,view:'compact',limit:1});
+        continuation = Object.fromEntries(['contractVersion','projectId','jobId','jobVersion','projectETag','checkpoint','execution','nextAction','blockers'].map(key=>[key,plan[key]]));
+        if(continuation.nextAction)continuation.nextAction=Object.fromEntries(['id','code','title','target','tool','call','contextRead','requiredInputs','userDecision'].filter(key=>plan.nextAction[key]!==undefined).map(key=>[key,plan.nextAction[key]]));
+        if (Buffer.byteLength(JSON.stringify({...body,continuation})) > 6500) continuation = refresh;
+      } catch { /* The successful write remains authoritative; refresh is safe and explicit. */ }
+      res.set('Preference-Applied','return=next-action');
+      return send({...body,continuation});
+    };
+    next();
+  });
   const operations = createIdempotencyService(connection());
   const projectReset=createProjectResetService(root);
   const itemDeletion=createItemDeletionService(root,{checkStorage});
@@ -142,7 +166,7 @@ function createIntegrationRouter({ root, tokens, audit, exportJobs, checkStorage
   router.get('/projects/:projectId/datasheet-coverage', scope('projects:read'), scope('devices:read'), scope('documents:read'), scope('assistant:read'), authorizedProject, respondRead(async req => {
     const options = parse(coverageQuery, req.query);
     const result = await datasheets.inspect(req.user.id, req.params.projectId);
-    const items = result.items.filter(item => options.status === 'all' || (options.status === 'open' ? item.status !== 'approved' : item.status === options.status));
+    const items = result.items.filter(item => (!options.articleId || item.id === options.articleId) && (options.status === 'all' || (options.status === 'open' ? item.status !== 'approved' : item.status === options.status)));
     return { ...result, ...paginate(items, options), exclusions: result.exclusions.slice(0,3), exclusionsTotal: result.exclusions.length, exclusionsTruncated: result.exclusions.length>3, materialExclusions: require("../../services/documentationMaterialPolicy").effective((await service.get(req.integration,req.params.projectId)).projekt).exclusions };
   }));
   router.post('/projects/:projectId/datasheet-searches', scope('projects:write'), scope('devices:read'), scope('documents:read'), scope('assistant:read'), authorizedProject, guard, audit.middleware, wrap(async (req, res) => {
@@ -260,7 +284,8 @@ function createIntegrationRouter({ root, tokens, audit, exportJobs, checkStorage
     const matches = (await service.devices(req.integration, req.params.projectId)).filter(list => list.id === req.params.listId);
     if (matches.length !== 1) throw fault("Geräteliste wurde nicht eindeutig gefunden.", 404, "NOT_FOUND");
     const { positionen, ...list } = matches[0];
-    return { ...list, fields: deviceListFieldsForLeistungsbereich(list.leistungsbereich), positionen: paginate(positionen || [], query(req)) };
+    const options=parse(pageQuery.extend({position:z.coerce.number().int().positive().optional()}),req.query);
+    return { ...list, fields: deviceListFieldsForLeistungsbereich(list.leistungsbereich), positionen: paginate((positionen || []).filter(row=>!options.position || row.pos===options.position), options) };
   }));
   for (const section of ["service-areas", "systems", "system-catalog", "documents", "firestops", "attachments", "exports"]) {
     const permission = ["service-areas", "systems", "system-catalog"].includes(section) ? "projects:read" : "documents:read";
@@ -268,6 +293,21 @@ function createIntegrationRouter({ root, tokens, audit, exportJobs, checkStorage
       const page = section==='system-catalog' ? parse(require('../api/schemas').systemCatalogQuery,req.query) : query(req), data = await service.section(req.integration, req.params.projectId, section);
       if(section==='system-catalog')return require('../../services/systemCatalogService').catalogPage(data,page);
       return Array.isArray(data) ? paginate(data, page) : data;
+    }));
+  }
+  router.get('/projects/:projectId/firestops/:entryId', scope('documents:read'), respondRead(req => firestops.get(req.integration, req.params.projectId, req.params.entryId)));
+  for (const method of ['post', 'patch']) {
+    router[method]('/projects/:projectId/firestops' + (method === 'patch' ? '/:entryId' : ''), scope('projects:write'), authorizedProject, guard, audit.middleware, wrap(async (req, res) => {
+      const entryId = method === 'post' ? null : req.params.entryId;
+      let result, replayed = false;
+      if (method === 'post') {
+        const response = await operations.run({ userId: req.user.id, key: req.get('idempotency-key'), operation: 'firestop.create',
+          request: { projectId: req.params.projectId, body: req.body } }, (_operationId, complete) => firestops.save(req.integration, req.params.projectId, null, req.get('if-match'), req.body, { onCommit: complete }));
+        result = response.value; replayed = response.replayed;
+        res.set('Idempotency-Replayed', String(replayed));
+      } else result = await firestops.save(req.integration, req.params.projectId, entryId, req.get('if-match'), req.body);
+      if (!replayed) res.set('ETag', `"${service.revision(req.integration, req.params.projectId)}"`);
+      return ok(req, res, { id: result.entry.id, changed: result.changed }, method === 'post' ? 201 : 200);
     }));
   }
   router.patch("/projects/:projectId", scope("projects:write"), authorizedProject, guard, audit.middleware, wrap(async (req, res) => {
@@ -279,6 +319,12 @@ function createIntegrationRouter({ root, tokens, audit, exportJobs, checkStorage
     const data = await service.linkApprovedDocument(req.integration, req.params.projectId, req.get("if-match"), req.body);
     res.set("ETag", `"${service.revision(req.integration, req.params.projectId)}"`);
     return ok(req, res, data);
+  }));
+  const referenceReads = [scope('projects:read'),scope('devices:read'),scope('documents:read'),scope('assistant:read'),authorizedProject];
+  router.get('/projects/:projectId/attachments/:attachmentId/device-repair',...referenceReads,respondRead(req=>referenceRepair.preview(req.integration,req.params.projectId,req.params.attachmentId)));
+  router.post('/projects/:projectId/attachments/:attachmentId/device-repair',...referenceReads,scope('projects:write'),scope('devices:write'),guard,audit.middleware,wrap(async(req,res)=>{
+    const result=await referenceRepair.apply(req.integration,req.params.projectId,req.params.attachmentId,req.get('if-match'),req.body);
+    res.set('ETag',`"${service.revision(req.integration,req.params.projectId)}"`);return ok(req,res,result);
   }));
   router.delete("/projects/:projectId/internal-documents/:attachmentId", scope("projects:write"), authorizedProject, guard, audit.middleware, wrap(async (req, res) => {
     parse(z.object({ confirm: z.literal(true) }).strict(), req.body);

@@ -4,7 +4,14 @@ const schemas=require('../src/api/materialImportSchemas');
 const policy=require('./documentationMaterialPolicy');
 const {createIntegrationService}=require('./integrationService');
 const {loadProjectWorkspace}=require('./projectWorkspaceService');
-const POLICY='material_dependencies_v1';
+const crypto=require('node:crypto');
+const store=require('./projectDataStoreService');
+const {createDocumentAssistantService}=require('./documentAssistantService');
+const POLICY='material_dependencies_v2';
+const scopeStates=schemas.scopeDispositions;
+const hash=value=>crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+const rowFingerprint=row=>hash([row.id,row.text,row.candidate||{}]);
+const scoped=row=>scopeStates.includes(row.disposition)&&row.scopeDecision?.disposition===row.disposition&&row.scopeDecision.rowFingerprint===rowFingerprint(row);
 const same=(a,b)=>String(a||'').normalize('NFKC').trim().toLocaleLowerCase('de')===String(b||'').normalize('NFKC').trim().toLocaleLowerCase('de');
 function registry(project){
  const r=project.assistantMaterialImports;
@@ -16,6 +23,7 @@ function entry(project,importId){const r=registry(project);return r?.imports.fin
 function actual(data,ref){const list=data.geraetelisten.find(l=>l.id===ref?.listId&&l.aktiv!==false&&data.leistungsbereiche.aktiv.includes(l.leistungsbereich));return list?.positionen.find((p,i)=>Number(p.pos||i+1)===ref.position);}
 function matches(candidate,row){return candidate?.hersteller&&candidate?.typ&&same(candidate.hersteller,row?.hersteller)&&same(candidate.typ,row?.typ)&&['abmessung','farbe'].every(k=>!candidate[k]||same(candidate[k],row[k]));}
 function classify(data,row){
+ if(scopeStates.includes(row.disposition))return scoped(row)?row.disposition:'clarify';
  const group=policy.excluded({...row.candidate,beschreibung:row.candidate?.beschreibung||row.text},data.projekt);
  if(group)return 'excluded';
  if(row.disposition==='linked'||row.disposition==='existing')return matches(row.candidate,actual(data,row.device))?row.disposition:'reference_changed';
@@ -46,17 +54,45 @@ function tasks(data){
 function validateTarget(project,t){if(!entry(project,t.importId)?.rows.some(r=>r.id===t.rowId))throw fault('Materialzeile gehört nicht zum Projektimport.',409,'MATERIAL_TARGET_INVALID');}
 function questionRelevant(data,q){return !q.targets?.length||!q.targets.every(t=>{
  if(t.kind==='material_source'){const i=entry(data.projekt,t.importId);return Boolean(i&&(t.importId?i.finished:true));}
- if(t.kind==='material'){const i=entry(data.projekt,t.importId),row=i?.rows.find(r=>r.id===t.rowId);return row&&['linked','existing','excluded'].includes(classify(data,row));}
+ if(t.kind==='material'){const i=entry(data.projekt,t.importId),row=i?.rows.find(r=>r.id===t.rowId);return row&&['linked','existing','excluded',...scopeStates].includes(classify(data,row));}
  return false;
 });}
 function createMaterialImportService(root){
  const integration=createIntegrationService(root);
+ const assistant=createDocumentAssistantService(root);
+ function userProof(auth,projectId,importId,row,value){
+  if(!auth.token.scopes?.includes('assistant:read'))throw fault('Materialausnahmen benötigen assistant:read für den gespeicherten Benutzerbeleg.',403,'FORBIDDEN');
+  const ref=value.userDecision;
+  if(!ref)throw fault('Gespeicherte Benutzerentscheidung erforderlich.',400,'MATERIAL_USER_DECISION_REQUIRED');
+  const job=assistant.get(auth.user.id,ref.jobId);
+  if(job.projectId!==projectId)throw fault('Benutzerbeleg gehört nicht zum Projekt.',404,'NOT_FOUND');
+  if(job.status==='closed')throw fault('Auftrag ist abgeschlossen.',409,'JOB_CLOSED');
+  assistant.assertVersion(auth.user.id,ref.jobId,ref.jobVersion);
+  const question=job.questions.find(q=>q.id===ref.questionId&&!q.obsolete);
+  if(!question?.answer?.trim()||!question.answeredAt||!['chat','gui'].includes(question.evidence?.kind)||!question.targets?.some(t=>t.kind==='material'&&t.importId===importId&&t.rowId===row.id&&t.field==='assignment'))throw fault('Eine beantwortete Benutzerfrage zu genau dieser Materialzeile ist erforderlich.',409,'MATERIAL_DECISION_TARGET_MISMATCH');
+  const latest=job.questions.filter(q=>!q.obsolete&&q.answer?.trim()&&q.answeredAt&&q.targets?.some(t=>t.kind==='material'&&t.importId===importId&&t.rowId===row.id&&t.field==='assignment')).reduce((a,b)=>!a||b.answeredAt>=a.answeredAt?b:a,null);
+  if(latest.id!==question.id)throw fault('Neuere Benutzerantwort zu dieser Materialzeile vorhanden.',409,'MATERIAL_DECISION_SUPERSEDED');
+  const quote=(question.evidence.sourceQuote||question.answer).trim();
+  if(value.evidence.sourceQuote.trim()!==quote)throw fault('Originalbeleg unverändert aus der gespeicherten Antwort übernehmen.',409,'MATERIAL_DECISION_EVIDENCE_MISMATCH');
+  const answer=question.answer.normalize('NFKC').trim().toLocaleLowerCase('de');
+  const last=(value.projectForProof.assistantDecisionHistory||[]).flatMap(d=>d.jobId===job.id?(d.answers||[]):[]).findLast(a=>a.questionId===question.id);
+  if((last&&last.answer===question.answer&&last.disposition!=='confirmed')||/^(?:reiche\s+ich\s+nach|wird\s+nachgereicht|später|unbekannt|offen\s*lassen|wei(?:ß|ss)\s+ich\s+(?:gerade\s+)?nicht)(?:\b|[.!?])/i.test(answer))throw fault('Zurückgestellte oder unbekannte Angaben sind kein bestätigter Materialabschluss.',409,'MATERIAL_DECISION_DEFERRED');
+  return {jobId:job.id,questionId:question.id,answer:question.answer,questionFingerprint:hash([question.id,question.answer,question.answeredAt,question.evidence,question.targets]),evidence:structuredClone(value.evidence)};
+ }
  async function inspect(auth,projectId,raw={}){
   integration.project(auth,projectId);const q=parse(schemas.query,raw),data=await loadProjectWorkspace(root,auth.user.id,projectId),i=entry(data.projekt,q.importId);
   if(q.importId&&!i)throw fault('Materialquelle wurde nicht gefunden.',404,'NOT_FOUND');
+  if(q.section==='decision'){
+   if(!auth.token.scopes?.includes('assistant:read'))throw fault('Entscheidungsbelege benötigen assistant:read.',403,'FORBIDDEN');
+   if(!q.rowId)throw fault('rowId für den gezielten Entscheidungsbeleg erforderlich.',400,'MATERIAL_ROW_REQUIRED');
+   const row=i?.rows.find(r=>r.id===q.rowId);if(!row)throw fault('Materialzeile wurde nicht gefunden.',404,'NOT_FOUND');
+   const result={importId:i.id,rowId:row.id,status:classify(data,row),decision:row.scopeDecision||null,active:scoped(row)};
+   if(Buffer.byteLength(JSON.stringify(result))>7000)throw fault('Entscheidungsbeleg zu groß für kompakte Ausgabe.',413,'RESPONSE_LIMIT');
+   return result;
+  }
   if(q.section==='source'){const text=i?.source.sourceQuote||'',total=Math.ceil(text.length/1000);return {importId:i?.id||null,section:'source',sourceLabel:i?.source.sourceLabel||'',total,items:Array.from({length:Math.max(0,Math.min(q.limit,total-q.offset))},(_,n)=>({text:text.slice((q.offset+n)*1000,(q.offset+n+1)*1000)})),limit:q.limit,offset:q.offset};}
   let rows=(i?.rows||[]).map(r=>({...r,status:classify(data,r)})).filter(r=>(!q.rowId||r.id===q.rowId)&&(q.status==='all'||['pending','clarify','reference_changed'].includes(r.status)));
-  const total=rows.length;rows=rows.slice(q.offset,q.offset+q.limit).map(r=>({rowId:r.id,text:r.text,candidate:r.candidate||{},status:r.status,...(r.device?{device:r.device}:{}),...(r.reason?{reason:r.reason}:{})}));
+  const total=rows.length;rows=rows.slice(q.offset,q.offset+q.limit).map(r=>({rowId:r.id,text:r.text,candidate:r.candidate||{},status:r.status,...(r.device?{device:r.device}:{}),...(r.reason?{reason:r.reason}:{}),...(r.scopeDecision?{decisionAvailable:true}:{} )}));
   for(const row of rows){const refs=data.geraetelisten.filter(l=>l.aktiv!==false&&data.leistungsbereiche.aktiv.includes(l.leistungsbereich)).flatMap(l=>l.positionen.flatMap((p,n)=>matches(row.candidate,p)?[{listId:l.id,position:Number(p.pos||n+1)}]:[]));row.existingCandidates=refs.slice(0,3);row.existingCandidatesTotal=refs.length;}
   const result={summary:summary(data,q.importId),importId:i?.id||null,...(i?{sourceLabel:i.source.sourceLabel,sourceQuote:i.source.sourceQuote.slice(0,500),sourceQuoteTruncated:i.source.sourceQuote.length>500}:{}),items:rows,total,limit:q.limit,offset:q.offset,hasMore:q.offset+rows.length<total};
   while(result.items.length>1&&Buffer.byteLength(JSON.stringify(result))>6500)result.items.pop();
@@ -67,7 +103,7 @@ function createMaterialImportService(root){
  async function record(auth,projectId,etag,raw){
   const value=parse(schemas.input,raw);
   return integration.mutate(auth,projectId,etag,async files=>{
-   const p=await readJson(files.projekt,{}),data=await loadProjectWorkspace(root,auth.user.id,projectId),before=JSON.stringify(p.assistantMaterialImports||null);
+   const p=await readJson(files.projekt,{}),data=await loadProjectWorkspace(root,auth.user.id,projectId),before=JSON.stringify(p.assistantMaterialImports||null),scopeChanges=[];
    const r=registry(p)||{version:1,activeId:null,imports:[]};let i=r.imports.find(x=>x.id===value.importId);
    if(value.operation==='begin'){
     if(i){if(i.expectedRows!==value.expectedRows||i.source.sourceLabel!==value.evidence.sourceLabel||i.source.sourceQuote!==value.evidence.sourceQuote)throw fault('Importkennung bereits anders belegt.',409,'MATERIAL_IMPORT_CONFLICT');}
@@ -82,6 +118,23 @@ function createMaterialImportService(root){
     }
     if(value.operation==='resolve')for(const v of value.rows){
      const row=i.rows.find(x=>x.id===v.rowId);if(!row)throw fault('Materialzeile fehlt.',409,'MATERIAL_TARGET_INVALID');
+     const manual=scopeStates.includes(v.disposition);
+     if(scopeStates.includes(row.disposition)&&!manual&&v.disposition!=='resume')throw fault('Gespeicherte Materialausnahme zuerst mit neuem Benutzerbeleg ausdrücklich wiederaufnehmen.',409,'MATERIAL_SCOPE_PROTECTED');
+     if(manual||(v.disposition==='resume'&&scopeStates.includes(row.disposition))){
+      const proof=userProof(auth,projectId,i.id,row,{...value,projectForProof:p});
+      const previousDecision=row.scopeDecision?structuredClone(row.scopeDecision):null;
+      if(manual){
+       const active=data.geraetelisten.filter(l=>l.aktiv!==false&&data.leistungsbereiche.aktiv.includes(l.leistungsbereich)).some(l=>l.positionen.some(d=>matches(row.candidate,d)));
+       if(active)throw fault('Passendes aktives Gerät vorhanden. Dessen Daten/Unterlagen nicht durch eine Materialausnahme umgehen.',409,'MATERIAL_SCOPE_DEVICE_CONFLICT');
+       if(scoped(row)&&row.disposition===v.disposition&&row.reason===v.reason&&row.scopeDecision.questionFingerprint===proof.questionFingerprint)continue;
+       if(scopeStates.includes(row.disposition)&&row.disposition!==v.disposition&&row.scopeDecision?.questionFingerprint===proof.questionFingerprint)throw fault('Geänderter Dokumentationsumfang benötigt einen neuen Benutzerbeleg.',409,'MATERIAL_SCOPE_REOPEN_PROOF_REQUIRED');
+       row.scopeDecision={...proof,importId:i.id,disposition:v.disposition,reason:v.reason,rowFingerprint:rowFingerprint(row),previousDisposition:row.disposition,...(row.device?{previousDevice:structuredClone(row.device)}:{}),recordedAt:new Date().toISOString(),recordedBy:auth.user.id};
+       delete row.device;
+      }else if(proof.questionFingerprint===row.scopeDecision?.questionFingerprint)throw fault('Wiederaufnahme benötigt einen neuen tatsächlichen Benutzerbeleg.',409,'MATERIAL_SCOPE_REOPEN_PROOF_REQUIRED');
+      if(v.disposition==='resume'&&(v.candidate||v.device))throw fault('Materialausnahme zuerst separat wiederaufnehmen.',400,'VALIDATION_ERROR');
+      if(v.disposition==='resume'&&!v.reason)delete row.reason;
+      scopeChanges.push({rowId:row.id,before:previousDecision,after:manual?structuredClone(row.scopeDecision):null,disposition:v.disposition,proof});
+     }
      if(v.candidate)row.candidate={...row.candidate,...v.candidate};
      if(['linked','existing'].includes(v.disposition)&&(!v.device||!matches(row.candidate,actual(data,v.device))))throw fault('Zuordnung muss auf ein reales aktives Gerät desselben Artikels verweisen.',409,'MATERIAL_REFERENCE_INVALID');
      if(v.disposition==='excluded'&&!policy.excluded({...row.candidate,beschreibung:row.candidate?.beschreibung||row.text},p))throw fault('Keine passende Ausschlussregel aktiv.',409,'MATERIAL_EXCLUSION_INVALID');
@@ -89,9 +142,10 @@ function createMaterialImportService(root){
      row.disposition=v.disposition==='resume'?'pending':v.disposition;if(v.device)row.device=v.device;if(v.reason)row.reason=v.reason;
     }
    }
-   if(before===JSON.stringify(r)&&i.history.some(({at,by,...previous})=>JSON.stringify(previous)===JSON.stringify(value)))return {importId:i.id,operation:value.operation,changed:false,summary:summary({...data,projekt:p},i.id)};
+   if(before===JSON.stringify(r)&&(value.userDecision||i.history.some(({at,by,...previous})=>JSON.stringify(previous)===JSON.stringify(value))))return {importId:i.id,operation:value.operation,changed:false,summary:summary({...data,projekt:p},i.id)};
    if(i.history.length>=1000)throw fault('Importhistorie voll.',409,'MATERIAL_IMPORT_LIMIT');
-   i.history.push({at:new Date().toISOString(),by:auth.user.id,...value});p.assistantMaterialImports=r;await writeJson(files.projekt,p);
+   if(scopeChanges.length)store.onProjectDataCommit(()=>assistant.assertVersion(auth.user.id,value.userDecision.jobId,value.userDecision.jobVersion));
+   i.history.push({at:new Date().toISOString(),by:auth.user.id,...value,...(scopeChanges.length?{scopeChanges}:{})});p.assistantMaterialImports=r;await writeJson(files.projekt,p);
    return {importId:i.id,operation:value.operation,summary:summary({...data,projekt:p},i.id)};
   },{skipUnchanged:true});
  }

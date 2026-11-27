@@ -1,9 +1,10 @@
 const { z, id, pageQuery } = require('./schemas');
 const states = ['research', 'needs_identity', 'pending', 'approved', 'ready_to_link', 'assignment_conflict', 'rejected', 'not_found', 'unsupported', 'blocked'];
-const coverageQuery = pageQuery.extend({ status: z.enum(['all', 'open', ...states]).default('all') });
+const coverageQuery = pageQuery.extend({ articleId:z.string().regex(/^article_[a-f0-9]{24}$/).optional(), status: z.enum(['all', 'open', ...states]).default('all') });
 const searchInput = z.object({
   articleId: z.string().regex(/^article_[a-f0-9]{24}$/),
   outcome: z.enum(['not_found', 'needs_identity', 'blocked', 'retry']),
+  blockerCode:z.string().regex(/^[A-Za-z][A-Za-z0-9_]{0,99}$/).optional(),
   reason: z.string().trim().min(10).max(1000),
   sources: z.array(z.string().max(2000).refine(value => {
     try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password; } catch { return false; }
@@ -17,7 +18,8 @@ const article = z.object({
   status: z.enum(states), references: z.array(reference), uncoveredReferences: z.array(reference),
   linkedPositions: z.number().int().nonnegative(), proposedPositions: z.number().int().nonnegative(),
   documents: z.array(document), reusable: z.array(document), rejected: z.array(document), withdrawn: z.array(document.extend({ reason: z.string() })).optional(),
-  search: z.object({ outcome: z.string(), reason: z.string(), sources: z.array(z.string()), recordedAt: z.string() }).nullable()
+  blocker:z.object({code:z.string(),kind:z.string(),owner:z.string(),resumeWhen:z.string(),repeatWithoutNewEvidence:z.literal(false),askUser:z.boolean().optional(),missingFields:z.array(z.string()).max(10).optional()}).optional(),
+  search: z.object({ outcome: z.string(), reason: z.string(), sources: z.array(z.string()), recordedAt: z.string(),blockerCode:z.string().optional() }).nullable()
 });
 const summary = z.object({ articles: z.number().int().nonnegative(), positions: z.number().int().nonnegative(), excludedPositions: z.number().int().nonnegative(),
   approved: z.number().int().nonnegative(), pending: z.number().int().nonnegative(), research: z.number().int().nonnegative(),

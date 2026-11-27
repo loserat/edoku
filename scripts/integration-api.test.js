@@ -132,7 +132,7 @@ test("Echte API und MCP: Benutzergrenzen, Schlüssel, Schreibschutz und Protokol
       try {
         await client.initialize();
         const tools = (await client.rpc("tools/list", {})).result.tools;
-        assert.equal(tools.length, 55);
+        assert.equal(tools.length, 58);
         assert.ok(tools.some(tool => tool.name === "edoku_record_document_work"));
         assert.ok(!tools.some(tool => /approve|freigeben/i.test(tool.name)));
         const read = await client.rpc("tools/call", { name: "edoku_get_project", arguments: { projectId: "same" } });

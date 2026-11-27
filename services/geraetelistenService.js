@@ -164,9 +164,11 @@ const DEVICE_FIELD_PROFILES = {
 
 // * INFO: Liefert die komplette Feldliste für GUI und PDF-Ausgabe eines Leistungsbereichs.
 function deviceListFieldsForLeistungsbereich(leistungsbereich) {
+  const profile=DEVICE_FIELD_PROFILES[leistungsbereich] || [{ name: "abmessung", label: "Abmessung (optional)", required: false, pdfWidth: 56 }];
   return [
     ...BASE_DEVICE_FIELDS,
-    ...(DEVICE_FIELD_PROFILES[leistungsbereich] || [{ name: "abmessung", label: "Abmessung (optional)", required: false, pdfWidth: 56 }]),
+    ...profile,
+    ...(!profile.some(field=>field.name==='kategorie')?[{name:'kategorie',label:'Kategorie (intern)',required:false,guiVisible:false,pdfExport:false}]:[]),
     ...OPTIONAL_END_FIELDS
   ].map(field => ["spannung", "leistung"].includes(field.name)
     ? { ...field, guiVisible: false, pdfExport: false }
@@ -306,6 +308,7 @@ function normalizeGeraetelisten(raw) {
       .map((entry) => {
         const mapping = GERAETELISTEN_KAPITEL[entry.leistungsbereich];
         return {
+          ...entry,
           id: entry.id || idForLeistungsbereich(entry.leistungsbereich),
           leistungsbereich: entry.leistungsbereich,
           kapitel: entry.kapitel || (mapping ? mapping.kapitel : ""),
@@ -316,6 +319,7 @@ function normalizeGeraetelisten(raw) {
           export: entry.export !== false,
           positionen: (entry.positionen || []).map((position, index) => ({
             ...emptyPosition(index + 1, mapping ? mapping.einheit : "Stk"),
+            ...position,
             ...normalizeFlatPosition(position),
             pos: Number(position.pos || index + 1)
           }))
@@ -372,16 +376,27 @@ function syncGeraetelistenFromLeistungsbereiche(rawGeraetelisten, aktiveLeistung
 }
 
 // * INFO: Wandelt Formularwerte aus der Geräte-Tabelle zurück in die gespeicherte JSON-Struktur.
-function normalizePostedGeraetelisten(posted) {
+function normalizePostedGeraetelisten(posted, existing = []) {
   const listen = Array.isArray(posted) ? posted : Object.values(posted || {});
   return sortGeraetelistenByKapitel(listen
     .filter((liste) => liste && liste.leistungsbereich)
     .map((liste) => {
       const mapping = GERAETELISTEN_KAPITEL[liste.leistungsbereich] || { einheit: "Stk" };
+      const previous = existing.find(item => item.id === liste.id) || {};
+      const original = previous.positionen || [];
+      let sequence = Math.max(Number(previous.positionSequence) || 0, 0, ...original.map(row => Number(row.pos) || 0));
+      const used = new Set();
       const positionen = Object.values(liste.positionen || {})
         .filter((position) => position && position._delete !== "1")
-        .map((position, index) => ({
-          pos: index + 1,
+        .map((position, index) => {
+          const pos = position._new === '1' ? ++sequence : Number(position.pos || index + 1);
+          if (!Number.isSafeInteger(pos) || pos < 1 || used.has(pos)) throw new Error('Gerätekennungen müssen eindeutig und positiv sein. Änderungen wurden nicht gespeichert.');
+          if (position._originalPos && Number(position._originalPos) !== pos) throw new Error('Bestehende Gerätekennungen dürfen nicht geändert werden. Liste neu laden.');
+          if (position._originalPos && !original.some(row=>row.pos===pos)) throw new Error('Geräteposition wurde zwischenzeitlich entfernt. Liste neu laden.');
+          used.add(pos); sequence = Math.max(sequence, pos);
+          return {
+          ...original.find(row => row.pos === pos),
+          pos,
           hersteller: position.hersteller || "",
           system: position.system || "",
           typ: position.typ || "",
@@ -396,9 +411,11 @@ function normalizePostedGeraetelisten(posted) {
           bedienungsanleitungId: position.bedienungsanleitungId || "",
           datenblattId: position.datenblattId || "",
           bemerkung: position.bemerkung || ""
-        }));
+        }; });
 
       return {
+        ...previous,
+        positionSequence: sequence,
         id: liste.id || idForLeistungsbereich(liste.leistungsbereich),
         leistungsbereich: liste.leistungsbereich,
         kapitel: liste.kapitel || mapping.kapitel || "",
@@ -421,11 +438,13 @@ function addPosition(rawGeraetelisten, listId) {
       hersteller: liste.herstellerVorauswahl || "",
       systemart: liste.systemartVorauswahl || ""
     };
+    const next = Math.max(Number(liste.positionSequence)||0,0,...liste.positionen.map(row=>Number(row.pos)||0))+1;
     return {
       ...liste,
+      positionSequence: next,
       positionen: [
         ...liste.positionen,
-        emptyPosition(liste.positionen.length + 1, mapping.einheit, defaults)
+        emptyPosition(next, mapping.einheit, defaults)
       ]
     };
   });
@@ -499,11 +518,13 @@ function applyGeraetelistenVorlage(liste, template) {
   const current = normalizeGeraetelisten([liste])[0];
   const normalizedTemplate = normalizeGeraetelistenVorlagen([template])[0];
   if (!current || !normalizedTemplate) return current || liste;
+  const sequence = Math.max(Number(current.positionSequence) || 0, 0, ...current.positionen.map(row => Number(row.pos) || 0));
   return normalizeGeraetelisten([{
     ...current,
     herstellerVorauswahl: normalizedTemplate.herstellerVorauswahl || current.herstellerVorauswahl || "",
     systemartVorauswahl: normalizedTemplate.systemartVorauswahl || current.systemartVorauswahl || "",
-    positionen: normalizedTemplate.positionen.map((position, index) => ({ ...position, pos: index + 1 }))
+    positionSequence: sequence + normalizedTemplate.positionen.length,
+    positionen: normalizedTemplate.positionen.map((position, index) => ({ ...position, pos: sequence + index + 1, datenblattId: '', bedienungsanleitungId: '' }))
   }])[0];
 }
 

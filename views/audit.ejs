@@ -3,9 +3,9 @@
   <head><%- include("partials/head", { pageTitle: "Sicherheitsprotokoll" }) %></head>
   <body>
     <%- include("partials/header", { active: "einstellungen" }) %>
+    <%- include("partials/settingsTabs", { isSystemAdmin: user?.role === "systemadmin", auditActive: true }) %>
     <main id="main-content" tabindex="-1" class="page wide settings-page">
       <div class="page-title"><p class="eyebrow">System</p><h1>Sicherheitsprotokoll</h1><p>Verwaltungsaktionen und ihre Ergebnisse. Formularinhalte und Zugangsdaten werden nicht gespeichert.</p></div>
-      <%- include("partials/settingsTabs", { isSystemAdmin: user?.role === "systemadmin", auditActive: true }) %>
       <section class="settings-grid">
         <% if (auditError) { %><p class="notice error"><%= auditError %></p><% } %>
         <p><%= events.length %> letzte Einträge · Versuche und Ergebnisse werden getrennt aufgezeichnet.</p>

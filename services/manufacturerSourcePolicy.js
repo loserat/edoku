@@ -5,7 +5,8 @@ const sources={
  buschjaeger:['busch-jaeger.de','abb.com'],cellpack:['cellpack.com'],eaton:['eaton.com'],
  eltropa:['eltropa.de'],esser:['esser-systems.com'],hegler:['hegler.de'],hensel:['hensel-electric.de','hensel-electric.com'],
  indexa:['indexa.de'],klauke:['klauke.com'],mersen:['mersen.com'],phoenixcontact:['phoenixcontact.com'],
- rittal:['rittal.com'],siemens:['siemens.com'],siteco:['siteco.com'],weidmuller:['weidmueller.com'],
+ rittal:['rittal.com'],siemens:['siemens.com'],siteco:['siteco.com','siteco.de'],weidmuller:['weidmueller.com'],
+ bega:['bega.com'],sikora:['sikora-notlicht.de'],
  bals:['bals.com','bals.cz','bals.nl'],brumberg:['brumberg.com'],esylux:['esylux.com','esylux.de'],
  gira:['gira.de','gira.com'],hager:['hager.com','hager.de'],niedax:['niedax.de','niedax.com','niedax-group.com'],
  mennekes:['mennekes.de','mennekes.org'],warema:['warema.com'],trilux:['trilux.com'],
@@ -29,6 +30,9 @@ function trustedPage(manufacturer,url,extra){try{const u=new URL(url);return u.p
 const articleAliases={frankische:{'FPKu-EM-F 32':'22210032'},brumberg:{'00535500':'5355'},signify:{'72837600':'929001218102'},ledvance:{'PL625RECESS.MOUNTFR.':'4058075402904','PL625SUR.MOUNTKITH75':'4058075472938'},obobettermann:{'DORT3B':'SDE-RW D0RT3B','DORW2B':'SDE-RW D0RW2B','GS-KUP70 (VE2)':'6277290'}};
 function aliasFor(manufacturer,model,extra={}){
  const name=key(manufacturer),group=Object.entries(extra).find(([k])=>key(k)===name)?.[1]||articleAliases[name];
+ // Rittal prints "DK 7072100" for the catalogue notation "DK 7072.100".
+ // Preserve DK and every digit; page and PDF still need their own article proof.
+ if(name==='rittal'&&!group&&/^DK\s+\d{4}\.\d{3}$/.test(model))return model.replace('.','');
  return group&&Object.hasOwn(group,model)?String(group[model]):null;
 }
 function confirmedAlias(manufacturer,model,documentModel,extra={}){return aliasFor(manufacturer,model,extra)===documentModel;}

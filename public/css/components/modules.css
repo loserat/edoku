@@ -1202,19 +1202,26 @@
 .settings-top-tabs {
   align-items: center;
   background: var(--surface-solid);
-  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
-  border-radius: 16px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
   display: flex;
-  flex-wrap: wrap;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
   gap: 4px;
-  margin: 0 auto;
+  margin: 0;
   max-width: 100%;
-  padding: 6px;
-  position: sticky;
-  top: 76px;
-  width: fit-content;
-  z-index: 12;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 6px 28px;
+  scroll-padding-inline: 28px;
+  scrollbar-width: thin;
+  width: 100%;
 }
+
+.settings-top-tabs > :first-child { margin-inline-start: auto; }
+.settings-top-tabs > :last-child { margin-inline-end: auto; }
 
 .settings-top-tabs :is(button, a) {
   align-items: center;
@@ -1224,15 +1231,16 @@
   box-shadow: none;
   color: var(--muted);
   display: inline-flex;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 400;
   gap: 8px;
   min-height: 38px;
   min-width: 0;
   padding: 8px 11px;
   text-align: left;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .settings-top-tabs :is(button, a):hover {
@@ -1257,10 +1265,10 @@
   width: 16px;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .settings-top-tabs {
-    position: static;
-    width: 100%;
+    padding-inline: 16px;
+    scroll-padding-inline: 16px;
   }
 
   .settings-top-tabs :is(button, a) {

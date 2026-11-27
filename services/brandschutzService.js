@@ -42,11 +42,13 @@ function normalizeBrandschutz(raw) {
 }
 
 // * INFO: Wandelt Formularwerte aus der Tabelle zurück in die JSON-Struktur.
-function normalizePostedBrandschutz(posted) {
+function normalizePostedBrandschutz(posted, existing = []) {
   const rows = Array.isArray(posted) ? posted : Object.values(posted || {});
   return rows
     .filter((entry) => entry && entry._delete !== "1")
     .map((entry, index) => ({
+      // Preserve API-captured dimensions, components and unknown retained fields.
+      ...existing.find(previous => previous.id === entry.id),
       id: entry.id || `bs_${String(index + 1).padStart(3, "0")}`,
       aktiv: entry.aktiv === "on" || entry.aktiv === "true",
       geschoss: entry.geschoss || "",
@@ -71,7 +73,9 @@ function normalizePostedBrandschutz(posted) {
 // * INFO: Fügt eine neue leere Schottung am Ende der vorhandenen Liste hinzu.
 function addBrandschutzEintrag(raw) {
   const entries = normalizeBrandschutz(raw);
-  return [...entries, emptyBrandschutzEintrag(entries.length + 1)];
+  let index = entries.length + 1;
+  while (entries.some(entry => entry.id === emptyBrandschutzEintrag(index).id)) index++;
+  return [...entries, emptyBrandschutzEintrag(index)];
 }
 
 module.exports = {

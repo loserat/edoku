@@ -94,7 +94,7 @@ function createDocumentationReadinessService(root, { db = connection() } = {}) {
         add('FIRESTOP_REQUIREMENT_MISSING', rule.definition.id, `Brandschutz-Pflichtunterlage fehlt: ${rule.definition.title}.`, { definition: rule.definition });
       }
       for (const job of jobs) {
-        const firestopRules = firestopRequirements(data, job.requirements);
+        const firestopRules = firestopRequirements(data, job.requirements, job.id);
         const firestopIds = new Set(firestopRules.map(rule => rule.requirementId).filter(Boolean));
         for (const rule of firestopRules.filter(rule => !rule.requirementId)) {
           firestopMissing++;
@@ -198,7 +198,7 @@ function createDocumentationReadinessService(root, { db = connection() } = {}) {
         inputComplete: issues.length === 0, reviewComplete: pending.length === 0,
         technicalExportComplete: issues.length === 0 && pending.length === 0 && currentExport.complete,
         professionalApproval: "not_assessed", issues, suggestedQuestions: questions, pendingDocuments: pending, requirements,
-        firestopDocumentation: { policy: FIRESTOP_POLICY, active: data.leistungsbereiche.aktiv.includes('Brandschutzabschottungen'), missingRequirements: firestopMissing },
+        firestopDocumentation: { policy: FIRESTOP_POLICY, active: firestopRequirements(data).length > 0 || jobs.some(job => firestopRequirements(data, job.requirements, job.id).length > 0), missingRequirements: firestopMissing },
         datasheets: datasheetCoverage.summary,
         export: { ...currentExport, missingOutputs: latestResult?.summary?.complete && !currentSourcesInvalid ? [] : missingOutputs, latestExportId: latest?.id || null }
       };

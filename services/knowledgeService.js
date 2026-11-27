@@ -27,7 +27,11 @@ function source(data, job, subject) {
   if (subject.kind === 'firestop') {
     const entry = data.brandschutz.find(row => row.id === subject.entryId && row.aktiv !== false);
     if (!entry) throw fault('Aktives Schott wurde nicht gefunden.', 409, 'FACT_TARGET_CHANGED');
-    return { value: entry, fingerprint: hash([entry.id, entry.hersteller, entry.abschottungssystem, entry.system, entry.zulassung]) };
+    return { value: { ...entry,
+      system: entry.abschottungssystem || entry.system,
+      ortDerAusfuehrung: [entry.geschoss, entry.raum].filter(Boolean).join(' / '),
+      components: entry.components?.length ? entry.components : undefined
+    }, fingerprint: hash([entry.id, entry.hersteller, entry.abschottungssystem, entry.system, entry.zulassung]) };
   }
   const list = data.geraetelisten.find(row => row.id === subject.listId && row.aktiv !== false && data.leistungsbereiche.aktiv.includes(row.leistungsbereich));
   const rows = list?.positionen.filter((row, index) => Number(row.pos || index + 1) === subject.position) || [];
@@ -84,37 +88,46 @@ function resolveFact(data, job, input, seed) {
     revision: hash([target, context.fingerprint, active.map(row => row.id), stored ?? null]), fragmentIds: active.map(row => row.id).slice(-10), hasFragments: Boolean(current.length), staleFragments: all.length - current.length };
 }
 function defaultDependencies(data, job) {
-  const rules = firestopRequirements(data, job.requirements), result = new Map();
+  const rules = firestopRequirements(data, job.requirements, job.id), result = new Map();
   const make = (subject, keys) => keys.map(key => ({ subject, key }));
   const declarations = rules.filter(row => row.role === 'declaration' && row.requirementId);
   const entries = data.brandschutz.filter(row => row.aktiv !== false);
   for (const rule of rules.filter(row => row.requirementId)) {
     const companion = rules.find(row => row.requirementId && row.role === 'manual' && row.system?.key === rule.system?.key);
     const shared = { kind: 'requirement', requirementId: companion?.requirementId || rule.requirementId };
+    if (rule.system?.kind && rule.system.kind !== 'penetration_seal') {
+      const needs = rule.role === 'declaration' ? make({ kind: 'project' }, ['ausfuehrendeFirma', 'firmenanschrift']) : [];
+      for (const subject of rule.system.subjects) needs.push(...make(subject, rule.role === 'declaration'
+        ? ['system', 'ortDerAusfuehrung', 'ausfuehrungsdatum', 'mountingType', rule.system.kind === 'circuit_integrity' ? 'functionalityClass' : 'fireResistanceMinutes'] : ['system']));
+      result.set(rule.requirementId, needs);
+      continue;
+    }
     if (rule.role !== 'declaration') result.set(rule.requirementId, make(shared, ['system']));
     else {
       const needs = make({ kind: 'project' }, ['ausfuehrendeFirma', 'firmenanschrift']);
       const subjects = entries.length ? entries.map(row => ({ kind: 'firestop', entryId: row.id })) : [{ kind: 'requirement', requirementId: rule.requirementId }];
       subjects.forEach(subject => needs.push(...make(subject, ['system', 'medium', 'wallType', 'fireResistanceMinutes', 'wallThicknessMm', 'openingWidthMm', 'openingHeightMm', 'sealDepthMm', 'ortDerAusfuehrung', 'ausfuehrungsdatum'])));
-      for (const manual of rules.filter(row => row.role === 'manual' && row.requirementId)) needs.push(...make({ kind: 'requirement', requirementId: manual.requirementId }, ['system']));
+      for (const manual of rules.filter(row => row.role === 'manual' && row.requirementId && row.system?.kind === 'penetration_seal')) needs.push(...make({ kind: 'requirement', requirementId: manual.requirementId }, ['system']));
       result.set(rule.requirementId, needs);
     }
   }
-  // In a single-system project, declaration and original documents share system identity.
-  if (declarations.length && rules.filter(row => row.role === 'manual').length === 1) {
-    const manual = rules.find(row => row.role === 'manual' && row.requirementId);
-    if (manual && !entries.length) result.set(declarations[0].requirementId, result.get(declarations[0].requirementId).map(item => item.key === 'system' ? { subject: { kind: 'requirement', requirementId: manual.requirementId }, key: 'system' } : item));
+  // Share penetration-system identity even when other fire-protection kinds coexist.
+  const penetrationManuals = rules.filter(row => row.role === 'manual' && row.system?.kind === 'penetration_seal');
+  const declaration = declarations.find(row => !row.system);
+  if (declaration && penetrationManuals.length === 1 && !entries.length) {
+    const manual = penetrationManuals[0];
+    if (manual.requirementId) result.set(declaration.requirementId, result.get(declaration.requirementId).map(item => item.key === 'system' ? { subject: { kind: 'requirement', requirementId: manual.requirementId }, key: 'system' } : item));
   }
   return result;
 }
 function buildKnowledge(data, job, { tasks = [], work = [], requirements = [] } = {}) {
   const facts = new Map(), nodes = [], defaults = defaultDependencies(data, job);
-  const rules = firestopRequirements(data, job.requirements);
+  const rules = firestopRequirements(data, job.requirements, job.id);
   const add = input => {
     const key = factId(input);
     if (!facts.has(key)) {
       const rule = rules.find(row => row.requirementId === input.subject.requirementId);
-      const seed = input.key === 'system' && rule?.system?.key !== 'unresolved' ? rule?.system?.system : undefined;
+      const seed = input.key === 'system' && rule?.system?.key !== 'unresolved' && !rule?.system?.unresolved ? rule?.system?.system : undefined;
       facts.set(key, resolveFact(data, job, input, seed));
     }
     return key;

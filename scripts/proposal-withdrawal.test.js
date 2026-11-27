@@ -41,7 +41,7 @@ test('Echter MCP: fünf Vorschläge atomar zurückziehen, Originale/Freigaben er
     await f.service.approve('alice',f.job.id,approved.id,{reviewed:'on',sha256:approved.sha256,revision:(await f.req('/projects/same')).etag.slice(1,-1),metadata:{title:approved.title,category:approved.category}});
     const protectedRow=f.table().find(x=>x.id===approved.id),others=f.others();
     await client.initialize();const catalog=(await client.rpc('tools/list',{})).result.tools;
-    assert.equal(catalog.length,55);assert.ok(catalog.some(x=>x.name==='edoku_withdraw_document_proposals'));assert.ok(!catalog.some(x=>/approve|freigeben/i.test(x.name)));
+    assert.equal(catalog.length,58);assert.ok(catalog.some(x=>x.name==='edoku_withdraw_document_proposals'));assert.ok(!catalog.some(x=>/approve|freigeben/i.test(x.name)));
     const result=(await client.rpc('tools/call',{name:'edoku_withdraw_document_proposals',arguments:{projectId:'same',jobId:f.job.id,input:f.body(docs.slice(0,5).map(x=>x.proposal.id))}})).result;
     assert.ok(!result.isError,JSON.stringify(result));assert.ok(Buffer.byteLength(JSON.stringify(result))<2000);
     assert.equal(result.structuredContent.data.withdrawn.length,5);

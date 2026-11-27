@@ -30,7 +30,7 @@ function createManufacturerLinkService(root,{sourceLoader=downloadResource}={}) 
    const base={policy:POLICY,projectId,jobId,jobVersion:job.version,category:args.category,manufacturerPageUrl:args.manufacturerPageUrl,
     deviceReference:{listId:args.listId,position:args.position,manufacturer:row.hersteller,model:row.typ},
     fileApproval:'manual_gui_per_file',proposalCreated:false,pdfDownloaded:false,fullTextReturned:false,htmlRequests:0};
-   const excluded=require('./documentationMaterialPolicy').explicit(data.projekt)&&require('./documentationMaterialPolicy').excluded(row,data.projekt);
+   const material=require('./documentationMaterialPolicy'),excluded=material.manualExcluded(row)||material.explicit(data.projekt)&&material.excluded(row,data.projekt);
    if(excluded)return compact({...base,state:'excluded',reason:excluded,candidates:[]});
    const extra=await readJson(path.join(root,'config/manufacturerSources.json'),{});
    const aliases=await readJson(path.join(root,'config/manufacturerArticleAliases.json'),{});

@@ -6,7 +6,7 @@
   <body>
     <%# Gerätelistenansicht: aktive Leistungsbereiche werden als linke Tabs auswählbar. %>
     <%- include("partials/header", { active }) %>
-    <main id="main-content" tabindex="-1" class="page wide device-list-page">
+    <main id="main-content" tabindex="-1" class="page wide device-list-page" data-device-view-scope="<%= JSON.stringify([typeof user !== 'undefined' && user ? user.id : '', typeof currentProjectId === 'string' ? currentProjectId : '']) %>">
       <%- include("partials/flash", { flash }) %>
       <%# Nur aktive Listen werden bevorzugt in der Sidebar angezeigt, Fallback sind alle Listen. %>
       <% const aktiveListen = geraetelisten.filter((liste) => liste.aktiv); %>
@@ -25,7 +25,7 @@
         <section class="tab-panel" data-device-dashboard-panel>
           <div class="panel-head">
             <div>
-              <h2>Dashboard</h2>
+              <h2>Summenansicht</h2>
               <p>Aktive Leistungsbereiche: <%= aktiveLeistungsbereiche.length ? aktiveLeistungsbereiche.join(", ") : "Keine Auswahl gespeichert" %></p>
             </div>
             <div class="toolbar split">
@@ -113,19 +113,23 @@
                   <input type="hidden" name="geraetelisten[<%= listenIndex %>][aktiv]" value="<%= liste.aktiv ? "true" : "false" %>">
                   <input type="hidden" name="geraetelisten[<%= listenIndex %>][export]" value="<%= liste.export ? "true" : "false" %>">
                   <div class="list-tools">
-                    <div class="device-tool-menu">
-                      <button
-                        type="button"
+                    <details class="device-tool-menu">
+                      <summary
                         class="secondary device-tool-trigger"
-                        aria-label="Werkzeuge für <%= liste.titel %>"
-                        title="Werkzeuge">
+                        aria-label="Werkzeuge für <%= liste.titel %>">
                         <span aria-hidden="true">...</span>
-                      </button>
+                      </summary>
                       <div class="device-tool-dropdown">
                         <div class="device-tool-head">
                           <span>Werkzeuge</span>
                           <strong><%= liste.positionen.length %> Positionen</strong>
                         </div>
+                        <% if (listFields.some(field => field.name === 'lvPosition')) { %>
+                          <label class="device-view-option">
+                            <input type="checkbox" data-device-lv-toggle checked>
+                            <span>LV-Position anzeigen</span>
+                          </label>
+                        <% } %>
                         <div class="add-position-control">
                           <input type="number" min="1" max="25" value="1" aria-label="Anzahl Geräte">
                           <button
@@ -134,6 +138,7 @@
                             data-add-geraet-row
                             data-list-index="<%= listenIndex %>"
                             data-next-index="<%= liste.positionen.length %>"
+                            data-next-position="<%= Math.max(Number(liste.positionSequence) || 0, 0, ...liste.positionen.map(row => Number(row.pos) || 0)) + 1 %>"
                             data-default-hersteller="<%= liste.herstellerVorauswahl || "" %>"
                             data-default-system="<%= liste.systemartVorauswahl || "" %>"
                             data-hersteller-list="geraeteliste-hersteller-<%= listenIndex %>"
@@ -153,8 +158,7 @@
                             Vorschau
                           </button>
                         <% } %>
-                        <button class="secondary" type="button" disabled>Liste exportieren</button>
-                        <button class="secondary" type="submit" form="save-device-template-<%= liste.id %>">Als Vorlage speichern</button>
+                        <button class="secondary" type="submit" form="save-device-template-<%= liste.id %>">Vorlage speichern</button>
                         <% if (passendeVorlagen.length) { %>
                           <div class="device-template-import">
                             <label>
@@ -167,11 +171,9 @@
                             </label>
                             <button class="secondary" type="button" data-load-device-template="<%= liste.id %>">Laden</button>
                           </div>
-                        <% } else { %>
-                          <button class="secondary" type="button" disabled>Keine Vorlage verfügbar</button>
                         <% } %>
                       </div>
-                    </div>
+                    </details>
                   </div>
                 </div>
 
@@ -210,7 +212,7 @@
                     <tbody data-position-body="<%= listenIndex %>">
                       <% liste.positionen.forEach((position, posIndex) => { %>
                         <tr>
-                          <td data-col="pos"><input type="text" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][pos]" value="<%= position.pos %>"><% retainedFields.forEach(field => { %><input type="hidden" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][<%= field.name %>]" value="<%= position[field.name] || '' %>"><% }) %></td>
+                          <td data-col="pos"><input type="text" readonly name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][pos]" value="<%= position.pos %>"><input type="hidden" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][_originalPos]" value="<%= position.pos %>"><% retainedFields.forEach(field => { %><input type="hidden" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][<%= field.name %>]" value="<%= position[field.name] || '' %>"><% }) %></td>
                           <% listFields.forEach((field) => { %>
                             <% const listAttr = field.suggest === "hersteller" ? `list="geraeteliste-hersteller-${listenIndex}" data-device-suggest="hersteller"` : field.suggest === "system" ? `list="geraeteliste-system-${listenIndex}" data-device-suggest="system"` : field.suggest === "typ" ? `list="geraeteliste-typ-${listenIndex}" data-device-suggest="typ"` : ""; %>
                             <td data-col="<%= field.name %>"><input type="text" name="geraetelisten[<%= listenIndex %>][positionen][<%= posIndex %>][<%= field.name %>]" value="<%= position[field.name] || "" %>" <%- listAttr %>></td>

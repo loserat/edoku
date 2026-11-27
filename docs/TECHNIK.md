@@ -9,6 +9,7 @@ edoku ist eine Node.js-/Express-Anwendung mit serverseitigen EJS-Ansichten, SQLi
 | Server, Anmeldung und GUI | `server.js`, `services/authService.js`, `views/` |
 | HTTP-API, Rechte und Schemas | `src/routes/integration.routes.js`, `src/api/` |
 | MCP-Adapter und Werkzeuge | `services/mcpServerService.js`, `scripts/edoku-mcp.js` |
+| Stabile Bezüge, Reparatur und Aufgabenvertrag | `geraetelistenService.js`, `deviceReferenceRepairService.js`, `agentTaskContractService.js`, `workflowBlockerService.js` |
 | Schnittstellenversionen | `services/interfaceVersions.js`; Software aus `package.json` |
 | Führender Projektstand und atomare Änderungen | `projectDataStoreService.js`, `deviceDataStoreService.js`, `integrationService.js` |
 | Aufträge, Fragen und Vorschläge | `documentAssistantService.js`, `documentationWorkflowService.js` |
@@ -33,3 +34,19 @@ Ein gemeinsamer Dokumentationsplan bestimmt Kapitel, Pflichtquellen und Ausgabeu
 ## Änderungen prüfen
 
 [Tests](TESTS.md) angemessen zur Änderung ausführen. Bei API-/MCP-Änderungen `npm run docs:api`, erzeugten Diff prüfen und `npm run docs:check` ausführen; Referenzen nicht von Hand ändern. Eingabe-/Antwortgrenzen, Rechte, Versionsschutz und manuelle Dateiprüfung erhalten. [Vertrag](api/README.md), [Versionierung](VERSIONIERUNG.md).
+
+## Abgeleitete Brandschutzanforderungen
+
+`firestopDocumentationService` ist die zentrale herstellerunabhängige Regel (`firestop_documents_v2`). `documentAssistantService.get` ergänzt fehlende Pflichten aus aktuellen Projektdokumenten und auftragsbezogenen bestätigten Einbaufakten. Der synchrone Leser des Projektspeichers berücksichtigt SQLite und laufende Transaktionen; Legacy-Dateien verwenden dieselbe Pfad-/Symlinksperre. Keine Abrufmigration und kein Schreibzugriff beim Lesen.
+
+Auftragsanlage/-änderung, verknüpfter Vorschlag und Auftragsabschluss sichern berechnete Anforderungskennungen atomar. Bestehende Payloads werden nicht überschrieben. Auftragsversionen enthalten die aktuellen abgeleiteten Anforderungen. Bei Systemwechsel bleiben gespeicherte Altkennungen erhalten, sind im Readiness-Status jedoch nicht anwendbar. Geschlossene Aufträge werden nicht nachträglich erweitert.
+
+Readiness, Workflow, Faktenabhängigkeiten und GUI-Arbeitsliste nutzen denselben Regeldienst. Der Workflow liefert direkte Recherche-/Klärungsaufgaben statt einer Anforderungskopie an den Agenten. Für Kanäle und Funktionserhalt sind nur bestätigte aktuelle Gerätefakten mit bestätigtem Einbau maßgeblich, keine Klassifikationsvorschläge aus Texten. Wand-/Schottmaße werden dort nicht als Voraussetzungen übertragen. Die vorhandene PDF-Prüfung und manuelle Dateifreigabe bleiben unverändert; Datenbank- und Projektschema benötigen keine Migration.
+
+## OBO-Maße und klare Zuständigkeiten
+
+`productDimensionEvidenceService.oboPlmDimensions` prüft die originale, noch nicht um synthetische Maßzeilen ergänzte Textevidenz. Millimeterwerte aus dem Abmessungsblock dürfen nur für dieselbe eindeutig beschriftete Artikelnummer verwendet werden. Quelle/Modellbindung und vollständiger Text bleiben erforderlich. Wiederholte Maße müssen gleich sein; widersprüchliche Zahlen bzw. Artikelnummern sind kein Layoutproblem.
+
+`workflowBlockerService` unterscheidet den technischen Layoutbefund vor generischen Artikel-/Varianten-Schlüsselwörtern. `compactVerification` gibt eine knappe `resolution` ohne PDF-Volltext aus. Workflow-Faktenaufgaben enthalten `missingInformation` mit eindeutigem Ziel, Faktenstand und Zuständigkeit. Keine neue Datenbankstruktur oder Abrufmigration; V10 öffnet nur passende ältere V9-Maßsperren.
+
+Bei gezielter Wiederaufnahme bleiben gespeicherte Originalquellen in der berechneten Sicht erhalten (`search.outcome=retry`). Der Arbeitsplan liefert `RETRY_DATASHEET_CHECK`, `reuseOriginal=true`, bis zu zwei kurze `priorSources` und den gezielten Detailabruf. Der Agent prüft das bereits gefundene Original erneut, statt dessen Suche zu wiederholen. Die gespeicherten Recherchebelege werden dabei nicht umgeschrieben.

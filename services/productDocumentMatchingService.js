@@ -1,4 +1,4 @@
-const {dimensionEvidence}=require('./productDimensionEvidenceService');
+const {dimensionEvidence,oboPlmDimensions}=require('./productDimensionEvidenceService');
 const normal=value=>String(value||'').normalize('NFKC').toLocaleLowerCase('de').replace(/[®™]/g,'').replace(/ß/g,'ss');
 const plain=value=>normal(value).replace(/[^a-z0-9äöü]/g,'');
 const escape=value=>value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
@@ -120,6 +120,25 @@ function rawVariantFound(text,variant,target){
  const n=millimetres;
  return inner.length>0&&total.length>0&&inner.every(m=>n(m[1])===n(expected[1])&&n(m[2])===n(expected[2]))&&total.every(m=>n(m[1])===n(expected[3]));
 }
+function zz330TradeNameTarget(target) {
+ return /^zappzimmermann(?:gmbh)?$/.test(plain(target.manufacturer))
+  && normal(target.model).replace(/[ \t]/g,'')==='zz330'
+  && !target.documentModel && !target.systemModel && !String(target.variant||'').trim();
+}
+function zz330TradeNameEvidence(pages,target) {
+ if(!zz330TradeNameTarget(target))return null;
+ const expected='zz330brandschutzschaum',names=[];
+ for(const page of pages)for(const match of page.text.matchAll(/(?:^|\n)[ \t]*Handelsname[ \t]*:[ \t]*([^\n]{1,200})/gi))names.push({page,match});
+ // A matching mention in a different product's sheet is not a product identity.
+ if(!names.length||names.some(({match})=>plain(match[1])!==expected))return null;
+ for(const {page,match} of names){
+  const heading=page.text.split('\n').map(line=>line.trim()).filter(Boolean).slice(0,8);
+  if(heading.some(line=>plain(line)===expected)&&heading.some(line=>/^Technisches\s+Datenblatt$/i.test(line))&&hasIdentifier(match[1],target.model)){
+   return {page:page.page,text:match[0]};
+  }
+ }
+ return null;
+}
 function matchDocument({pages,totalPages,truncated,pageText,sourceLinked,manual,targets}){
  const results=targets.map(t=>{
   const brand=plain(t.manufacturer),publishers=require('./manufacturerSourcePolicy').publisherNames(t.manufacturer),brandInPdf=pages.some(p=>publishers.some(name=>hasIdentifier(p.text,name))||(brand==='obobettermann'&&hasIdentifier(p.text,'OBO')));
@@ -155,6 +174,10 @@ function matchDocument({pages,totalPages,truncated,pageText,sourceLinked,manual,
     evidence={page:p.page,text:window};break;
    }
   }
+  if(!evidence&&!manual&&t.pageArticleConfirmed&&sourceLinked&&brandInPdf){
+   const tradeName=zz330TradeNameEvidence(pages,t);
+   if(tradeName){evidence=tradeName;via='pdf_trade_name';}
+  }
   if(!evidence&&t.pageArticleConfirmed&&sourceLinked&&plain(t.documentModel||t.model).length>=4)for(const p of pages){const heading=p.text.split('\n').map(x=>x.trim()).filter(Boolean).slice(0,8).find(x=>plain(x)===plain(t.documentModel||t.model));if(heading){const at=p.text.indexOf(heading),next=labeledIds(p.text).find(x=>x.index>at&&!hasIdentifier(x.text,t.documentModel||t.model));evidence={page:p.page,text:p.text.slice(at,next?.index)};via='pdf_product_heading';break;}}
   if(!evidence&&t.documentModel&&/^\d{13,14}$/.test(t.documentModel))for(const p of pages){if(labeledGtins(p.text).includes(t.documentModel)){evidence={page:p.page,text:p.text};via='pdf_article';break;}}
   const onPage=t.pageArticleConfirmed||labeledIds(pageText).some(x=>hasIdentifier(x.text,t.documentModel||t.model));
@@ -175,20 +198,23 @@ function matchDocument({pages,totalPages,truncated,pageText,sourceLinked,manual,
    }
   }
   const variant=t.variant||'';
+  const originalEvidence=evidence?.text;
   if(evidence){const sku=evidence.text.match(/Artikelnummer\s*:\s*(\d{6,})/i)?.[1];if(sku)for(const p of pages){const ids=[...p.text.matchAll(/Artikelnummer\s*:\s*(\d{6,})/gi)].map(m=>m[1]);if(ids.length&&ids.every(id=>id===sku))evidence.text+='\n'+verticalDimensions(p.text);}}
   // A graphical logo is acceptable only with the exact labeled PDF article AND
   // a labeled GTIN also present beside that article on its trusted product page.
   const gtin=evidence&&['pdf_article','pdf_article_table'].includes(via)&&sourceLinked?labeledGtins(evidence.text).find(x=>t.sourceGtins?.includes(x)):undefined;
   const manufacturerFound=brandInPdf||Boolean(gtin);
-  const variantMatch=Boolean(evidence)&&String(variant).split(/\s*[·;]\s*/).every(part=>variantFound(evidence.text,part)||dimensionEvidence(evidence.text,part,t)||(/^Nenngröße\s+(\d+)$/i.test(part)&&/fr[aä]nkische/i.test(t.manufacturer)&&evidence.nominalSize===Number(part.match(/\d+/)[0]))||cantileverVariantFound(evidence.text,part,t)||rawVariantFound(evidence.text,part,t)||(/^Typ\s+(.+)$/i.test(part)&&hasIdentifier(t.model,part.match(/^Typ\s+(.+)$/i)[1])&&hasIdentifier(evidence.text,t.documentModel||t.model)));
+  const oboDimensions=evidence?oboPlmDimensions({pages,target:t,evidence:originalEvidence,sourceLinked,manual,truncated}):null;
+  const variantMatch=oboDimensions?oboDimensions.matched:Boolean(evidence)&&String(variant).split(/\s*[·;]\s*/).every(part=>variantFound(evidence.text,part)||dimensionEvidence(evidence.text,part,t)||(/^Nenngröße\s+(\d+)$/i.test(part)&&/fr[aä]nkische/i.test(t.manufacturer)&&evidence.nominalSize===Number(part.match(/\d+/)[0]))||cantileverVariantFound(evidence.text,part,t)||rawVariantFound(evidence.text,part,t)||(/^Typ\s+(.+)$/i.test(part)&&hasIdentifier(t.model,part.match(/^Typ\s+(.+)$/i)[1])&&hasIdentifier(evidence.text,t.documentModel||t.model)));
   if(evidence&&t.documentModel&&['pdf_article','pdf_article_table'].includes(via))via='manufacturer_link_alias';
   return {listId:t.listId,position:t.position,manufacturer:t.manufacturer,model:t.model,variant,...(t.documentModel?{documentModel:t.documentModel}:{}),
+   ...(oboDimensions?.matched?{variantEvidence:oboDimensions.evidence}:{}),
    ...(evidence&&cantileverVariantFound(evidence.text,variant,t)?{variantEvidence:'niedax_ktum_support_length'}:{}),manufacturerMatched:manufacturerFound,manufacturerEvidence:brandInPdf?'pdf_text':gtin?'manufacturer_product_gtin':null,...(gtin?{gtin}:{}),articleMatched:Boolean(evidence),variantMatched:variantMatch,variantRequired:Boolean(variant),via:evidence?via:null,page:evidence?.page||null,
    ...(evidence&&rawVariantFound(evidence.text,variant,t)?{variantEvidence:'niedax_raw_inside_and_total_width'}:{}),
    state:manufacturerFound&&evidence&&variantMatch?'matched':'unclear',
-   reason:!manufacturerFound?'manufacturer_not_in_pdf':!evidence?'article_not_confirmed':!variantMatch?'variant_not_confirmed':null,
+   reason:!manufacturerFound?'manufacturer_not_in_pdf':!evidence?'article_not_confirmed':!variantMatch?(oboDimensions?.reason||'variant_not_confirmed'):null,
    excerpt:evidence?evidence.text.replace(/\s+/g,' ').slice(0,160):''};
  });
  return {state:results.length&&results.every(x=>x.state==='matched')?'matched':'unclear',targets:results,totalPages,pagesChecked:pages.length,truncated:Boolean(truncated),fullTextReturned:false};
 }
-module.exports={matchDocument,hasIdentifier,labeledIds,labeledGtins,primaryArticle,variantFound,normal,plain};
+module.exports={matchDocument,hasIdentifier,labeledIds,labeledGtins,primaryArticle,variantFound,normal,plain,zz330TradeNameTarget};

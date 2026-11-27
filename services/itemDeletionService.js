@@ -55,6 +55,7 @@ function createItemDeletionService(root,{db=connection(),checkStorage=async()=>{
       for(const r of sql.requirements){const v=JSON.parse(r.payload);if([v.device,...(v.devices||[])].some(refers)||(v.dependsOn||[]).some(ref=>ref.subject?.kind==='device'&&refers(ref.subject)))blockers.push({kind:'requirement',jobId:r.job_id,id:r.id});}
       for(const p of sql.proposals){const v=JSON.parse(p.metadata);if(p.state==='pending'&&!v.supersededBy&&!v.withdrawal&&(v.deviceReferences||[]).some(refers))blockers.push({kind:'proposal',jobId:p.job_id,id:p.id});}
       for(const j of sql.jobs)for(const q of JSON.parse(j.questions))if(!q.obsolete&&(q.targets||[]).some(x=>(x.kind==='device'&&refers(x))||(x.kind==='fact'&&x.subject?.kind==='device'&&refers(x.subject))))blockers.push({kind:'question',jobId:j.id,id:q.id});
+      list.positionSequence=Math.max(Number(list.positionSequence)||0,0,...list.positionen.map(x=>x.pos));
       list.positionen=list.positionen.filter(x=>x.pos!==target.position);
       for(const a of attachments)if(a.deviceReferences?.some(refers)){a.deviceReferences=a.deviceReferences.filter(x=>!refers(x));links++;}
     }else if(target.kind==='document'){
@@ -76,7 +77,10 @@ function createItemDeletionService(root,{db=connection(),checkStorage=async()=>{
       async function walk(dir){await assertSafePath(root,dir,{allowMissing:true});let entries;try{entries=await fs.readdir(dir,{withFileTypes:true})}catch(e){if(e.code==='ENOENT')return;throw e;}for(const entry of entries){const file=path.join(dir,entry.name);if(entry.isDirectory())await walk(file);else await addFile(file);}}
       await walk(folder);
     }
-    const patches=changes(docs,after),generation=projectResetGeneration(db,auth.user.id,projectId),etag='"'+integration.revision(auth,projectId)+'"';
+    // A high-water mark is monotonic bookkeeping; restoring a row must not reset it
+    // or conflict with a subsequently added independent device.
+    const patches=changes(docs,after).filter(p=>!(p.path[0]==='geraetelisten.json'&&p.path.at(-1)==='positionSequence')),
+      generation=projectResetGeneration(db,auth.user.id,projectId),etag='"'+integration.revision(auth,projectId)+'"';
     return {target,label,docs,after,patches,sql:selected,allSql:sql,files:archiveFiles,blockers,links,generation,etag,checkpoint:hash([auth.user.id,projectId,etag,target,docs,sql,archiveFiles,generation,blockers])};
   }
   async function preview(auth,projectId,target){

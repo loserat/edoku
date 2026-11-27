@@ -172,6 +172,10 @@ Die Navigation bleibt auf kleinen Bildschirmen horizontal scrollbar. Farben
 und Status werden zusätzlich durch Text und Symbole vermittelt. Sichtbare
 Tastaturfokusse und die Einstellung für reduzierte Bewegung werden berücksichtigt.
 
+## Untermenüs für Export und Einstellungen
+
+Die bereichsbezogene Navigation steht direkt unter dem gemeinsamen Header, als vollbreite Leiste mit dezenter Trennlinie. Automatische Außenränder zentrieren die Reitergruppe bei genügend Platz. Bei Überbreite bleiben alle Einträge über den eigenen horizontalen Scrollbereich erreichbar, ohne die ganze Seite zu verbreitern. Reiter verwenden Schriftstärke 400; aktive Auswahl und Tastaturfokus bleiben sichtbar. Die Einstellungen und das Sicherheitsprotokoll verwenden dieselbe rollenabhängige Teilvorlage. Export-, Einstellungs- und Direktlinkfunktionen bleiben erhalten.
+
 ## App-Icon
 
 Das Hauptmotiv liegt in `public/img/icons/edoku-app-icon.svg`: ein Dokument mit
@@ -183,3 +187,9 @@ maskierbare 512-Pixel-Variante haben einen vollständig deckenden Hintergrund.
 Die Dateien sind über `headIcons.ejs` und `site.webmanifest` eingebunden.
 Bei Änderungen an den SVG-Quellen müssen PNG-Ausgaben und Cache-Version
 gemeinsam aktualisiert werden.
+
+## Dezente Icon-Bewegungen
+
+Interaktive Icons reagieren kurz auf Mauszeiger, Tastaturfokus und Betätigung: leichte Bewegung, dezente Drehung bei Einstellungen/Theme und ein einmaliger Impuls am Export-/Downloadpfeil. Es gibt keine Dauerschleifen. Deaktivierte Bedienelemente erhalten keine neue Bewegungsrückmeldung. Touchgeräte bekommen keine dauerhaft haftende Hover-Animation.
+
+Die Systemeinstellung „Bewegung reduzieren“ wird respektiert: Die neuen Animationen und Transformationsübergänge sind ausschließlich bei `prefers-reduced-motion: no-preference` aktiv. Beschriftungen, Fokusmarkierungen und Bedienung bleiben erhalten.

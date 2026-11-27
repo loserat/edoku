@@ -8,7 +8,9 @@ Neuer Quellstand 0.2.0-beta.6: [Projekte starten inhaltlich leer](DOKU_ASSISTENT
 
 Diese Anleitung erklärt die tägliche Nutzung der Anwendung: Projekte bearbeiten, Unterlagen zuordnen, Dokumente prüfen und Ausgaben erstellen. Sie richtet sich an Anwenderinnen und Anwender. Installation, Servereinrichtung und technische Administration sind kein Bestandteil dieser Anleitung.
 
-Textstand: **22.11.2026**, Oberfläche `0.2.0-beta.2`. Die bisherigen Screenshots zeigen den Stand vom 17./18.11. mit künstlichen Testprojekten; einzelne Spalten können inzwischen entfallen sein. Firmennamen, Geräte und Fortschritt in diesen Aufnahmen sind Beispiele. Auf schmalen Bildschirmen können Tabellen innerhalb ihres Bereichs seitlich gescrollt werden.
+Textstand: **27.11.2026**, Oberfläche `0.3.1`. Die bisherigen Screenshots zeigen den Stand vom 17./18.11. mit künstlichen Testprojekten; einzelne Spalten und Menüpositionen haben sich inzwischen geändert. Firmennamen, Geräte und Fortschritt in diesen Aufnahmen sind Beispiele. Auf schmalen Bildschirmen können Tabellen innerhalb ihres Bereichs seitlich gescrollt werden.
+
+In **Export** und **Einstellungen** stehen die jeweiligen Reiter direkt unter der Hauptnavigation. Die Leiste ist mittig ausgerichtet und verwendet normale Schriftstärke. Bei wenig Platz seitlich scrollen, um weitere Reiter zu erreichen. Die aktive Auswahl bleibt hervorgehoben. Unter **Anhänge → Messprotokolle** öffnet „MessPilot kennenlernen“ die externe Produktseite in einem neuen Tab; Unterlagen werden weiterhin bewusst in edoku hinzugefügt und einzeln geprüft.
 
 ## Inhalt
 
@@ -110,6 +112,8 @@ Unter **Export → Matrix** legst du fest, welche Einträge zur Dokumentation ge
 
 ## 6. Gerätelisten bearbeiten
 
+Die **Summenansicht** zeigt die Listenübersicht. Ihr Zähler in der Seitenauswahl addiert die Gerätepositionen der dort angezeigten Listen; er zählt Listenzeilen, keine Stückzahlen innerhalb einer Position.
+
 1. **Gerätelisten** öffnen und links beziehungsweise in der Bereichsauswahl den passenden Leistungsbereich wählen.
 2. Die Positionen des tatsächlichen Bestands erfassen: Hersteller, System, Typ, Beschreibung und die für die Liste benötigten technischen Angaben.
 3. Nur tatsächlich optionale Felder leer lassen. Vorhandene Musterpositionen fachlich prüfen und entsprechend bearbeiten.
@@ -121,6 +125,8 @@ Unter **Export → Matrix** legst du fest, welche Einträge zur Dokumentation ge
 **Bedienungsanleitung zuordnen:** Die passende PDF unter **Anhänge → Bedienungsanleitungen** importieren. Danach in der Gerätezeile die Anleitung auswählen. Das **Plus** neben der Auswahl führt zum passenden Anhangsbereich. Zuordnung und späteren Kapitelverweis in der PDF prüfen; eine verfügbare Auswahl allein bestätigt noch keine passende Anleitung.
 
 **Vorlagen:** Das Drei-Punkte-Menü bietet Werkzeuge für die jeweilige Liste. Vorlagen bewusst verwenden und die vorhandenen Positionen vorher prüfen, da das Laden einer Vorlage Positionen ersetzen kann. Globale Vorlagen verwaltet der Systemadmin.
+
+**LV-Position anzeigen:** In der jeweiligen Liste das Drei-Punkte-Menü öffnen und **LV-Position anzeigen** abwählen. Das blendet die Spalte nur am Bildschirm aus. Die Einstellung gilt pro Konto, Projekt und Liste in diesem Browser; ohne verfügbaren Browserspeicher nur bis zum Neuladen. LV-Werte bleiben gespeichert und die PDF-Ausgabe unverändert. Zum Bearbeiten der LV-Werte die Spalte wieder einblenden.
 
 **Weniger Spalten:** Spannung und Leistung sind in der Tabelle und in neu erzeugten Geräte-PDFs ausgeblendet. Bereits erfasste Werte bleiben erhalten. Bemerkungen und Quellenhinweise bleiben intern und erscheinen nicht im Geräte-PDF. Alte PDF-Ausgaben ändern sich nicht nachträglich; für die aktuelle Ausgabe die PDFs neu erzeugen.
 

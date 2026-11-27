@@ -6,6 +6,7 @@
   <body>
     <%# Systemeinstellungen: globale Defaults, Erstellerdaten und Formularvorlagen. %>
     <%- include("partials/header", { active }) %>
+    <%- include("partials/settingsTabs", { isSystemAdmin, auditActive: false }) %>
     <main id="main-content" tabindex="-1" class="page wide compact-work-page settings-page" data-settings-initial-tab="<%= initialSettingsTab %>">
       <div class="page-title">
         <p class="eyebrow">Konfiguration</p>
@@ -21,8 +22,6 @@
       <% const themeShadow = theme.shadow || {}; %>
       <% const themeSpacing = theme.spacing || {}; %>
       <% const themeTypography = theme.typography || {}; %>
-
-      <%- include("partials/settingsTabs", { isSystemAdmin, auditActive: false }) %>
 
       <%# Übersicht und Einstellungsbereiche bleiben auf einer Seite, Auto-Save speichert je Formular. %>
       <section class="settings-grid">

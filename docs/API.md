@@ -1,6 +1,6 @@
 # HTTP-API
 
-Externe Programme verwenden `/api/v1`. Authentifizierung, Projektgrenzen und Fachregeln gelten ebenso für den [MCP-Adapter](API_MCP.md). API-Version **3.9.0**; vollständige Routen, Rechte, Schemas und Versionsbedingungen stehen in der [erzeugten Referenz](api/README.md) und [OpenAPI-Datei](api/openapi.json). Der laufende Server liefert sie unter `GET /api/v1/openapi.json`.
+Externe Programme verwenden `/api/v1`. Authentifizierung, Projektgrenzen und Fachregeln gelten ebenso für den [MCP-Adapter](API_MCP.md). API-Version **3.15.0**; vollständige Routen, Rechte, Schemas und Versionsbedingungen stehen in der [erzeugten Referenz](api/README.md) und [OpenAPI-Datei](api/openapi.json). Der laufende Server liefert sie unter `GET /api/v1/openapi.json`.
 
 ## Zugriff einrichten
 

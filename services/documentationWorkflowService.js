@@ -61,7 +61,7 @@ function createDocumentationWorkflowService(root) {
       const scopes = [...(previous.requirementScopes || [])], changes = [];
       if (value.requirementScopes) {
         assistant.assertVersion(auth.user.id, value.jobId, value.jobVersion);
-        const firestopIds = new Set(firestopDocs.firestopRequirements(await loadProjectWorkspace(root, auth.user.id, projectId), job.requirements).map(rule => rule.requirementId).filter(Boolean));
+        const firestopIds = new Set(firestopDocs.firestopRequirements(await loadProjectWorkspace(root, auth.user.id, projectId), job.requirements, job.id).map(rule => rule.requirementId).filter(Boolean));
         if (new Set(value.requirementScopes.map(item => item.id)).size !== value.requirementScopes.length) throw fault('Anforderung mehrfach angegeben.', 400, 'VALIDATION_ERROR');
         const attachments = await readJson(files.anhaenge, []);
         for (const selected of value.requirementScopes) {
@@ -172,6 +172,7 @@ function createDocumentationWorkflowService(root) {
       const status = await readinessService.inspect(userId, projectId, { assistantJobId: job?.id || null, data, datasheetCoverage: coverage });
       const policy = data.projekt.assistantWorkflow?.jobId === job?.id ? data.projekt.assistantWorkflow : null;
       const agent = [], user = [], seen = new Set(), rejectedInternal = [];
+      const blockers = coverage.items.filter(article=>article.blocker).map(article=>({...article.blocker,articleId:article.id}));
       let knowledgeSummary = null;
       const work = job ? documentWork.current(data, job).filter(record => record.state !== 'resume' && (record.target.kind !== 'requirement' || !status.requirements.some(r => r.jobId === job.id && r.id === record.target.requirementId && r.fulfilled))) : [];
       const held = task => task.code !== 'REVIEW_FILE' && work.some(record => {
@@ -181,14 +182,14 @@ function createDocumentationWorkflowService(root) {
         return task.target && question?.targets?.some(t => targetKey(t) === targetKey(task.target));
       });
       const add = (owner, stage, code, title, target = null, extra = {}) => {
-        const id = 'task_' + hash([stage, code, target, extra.questionId || null]).slice(0, 20);
+        const id = 'task_' + hash([stage, code, target, extra.questionId || null,extra.issue?.key || extra.attachmentId || null]).slice(0, 20);
         if (!seen.has(id)) { seen.add(id); (owner === 'agent' ? agent : user).push({ id, owner, stage, code, title, target, ...extra }); }
       };
       const material = require('./materialImportService').tasks(data);
       if(job?.status!=='closed')for(const [owner,list] of [['agent',material.agent],['user',material.user]])for(const task of list){
         const {code,title,target,...extra}=task;
         const question=job?.questions.find(q=>!q.obsolete&&q.targets?.some(t=>targetKey(t)===targetKey(target)));
-        if(question?.answer&&owner==='user')add('agent','materials','APPLY_MATERIAL_ANSWER',title,target,{...extra,answer:question.answer,questionId:question.id,tool:'edoku_record_material_import',instructions:'Gespeicherte Antwort gezielt zuordnen, über resolve belegt ergänzen und nur bei ausreichenden Angaben wiederaufnehmen. Kein ungeprüftes Kopieren in Gerätefelder.'});
+        if(question?.answer&&owner==='user')add('agent','materials','APPLY_MATERIAL_ANSWER',title,target,{...extra,answer:question.answer,questionId:question.id,userDecision:{jobId:job.id,jobVersion:job.version,questionId:question.id},tool:'edoku_record_material_import',instructions:'Gespeicherte Antwort gezielt anwenden: nicht verwendet → not_used, ausdrücklich vom Dokumentationsumfang ausgenommen → out_of_scope, ausdrücklich nur Materialnachweis → material_only. resolve benötigt den gelieferten userDecision, unveränderten Originalbeleg der Frage und einen Zeilengrund. Keine automatische Deutung von unbekannt/Nachreichung: diese bleiben mit belegtem Wartezustand offen. Bestehende aktive Geräte nicht umgehen; keine Gerätewerte ungeprüft kopieren.'});
         else if(!question||owner==='agent')add(owner,'materials',code,title,target,extra);
       }
       const questions = job?.questions.filter(question => !question.obsolete&&require('./materialImportService').questionRelevant(data,question)) || [];
@@ -203,29 +204,29 @@ function createDocumentationWorkflowService(root) {
       };
       if (!job) add('agent', 'project', 'CREATE_JOB', 'Dokumentationsauftrag aus der tatsächlichen Benutzeranweisung anlegen.', null, { tool: 'edoku_create_documentation_job' });
       if (job?.status !== 'closed') {
-        const firestopRules = firestopDocs.firestopRequirements(data, job?.requirements || []);
-        const missingFirestop = firestopRules.filter(rule => !rule.requirementId);
-        if (job && missingFirestop.length) add('agent', 'evidence', 'DEFINE_FIRESTOP_REQUIREMENTS', 'Brandschutz-Pflichtunterlagen im bestehenden Auftrag anlegen', null, {
-          tool: 'edoku_update_documentation_job', requirements: missingFirestop.slice(0, 3).map(rule => rule.definition), remaining: missingFirestop.length,
-          instructions: 'Die gelieferten Anforderungen unverändert mit update.requirements im bestehenden Auftrag ergänzen; vorhandene Daten und Anforderungen erhalten. Danach nächsten Plan lesen. Keine Dateien oder Freigaben erzeugen.'
-        });
+        const firestopRules = firestopDocs.firestopRequirements(data, job?.requirements || [], job?.id);
         for (const rule of firestopRules.filter(rule => rule.requirementId)) {
           const requirement = status.requirements.find(item => item.jobId === job?.id && item.id === rule.requirementId && item.applicable !== false && !item.fulfilled);
           if (!requirement || job.documents.some(document => document.state === 'pending' && document.requirementIds.includes(requirement.id))) continue;
           const rejected = job.documents.filter(document => document.state === 'rejected' && document.requirementIds.includes(requirement.id)).map(document => ({ id: document.id, sha256: document.sha256, title: document.title }));
-          add('agent', 'evidence', rule.role === 'declaration' ? 'PREPARE_FIRESTOP_DECLARATION' : 'RESEARCH_FIRESTOP_DOCUMENT', requirement.title, { kind: 'requirement', requirementId: requirement.id }, { role: rule.role, system: rule.system, tool: rule.role === 'declaration' ? 'edoku_fire_protection_guide' : 'edoku_propose_document', rejected, instructions: firestopDocs.instructions(rule.role) });
+          add('agent', 'evidence', rule.role === 'declaration' ? 'PREPARE_FIRESTOP_DECLARATION' : 'RESEARCH_FIRESTOP_DOCUMENT', requirement.title, { kind: 'requirement', requirementId: requirement.id }, { role: rule.role, system: rule.system, tool: rule.role === 'declaration' ? 'edoku_fire_protection_guide' : 'edoku_propose_document', rejected, instructions: firestopDocs.instructions(rule.role, rule.system?.kind) });
         }
         for (const article of coverage.items) {
           const target = { kind: 'article', articleId: article.id };
           const protection = require('./fireProtectionPolicy').classify({ manufacturer: article.manufacturer, model: article.model, description: article.description });
-          const details = { article: { manufacturer: article.manufacturer, model: article.model, variant: article.variant }, devices: article.uncoveredReferences,
+          const retryDocument = article.search?.outcome === 'retry';
+          const details = { ...(retryDocument ? { priorSources: (article.search.sources || []).filter(url => url.length <= 800).slice(0,2), reuseOriginal: true } : {}), article: { manufacturer: article.manufacturer, model: article.model, variant: article.variant }, devices: article.uncoveredReferences,
             ...(protection.kind !== 'unknown' ? { fireProtection: { ...protection, guideTool: 'edoku_fire_protection_guide' } } : {}) };
-          if (['research', 'rejected'].includes(article.status)) add('agent', 'evidence', 'RESEARCH_DATASHEET', `Datenblatt: ${article.manufacturer} ${article.model}`, target, { ...details, rejected: article.rejected, tool: 'edoku_propose_document', category: 'Datenblätter', instructions: 'Offizielle Produktseite einmal ermitteln; edoku_find_manufacturer_documents liefert gezielt maximal drei PDF-Links ohne HTML-Volltext; manufacturerPageUrl und sourceUrl an edoku_propose_document übergeben. Edoku lädt das PDF und prüft Artikelnummer und Variante. Nur passende Unterlagen einmal vorschlagen; mode check prüft ohne Vorschlag. Kein vollständiges PDF im Chat lesen oder routinemäßig rendern. Frühere Ablehnungen beachten. Keine ähnliche Variante verwenden. Einen belegten Nichtfund über edoku_record_datasheet_search speichern; keine Dateifreigabe.' });
+          if (['research', 'rejected'].includes(article.status)) add('agent', 'evidence', retryDocument ? 'RETRY_DATASHEET_CHECK' : 'RESEARCH_DATASHEET', `${retryDocument ? 'Vorhandenes Datenblatt erneut prüfen' : 'Datenblatt'}: ${article.manufacturer} ${article.model}`, target, { ...details, rejected: article.rejected, tool: 'edoku_propose_document', category: 'Datenblätter', instructions: (retryDocument ? 'Gespeicherte Originalquellen nach behobener Prüfsperre gezielt erneut prüfen, nicht dieselbe Datenblattsuche wiederholen. Quellen bei Bedarf über contextRead lesen. ' : '') + 'Offizielle Produktseite einmal ermitteln; edoku_find_manufacturer_documents liefert gezielt maximal drei PDF-Links ohne HTML-Volltext; manufacturerPageUrl und sourceUrl an edoku_propose_document übergeben. Edoku lädt das PDF und prüft Artikelnummer und Variante. Nur passende Unterlagen einmal vorschlagen; mode check prüft ohne Vorschlag. Kein vollständiges PDF im Chat lesen oder routinemäßig rendern. Frühere Ablehnungen beachten. Keine ähnliche Variante verwenden. Einen belegten Nichtfund über edoku_record_datasheet_search speichern; keine Dateifreigabe.' });
           else if (article.status === 'ready_to_link') add('agent', 'evidence', 'LINK_EXISTING_DATASHEET', `Vorhandenes Datenblatt zuordnen: ${article.manufacturer} ${article.model}`, target, { ...details, documents: article.reusable, tool: 'edoku_link_existing_document' });
           else if (article.status === 'needs_identity') {
             const question = questions.find(item => item.targets?.some(value => value.kind === 'device' && article.references.some(ref => ref.listId === value.listId && ref.position === value.position)));
             if (!question) add('user', 'materials', 'CLARIFY_DATASHEET_IDENTITY', `Artikel/Variante für ${article.manufacturer} ${article.model} klären.`, target, { ...details, targets: article.references.slice(0, 20).map(ref => ({ kind: 'device', listId: ref.listId, position: ref.position, field: article.manufacturer ? 'typ' : 'hersteller' })), context: article.search?.reason || 'Ein passendes Datenblatt benötigt einen eindeutig bestätigten Artikel.', channel: 'agent_chat', tool: 'edoku_ask_question' });
-          } else if (['assignment_conflict', 'unsupported'].includes(article.status)) add('agent', 'evidence', 'RESOLVE_DATASHEET_ASSIGNMENT', `Datenblattzuordnung prüfen: ${article.manufacturer} ${article.model}`, target, { ...details, tool: 'edoku_get_device_list', instructions: 'Verknüpfung und Original prüfen. Bestehende andere Zuordnung nicht überschreiben. Nicht unterstützte Struktur im Chat benennen.' });
+          } else if (['assignment_conflict', 'unsupported'].includes(article.status)) {
+            const linkedIds = new Set(article.references.flatMap(ref=>data.geraetelisten.filter(list=>list.id===ref.listId).flatMap(list=>list.positionen.filter(row=>row.pos===ref.position).map(row=>row.datenblattId))).filter(Boolean));
+            const ownedByIssue = status.issues.some(issue=>issue.code==='DEVICE_DOCUMENT_CHANGED'&&job?.documents.some(doc=>doc.id===issue.proposalId&&linkedIds.has(doc.attachmentId)));
+            if(!ownedByIssue)blockers.push({code:'DOCUMENT_ASSIGNMENT_CONFLICT',kind:'reference',owner:'user_or_maintainer',resumeWhen:'Tatsächlichen Gerätebezug oder abweichende Originalunterlage gezielt klären.',articleId:article.id});
+          }
         }
         for (const requirement of status.requirements.filter(item => item.jobId === job?.id && item.applicable !== false && item.scope === 'internal' && !item.fulfilled)) {
           const proposals = job.documents.filter(document => document.state === 'pending' && document.requirementIds.includes(requirement.id));
@@ -264,11 +265,9 @@ function createDocumentationWorkflowService(root) {
           else if(issue.code==='DEVICE_DOCUMENT_CHANGED'&&job){
             const document=job.documents.find(row=>row.id===issue.proposalId);
             const attachment=data.anhaenge.find(row=>row.id===document?.attachmentId);
-            const refs=attachment?.deviceReferences||[];
-            const handled=refs.length&&refs.every(ref=>coverage.items.some(article=>['blocked','assignment_conflict'].includes(article.status)&&article.references.some(target=>target.listId===ref.listId&&target.position===ref.position)));
-            // Coverage already owns the concrete recheck task or recorded blocker.
-            // Keep the readiness issue; do not schedule the same failed work forever.
-            if(!handled)add('agent','evidence','RESOLVE_VALIDATION',issue.message,null,{issue,instructions:'Verknüpfung und Original gezielt prüfen; keine bestehende Dateientscheidung ersetzen.'});
+            const options=attachment?require('./deviceReferenceRepairService').repairOptions(data,attachment):null;
+            if(options?.repairs.length)add('agent','evidence','REPAIR_DEVICE_REFERENCES',issue.message,null,{attachmentId:attachment.id,tool:'edoku_repair_document_references',instructions:'Vorschau prüfen, danach nur mit unverändertem Token und ETag anwenden. Original und Freigabe erhalten.'});
+            else blockers.push({code:options?.blocked[0]?.code || 'APPROVED_REFERENCE_UNRESOLVED',kind:'reference',owner:'user_or_maintainer',resumeWhen:'Eindeutigen tatsächlichen Gerätebezug belegen; keine andere Position raten.',attachmentId:attachment?.id || null});
           }
           else add('agent', 'evidence', 'RESOLVE_VALIDATION', issue.message, null, { issue, instructions: 'Passenden vorhandenen edoku-Bereich lesen; nicht unterstützte Änderungen und Widersprüche im Chat erklären und klären.' });
         }
@@ -291,7 +290,7 @@ function createDocumentationWorkflowService(root) {
             const hasLegacy = selected.legacyQuestionIds.length > 0;
             const canResearch = !hasLegacy && selected.researchInputs.length > 0;
             add('agent', 'evidence', hasLegacy ? 'STRUCTURE_EXISTING_INFORMATION' : canResearch ? 'RESEARCH_SYSTEM_IDENTITY' : 'ASK_TARGETED_QUESTION', hasLegacy ? 'Vorhandene Antwort als belegte Fakten strukturieren' : canResearch ? 'Systemidentität aus bestätigten Fragmenten recherchieren' : selected.prompt, selected.target, {
-              tool: hasLegacy ? 'edoku_get_documentation_job' : canResearch ? 'edoku_knowledge' : 'edoku_ask_question', factId: selected.factId, unlocks: selected.unlocks, immediatelyUnblocks: selected.immediatelyUnblocks,
+              tool: hasLegacy ? 'edoku_get_documentation_job' : canResearch ? 'edoku_knowledge' : 'edoku_ask_question', missingInformation: { key: selected.target.key, subject: selected.target.subject, state: selected.state, owner: hasLegacy || canResearch ? 'agent' : 'user', source: hasLegacy ? 'stored_answers' : canResearch ? 'manufacturer_research' : 'user_answer' }, factId: selected.factId, unlocks: selected.unlocks, immediatelyUnblocks: selected.immediatelyUnblocks,
               ...(hasLegacy ? { questionIds: selected.legacyQuestionIds, instructions: 'Vorhandene Frage gezielt mit section=questions und entryId lesen; bei Bedarf einzelne Historienseite. Tatsächliche Originalbelege als facts über edoku_record_chat_decision sichern. Fehlendes unknown/deferred, Unsicheres inferred/ambiguous speichern. Nicht erneut fragen und keine freie Antwort ungeprüft als Feldwert übernehmen.' } : canResearch ? {
                 inputs: selected.researchInputs, nextTool: 'edoku_record_chat_decision', instructions: 'Hersteller-Originalquelle anhand dieser bestätigten Komponenten/Herstellerkennung recherchieren. Systemzuordnung als facts mit origin=research, status=inferred und HTTPS-Quellenadresse sichern; dies bestätigt keinen Einbau. Danach gezielt bestätigen lassen. Bei ungeklärtem Ergebnis einen begründeten unknown-Befund speichern und nicht unverändert erneut suchen.'
               } : {
@@ -311,6 +310,10 @@ function createDocumentationWorkflowService(root) {
       if (job?.status === 'closed') { agent.length = 0; user.length = 0; }
       const execution = require('./autonomousWorkflowService').build({ agent, user, state: job?.status === 'closed' ? 'closed' : status.technicalExportComplete && coverage.summary.complete && !agent.length && !user.length ? 'technically_complete' : !agent.length && !user.length && !work.length && coverage.summary.complete ? 'inspect_scope' : 'open', pendingFiles: status.pendingDocuments.length });
       const revision = store.projectDataRevision(root, userId, projectId);
+      for(const task of agent)require('./agentTaskContractService').attach(task,{projectId,jobId:job?.id,etag:revision?`"${revision}"`:null});
+      const blockerSummary=require('./workflowBlockerService').summarize(blockers);
+      blockerSummary.details={tool:'edoku_datasheet_coverage',arguments:{projectId,status:'open',limit:3}};
+      if(blockers.some(row=>row.attachmentId))blockerSummary.referenceDetails={tool:'edoku_documentation_status',arguments:{projectId,...(job?{jobId:job.id}:{}),section:'issues',limit:3}};
       const stageStates = stages.map(([id, title, completion]) => ({ id, title, completion, agentTasks: agent.filter(task => task.stage === id).length, userTasks: user.filter(task => task.stage === id).length }));
       const state = job?.status === 'closed' ? 'closed' : status.technicalExportComplete && coverage.summary.complete && !agent.length && !user.length ? 'technically_complete' : agent.length ? 'agent_action' : user.length ? 'waiting_user' : work.length || !coverage.summary.complete ? 'waiting_sources' : 'inspect_scope';
       const nextAction = job?.status === 'closed' ? null : agent[0] || user[0] || null;
@@ -318,8 +321,8 @@ function createDocumentationWorkflowService(root) {
       const result = {
         ...(resetGeneration?{reset:{generation:resetGeneration,materialPolicy:'new_material_only',instruction:'Dieses Projekt wurde bewusst zurückgesetzt. Frühere Materiallisten und Aufträge aus dem Chat nicht wieder einspielen. Nur neu bereitgestellte Materialien und den neuen Auftrag verwenden.'}}:{}),
         ...(knowledgeSummary ? {knowledge:knowledgeSummary} : {}),
-        contractVersion: '2.1', material: material.summary, projectId, jobId: job?.id || null, jobVersion: job?.version || null,
-        projectETag: revision ? `"${revision}"` : null, checkpoint: hash([execution.policy,userId,projectId,job?.id,revision,job?.version,agent,user,work,view,limit,offset]), state, execution,
+        contractVersion: '2.5', blockers:blockerSummary, material: material.summary, projectId, jobId: job?.id || null, jobVersion: job?.version || null,
+        projectETag: revision ? `"${revision}"` : null, checkpoint: hash(['2.5',execution.policy,blockerSummary,userId,projectId,job?.id,revision,job?.version,agent,user,work,view,limit,offset]), state, execution,
         stage: nextAction?.stage || (state === 'technically_complete' ? 'export' : 'project'), nextAction,
         policy: { documentScope: policy?.documentScope || 'internal', requirementScopes: policy?.requirementScopes || [], excludeConsumables: policy?.excludeConsumables !== false, materialExclusions: require('./documentationMaterialPolicy').effective(data.projekt).exclusions, materialPolicy: require('./documentationMaterialPolicy').POLICY, fileApproval: 'manual_gui_per_file', questions: 'agent_chat', research: 'manufacturer_sources_first', fireProtectionWorkflow: require('./fireProtectionPolicy').POLICY,productDocumentCheck:require('./productDocumentVerificationService').POLICY, ...(status.firestopDocumentation.active ? { firestopDocuments: firestopDocs.POLICY } : {}) },
         context: { instruction: job?.instruction || '', project: Object.fromEntries(Object.keys(require('../src/api/schemas').projectPatch.shape).filter(field => Object.hasOwn(data.projekt, field)).map(field => [field, data.projekt[field]])), toolsForExistingSources: ['edoku_get_documentation_job', 'edoku_get_section', 'edoku_get_device_list'] },
@@ -342,7 +345,7 @@ function createDocumentationWorkflowService(root) {
       return {
         ...(result.reset?{reset:result.reset}:{}),
         ...(knowledgeSummary ? {knowledge:knowledgeSummary} : {}),
-        contractVersion: result.contractVersion, changed:true, view: 'compact', projectId, jobId: result.jobId,
+        contractVersion: result.contractVersion, blockers:result.blockers, changed:true, view: 'compact', projectId, jobId: result.jobId,
         jobVersion: result.jobVersion, projectETag: result.projectETag, checkpoint: result.checkpoint,
         state, stage: result.stage, nextAction, execution, material: result.material,
         policy: { fileApproval: result.policy.fileApproval, documentScope: result.policy.documentScope, excludeConsumables: result.policy.excludeConsumables, materialExclusions: result.policy.materialExclusions, materialPolicy: result.policy.materialPolicy, questions: result.policy.questions, research: result.policy.research,productDocumentCheck:require('./productDocumentVerificationService').POLICY, fireProtectionWorkflow:require('./fireProtectionPolicy').POLICY, ...(result.policy.firestopDocuments ? { firestopDocuments: result.policy.firestopDocuments } : {}) },

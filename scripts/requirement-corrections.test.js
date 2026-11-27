@@ -84,7 +84,7 @@ test('Korrekturhistorie und Anforderung werden bei einem Commitfehler gemeinsam 
 });
 test('Der echte MCP kann die belegte Geräteanforderung korrigieren und besitzt weiterhin keine Dateifreigabe',async()=>{
  const f=await setup(),client=mcpClient(f.base,f.token.token,true);try{
-  await client.initialize();const tools=(await client.rpc('tools/list',{})).result.tools;assert.equal(tools.length,55);assert.ok(!tools.some(t=>/approve|freigeben/i.test(t.name)));
+  await client.initialize();const tools=(await client.rpc('tools/list',{})).result.tools;assert.equal(tools.length,58);assert.ok(!tools.some(t=>/approve|freigeben/i.test(t.name)));
   const r=await client.rpc('tools/call',{name:'edoku_correct_requirement_devices',arguments:{projectId:'same',jobId:f.job.id,requirementId:'sheet',etag:await f.etag(),input:await f.input()}});assert.ok(!r.result.isError,JSON.stringify(r));assert.equal(r.result.structuredContent.data.devices.length,2);
  }finally{await client.close();await f.cleanup()}
 });

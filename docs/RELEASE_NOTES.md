@@ -1,5 +1,81 @@
 # Release Notes
 
+## 0.3.1 – 27.11.2026
+
+**Oberfläche:** Export und Einstellungen zeigen ihre Untermenüs direkt unter der Topbar, zentriert und ohne Fettschrift. Bei wenig Platz bleibt die jeweilige Leiste seitlich scrollbar. Die Einstellungsnavigation gilt auch für das Sicherheitsprotokoll; Rollen, aktive Auswahl und Direktlinks bleiben erhalten. Icons geben dezente Rückmeldungen und berücksichtigen reduzierte Bewegung. Bei Messprotokollen ist MessPilot optional verlinkt; es werden keine Dateien automatisch übertragen.
+
+Diese Version bündelt die Verbesserungen der vorbereiteten 0.3.0-beta.9 und beta.10:
+
+- **Automatische Brandschutzpflichten:** edoku leitet herstellerunabhängig passende Unterlagenaufgaben ab; Abschottung, bestätigter Brandschutzkanal und bestätigter elektrischer Funktionserhalt bleiben getrennt.
+- **Konkrete nächste Schritte:** fehlende Fakten haben eindeutige Ziele, bekannte Belege werden zuerst genutzt, verbleibende Rückfragen gebündelt. Technische Prüfsperren werden von fehlenden Angaben und Passungskonflikten unterschieden.
+- **OBO-PLM-Maßprüfung:** artikelgebundene Millimetertabellen ergänzen den Stammdatenwert. Hersteller-/Artikelbindung, Achsen, Einheiten und widerspruchsfreie Werte bleiben prüfpflichtig.
+- **Originalquellen wiederverwenden:** nach passenden Prüfreparaturen das vorhandene Datenblatt erneut prüfen, statt dieselbe Suche zu wiederholen.
+- **Datenerhalt und manuelle Einzelprüfung:** keine automatische Dateiübernahme, Unterschrift oder Einbaubestätigung; gespeicherte Originale, Anforderungen und Entscheidungen bleiben erhalten.
+
+Software **0.3.1**, API/MCP unverändert **3.15.0**, Aufgabenvertrag **2.5**, Produktprüfung **manufacturer_pdf_article_variant_v10**, Brandschutzregel **firestop_documents_v2**. Weiterhin **69 HTTP-Operationen / 58 MCP-Werkzeuge** (22 Lesen / 36 Schreiben). Die Versionsanhebung ändert keine Programmlogik oder Abhängigkeiten. Gegenüber beta.8/beta.9/beta.10 keine neue Datenmigration; bei älteren Installationen die weiterhin erforderlichen Schritte der Update-Anleitung beachten.
+
+Der funktional identische beta.10-Stand wurde mit 365 Anwendungstests, acht Sicherungstests und zwei Vertragsprüfungen geprüft, einschließlich des unveränderten OBO-Original-PDFs. Für 0.3.1 sind Paket-/Lock-Konsistenz, unveränderte Fachlogik/Abhängigkeiten, Syntax (190 JS/48 EJS), aktueller Vertrag und acht gezielte Vertrags-/Start-/Betriebsprüfungen nachgewiesen; historische Nachweise werden nicht auf 0.3.1 umetikettiert. Softwaretests ersetzen keine fachliche Anlagenabnahme und keine manuelle Dateiprüfung. Lokale Aktivierung, GitHub-Veröffentlichung und Online-Deployment bleiben gesonderte Schritte.
+
+## 0.3.0-beta.10 – 27.11.2026
+
+Die OBO-PLM-Maßprüfung verbindet den einheitenlosen Stammdatenwert mit der expliziten Millimetertabelle desselben Artikels. Herstellerverknüpfung, Modell, Artikelnummer, Maßachsen und sämtliche Werte bleiben prüfpflichtig. Fremde oder widersprüchliche Tabellen, fehlende Einheiten und abweichende Maße werden weiterhin gesperrt. Nur passende ältere V9-Maßsperren werden gezielt neu geprüft.
+
+edoku benennt fehlende Fakten als konkrete `missingInformation`-Ziele und technische Prüfbefunde als `verification.resolution`. Eine nicht unterstützte Maßtabelle löst keine erneute Benutzerfrage nach bereits belegten Produktmaßen aus. Echte Abweichungen bleiben ein Passungskonflikt. Keine erfundenen Einbaudaten für Testpositionen.
+
+App **0.3.0-beta.10**, API/MCP **3.15.0**, Aufgabenvertrag **2.5**, Produktprüfung **manufacturer_pdf_article_variant_v10**. Weiterhin **69 HTTP-Operationen / 58 MCP-Werkzeuge**. Bestehende Daten, Originale und Freigaben bleiben erhalten; Dateien weiterhin nur manuell einzeln freigeben. Keine Datenmigration, lokale Aktivierung und Veröffentlichung getrennt behandeln.
+
+## 0.3.0-beta.9 – 27.11.2026
+
+Brandschutzpflichten werden herstellerunabhängig automatisch im Auftrag berechnet. Abschottung, bestätigter Brandschutzkanal und bestätigter elektrischer Funktionserhalt erhalten passende, getrennte Unterlagenaufgaben. Der zusätzliche manuelle Anforderungsschritt im MCP entfällt. Systemfragen und Einbauvoraussetzungen bleiben gezielt; unabhängige Datenblattarbeit läuft weiter.
+
+Abrufe bleiben schreibfrei; ausdrückliche Änderungen halten berechnete Kennungen atomar fest. Bestehende Anforderungen, Originale und Freigaben bleiben erhalten. Veraltete Systempflichten werden nicht mehr als aktuell gefordert. Widersprüchliche Kennungen und Anforderungslimits führen zum Konflikt statt zu Teiländerungen. Vorlagen/Entwürfe erfüllen keine Pflicht; neue Dateien weiterhin nur manuell einzeln freigeben.
+
+App **0.3.0-beta.9**, API/MCP **3.14.0**, Aufgabenvertrag **2.4**, Brandschutzregel **firestop_documents_v2**. Weiterhin **69 HTTP-Operationen / 58 MCP-Werkzeuge**. Keine Datenbankmigration. Quellstand und Tests sind von lokaler Aktivierung und Veröffentlichung getrennt.
+
+## 0.3.0-beta.8 – 27.11.2026
+
+Die Hersteller-PDF-Prüfung V9 erkennt das technische ZZ330-Datenblatt über die eindeutige Kombination aus Handelsname, Produktüberschrift und Dokumentart. Die Regel gilt ausschließlich für ZAPP-ZIMMERMANN / ZZ330 ohne zusätzliche Variantenangabe und benötigt weiterhin die bestätigte Produktseite, den dort verlinkten Originaldownload und den Hersteller im PDF. Ähnliche Nummern, widersprüchliche Handelsnamen und Sicherheitsdatenblätter werden darüber nicht akzeptiert. Keine Systemzuordnung oder Freigabe daraus ableiten.
+
+Nur der passende ältere V8-Prüfbefund für ZZ330 wird gezielt wieder bearbeitbar. Neue V9-Sperren, andere Produkte und Quellen-/Variantenfehler bleiben ohne neue Belege gesperrt. API/MCP unverändert **3.13.0**, **69 Operationen / 58 Werkzeuge**. Keine Datenmigration; Dateien weiterhin manuell einzeln prüfen und freigeben. Quellstand, Testvorschlag und lokale Aktivierung getrennt behandeln.
+
+## 0.3.0-beta.7 – 27.11.2026
+
+Einzelne tatsächliche Schotts lassen sich über API/MCP mit Benutzerbeleg anlegen, gezielt lesen und ergänzen. Starke Projektversion, erforderlicher Wiederholungsschlüssel bei Anlage und atomarer Änderungsbeleg schützen den Bestand. Technische Kennung ist keine erfundene Kennzeichnung am Bau. Fotos, unbekannte Bestandsfelder und nicht bearbeitete Einbaudaten bleiben erhalten; keine Lösch- oder Freigabefunktion.
+
+Öffnungsmaße, Bauteildicke, Schotttiefe, Komponenten und Feuerwiderstandsminuten werden strukturiert erfasst; unbekannte Werte bleiben offen. Faktensteuerung nutzt bestätigte Schottangaben und den Einbauort, GUI-Speichern erhält zusätzliche API-Felder. Keine automatische Übertragung alter Chatdaten oder Erfindung physischer Schotts aus Gerätezeilen.
+
+API/MCP **3.13.0**, **69 HTTP-Operationen / 58 Werkzeuge** (22 Lesen / 36 Schreiben). Keine neue Datenbankmigration durch diese Erfassung; der ausdrücklich auszuführende Vorschlagsspeicher-Upgrade aus beta.6 bleibt bei einem Update von beta.5 erforderlich. Dateien weiterhin ausschließlich manuell einzeln freigeben. Quellstand, Tests, lokale Aktivierung und Veröffentlichung getrennt behandeln.
+
+## 0.3.0-beta.6 – 27.11.2026
+
+Herstellerprüfung V8 erkennt veröffentlichte Links ohne Anführungszeichen und den beobachteten, gleichursprünglichen Striebel-&-John-PDF.js-Download. Rittal-Katalogschreibweisen werden gezielt an dieselbe Artikelnummer gebunden. Produktseiten werden vor der bestehenden Größenprüfung auf relevante Struktur, Texte und Links reduziert; Transfer-, PDF-, Adress- und Antwortgrenzen bleiben unverändert. BEGA, Sikora und die deutsche Siteco-Quelle ergänzt. Technische Link-, HTTP- und Vorschlagsfehler erzeugen keine falschen Variantenrückfragen.
+
+Zurückgezogene Originale bleiben unverändert. Ein abweichender gültiger Gerätebezug kann mit aktueller Auftragsversion einen getrennten neuen Dateivorschlag erzeugen, der erneut vollständig manuell zu prüfen ist. Dafür den Vorschlagsspeicher ausschließlich nach Sicherung und Wiederherstellungsprobe ausdrücklich aktualisieren; keine automatische Tabellenmigration beim Start. Manuelle Kategorie **Verbrauchsmaterial (nicht dokumentieren)** nimmt nur ausdrücklich markierte Positionen aus Recherche und erzeugten Listen, ohne Bestand oder Freigaben zu löschen; keine pauschale Sicherungsausschlussregel.
+
+API/MCP **3.12.0**, unverändert **66 HTTP-Operationen / 56 Werkzeuge**. Gezielte Wiederaufnahme konkret behobener V7-Sperren; neue V8-Sperren bleiben ohne neue Erkenntnisse geschlossen. Lokale Aktivierung und Veröffentlichung getrennt prüfen.
+
+## 0.3.0-beta.5 – 27.11.2026
+
+Die bisherige Gerätelisten-Übersicht „Dashboard“ heißt **Summenansicht**. Ihr Zähler in der Seitenauswahl addiert die Gerätepositionen der angezeigten Listen.
+
+Die Kopfzeile reserviert den Scrollleistenplatz auf kurzen und langen Bildschirmseiten gleichmäßig. Moderne Browser gleichen beide Ränder aus; ältere Browser erhalten einen dauerhaften rechten Scrollbereich. Breite Seiten orientieren sich an der verfügbaren Breite, damit kein horizontaler Überlauf entsteht.
+
+Im Werkzeugmenü der Gerätelisten lässt sich die optionale LV-Position ausschließlich in der Bildschirmtabelle ausblenden. Die Auswahl bleibt pro Konto, Projekt und Liste in diesem Browser erhalten; gespeicherte LV-Werte und die erzeugten PDF-Gerätelisten ändern sich dadurch nicht. Umschalten löst kein Auto-Save aus und ist auch für Lesekonten möglich.
+
+Das Menü öffnet per Klick oder Tastatur, schließt mit Escape oder Klick außerhalb und passt auch in schmale Ansichten. Nicht verfügbare Export-/Vorlagenschaltflächen entfallen. API/MCP unverändert **3.11.0**, **66 HTTP-Operationen / 56 Werkzeuge**. Keine Datenmigration oder Änderung der manuellen Einzelprüfung. Quellstand und lokale Aktivierung getrennt prüfen.
+
+## 0.3.0-beta.4 – 26.11.2026
+
+Belegte Materialausnahmen können gezielt als nicht verwendet, vom Dokumentationsumfang ausgenommen oder reiner Materialnachweis abgeschlossen werden. Gespeicherte Benutzerantwort, genaues Zeilenziel, Rechte und Versionen werden geprüft; Nachreichungen bleiben offen. Wiederaufnahme benötigt einen neuen Beleg, frühere Entscheidungen bleiben protokolliert. Bestehende aktive Geräte werden dadurch nicht umgangen.
+
+Die Reparaturvorschau unterscheidet eindeutige Umverknüpfung und Entfernung alter Doppelbezüge neben einem bestätigten aktuellen Anker. Mehrere reale Geräteinstanzen bleiben gesperrt; Originaldatei, Freigabe und vollständiger Vorher-/Nachher-Beleg bleiben erhalten. API/MCP **3.11.0**, unverändert **66 HTTP-Operationen / 56 Werkzeuge**, Agentenvertrag 2.3. Keine automatische Bestandsbereinigung, Migration oder Dateifreigabe. Quellstand, lokale Aktivierung und Veröffentlichung getrennt prüfen.
+
+## 0.3.0-beta.3 – 26.11.2026
+
+Stabile Gerätekennungen beim GUI-Speichern, Sortieren und Entfernen; monotone Nummernreserve verhindert versehentliche Wiederverwendung. Herstelleroriginale behalten ihre manuellen Freigaben. Gezielte Reparatur veralteter Gerätebezüge mit Vorschau, Versionsschutz, Hashprüfung und Protokoll; mehrdeutige Instanzen bleiben offen.
+
+API/MCP **3.10.0**, **66 HTTP-Operationen / 56 Werkzeuge** (22 Lesen / 34 Schreiben), Agentenvertrag 2.2. Blocker nennen Ursache, Zuständigkeit und Wiederaufnahmebedingung. Schreibantworten können kompakte Folgeaufgaben liefern; gezielte Artikel-/Positionsfilter und kürzere gemeinsame MCP-Anweisungen reduzieren Kontextabrufe. Keine automatische Dateifreigabe oder Datenmigration beim Start. Quellstand und lokale Aktivierung getrennt prüfen. [Ablauf und Schutzregeln](API_MCP.md).
+
 ## 0.3.0-beta.2 – 25.11.2026
 
 Einstellungen → System zeigt Software-, MCP- und API-Version kompakt an. Die Softwareversion stammt aus dem installierten Paket; gemeinsame Schnittstellenkonstanten werden von Anzeige, OpenAPI und tatsächlichem MCP-Handshake verwendet. Keine editierbaren Versionsfelder oder zusätzliche Updateabfrage. API/MCP bleiben 3.9.0 mit 64 Operationen/55 Werkzeugen. Bestehende Daten und Freigaben erhalten, Dateien weiterhin ausschließlich manuell einzeln freigeben.

@@ -1,9 +1,9 @@
 # Installation
 
-Aktueller App-Stand: `0.2.0-beta.1`, API/MCP `3.3.0`. [Release Notes](docs/RELEASE_NOTES.md) · [Versionen](docs/VERSIONIERUNG.md). Bestehende Installationen ausschließlich nach [Update-Anleitung](docs/UPDATE.md) mit Sicherung aktualisieren.
+Aktueller App-Stand: `0.3.1`, API/MCP `3.15.0`. [Release Notes](docs/RELEASE_NOTES.md) · [Versionen](docs/VERSIONIERUNG.md). Bestehende Installationen ausschließlich nach [Update-Anleitung](docs/UPDATE.md) mit Sicherung aktualisieren.
 
 
-Stand: 17.11.2026. Diese Anleitung beschreibt eine Neuinstallation des aktuellen Arbeitsstands für Entwicklung, Tests und lokalen Beta-Betrieb. Bei einer vorhandenen Installation zuerst [Update und Datenerhalt](docs/UPDATE.md) lesen. Der geprüfte Programmstand ist in `main` übernommen. Den gewünschten Branch beziehungsweise Commit vor dem Bauen ausdrücklich auswählen. Die reine Nutzung erklärt die [Bedienungsanleitung](docs/BEDIENUNGSANLEITUNG.md).
+Stand: 27.11.2026. Diese Anleitung beschreibt eine Neuinstallation des aktuellen Arbeitsstands für Entwicklung, Tests und lokalen Betrieb. Bei einer vorhandenen Installation zuerst [Update und Datenerhalt](docs/UPDATE.md) lesen. Quellstand, freigegebener Git-Stand und laufende Installation sind getrennt; die Versionsanhebung allein veröffentlicht oder aktiviert nichts. Den gewünschten Branch beziehungsweise Commit vor dem Bauen ausdrücklich auswählen. Die reine Nutzung erklärt die [Bedienungsanleitung](docs/BEDIENUNGSANLEITUNG.md).
 
 ## Online-Testinstanz mit Coolify
 
@@ -135,7 +135,7 @@ Die automatisierten Prüfungen werden in [docs/TESTS.md](docs/TESTS.md) beschrie
 
 ## Sicherheitshinweis
 
-Die aktuelle Version ist eine Beta. Für produktiven Serverbetrieb müssen unter anderem HTTPS, sichere Secrets, Härtung der Sessions, Benutzerrollen, Backups und Reverse-Proxy-Konfiguration geprüft werden.
+Für produktiven Serverbetrieb müssen unter anderem HTTPS, sichere Secrets, Härtung der Sessions, Benutzerrollen, Backups und Reverse-Proxy-Konfiguration geprüft werden.
 
 Selbstregistrierung ist standardmäßig geschlossen. Neue Passwörter müssen 12 bis 256 Zeichen enthalten und dürfen nicht nur aus Leerzeichen bestehen; vorhandene Passwörter werden beim Update nicht geändert. Systemadmins können Benutzer in der Anwendung sperren, wieder aktivieren, Rollen ändern und Passwörter zurücksetzen. Details: [Benutzerverwaltung](docs/BENUTZERVERWALTUNG.md). Für öffentliche Installationen sollten die bekannten Startpasswörter direkt nach dem ersten Start geändert und nicht benötigte Konten gesperrt werden.
 

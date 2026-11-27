@@ -6,6 +6,15 @@
   <body>
     <%# Exportansicht: bündelt PDF-Vorschau, Exportstruktur, Aktionen und finale Exportliste. %>
     <%- include("partials/header", { active }) %>
+    <div class="export-page-layout" data-tabs="export-v2">
+      <nav class="tabs export-tabs" aria-label="Exportbereiche">
+          <button class="tab-button" type="button" data-tab-target="matrix">Matrix</button>
+          <button class="tab-button" type="button" data-tab-target="pdf-dokumentation">PDF-Dokumentation</button>
+          <button class="tab-button" type="button" data-tab-target="pdf-trennstreifen">PDF-Trennstreifen</button>
+          <button class="tab-button" type="button" data-tab-target="ordnerruecken">Ordnerrücken</button>
+          <button class="tab-button" type="button" data-tab-target="zip-export">ZIP-Export</button>
+          <button class="tab-button" type="button" data-tab-target="export-einstellungen">Exporteinstellungen</button>
+        </nav>
     <main id="main-content" tabindex="-1" class="page compact-work-page full-width-page">
       <div class="page-title">
         <p class="eyebrow">Ausgabe</p>
@@ -40,15 +49,8 @@
         return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
       }; %>
 
-      <div data-tabs="export-v2" class="export-tab-shell export-scroll">
-        <nav class="tabs export-tabs" aria-label="Exportbereiche">
-          <button class="tab-button" type="button" data-tab-target="matrix">Matrix</button>
-          <button class="tab-button" type="button" data-tab-target="pdf-dokumentation">PDF-Dokumentation</button>
-          <button class="tab-button" type="button" data-tab-target="pdf-trennstreifen">PDF-Trennstreifen</button>
-          <button class="tab-button" type="button" data-tab-target="ordnerruecken">Ordnerrücken</button>
-          <button class="tab-button" type="button" data-tab-target="zip-export">ZIP-Export</button>
-          <button class="tab-button" type="button" data-tab-target="export-einstellungen">Exporteinstellungen</button>
-        </nav>
+      <div class="export-tab-shell export-scroll">
+
 
         <section id="matrix" class="tab-panel export-panel" data-tab-panel="matrix">
           <div class="panel-head">
@@ -631,6 +633,7 @@
         </section>
       </div>
     </main>
+    </div>
     <%- include("partials/footer") %>
     <script src="/js/app.js"></script>
   </body>

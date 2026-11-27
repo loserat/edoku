@@ -4,11 +4,11 @@
 
 edoku verbindet Projektstammdaten, Gerätelisten, Brandschutz und technische Unterlagen zu einer geordneten PDF-/ZIP-Dokumentation. Du arbeitest in der Weboberfläche oder verbindest einen Agenten wie Codex über den integrierten **MCP-Server**. edoku gibt den Projektaufbau und die nächsten Aufgaben vor; der Agent ergänzt belegte Informationen und schlägt passende Herstellerunterlagen vor.
 
-**Version `0.3.0-beta.2`** · HTTP-API/MCP `3.9.0` · **55 MCP-Werkzeuge** · Docker und SQLite.
+**Version `0.3.1`** · HTTP-API/MCP `3.15.0` · **58 MCP-Werkzeuge** · Docker und SQLite.
 
 [![Prüfung für main](https://github.com/loserat/edoku/actions/workflows/local-beta.yml/badge.svg?branch=main)](https://github.com/loserat/edoku/actions/workflows/local-beta.yml)
 
-> Jede neue Datei bleibt ein Vorschlag, bis du sie in der GUI einzeln angesehen und manuell freigegeben hast. Ein Agent kann diese Freigabe nicht übernehmen. edoku ist eine Beta; Softwaretests ersetzen keine fachliche Anlagenabnahme.
+> Jede neue Datei bleibt ein Vorschlag, bis du sie in der GUI einzeln angesehen und manuell freigegeben hast. Ein Agent kann diese Freigabe nicht übernehmen. Softwaretests ersetzen keine fachliche Anlagenabnahme.
 
 ## Mit einem Agenten über MCP arbeiten
 
@@ -18,7 +18,7 @@ edoku verbindet Projektstammdaten, Gerätelisten, Brandschutz und technische Unt
 
 Der Agent kann Material zuordnen, Geräte und Leistungsbereiche pflegen, Herstellerdatenblätter und erforderliche Anleitungen recherchieren, PDFs auf Artikel-/Variantenpassung prüfen lassen und Dateien zur manuellen Prüfung vorschlagen. Gespeicherte Fakten und Entscheidungen erlauben die Fortsetzung in einem neuen Chat. Offene Freigaben blockieren keine unabhängige Recherche.
 
-Der MCP-Adapter verwendet dieselbe geschützte HTTP-API wie andere Integrationen. 22 Werkzeuge lesen, 33 bearbeiten im Rahmen des API-Schlüssels. Gezieltes Löschen, Wiederherstellung und Projektreset haben eigene Schutzregeln und benötigen einen ausdrücklichen Auftrag. **edoku startet selbst keinen eingebauten KI-Agenten.** Der Client führt die von edoku berechneten Schritte aus und benötigt für Recherchen Zugriff auf die Herstellerquellen. Remote-MCP/OAuth gehört nicht zum beschriebenen lokalen Adapter.
+Der MCP-Adapter verwendet dieselbe geschützte HTTP-API wie andere Integrationen. 22 Werkzeuge lesen, 36 bearbeiten im Rahmen des API-Schlüssels. Gezieltes Löschen, Wiederherstellung und Projektreset haben eigene Schutzregeln und benötigen einen ausdrücklichen Auftrag. **edoku startet selbst keinen eingebauten KI-Agenten.** Der Client führt die von edoku berechneten Schritte aus und benötigt für Recherchen Zugriff auf die Herstellerquellen. Remote-MCP/OAuth gehört nicht zum beschriebenen lokalen Adapter.
 
 [Anbindung und Ablauf](docs/API_MCP.md) · [Manuelle Dateiprüfung](docs/DOKU_ASSISTENT.md).
 
@@ -32,7 +32,9 @@ Der MCP-Adapter verwendet dieselbe geschützte HTTP-API wie andere Integrationen
 
 ## Geprüfter Umfang
 
-Der bereinigte 0.3.0-beta.2-Stand wurde mit **319 Anwendungstests, acht Sicherungsprüfungen und zwei Vertragsprüfungen** getestet. Die unveränderte vereinfachte GUI wurde zusätzlich mit 46 Browserprüfungen geprüft. Fünf Mac-/APFS-Wartungstests werden unter Linux übersprungen. Technische Tests ersetzen keine fachliche Abnahme und belegen kein Online-Deployment. [Tests und Grenzen](docs/TESTS.md).
+Export und Einstellungen verwenden eine schlichte Untermenüleiste direkt unter der Hauptnavigation: mittig, mit normaler Schriftstärke und mobil seitlich scrollbar. Dezente Icon-Bewegungen berücksichtigen reduzierte Bewegung; bei Messprotokollen ist MessPilot optional verlinkt. Die bestehende Einzelprüfung und Freigabe von Dateien bleibt erhalten.
+
+Version 0.3.1 bündelt die automatische herstellerunabhängige Brandschutz-Aufgabensteuerung, konkrete fehlende Fakten, technische Prüfbefunde und die artikelgebundene OBO-PLM-Maßprüfung. Gespeicherte Originalquellen werden nach einer behobenen Prüfsperre gezielt erneut verwendet. Alle neuen Dateien bleiben manuell einzeln freizugeben; Quelltests, lokale Aktivierung und Online-Deployment sind getrennte Nachweise. Gegenüber 0.3.0-beta.8 ist keine neue Datenmigration erforderlich; frühere Speicher-Upgrades bleiben für ältere Installationen nach der Update-Anleitung maßgeblich. [Tests und Grenzen](docs/TESTS.md).
 
 ## Einblick
 
@@ -133,3 +135,5 @@ Tester und Mitentwickler sind willkommen. Bei Fehlern bitte Schritte, erwartetes
 ## API, MCP und Wartung
 
 Zentraler Einstieg: [API-/MCP-Übersicht](docs/API_MCP.md), [automatisch geprüfter Vertrag](docs/api/README.md), [Architektur und Refactoring](docs/TECHNIK.md), [Speicherpflege auf dem Mac](docs/SICHERHEIT.md). `npm run docs:check` erkennt veraltete Schnittstellendokumentation; `npm run test:maintenance` prüft die neuen Wartungswerkzeuge.
+
+Brandschutzpflichten werden automatisch und herstellerunabhängig aus dem Projektstand abgeleitet; offene Systeme werden gezielt geklärt. Der externe MCP-Agent bearbeitet die Aufgaben, jede neue Datei bleibt bis zur manuellen Einzelprüfung ein Vorschlag. [Ablauf und Voraussetzungen](docs/API_MCP.md#automatische-brandschutzpflichten).

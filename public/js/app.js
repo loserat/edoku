@@ -16,7 +16,13 @@ function themeButtonHover(value) {
   return "#" + [0, 2, 4].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * .82).toString(16).padStart(2, "0")).join("");
 }
 
-const savedTheme = localStorage.getItem("dm-theme") || window.edokuThemeDefaultMode || "light";
+function readEdokuViewPreference(key) {
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+function saveEdokuViewPreference(key, value) {
+  try { localStorage.setItem(key, value); } catch { /* Ansicht funktioniert auch ohne Browserspeicher. */ }
+}
+const savedTheme = readEdokuViewPreference("dm-theme") || window.edokuThemeDefaultMode || "light";
 document.documentElement.setAttribute("data-theme", resolveEdokuThemeMode(savedTheme));
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -809,7 +815,56 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // * INFO: Hauptnavigation innerhalb der Gerätelisten: Dashboard oder konkrete Liste anzeigen.
+  // Lokale Ansicht: Werte bleiben im Formular und werden unverändert gespeichert.
+  const deviceViewScope = document.querySelector('[data-device-view-scope]')?.dataset.deviceViewScope || '';
+  document.querySelectorAll('[data-device-lv-toggle]').forEach(toggle => {
+    const panel = toggle.closest('[data-device-list-panel]');
+    if (!panel) return;
+    const key = `edoku-device-view:${deviceViewScope}:${panel.dataset.deviceListPanel}:lvPosition`;
+    const apply = () => { panel.dataset.lvHidden = toggle.checked ? 'false' : 'true'; };
+    toggle.checked = readEdokuViewPreference(key) !== 'hidden';
+    toggle.disabled = false; // Eine reine Ansicht ist auch für Lesekonten verfügbar.
+    apply();
+    toggle.addEventListener('input', event => event.stopPropagation());
+    toggle.addEventListener('change', event => {
+      event.stopPropagation(); // Kein Auto-Save für eine reine Anzeigeoption.
+      apply();
+      saveEdokuViewPreference(key, toggle.checked ? 'visible' : 'hidden');
+    });
+  });
+  const deviceToolMenus = [...document.querySelectorAll('details.device-tool-menu')];
+  function positionDeviceToolMenu(menu) {
+    const popup = menu.querySelector('.device-tool-dropdown');
+    if (!menu.open || !popup) return;
+    popup.style.removeProperty('transform');
+    const bounds = popup.getBoundingClientRect();
+    const shift = Math.max(16 - bounds.left, Math.min(0, window.innerWidth - 16 - bounds.right));
+    if (shift) popup.style.transform = `translateX(${shift}px)`;
+  }
+  deviceToolMenus.forEach(menu => {
+    menu.addEventListener('toggle', () => {
+      if (menu.open) {
+        deviceToolMenus.forEach(other => { if (other !== menu) other.open = false; });
+        positionDeviceToolMenu(menu);
+      }
+    });
+    menu.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && menu.open) {
+        event.preventDefault();
+        menu.open = false;
+        menu.querySelector('summary').focus();
+      }
+    });
+    menu.addEventListener('focusout', event => {
+      if (event.relatedTarget && !menu.contains(event.relatedTarget)) menu.open = false;
+    });
+  });
+  if (deviceToolMenus.length) document.addEventListener('click', event => {
+    deviceToolMenus.forEach(menu => { if (!menu.contains(event.target)) menu.open = false; });
+  });
+  if (deviceToolMenus.length) window.addEventListener('resize', () => deviceToolMenus.forEach(positionDeviceToolMenu));
+
+  // * INFO: Hauptnavigation innerhalb der Gerätelisten: Summenansicht oder konkrete Liste anzeigen.
   const deviceMainTabs = document.querySelector("[data-device-main-tabs]");
   if (deviceMainTabs) {
     const buttons = Array.from(deviceMainTabs.querySelectorAll("[data-device-main-target]"));
@@ -837,7 +892,7 @@ document.addEventListener("DOMContentLoaded", () => {
         panel.hidden = nextTarget === "dashboard" || panel.dataset.deviceListPanel !== nextTarget;
       });
 
-      localStorage.setItem(storageKey, nextTarget);
+      saveEdokuViewPreference(storageKey, nextTarget);
     }
 
     buttons.forEach((button) => {
@@ -846,7 +901,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     deviceMainTabs.setAttribute("role", "tablist");
-    activateDeviceList(localStorage.getItem(storageKey));
+    activateDeviceList(readEdokuViewPreference(storageKey));
   }
 
   document.querySelectorAll("[data-add-geraet-row]").forEach((button) => {
@@ -864,6 +919,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const amountInput = button.closest(".add-position-control").querySelector("input[type='number']");
       const amount = Math.min(25, Math.max(1, Number(amountInput.value) || 1));
       let nextIndex = Number(button.dataset.nextIndex) || 0;
+      let nextPosition = Number(button.dataset.nextPosition) || nextIndex + 1;
       const fields = (fieldProfiles[button.dataset.leistungsbereich] || []).filter(field => field.guiVisible !== false);
 
       function escapeAttribute(value) {
@@ -912,9 +968,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       for (let index = 0; index < amount; index += 1) {
         const row = document.createElement("tr");
-        const pos = nextIndex + 1;
+        const pos = nextPosition++;
         row.innerHTML = [
-          cell("pos", pos),
+          cell("pos", pos, 'readonly').replace('</td>', `<input type="hidden" name="geraetelisten[${listIndex}][positionen][${nextIndex}][_new]" value="1"></td>`),
           ...fields.map(fieldCell),
           documentCell("bedienungsanleitungId", deviceManuals, "Bedienungsanleitungen", "Keine Anleitung"),
           documentCell("datenblattId", deviceDatasheets, "Datenblätter", "Kein Datenblatt"),
@@ -925,6 +981,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       button.dataset.nextIndex = String(nextIndex);
+      button.dataset.nextPosition = String(nextPosition);
       const firstNewInput = tbody.querySelector(`input[name="geraetelisten[${listIndex}][positionen][${nextIndex - amount}][typ]"]`);
       if (firstNewInput) {
         firstNewInput.dispatchEvent(new Event("input", { bubbles: true }));

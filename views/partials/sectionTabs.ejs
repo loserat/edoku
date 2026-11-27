@@ -13,7 +13,7 @@
       <span>Gerätelisten</span>
       <strong>Auswahl</strong>
     </div>
-    <button class="device-main-tab" type="button" data-device-main-target="dashboard"><%- include("icon", { name: "overview" }) %><span>Dashboard</span></button>
+    <button class="device-main-tab" type="button" data-device-main-target="dashboard"><%- include("icon", { name: "overview" }) %><span>Summenansicht</span><strong title="Gerätepositionen insgesamt"><%= deviceListTabs.reduce((sum, liste) => sum + (liste.positionen ? liste.positionen.length : 0), 0) %></strong></button>
     <% deviceListTabs.forEach((liste) => { %>
       <% const tabLabel = String(liste.titel || "").replace(/^Geräteliste\s+/i, ""); %>
       <% const shortLabel = String(liste.leistungsbereich || tabLabel || liste.titel || "")

@@ -24,7 +24,7 @@ function createDatasheetCoverageService(root) {
     if (require('./documentationMaterialPolicy').historicalSample(row)) return 'historical_example';
     if (isTypeReference(row)) return 'type_reference';
     const group=require('./documentationMaterialPolicy').excluded(row,project);
-    if(group)return require('./documentationMaterialPolicy').explicit(project)?group:'consumable';
+    if(group)return group==='manual_consumable'||require('./documentationMaterialPolicy').explicit(project)?group:'consumable';
 
     return null;
   }
@@ -113,7 +113,8 @@ function createDatasheetCoverageService(root) {
         }
         const uncoveredReferences = remaining.filter(ref => !pendingRefs.has(referenceKey(ref)));
         const record = records.findLast(value => value.articleId === group.id);
-        const search = record && !require('./productDocumentVerificationService').retryAfterPolicyChange(record,group) ? { outcome: record.outcome, reason: record.reason, sources: record.sources, recordedAt: record.recordedAt } : null;
+        const reopened = record && require('./productDocumentVerificationService').retryAfterPolicyChange(record,group);
+        const search = record ? { outcome: reopened ? 'retry' : record.outcome, reason: record.reason, sources: record.sources, recordedAt: record.recordedAt,...(record.blockerCode?{blockerCode:record.blockerCode}:{}) } : null;
         const status = !normalize(group.manufacturer) || !normalize(group.model) ? 'needs_identity'
           : !remaining.length ? 'approved'
           : !uncoveredReferences.length ? 'pending'
@@ -123,7 +124,8 @@ function createDatasheetCoverageService(root) {
           : search?.outcome === 'blocked' ? 'blocked'
           : search?.outcome === 'not_found' ? 'not_found'
           : rejected.size ? 'rejected' : 'research';
-        items.push({ id: group.id, manufacturer: group.manufacturer, model: group.model, variant: group.variant, description: group.description, status,
+        const blocker=require('./workflowBlockerService').classify(search);
+        items.push({ ...(blocker&&['blocked','not_found'].includes(status)?{blocker}:{}), id: group.id, manufacturer: group.manufacturer, model: group.model, variant: group.variant, description: group.description, status,
           references: group.references, uncoveredReferences, linkedPositions: linked.length, proposedPositions: remaining.length - uncoveredReferences.length,
           documents: [...documents.values()], reusable: reusable.map(doc => publicDoc(doc)), rejected: [...rejected.values()], ...(withdrawn.size ? { withdrawn: [...withdrawn.values()] } : {}), search });
       }

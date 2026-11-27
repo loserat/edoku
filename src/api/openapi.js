@@ -2,7 +2,7 @@ const { HTTP_API_VERSION } = require("../../services/interfaceVersions");
 const {resetInput}=require('./resetSchemas');
 const deletion=require('./deletionSchemas');
 const { detailQuery,decisionInput,decisionQuery,projectView } = require('./agentSchemas');
-const { z, projectPatch, projectCreate, positionPatch, approvedDocumentLink, attachmentPatch, pageQuery, serviceAreaSelection, systemSelection, systemCatalogQuery, documentSelection, exportJobInput } = require("./schemas");
+const { z, id, projectPatch, projectCreate, positionPatch, approvedDocumentLink, attachmentPatch, pageQuery, serviceAreaSelection, systemSelection, systemCatalogQuery, documentSelection, exportJobInput } = require("./schemas");
 const { jobInput, jobUpdate, documentInput, answerInput, replacementsInput, withdrawalInput, prepareDocumentInput, requirementCorrection, requirement } = require("./assistantSchemas");
 const output = require("./responses");
 const { askInput, startInput, researchInput, nextActionQuery } = require('./workflowSchemas');
@@ -15,8 +15,8 @@ const projectParam = param("projectId"), jobParam = param("jobId"), exportParam 
 const listParam = { name: "listId", in: "path", required: true, schema: { type: "string", minLength: 1, maxLength: 100 } };
 const pages = Object.entries(z.toJSONSchema(pageQuery).properties).map(([name, schema]) => ({ name, in: "query", schema }));
 const idempotency = required => ({ name: "Idempotency-Key", in: "header", required, description: "Stabiler Schlüssel pro beabsichtigter Anlage. Gleicher Inhalt liefert dieselbe Ressource; anderer Inhalt oder eine laufende Wiederholung ergeben 409.", schema: { type: "string", minLength: 8, maxLength: 128, pattern: "^[A-Za-z0-9_-]+$" } });
-function operation(operationId, scope, response, { parameters = [], input, etag = false, key, status = "200" } = {}) {
-  return { operationId, summary: operationId, description: `Erforderliche Rechte: ${scope}.`, security: [{ bearerAuth: [] }],
+function operation(operationId, scope, response, { parameters = [], input, etag = false, key, status = "200", description = '' } = {}) {
+  return { operationId, summary: operationId, description: `Erforderliche Rechte: ${scope}.${description ? ' '+description : ''}`, security: [{ bearerAuth: [] }],
     parameters: [...parameters, ...(etag ? [{ name: "If-Match", in: "header", required: true, description: "Starker projektweiter ETag einschließlich Anführungszeichen. Bei 412 neu lesen.", schema: { type: "string" } }] : []), ...(key === undefined ? [] : [idempotency(key)])],
     ...(input ? { requestBody: { required: true, content: content(z.toJSONSchema(input)) } } : {}),
     responses: { [status]: { description: "Erfolgreich", headers: { ETag: { description: "Projektversion bei projektbezogenen Lese-/Änderungsantworten mit SQLite; bei Anlage/Wiederholung nicht zugesichert.", schema: { type: "string" } }, "X-Request-Id": { schema: { type: "string" } }, "Idempotency-Replayed": { description: "Bei Anlage mit Wiederholungsschlüssel.", schema: { type: "string", enum: ["true", "false"] } } }, content: content(z.toJSONSchema(output.envelope(response), { io: "output" })) },
@@ -42,13 +42,19 @@ const paths = {
   "/projects/{projectId}/attachments/{attachmentId}": { patch: operation("patchAttachment", "projects:write", output.record, { parameters: [...p, { name: "attachmentId", in: "path", required: true, schema: { type: "string", pattern: "^[a-z0-9][a-z0-9_-]{0,79}$" } }], input: attachmentPatch, etag: true }) },
   "/projects/{projectId}/documentation-status": { get: operation("getDocumentationStatus", "projects:read, devices:read, documents:read, assistant:read", output.statusResponse, { parameters: [...p, ...Object.entries(z.toJSONSchema(require('./statusSchemas').query).properties).map(([name, schema]) => ({ name, in: 'query', schema }))] }) },
   "/projects/{projectId}/device-lists": { get: operation("listDeviceLists", "devices:read", output.page(output.deviceList), { parameters: [...p, ...pages] }) },
-  "/projects/{projectId}/device-lists/{listId}": { get: operation("getDeviceList", "devices:read", output.deviceDetail, { parameters: [...p, listParam, ...pages] }) },
+  "/projects/{projectId}/device-lists/{listId}": { get: operation("getDeviceList", "devices:read", output.deviceDetail, { parameters: [...p, listParam, ...pages, {name:"position",in:"query",schema:{type:"integer",minimum:1}}] }) },
   "/projects/{projectId}/device-lists/{listId}/positions": { post: operation("addDevicePosition", "devices:write", output.position, { parameters: [...p, listParam], input: positionPatch, etag: true, key: false, status: "201" }) },
   "/projects/{projectId}/device-lists/{listId}/positions/{position}": { patch: operation("patchDevicePosition", "devices:write", output.position, { parameters: [...p, listParam, { name: "position", in: "path", required: true, schema: { type: "integer", minimum: 1 } }], input: positionPatch, etag: true }) }
 };
 for (const [section, response] of [["service-areas", output.serviceAreas], ["systems", output.page(output.system)], ["system-catalog", output.systemCatalog], ["documents", output.page(output.matrixEntry)], ["firestops", output.page(output.record)], ["attachments", output.page(output.record)], ["exports", output.page(output.record)]]) {
   paths[`/projects/{projectId}/${section}`] = { get: operation(`get_${section.replaceAll("-", "_")}`, ["service-areas", "systems", "system-catalog"].includes(section) ? "projects:read" : "documents:read", response, { parameters: [...p, ...(section==="system-catalog"?Object.entries(z.toJSONSchema(systemCatalogQuery).properties).map(([name,schema])=>({name,in:"query",schema})):pages)] }) };
 }
+const firestopReceipt = z.object({ id, changed: z.boolean() }).strict();
+paths['/projects/{projectId}/firestops'].post = operation('addFirestop', 'projects:write; tatsächliches Schott mit Benutzerbeleg, keine Dateifreigabe', firestopReceipt, { parameters: p, input: require('./firestopSchemas').input, etag: true, key: true, status: '201' });
+paths['/projects/{projectId}/firestops/{entryId}'] = {
+  get: operation('getFirestop', 'documents:read', output.record, { parameters: [...p, param('entryId')] }),
+  patch: operation('patchFirestop', 'projects:write; bestätigte Teiländerung, Fotos/Originalfelder erhalten', firestopReceipt, { parameters: [...p, param('entryId')], input: require('./firestopSchemas').input, etag: true })
+};
 for (const [section, input, response] of [["service-areas", serviceAreaSelection, output.serviceAreas], ["systems", systemSelection, output.systemReceipt], ["documents", documentSelection, z.array(output.matrixEntry)]]) paths[`/projects/{projectId}/${section}`].patch = operation(`select_${section.replaceAll("-", "_")}`, "projects:write", response, { parameters: p, input, etag: true });
 paths["/projects/{projectId}/assistant/jobs"] = { get: operation("listDocumentationJobs", "assistant:read", output.page(output.record), { parameters: [...p, ...pages] }), post: operation("createDocumentationJob", "assistant:write", output.job, { parameters: p, input: jobInput, key: false, status: "201" }) };
 paths["/projects/{projectId}/assistant/jobs/{jobId}"] = { get: operation("getDocumentationJob", "assistant:read", output.record, { parameters: [...p, jobParam,...Object.entries(z.toJSONSchema(detailQuery).properties).map(([name,schema])=>({name,in:"query",schema}))] }), patch: operation("updateDocumentationJob", "assistant:write", output.record, { parameters: [...p, jobParam,{name:"view",in:"query",schema:{type:"string",enum:["compact","full"]}}], input: jobUpdate }) };
@@ -84,6 +90,14 @@ paths['/projects/{projectId}/deletions/{deletionId}/restore']={post:operation('r
 download.responses[200] = { description: "Geprüfte Datei eines erfolgreichen Exports. Historische Versionen bleiben mit current=false abrufbar.", content: Object.fromEntries(["application/pdf", "application/zip", "application/json"].map(type => [type, { schema: { type: "string", format: "binary" } }])) };
 paths["/projects/{projectId}/export-jobs/{exportId}/files/{kind}"] = { get: download };
 paths["/openapi.json"] = { get: { operationId: "getOpenApi", security: [], responses: { 200: { description: "OpenAPI-3.1-Vertrag ohne Antwort-Hülle", content: content({ type: "object" }) } } } };
+const referenceReads='projects:read, devices:read, documents:read, assistant:read';
+paths['/projects/{projectId}/attachments/{attachmentId}/device-repair']={
+ get:operation('previewDeviceReferenceRepair',referenceReads,output.record,{parameters:[...p,param('attachmentId')]}),
+ post:operation('repairDeviceReferences',referenceReads+', projects:write, devices:write',output.record,{parameters:[...p,param('attachmentId')],input:require('./referenceRepairSchemas').apply,etag:true})
+};
 const materialImports=require('./materialImportSchemas');
-paths['/projects/{projectId}/material-import']={get:operation('getMaterialImport','projects:read, devices:read',output.record,{parameters:[...p,...Object.entries(z.toJSONSchema(materialImports.query).properties).map(([name,schema])=>({name,in:'query',schema}))]}),post:operation('recordMaterialImport','projects:write, devices:read',output.record,{parameters:p,input:materialImports.input,etag:true})};
+paths['/projects/{projectId}/material-import']={get:operation('getMaterialImport','projects:read, devices:read',output.record,{description:'Gezielte Materialzeilen, Quelle oder Entscheidungsbeleg. section=decision benötigt zusätzlich assistant:read und rowId.',parameters:[...p,...Object.entries(z.toJSONSchema(materialImports.query).properties).map(([name,schema])=>({name,in:'query',schema}))]}),post:operation('recordMaterialImport','projects:write, devices:read',output.record,{description:'Materialquelle und Zuordnung belegt führen. Manuelle Umfangsausnahmen und ihre Wiederaufnahme benötigen zusätzlich assistant:read sowie eine gespeicherte aktuelle Benutzerantwort zum genauen Zeilenziel. Keine Geräte-/Dateilöschung oder Freigabe.',parameters:p,input:materialImports.input,etag:true})};
+for (const methods of Object.values(paths)) for (const [method,op] of Object.entries(methods)) {
+ if (['post','patch'].includes(method)) op.parameters=[...(op.parameters||[]),{name:'Prefer',in:'header',required:false,description:'return=next-action liefert nach erfolgreicher Projektänderung optional eine kompakte continuation; benötigt alle Leserechte. Der Mutationsbeleg bleibt unverändert.',schema:{type:'string',enum:['return=next-action']}}];
+}
 module.exports = { openapi: "3.1.0", info: { title: "edoku Integrations-API", version: HTTP_API_VERSION, description: "Benutzergebundene Projektdaten, belegte Chatantworten, interne Projekttextentwürfe mit Exportstandard intern, versionierte Kapitelentwürfe mit verpflichtender GUI-Einzelfreigabe und dauerhafte PDF-/ZIP-Aufträge. Projektänderungen benötigen If-Match und SQLite; Chatantworten/Ablösungen die zuletzt gelesene Auftragsversion. Anlage und Kapitelvorbereitung benötigen Idempotency-Key. Ein technischer Export ersetzt keine fachliche Freigabe." }, servers: [{ url: "/api/v1" }], components: { securitySchemes: { bearerAuth: { type: "http", scheme: "bearer", description: "API-Schlüssel aus edoku → Einstellungen → API & MCP" } } }, paths };

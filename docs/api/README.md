@@ -2,7 +2,7 @@
 
 Automatisch erzeugt mit `npm run docs:api`. Nicht von Hand bearbeiten. `npm run docs:check` erkennt Abweichungen. Diese Referenz beschreibt den Quellstand. [Versionsschema](../VERSIONIERUNG.md) und [Prüfverfahren](../TESTS.md) ergänzen den Vertrag.
 
-OpenAPI **3.9.0** · MCP **3.9.0** · **64 HTTP-Operationen** · **22 Lese- / 33 Schreibwerkzeuge**.
+OpenAPI **3.15.0** · MCP **3.15.0** · **69 HTTP-Operationen** · **22 Lese- / 36 Schreibwerkzeuge**.
 
 ## HTTP-Vertrag
 
@@ -39,6 +39,8 @@ Alle Pfade beginnen mit `/api/v1`. Rechte sind zusätzlich zur Benutzer-/Projekt
 | GET | `/projects/{projectId}/attachments` | documents:read. | — | `get_attachments` |
 | DELETE | `/projects/{projectId}/attachments/{attachmentId}` | projects:read, devices:read, documents:read, assistant:read, projects:write, devices:write, assistant:write. | Projekt-ETag, Wiederholungsschlüssel | `deleteProjectDocument` |
 | PATCH | `/projects/{projectId}/attachments/{attachmentId}` | projects:write. | Projekt-ETag | `patchAttachment` |
+| GET | `/projects/{projectId}/attachments/{attachmentId}/device-repair` | projects:read, devices:read, documents:read, assistant:read. | — | `previewDeviceReferenceRepair` |
+| POST | `/projects/{projectId}/attachments/{attachmentId}/device-repair` | projects:read, devices:read, documents:read, assistant:read, projects:write, devices:write. | Projekt-ETag | `repairDeviceReferences` |
 | GET | `/projects/{projectId}/datasheet-coverage` | projects:read, devices:read, documents:read, assistant:read. | — | `getDatasheetCoverage` |
 | POST | `/projects/{projectId}/datasheet-searches` | projects:write, devices:read, documents:read, assistant:read. | Projekt-ETag | `recordDatasheetSearch` |
 | GET | `/projects/{projectId}/deletions` | projects:read, devices:read, documents:read, assistant:read. | — | `listItemDeletions` |
@@ -61,9 +63,12 @@ Alle Pfade beginnen mit `/api/v1`. Rechte sind zusätzlich zur Benutzer-/Projekt
 | GET | `/projects/{projectId}/exports` | documents:read. | — | `get_exports` |
 | GET | `/projects/{projectId}/fire-protection-guide` | projects:read, devices:read, assistant:read. | — | `getFireProtectionGuide` |
 | GET | `/projects/{projectId}/firestops` | documents:read. | — | `get_firestops` |
+| POST | `/projects/{projectId}/firestops` | projects:write; tatsächliches Schott mit Benutzerbeleg, keine Dateifreigabe. | Projekt-ETag, Wiederholungsschlüssel | `addFirestop` |
+| GET | `/projects/{projectId}/firestops/{entryId}` | documents:read. | — | `getFirestop` |
+| PATCH | `/projects/{projectId}/firestops/{entryId}` | projects:write; bestätigte Teiländerung, Fotos/Originalfelder erhalten. | Projekt-ETag | `patchFirestop` |
 | DELETE | `/projects/{projectId}/internal-documents/{attachmentId}` | projects:write; ausschließlich interne Assistenten-Projekttexte. | Projekt-ETag | `removeInternalProjectDocument` |
-| GET | `/projects/{projectId}/material-import` | projects:read, devices:read. | — | `getMaterialImport` |
-| POST | `/projects/{projectId}/material-import` | projects:write, devices:read. | Projekt-ETag | `recordMaterialImport` |
+| GET | `/projects/{projectId}/material-import` | projects:read, devices:read. Gezielte Materialzeilen, Quelle oder Entscheidungsbeleg. section=decision benötigt zusätzlich assistant:read und rowId. | — | `getMaterialImport` |
+| POST | `/projects/{projectId}/material-import` | projects:write, devices:read. Materialquelle und Zuordnung belegt führen. Manuelle Umfangsausnahmen und ihre Wiederaufnahme benötigen zusätzlich assistant:read sowie eine gespeicherte aktuelle Benutzerantwort zum genauen Zeilenziel. Keine Geräte-/Dateilöschung oder Freigabe. | Projekt-ETag | `recordMaterialImport` |
 | GET | `/projects/{projectId}/next-action` | projects:read, devices:read, documents:read, assistant:read. | — | `getNextDocumentationAction` |
 | POST | `/projects/{projectId}/research` | projects:write, devices:write, devices:read. | Projekt-ETag | `recordProductResearch` |
 | POST | `/projects/{projectId}/reset` | projects:write, devices:write, documents:read, assistant:write, exports:write. | Projekt-ETag, Wiederholungsschlüssel | `resetProject` |
@@ -82,6 +87,7 @@ Vollständige Eingabeschemas und Serveranweisungen: [mcp-tools.json](mcp-tools.j
 | Werkzeug | Art | Pflichtargumente | API-Operationen |
 | --- | --- | --- | --- |
 | `edoku_add_device_position` | Schreiben | `projectId`, `listId`, `etag`, `values` | `addDevicePosition` |
+| `edoku_add_firestop` | Schreiben | `projectId`, `etag`, `requestId`, `values`, `evidence` | `addFirestop` |
 | `edoku_ask_question` | Schreiben | `projectId`, `jobId`, `input` | `askContextualQuestion` |
 | `edoku_cancel_export` | Schreiben | `projectId`, `exportId` | `cancelExportJob` |
 | `edoku_chat_decisions` | Lesen | `projectId`, `jobId` | `getChatDecisions` |
@@ -100,7 +106,7 @@ Vollständige Eingabeschemas und Serveranweisungen: [mcp-tools.json](mcp-tools.j
 | `edoku_get_documentation_job` | Lesen | `projectId`, `jobId` | `getDocumentationJob` |
 | `edoku_get_export_job` | Lesen | `projectId`, `exportId` | `getExportJob` |
 | `edoku_get_project` | Lesen | `projectId` | `getProject` |
-| `edoku_get_section` | Lesen | `projectId`, `section` | `get_service_areas`, `get_systems`, `get_system_catalog`, `get_documents`, `get_firestops`, `get_attachments`, `get_exports` |
+| `edoku_get_section` | Lesen | `projectId`, `section` | `get_service_areas`, `get_systems`, `get_system_catalog`, `get_documents`, `get_firestops`, `getFirestop`, `get_attachments`, `get_exports` |
 | `edoku_identity` | Lesen | — | `getIntegrationIdentity` |
 | `edoku_knowledge` | Lesen | `projectId`, `jobId` | `getDocumentationKnowledge` |
 | `edoku_link_existing_document` | Schreiben | `projectId`, `etag`, `input` | `linkApprovedDocument` |
@@ -113,6 +119,7 @@ Vollständige Eingabeschemas und Serveranweisungen: [mcp-tools.json](mcp-tools.j
 | `edoku_next_action` | Lesen | `projectId` | `getNextDocumentationAction` |
 | `edoku_patch_attachment` | Schreiben | `projectId`, `attachmentId`, `etag`, `changes` | `patchAttachment` |
 | `edoku_patch_device_position` | Schreiben | `projectId`, `listId`, `position`, `etag`, `changes` | `patchDevicePosition` |
+| `edoku_patch_firestop` | Schreiben | `projectId`, `entryId`, `etag`, `values`, `evidence` | `patchFirestop` |
 | `edoku_patch_project` | Schreiben | `projectId`, `etag`, `changes` | `patchProject` |
 | `edoku_prepare_project_document` | Schreiben | `projectId`, `jobId`, `etag`, `input`, `requestId` | `prepareProjectDocument` |
 | `edoku_preview_deletion` | Lesen | `projectId`, `target` | `previewItemDeletion` |
@@ -126,6 +133,7 @@ Vollständige Eingabeschemas und Serveranweisungen: [mcp-tools.json](mcp-tools.j
 | `edoku_record_research` | Schreiben | `projectId`, `etag`, `input` | `recordProductResearch` |
 | `edoku_record_user_answers` | Schreiben | `projectId`, `jobId`, `input` | `recordUserAnswers` |
 | `edoku_remove_internal_project_document` | Schreiben | `projectId`, `attachmentId`, `etag`, `confirm` | `removeInternalProjectDocument` |
+| `edoku_repair_document_references` | Schreiben | `projectId`, `attachmentId` | `previewDeviceReferenceRepair`, `repairDeviceReferences` |
 | `edoku_replace_document_proposals` | Schreiben | `projectId`, `jobId`, `input` | `replaceDocumentProposals` |
 | `edoku_reset_project` | Schreiben | `projectId`, `etag`, `requestId`, `input` | `resetProject` |
 | `edoku_restore_deleted_item` | Schreiben | `projectId`, `deletionId`, `etag`, `requestId`, `input` | `restoreDeletedItem` |

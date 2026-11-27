@@ -4,13 +4,29 @@ function decode(s){return String(s).replace(/&amp;/gi,'&').replace(/&quot;/gi,'"
 function cleanHtml(html){return html.replace(/<!--[\s\S]*?(?:-->|$)|<script\b[\s\S]*?(?:<\/script\s*>|$)|<style\b[\s\S]*?(?:<\/style\s*>|$)/gi,' ');}
 function projectPageHtml(html){
  const clean=cleanHtml(html),main=clean.match(/<main\b[\s\S]*?<\/main\s*>/i);
- return main?(clean.match(/<base\b[^>]*>/i)?.[0]||'')+main[0]:clean;
+ const body=main?(clean.match(/<base\b[^>]*>/i)?.[0]||'')+main[0]:clean;
+ // Navigation/icons and large client-side view-model attributes are not product
+ // evidence. Keep text, table structure and all attributes used by the verifier.
+ const evidence=body.replace(/<(nav|footer|svg)\b[\s\S]*?<\/\1\s*>/gi,' ');
+ return evidence.replace(/<(?:[^<>"']|"[^"]*"|'[^']*')*>/g,tag=>{
+  const name=tag.match(/^<\s*(\/?[\w:-]+)/)?.[1];if(!name)return '';
+  if(name.startsWith('/'))return `<${name}>`;
+  if(/^(?:img|picture|source)$/i.test(name))return '';
+  const data=attrs(tag),kept=Object.entries(data).flatMap(([key,value])=>{
+   if(key==='class'){const tokens=value.split(/\s+/).filter(t=>/^(?:active|table-product-item|cms-col-ds-orderno|cart-variant__[a-z-]+)$/.test(t));return tokens.length?[[key,tokens.join(' ')]]:[];}
+   if(key==='id')return value==='leafletProductContainer'?[[key,value]]:[];
+   if(key==='data-mage-init')return data.id==='leafletProductContainer'?[[key,value]]:[];
+   return ['href','download-link','title','name'].includes(key)?[[key,value]]:[];
+  });
+  const escape=value=>value.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return `<${name}${kept.map(([key,value])=>` ${key}="${escape(value)}"`).join('')}>`;
+ });
 }
 function pageContent(html){
  const clean=cleanHtml(html),start=clean.search(/<h1\b/i);
  return decode((start>=0?clean.slice(start):clean).replace(/<\/(?:p|div|tr|li|h[1-6]|td|th)\s*>/gi,'\n').replace(/<(?:[^>\"']|\"[^\"]*\"|'[^']*')*>/g,' ')).replace(/[ \t]+/g,' ').replace(/\n\s*\n/g,'\n').slice(0,50000);
 }
-function attrs(tag){const d={};for(const m of tag.matchAll(/([\w:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g))d[m[1].toLowerCase()]=decode(m[2]??m[3]);return d;}
+function attrs(tag){const d=Object.create(null);for(const m of tag.matchAll(/([\w:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'<>`]+))/g)){const key=m[1].toLowerCase();if(!Object.hasOwn(d,key))d[key]=decode(m[2]??m[3]??m[4]);}return d;}
 function canonical(value){const u=new URL(value);u.hash='';u.searchParams.delete('attachment');u.searchParams.sort();return u.href;}
 // Only published anchors are considered. These endpoints return original PDFs
 // despite lacking a .pdf suffix; never synthesize or execute a download URL.
@@ -22,22 +38,31 @@ function pdfEndpoint(u){
  if(/(^|\.)eltropa\.de$/i.test(u.hostname))return /^\/Produkt\/\d+\/export-to-pdf\/\d+$/.test(u.pathname);
  if(/(^|\.)hensel-electric\.(?:de|com)$/i.test(u.hostname))return /^\/[a-z]{2}-[a-z]{2}\/produkt\/\d+\/datasheet$/i.test(u.pathname);
  if(/(^|\.)rittal\.com$/i.test(u.hostname))return /^\/pdf-creator\/variant\/[a-z]{2}-[a-z]{2}\/\d+\/?$/i.test(u.pathname);
+ if(/(^|\.)striebelundjohn\.com$/i.test(u.hostname))return /^\/voltimum_product_catalog\/pdf\/\d+$/.test(u.pathname)&&/^[a-z0-9_.-]+\.pdf$/i.test(u.searchParams.get('name')||'');
  if(u.hostname==='support.industry.siemens.com')return u.pathname==='/teddatasheet/'&&u.searchParams.get('format')==='pdf'&&/^[\w.-]{5,40}$/.test(u.searchParams.get('mlfbs')||'');
  if(/(^|\.)phoenixcontact\.com$/i.test(u.hostname))return /\/[^/]+-\d{6,10}$/.test(u.pathname)&&u.searchParams.get('type')==='pdf';
  if(u.hostname==='datasheet.weidmueller.com')return /^\/pdf\/[a-z]{2}(?:-[a-z]{2})?\/\d{10}\/scope\/\d+\/$/i.test(u.pathname);
  return false;
 }
+function originalPdfUrl(raw,base){
+ let u=new URL(raw,base);const uri=u.searchParams.get('uri'),file=u.searchParams.get('file');
+ if(u.pathname.endsWith('.download')&&/^\/p\/\d+\.pdf$/.test(uri||'')&&file===uri.split('/').at(-1))u=new URL(uri,u.origin);
+ // Only this observed, same-origin PDF.js wrapper may expose its original.
+ if(/(^|\.)striebelundjohn\.com$/i.test(new URL(base).hostname)&&u.origin===new URL(base).origin&&u.pathname==='/libraries/pdf.js/web/viewer.html'&&file){
+  const pdf=new URL(file,u);if(pdf.origin===u.origin&&pdfEndpoint(pdf))u=pdf;
+ }
+ return u;
+}
 function linkedPdf(html,pageUrl,sourceUrl){
  const clean=cleanHtml(html),baseTag=clean.match(/<base\b[^>]*>/i);let base=pageUrl;
  try{if(baseTag)base=new URL(attrs(baseTag[0]).href,pageUrl).href;}catch{}
  const wanted=canonical(sourceUrl);
- for(const m of clean.matchAll(/<a\b[^>]*>[\s\S]*?<\/a\s*>|<warema-download-list-item\b[^>]*>[\s\S]*?<\/warema-download-list-item\s*>/gi)){
-  const d=attrs(m[0].split('>')[0]),raw=d.href||d['download-link'];
+ for(const m of clean.matchAll(/<a\b(?:[^<>"']|"[^"]*"|'[^']*')*>[\s\S]*?<\/a\s*>|<warema-download-list-item\b(?:[^<>"']|"[^"]*"|'[^']*')*>[\s\S]*?<\/warema-download-list-item\s*>/gi)){
+  const d=attrs(m[0].match(/^<(?:[^<>"']|"[^"]*"|'[^']*')*>/)?.[0]||''),raw=d.href||d['download-link'];
   try{
    if(!raw)continue;
-   const u=new URL(raw,base),uri=u.searchParams.get('uri'),file=u.searchParams.get('file');
-   const wrapper=u.pathname.endsWith('.download')&&/^\/p\/\d+\.pdf$/.test(uri||'')&&file===uri.split('/').at(-1)?new URL(uri,u.origin).href:null;
-   if(canonical(u.href)===wanted||(wrapper&&canonical(wrapper)===wanted))return {linked:true,label:decode(d.name||m[0].replace(/<(?:[^>\"']|\"[^\"]*\"|'[^']*')*>/g,' ')).trim().slice(0,200)};
+   const u=originalPdfUrl(raw,base);
+   if(canonical(u.href)===wanted)return {linked:true,label:decode(d.name||m[0].replace(/<(?:[^>\"']|\"[^\"]*\"|'[^']*')*>/g,' ')).trim().slice(0,200)};
   }catch{}
  }
  return {linked:false,label:''};
@@ -46,12 +71,11 @@ function pdfLinks(html,pageUrl) {
  const clean=cleanHtml(html),baseTag=clean.match(/<base\b[^>]*>/i);let base=pageUrl;
  try { if(baseTag) base=new URL(attrs(baseTag[0]).href,pageUrl).href; } catch {}
  const links=new Map();
- for(const m of clean.matchAll(/<a\b[^>]*>[\s\S]*?<\/a\s*>|<warema-download-list-item\b[^>]*>[\s\S]*?<\/warema-download-list-item\s*>/gi)) {
-  const d=attrs(m[0].split('>')[0]),raw=d.href||d['download-link'];
+ for(const m of clean.matchAll(/<a\b(?:[^<>"']|"[^"]*"|'[^']*')*>[\s\S]*?<\/a\s*>|<warema-download-list-item\b(?:[^<>"']|"[^"]*"|'[^']*')*>[\s\S]*?<\/warema-download-list-item\s*>/gi)) {
+  const d=attrs(m[0].match(/^<(?:[^<>"']|"[^"]*"|'[^']*')*>/)?.[0]||''),raw=d.href||d['download-link'];
   try {
    if(!raw)continue;
-   let u=new URL(raw,base);const uri=u.searchParams.get('uri'),file=u.searchParams.get('file');
-   if(u.pathname.endsWith('.download')&&/^\/p\/\d+\.pdf$/.test(uri||'')&&file===uri.split('/').at(-1))u=new URL(uri,u.origin);
+   const u=originalPdfUrl(raw,base);
    if(u.protocol!=='https:'||u.username||u.password||(u.port&&u.port!=='443')||!pdfEndpoint(u)||u.href.length>2000)continue;
    const label=decode(d.title||d.name||m[0].replace(/<(?:[^>"']|"[^"]*"|'[^']*')*>/g,' ')).replace(/\s+/g,' ').trim().slice(0,120)||(/\/api\/datasheet\/getPDF\//.test(u.pathname)?'Hersteller-Datenblatt':'');
    links.set(canonical(u.href),{sourceUrl:u.href,label});

@@ -263,7 +263,7 @@ test('MCP: ohne lokalen Dateipfad prüfen/vorschlagen, kompakte Befunde und kein
  const f=await preparedFixture(),client=mcpClient(f.base,f.key.token,true);
  try{
   await client.initialize();const tools=(await client.rpc('tools/list',{})).result.tools;
-  assert.equal(tools.length,55);assert.ok(!tools.some(t=>/approve/.test(t.name)));
+  assert.equal(tools.length,58);assert.ok(!tools.some(t=>/approve/.test(t.name)));
   const t=tools.find(t=>t.name==='edoku_propose_document');assert.ok(t.inputSchema.properties.mode);assert.ok(t.inputSchema.properties.metadata.properties.manufacturerPageUrl);
   const s=await f.source('mcp'),args={projectId:'same',jobId:f.job.id,mode:'check',metadata:f.meta(s)};
   const call=async a=>(await client.rpc('tools/call',{name:t.name,arguments:a})).result;
@@ -390,7 +390,7 @@ test('Brandschutz über HTTP/MCP: Systemanleitung prüfen, nur vorschlagen und e
   assert.ok(!result.isError,JSON.stringify(result));const doc=result.structuredContent.data;
   assert.equal(doc.state,'pending');assert.equal(doc.attachmentId,null);assert.equal(doc.productVerification.state,'matched');
   assert.equal(doc.productVerification.targets[0].via,'manufacturer_system_manual_link');
-  assert.equal(doc.productVerification.policy,'manufacturer_pdf_article_variant_v7');
+  assert.equal(doc.productVerification.policy,require('../services/productDocumentVerificationService').POLICY);
   assert.equal(store.projectDataRevision(f.root,'alice','same'),before);
   assert.deepEqual(await readJson(files.anhaenge),[]);assert.deepEqual(await readJson(files.brandschutz),[]);
   assert.equal((await readJson(files.geraetelisten))[0].positionen[0].bedienungsanleitungId,undefined);
